@@ -188,9 +188,7 @@ export async function streamChatResponse({
       entry.llmModelId &&
       envHasKey(envState.envForAuto, entry.requiredEnv),
   );
-  const cliAttempt = !apiAttempt
-    ? attempts.find((entry) => entry.transport === "cli")
-    : null;
+  const cliAttempt = !apiAttempt ? attempts.find((entry) => entry.transport === "cli") : null;
   const attempt = apiAttempt ?? cliAttempt;
   if (!attempt) {
     throw new Error("No model available for chat");

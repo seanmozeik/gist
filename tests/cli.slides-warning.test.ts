@@ -73,10 +73,9 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock("../src/run/flows/url/extract.js", async () => {
-  const actual =
-    await vi.importActual<typeof import("../src/run/flows/url/extract.js")>(
-      "../src/run/flows/url/extract.js",
-    );
+  const actual = await vi.importActual<typeof import("../src/run/flows/url/extract.js")>(
+    "../src/run/flows/url/extract.js",
+  );
   return {
     ...actual,
     fetchLinkContentWithBirdTip: mocks.fetchLinkContentWithBirdTip,

@@ -174,7 +174,9 @@ describe("YouTube captionTracks extra branches", () => {
               jsonResponse({
                 captions: {
                   playerCaptionsTracklistRenderer: {
-                    captionTracks: [{ baseUrl: "https://example.com/captions", languageCode: "en" }],
+                    captionTracks: [
+                      { baseUrl: "https://example.com/captions", languageCode: "en" },
+                    ],
                   },
                 },
               }),

@@ -2,8 +2,8 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createCacheStore, type CacheStore } from "../src/cache.js";
 import { NEGATIVE_TTL_MS } from "../packages/core/src/content/index.js";
+import { createCacheStore, type CacheStore } from "../src/cache.js";
 
 /**
  * Regression test for https://github.com/steipete/summarize/issues/114
@@ -36,9 +36,21 @@ describe("extract cache TTL for unavailable transcripts (#114)", () => {
     transcriptionProvider: null,
     diagnostics: {
       strategy: "html",
-      firecrawl: { attempted: false, used: false, cacheMode: "default", cacheStatus: "bypassed", notes: null },
+      firecrawl: {
+        attempted: false,
+        used: false,
+        cacheMode: "default",
+        cacheStatus: "bypassed",
+        notes: null,
+      },
       markdown: { requested: false, used: false, provider: null, notes: null },
-      transcript: { cacheMode: "default", cacheStatus: "miss", textProvided: false, provider: transcriptSource, attemptedProviders: [] },
+      transcript: {
+        cacheMode: "default",
+        cacheStatus: "miss",
+        textProvided: false,
+        provider: transcriptSource,
+        attemptedProviders: [],
+      },
     },
   });
 

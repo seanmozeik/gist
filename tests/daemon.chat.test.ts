@@ -108,10 +108,7 @@ describe("daemon/chat", () => {
     expect(args.prompt).toContain("User: Hi");
     expect(vi.mocked(streamTextWithContext).mock.calls.length).toBe(0);
     expect(meta[0]?.model).toBe("cli/codex/gpt-5.2");
-    expect(events).toEqual([
-      { event: "content", data: "cli hello" },
-      { event: "metrics" },
-    ]);
+    expect(events).toEqual([{ event: "content", data: "cli hello" }, { event: "metrics" }]);
   });
 
   it("routes openrouter overrides through openrouter transport", async () => {
@@ -268,9 +265,6 @@ describe("daemon/chat", () => {
     );
     expect(vi.mocked(streamTextWithContext).mock.calls.length).toBe(0);
     expect(meta[0]?.model).toBe("cli/codex/gpt-5.2");
-    expect(events).toEqual([
-      { event: "content", data: "cli hello" },
-      { event: "metrics" },
-    ]);
+    expect(events).toEqual([{ event: "content", data: "cli hello" }, { event: "metrics" }]);
   });
 });

@@ -43,7 +43,9 @@ describe("chrome native input guard", () => {
   it("rejects missing or unarmed sender tabs", () => {
     const armedTabs = new Set<number>([3]);
 
-    expect(getNativeInputGuardError({ armedTabs, senderTabId: undefined })).toBe("Missing sender tab");
+    expect(getNativeInputGuardError({ armedTabs, senderTabId: undefined })).toBe(
+      "Missing sender tab",
+    );
     expect(getNativeInputGuardError({ armedTabs, senderTabId: 4 })).toBe(
       "Native input not armed for this tab",
     );

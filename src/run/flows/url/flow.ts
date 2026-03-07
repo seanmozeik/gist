@@ -1,5 +1,5 @@
-import * as urlUtils from "@steipete/summarize-core/content/url";
 import { NEGATIVE_TTL_MS } from "@steipete/summarize-core/content";
+import * as urlUtils from "@steipete/summarize-core/content/url";
 import type { UrlFlowContext } from "./types.js";
 import { buildExtractCacheKey, buildSlidesCacheKey } from "../../../cache.js";
 import { loadRemoteAsset } from "../../../content/asset.js";
@@ -337,9 +337,7 @@ export async function runUrlFlow({
           // transient transcript failures (e.g. Apify timeouts) are retried on the
           // next run instead of being served from cache for the full default TTL.
           const extractTtlMs =
-            extracted.transcriptSource === "unavailable"
-              ? NEGATIVE_TTL_MS
-              : cacheState.ttlMs;
+            extracted.transcriptSource === "unavailable" ? NEGATIVE_TTL_MS : cacheState.ttlMs;
           cacheStore.setJson("extract", cacheKey, extracted, extractTtlMs);
           writeVerbose(
             io.stderr,

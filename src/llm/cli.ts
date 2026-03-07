@@ -437,9 +437,10 @@ export async function runCliModel({
   const parsed = parseJsonFromOutput(trimmed);
   if (parsed && typeof parsed === "object") {
     const payload = Array.isArray(parsed)
-      ? (parsed.find(
-          (item) => item && typeof item === "object" && (item as Record<string, unknown>).type === "result",
-        ) as Record<string, unknown> | undefined) ?? null
+      ? ((parsed.find(
+          (item) =>
+            item && typeof item === "object" && (item as Record<string, unknown>).type === "result",
+        ) as Record<string, unknown> | undefined) ?? null)
       : (parsed as Record<string, unknown>);
     if (payload) {
       const resultText = extractJsonResultText(payload);

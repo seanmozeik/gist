@@ -3,12 +3,12 @@ import type {
   LinkPreviewProgressEvent,
   ScrapeWithFirecrawl,
 } from "../deps.js";
+import type { CacheMode, FirecrawlDiagnostics } from "../types.js";
 import {
   isBunCompressedResponseError,
   withBunCompressionHeaders,
   withBunIdentityEncoding,
 } from "../../bun.js";
-import type { CacheMode, FirecrawlDiagnostics } from "../types.js";
 import { isYouTubeUrl } from "../../url.js";
 import { appendNote } from "./utils.js";
 
@@ -128,7 +128,10 @@ async function fetchHtmlOnce(
 export async function fetchHtmlDocument(
   fetchImpl: typeof fetch,
   url: string,
-  options: { timeoutMs?: number; onProgress?: ((event: LinkPreviewProgressEvent) => void) | null } = {},
+  options: {
+    timeoutMs?: number;
+    onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
+  } = {},
 ): Promise<HtmlDocumentFetchResult> {
   try {
     return await fetchHtmlOnce(fetchImpl, url, withBunCompressionHeaders(REQUEST_HEADERS), options);
