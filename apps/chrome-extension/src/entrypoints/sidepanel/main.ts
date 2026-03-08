@@ -1,4 +1,4 @@
-import type { AssistantMessage, Message, ToolCall, ToolResultMessage } from "@mariozechner/pi-ai";
+import type { Message, ToolCall, ToolResultMessage } from "@mariozechner/pi-ai";
 import { extractYouTubeVideoId, shouldPreferUrlMode } from "@steipete/summarize-core/content/url";
 import MarkdownIt from "markdown-it";
 import {
@@ -24,6 +24,7 @@ import {
   createChatHistoryStore,
   normalizeStoredMessage,
 } from "./chat-history-store";
+import { createChatSession } from "./chat-session";
 import { compactChatHistory, type ChatHistoryLimits } from "./chat-state";
 import { createErrorController } from "./error-controller";
 import { createHeaderController } from "./header-controller";
@@ -316,7 +317,6 @@ let activeTabUrl: string | null = null;
 let lastPanelOpen = false;
 let lastStreamError: string | null = null;
 let lastAction: "summarize" | "chat" | null = null;
-let abortAgentRequested = false;
 let lastNavigationMessageUrl: string | null = null;
 let inputMode: "page" | "video" = "page";
 let inputModeOverride: "page" | "video" | null = null;
@@ -572,29 +572,6 @@ window.addEventListener("summarize:automation-permissions", (event) => {
   });
 });
 
-type AgentResponse = { ok: boolean; assistant?: AssistantMessage; error?: string };
-const pendingAgentRequests = new Map<
-  string,
-  {
-    resolve: (response: AgentResponse) => void;
-    reject: (error: Error) => void;
-    onChunk?: (text: string) => void;
-  }
->();
-
-type ChatHistoryResponse = { ok: boolean; messages?: Message[]; error?: string };
-const pendingChatHistoryRequests = new Map<
-  string,
-  { resolve: (response: ChatHistoryResponse) => void; reject: (error: Error) => void }
->();
-
-function abortPendingAgentRequests(reason: string) {
-  for (const pending of pendingAgentRequests.values()) {
-    pending.reject(new Error(reason));
-  }
-  pendingAgentRequests.clear();
-}
-
 async function hideReplOverlayForActiveTab() {
   if (!activeTabId) return;
   try {
@@ -609,10 +586,7 @@ async function hideReplOverlayForActiveTab() {
 }
 
 function requestAgentAbort(reason: string) {
-  abortAgentRequested = true;
-  abortPendingAgentRequests(reason);
-  headerController.setStatus(reason);
-  void hideReplOverlayForActiveTab();
+  chatSession.requestAbort(reason);
 }
 
 function wrapMessage(message: Message): ChatMessage {
@@ -633,75 +607,11 @@ function buildStreamingAssistantMessage(): ChatMessage {
   };
 }
 
-function handleAgentResponse(msg: Extract<BgToPanel, { type: "agent:response" }>) {
-  const pending = pendingAgentRequests.get(msg.requestId);
-  if (!pending) return;
-  pendingAgentRequests.delete(msg.requestId);
-  pending.resolve({ ok: msg.ok, assistant: msg.assistant, error: msg.error });
-}
-
-function handleAgentChunk(msg: Extract<BgToPanel, { type: "agent:chunk" }>) {
-  const pending = pendingAgentRequests.get(msg.requestId);
-  if (!pending?.onChunk) return;
-  pending.onChunk(msg.text);
-}
-
-function handleChatHistoryResponse(msg: Extract<BgToPanel, { type: "chat:history" }>) {
-  const pending = pendingChatHistoryRequests.get(msg.requestId);
-  if (!pending) return;
-  pendingChatHistoryRequests.delete(msg.requestId);
-  pending.resolve({ ok: msg.ok, messages: msg.messages, error: msg.error });
-}
-
-async function requestAgent(
-  messages: Message[],
-  tools: string[],
-  summary?: string | null,
-  opts?: { onChunk?: (text: string) => void },
-) {
-  const requestId = crypto.randomUUID();
-  const response = new Promise<AgentResponse>((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      pendingAgentRequests.delete(requestId);
-      reject(new Error("Agent request timed out"));
-    }, 60_000);
-    pendingAgentRequests.set(requestId, {
-      resolve: (result) => {
-        window.clearTimeout(timeout);
-        resolve(result);
-      },
-      reject: (error) => {
-        window.clearTimeout(timeout);
-        reject(error);
-      },
-      onChunk: opts?.onChunk,
-    });
-    void send({ type: "panel:agent", requestId, messages, tools, summary });
-  });
-  return response;
-}
-
-async function requestChatHistory(summary?: string | null) {
-  const requestId = crypto.randomUUID();
-  const response = new Promise<ChatHistoryResponse>((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      pendingChatHistoryRequests.delete(requestId);
-      reject(new Error("Chat history request timed out"));
-    }, 20_000);
-    pendingChatHistoryRequests.set(requestId, {
-      resolve: (result) => {
-        window.clearTimeout(timeout);
-        resolve(result);
-      },
-      reject: (error) => {
-        window.clearTimeout(timeout);
-        reject(error);
-      },
-    });
-    void send({ type: "panel:chat-history", requestId, summary });
-  });
-  return response;
-}
+const chatSession = createChatSession({
+  hideReplOverlay: hideReplOverlayForActiveTab,
+  send: async (message) => send(message),
+  setStatus: (text) => headerController.setStatus(text),
+});
 
 chatMessagesEl.addEventListener("click", (event) => {
   const target = event.target as HTMLElement | null;
@@ -1802,7 +1712,7 @@ async function restoreChatHistory() {
   }
 
   try {
-    const response = await requestChatHistory(panelState.summaryMarkdown);
+    const response = await chatSession.requestChatHistory(panelState.summaryMarkdown);
     if (loadId !== chatHistoryLoadId || !response.ok || !Array.isArray(response.messages)) {
       return;
     }
@@ -2525,13 +2435,13 @@ function handleBgMessage(msg: BgToPanel) {
       return;
     }
     case "chat:history":
-      handleChatHistoryResponse(msg);
+      chatSession.handleChatHistoryResponse(msg);
       return;
     case "agent:chunk":
-      handleAgentChunk(msg);
+      chatSession.handleAgentChunk(msg);
       return;
     case "agent:response":
-      handleAgentResponse(msg);
+      chatSession.handleAgentResponse(msg);
       return;
   }
 }
@@ -2786,8 +2696,7 @@ function resetChatState() {
   chatController.reset();
   clearQueuedMessages();
   chatJumpBtn.classList.remove("isVisible");
-  pendingAgentRequests.clear();
-  abortAgentRequested = false;
+  chatSession.reset();
   lastNavigationMessageUrl = null;
 }
 
@@ -2808,15 +2717,15 @@ async function runAgentLoop() {
   }
 
   while (true) {
-    if (abortAgentRequested) return;
+    if (chatSession.isAbortRequested()) return;
     const messages = chatController.buildRequestMessages() as Message[];
     const streamingMessage = buildStreamingAssistantMessage();
     let streamedContent = "";
     chatController.addMessage(streamingMessage);
     scrollToBottom(true);
-    let response: AgentResponse;
+    let response;
     try {
-      response = await requestAgent(messages, tools, panelState.summaryMarkdown, {
+      response = await chatSession.requestAgent(messages, tools, panelState.summaryMarkdown, {
         onChunk: (text) => {
           streamedContent += text;
           chatController.updateStreamingMessage(streamedContent);
@@ -2824,7 +2733,7 @@ async function runAgentLoop() {
       });
     } catch (error) {
       chatController.removeMessage(streamingMessage.id);
-      if (abortAgentRequested) return;
+      if (chatSession.isAbortRequested()) return;
       throw error;
     }
     if (!response.ok || !response.assistant) {
@@ -2833,7 +2742,7 @@ async function runAgentLoop() {
     }
 
     const assistant = { ...response.assistant, id: streamingMessage.id };
-    if (abortAgentRequested) {
+    if (chatSession.isAbortRequested()) {
       chatController.removeMessage(streamingMessage.id);
       return;
     }
@@ -2845,7 +2754,7 @@ async function runAgentLoop() {
     if (toolCalls.length === 0) break;
 
     for (const call of toolCalls) {
-      if (abortAgentRequested) return;
+      if (chatSession.isAbortRequested()) return;
       if (call.name === "navigate") {
         const args = call.arguments as { url?: string };
         markAgentNavigationIntent(args?.url);
@@ -2865,7 +2774,7 @@ function startChatMessage(text: string) {
   if (!input || !chatEnabledValue) return;
 
   errorController.clearAll();
-  abortAgentRequested = false;
+  chatSession.resetAbort();
 
   chatController.addMessage(wrapMessage({ role: "user", content: input, timestamp: Date.now() }));
 
@@ -2903,7 +2812,7 @@ function retryChat() {
   if (!chatController.hasUserMessages()) return;
 
   errorController.clearAll();
-  abortAgentRequested = false;
+  chatSession.resetAbort();
   panelState.chatStreaming = true;
   metricsController.setActiveMode("chat");
   lastAction = "chat";
