@@ -50,6 +50,7 @@ import { installStepsHtml, wireSetupButtons } from "./setup-view";
 import { normalizeSlideImageUrl } from "./slide-images";
 import { createSlidesHydrator } from "./slides-hydrator";
 import { hasResolvedSlidesPayload } from "./slides-pending";
+import { createSlidesRunRuntime } from "./slides-run-runtime";
 import { shouldSeedPlannedSlidesForRun } from "./slides-seed-policy";
 import {
   resolveSlidesLengthArg,
@@ -1441,38 +1442,6 @@ const refreshModelsIfStale = modelPresetsController.refreshIfStale;
 const runRefreshFree = modelPresetsController.runRefreshFree;
 const isRefreshFreeRunning = modelPresetsController.isRefreshFreeRunning;
 
-function handleSlidesStatus(text: string) {
-  const trimmed = text.trim();
-  if (!trimmed) return;
-  if (!/^slides?/i.test(trimmed)) return;
-  setSlidesBusy(true);
-  if (panelState.phase === "connecting" || panelState.phase === "streaming") return;
-  headerController.setStatus(trimmed);
-}
-
-function startSlidesStreamForRunId(runId: string) {
-  const effectiveInputMode = inputModeOverride ?? inputMode;
-  const slidesAllowed = slidesEnabledValue || panelState.ui?.settings.slidesEnabled;
-  if (!slidesAllowed) {
-    stopSlidesStream();
-    return;
-  }
-  if (effectiveInputMode !== "video") {
-    inputMode = "video";
-    inputModeOverride = "video";
-    refreshSummarizeControl();
-  }
-  hideSlideNotice();
-  setSlidesBusy(true);
-  panelState.slidesRunId = runId;
-  panelCacheController.scheduleSync();
-  void slidesHydrator.start(runId);
-}
-
-function startSlidesStream(run: RunStart) {
-  startSlidesStreamForRunId(run.id);
-}
-
 function applySlidesSummaryMarkdown(markdown: string) {
   if (!markdown.trim()) return;
   const currentUrl = panelState.currentSource?.url ?? activeTabUrl ?? null;
@@ -1514,36 +1483,6 @@ function maybeApplyPendingSlidesSummary() {
   applySlidesSummaryMarkdown(markdown);
 }
 
-function startSlidesSummaryStreamForRunId(runId: string, targetUrl?: string | null) {
-  const effectiveInputMode = inputModeOverride ?? inputMode;
-  const slidesAllowed = slidesEnabledValue || panelState.ui?.settings.slidesEnabled;
-  if (!slidesAllowed) {
-    stopSlidesSummaryStream();
-    return;
-  }
-  if (effectiveInputMode !== "video") {
-    inputMode = "video";
-    inputModeOverride = "video";
-    refreshSummarizeControl();
-  }
-  if (slidesSummaryRunId === runId) return;
-  stopSlidesSummaryStream();
-  slidesSummaryRunId = runId;
-  slidesSummaryUrl = targetUrl ?? null;
-  slidesSummaryMarkdown = "";
-  slidesSummaryHadError = false;
-  slidesSummaryComplete = false;
-  slidesSummaryModel = panelState.lastMeta.model ?? panelState.ui?.settings.model ?? "auto";
-  const url = targetUrl ?? panelState.currentSource?.url ?? activeTabUrl ?? "";
-  void slidesSummaryController.start({
-    id: runId,
-    url,
-    title: panelState.currentSource?.title ?? null,
-    model: panelState.lastMeta.model ?? "auto",
-    reason: "slides-summary",
-  });
-}
-
 const slidesHydrator = createSlidesHydrator({
   getToken: async () => (await loadSettings()).token,
   onSlides: (data) => {
@@ -1573,6 +1512,63 @@ const slidesHydrator = createSlidesHydrator({
     }
   },
 });
+
+const slidesRunRuntime = createSlidesRunRuntime({
+  getPanelPhase: () => panelState.phase,
+  getPanelState: () => panelState,
+  getUiState: () => panelState.ui,
+  getActiveTabUrl: () => activeTabUrl,
+  getInputMode: () => inputMode,
+  setInputMode: (value) => {
+    inputMode = value;
+  },
+  getInputModeOverride: () => inputModeOverride,
+  setInputModeOverride: (value) => {
+    inputModeOverride = value;
+  },
+  getSlidesEnabled: () => slidesEnabledValue,
+  refreshSummarizeControl,
+  stopSlidesStream,
+  stopSlidesSummaryStream,
+  hideSlideNotice,
+  setSlidesBusy,
+  schedulePanelCacheSync: () => {
+    panelCacheController.scheduleSync();
+  },
+  startSlidesHydrator: (runId) => {
+    void slidesHydrator.start(runId);
+  },
+  startSlidesSummaryController: (payload) => {
+    void slidesSummaryController.start(payload);
+  },
+  getSlidesSummaryRunId: () => slidesSummaryRunId,
+  setSlidesSummaryRunId: (value) => {
+    slidesSummaryRunId = value;
+  },
+  setSlidesSummaryUrl: (value) => {
+    slidesSummaryUrl = value;
+  },
+  resetSlidesSummaryState: () => {
+    slidesSummaryMarkdown = "";
+    slidesSummaryHadError = false;
+    slidesSummaryComplete = false;
+  },
+  setSlidesSummaryModel: (value) => {
+    slidesSummaryModel = value;
+  },
+  setSlidesRunId: (value) => {
+    panelState.slidesRunId = value;
+  },
+  headerSetStatus: (text) => {
+    headerController.setStatus(text);
+  },
+});
+const {
+  handleSlidesStatus,
+  startSlidesStreamForRunId,
+  startSlidesStream,
+  startSlidesSummaryStreamForRunId,
+} = slidesRunRuntime;
 
 const slidesSummaryController = createStreamController({
   getToken: async () => (await loadSettings()).token,
