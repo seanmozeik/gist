@@ -6,6 +6,7 @@ import { getOptionsElements } from "./elements";
 import { applyLoadedOptionsSettings, buildSavedOptionsSettings } from "./form-state";
 import { createLogsViewer } from "./logs-viewer";
 import { createModelPresetsController } from "./model-presets";
+import { createOptionsSaveRuntime } from "./persistence";
 import { mountOptionsPickers } from "./pickers";
 import { createProcessesViewer } from "./processes-viewer";
 import { createSkillsController } from "./skills-controller";
@@ -105,10 +106,6 @@ let extendedLoggingValue = defaultSettings.extendedLogging;
 let autoCliFallbackValue = defaultSettings.autoCliFallback;
 
 let isInitializing = true;
-let saveTimer = 0;
-let saveInFlight = false;
-let saveQueued = false;
-let saveSequence = 0;
 
 const logsViewer = createLogsViewer({
   elements: {
@@ -180,50 +177,38 @@ const skillsController = createSkillsController({
   setStatus,
   flashStatus,
 });
-
-const scheduleAutoSave = (delay = 500) => {
-  if (isInitializing) return;
-  window.clearTimeout(saveTimer);
-  saveTimer = window.setTimeout(() => {
-    void saveNow();
-  }, delay);
+const settingsElements = {
+  tokenEl,
+  languagePresetEl,
+  languageCustomEl,
+  promptOverrideEl,
+  hoverPromptEl,
+  autoCliOrderEl,
+  maxCharsEl,
+  requestModeEl,
+  firecrawlModeEl,
+  markdownModeEl,
+  preprocessModeEl,
+  youtubeModeEl,
+  transcriberEl,
+  timeoutEl,
+  retriesEl,
+  maxOutputTokensEl,
+  fontFamilyEl,
+  fontSizeEl,
 };
 
-const saveNow = async () => {
-  if (saveInFlight) {
-    saveQueued = true;
-    return;
-  }
-  saveInFlight = true;
-  saveQueued = false;
-  const currentSeq = ++saveSequence;
-  setStatus("Saving…");
-  try {
+const { saveNow, scheduleAutoSave } = createOptionsSaveRuntime({
+  isInitializing: () => isInitializing,
+  setStatus,
+  flashStatus,
+  persist: async () => {
     const current = await loadSettings();
     await saveSettings(
       buildSavedOptionsSettings({
         current,
         defaults: defaultSettings,
-        elements: {
-          tokenEl,
-          languagePresetEl,
-          languageCustomEl,
-          promptOverrideEl,
-          hoverPromptEl,
-          autoCliOrderEl,
-          maxCharsEl,
-          requestModeEl,
-          firecrawlModeEl,
-          markdownModeEl,
-          preprocessModeEl,
-          youtubeModeEl,
-          transcriberEl,
-          timeoutEl,
-          retriesEl,
-          maxOutputTokensEl,
-          fontFamilyEl,
-          fontSizeEl,
-        },
+        elements: settingsElements,
         modelPresets,
         booleans: {
           autoSummarize: autoValue,
@@ -240,17 +225,8 @@ const saveNow = async () => {
         currentMode,
       }),
     );
-    if (currentSeq === saveSequence) {
-      flashStatus("Saved");
-    }
-  } finally {
-    saveInFlight = false;
-    if (saveQueued) {
-      saveQueued = false;
-      void saveNow();
-    }
-  }
-};
+  },
+});
 
 const resolveExtensionVersion = () => {
   const injected =
@@ -438,26 +414,7 @@ async function load() {
     settings: s,
     defaults: defaultSettings,
     languagePresets,
-    elements: {
-      tokenEl,
-      languagePresetEl,
-      languageCustomEl,
-      promptOverrideEl,
-      hoverPromptEl,
-      autoCliOrderEl,
-      maxCharsEl,
-      requestModeEl,
-      firecrawlModeEl,
-      markdownModeEl,
-      preprocessModeEl,
-      youtubeModeEl,
-      transcriberEl,
-      timeoutEl,
-      retriesEl,
-      maxOutputTokensEl,
-      fontFamilyEl,
-      fontSizeEl,
-    },
+    elements: settingsElements,
   });
   autoValue = loadedState.booleans.autoSummarize;
   chatEnabledValue = loadedState.booleans.chatEnabled;
