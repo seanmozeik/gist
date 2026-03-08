@@ -47,23 +47,7 @@ function resolveRequestSlidesSettings({
   });
 }
 
-export async function parseSummarizeRequest({
-  req,
-  res,
-  cors,
-  env,
-  resolveToolPath,
-}: {
-  req: http.IncomingMessage;
-  res: http.ServerResponse;
-  cors: Record<string, string>;
-  env: Record<string, string | undefined>;
-  resolveToolPath: (
-    binary: string,
-    env: Record<string, string | undefined>,
-    explicitEnvKey?: string,
-  ) => string | null;
-}): Promise<{
+export type ParsedSummarizeRequest = {
   pageUrl: string;
   title: string | null;
   textContent: string;
@@ -81,7 +65,25 @@ export async function parseSummarizeRequest({
   slidesSettings: SlideSettings | null;
   diagnostics: { includeContent: boolean };
   hasText: boolean;
-} | null> {
+};
+
+export async function parseSummarizeRequest({
+  req,
+  res,
+  cors,
+  env,
+  resolveToolPath,
+}: {
+  req: http.IncomingMessage;
+  res: http.ServerResponse;
+  cors: Record<string, string>;
+  env: Record<string, string | undefined>;
+  resolveToolPath: (
+    binary: string,
+    env: Record<string, string | undefined>,
+    explicitEnvKey?: string,
+  ) => string | null;
+}): Promise<ParsedSummarizeRequest | null> {
   let body: unknown;
   try {
     body = await readJsonBody(req, 2_000_000);
