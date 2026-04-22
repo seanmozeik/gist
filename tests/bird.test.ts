@@ -245,6 +245,23 @@ describe("tweet CLI helpers", () => {
         env: { PATH: invalidXurl },
       }),
     ).rejects.toThrow(/xurl read returned invalid payload/);
+
+    const { binDir: unauthorizedXurl } = makeCliScript(
+      "xurl",
+      scriptForJson({
+        title: "Unauthorized",
+        type: "about:blank",
+        status: 401,
+        detail: "Unauthorized",
+      }),
+    );
+    await expect(
+      readTweetWithXurl({
+        url: "https://x.com/user/status/1",
+        timeoutMs: 1000,
+        env: { PATH: unauthorizedXurl },
+      }),
+    ).rejects.toThrow(/xurl auth status.*install "bird"/);
   });
 
   it("adds install tips only when neither xurl nor bird is available", () => {

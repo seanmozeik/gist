@@ -1,11 +1,11 @@
 import type { ChildProcess } from "node:child_process";
 import { writeFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { runCliModel } from "../src/llm/cli.js";
 import type { ExecFileFn } from "../src/markitdown.js";
 
 describe("runCliModel regressions", () => {
-  it("streams OpenClaw prompts over stdin instead of --message args", async () => {
+  it("passes OpenClaw prompts with --message for current OpenClaw CLI", async () => {
     const seenArgs: string[][] = [];
     const stdinWrites: string[] = [];
     const execFileImpl: ExecFileFn = ((_cmd, args, _opts, cb) => {
@@ -42,10 +42,31 @@ describe("runCliModel regressions", () => {
     });
 
     expect(result.text).toBe("hello from openclaw");
-    expect(seenArgs[0]).toContain("-");
-    expect(seenArgs[0]).not.toContain("--message");
-    expect(seenArgs[0]).not.toContain(prompt);
-    expect(stdinWrites.join("")).toBe(prompt);
+    expect(seenArgs[0]).toContain("-m");
+    expect(seenArgs[0]).toContain(prompt);
+    expect(seenArgs[0]).not.toContain("-");
+    expect(stdinWrites.join("")).toBe("");
+  });
+
+  it("rejects oversized OpenClaw prompts before passing them through argv", async () => {
+    const execFileImpl = vi.fn(((_cmd, _args, _opts, cb) => {
+      cb?.(null, "", "");
+      return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+    }) as ExecFileFn);
+
+    await expect(
+      runCliModel({
+        provider: "openclaw",
+        prompt: "x".repeat(121 * 1024),
+        model: "main",
+        allowTools: false,
+        timeoutMs: 1000,
+        env: {},
+        execFileImpl,
+        config: null,
+      }),
+    ).rejects.toThrow(/cannot safely receive large prompts over argv/);
+    expect(execFileImpl).not.toHaveBeenCalled();
   });
 
   it("codex extracts assistant text from JSONL stdout when last-message is blank", async () => {

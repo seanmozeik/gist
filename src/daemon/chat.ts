@@ -6,7 +6,7 @@ import { streamTextWithContext } from "../llm/generate-text.js";
 import { resolveGitHubModelsApiKey } from "../llm/github-models.js";
 import { buildAutoModelAttempts, envHasKey } from "../model-auto.js";
 import { parseRequestedModelId } from "../model-spec.js";
-import { parseCliUserModelId } from "../run/env.js";
+import { parseBooleanEnv, parseCliUserModelId } from "../run/env.js";
 import { resolveEnvState } from "../run/run-env.js";
 
 type ChatSession = {
@@ -100,6 +100,18 @@ function resolveApiKeys(
   };
 }
 
+function resolveOpenAiUseChatCompletions({
+  env,
+  configForCli,
+}: {
+  env: Record<string, string | undefined>;
+  configForCli: SummarizeConfig | null;
+}): boolean {
+  const envValue = parseBooleanEnv(env.OPENAI_USE_CHAT_COMPLETIONS);
+  if (envValue !== null) return envValue;
+  return configForCli?.openai?.useChatCompletions === true;
+}
+
 export async function streamChatResponse({
   env,
   fetchImpl,
@@ -127,6 +139,7 @@ export async function streamChatResponse({
 }) {
   const apiKeys = resolveApiKeys(env, configForCli);
   const envState = resolveEnvState({ env, envForRun: env, configForCli });
+  const openaiUseChatCompletions = resolveOpenAiUseChatCompletions({ env, configForCli });
   const context = buildContext({ pageUrl, pageTitle, pageContent, messages });
 
   const resolveModel = () => {
@@ -179,7 +192,9 @@ export async function streamChatResponse({
             : requested.requiredEnv === "NVIDIA_API_KEY"
               ? envState.nvidiaBaseUrl
               : (requested.openaiBaseUrlOverride ?? null),
-        forceChatCompletions: Boolean(requested.forceChatCompletions),
+        forceChatCompletions:
+          Boolean(requested.forceChatCompletions) ||
+          (requested.provider === "openai" && openaiUseChatCompletions),
       };
     }
     return null;
@@ -280,6 +295,7 @@ export async function streamChatResponse({
     timeoutMs: 30_000,
     fetchImpl,
     forceOpenRouter: attempt.forceOpenRouter,
+    forceChatCompletions: attempt.requiredEnv === "OPENAI_API_KEY" && openaiUseChatCompletions,
   });
   for await (const chunk of result.textStream) {
     pushToSession({ event: "content", data: chunk });

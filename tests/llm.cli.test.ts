@@ -199,6 +199,8 @@ describe("runCliModel", () => {
     expect(seen[0]?.slice(0, 2)).toEqual(["--profile", "dev"]);
     expect(seen[0]).toContain("--agent");
     expect(seen[0]).toContain("main");
+    expect(seen[0]).toContain("-m");
+    expect(seen[0]).toContain("Test");
     expect(seen[0]).toContain("--timeout");
     expect(seen[0]).toContain("3");
   });

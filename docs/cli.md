@@ -129,7 +129,7 @@ Notes:
 - If a CLI call fails, auto mode falls back to the next candidate.
 - Cursor Agent CLI uses the `agent` binary and relies on Cursor CLI auth (login or `CURSOR_API_KEY`).
 - Gemini CLI is invoked in headless mode with `--prompt` for compatibility with current Gemini CLI releases.
-- OpenClaw uses the `openclaw agent --agent <model> - --json` path, streams the prompt over stdin, and expects local OpenClaw auth/config to already be set up.
+- OpenClaw uses `openclaw agent --agent <model> --message <prompt> --json` because current OpenClaw requires `-m/--message`; very large extracted inputs are rejected before launch to avoid argv limits.
 - OpenCode uses `opencode run --format json`, streams prompt text over stdin, and uses the runtime default model when none is configured.
 
 ## Quick smoke test (all CLI providers)

@@ -24,6 +24,8 @@ const DEFAULT_BINARIES: Record<CliProvider, string> = {
   opencode: "opencode",
 };
 
+const OPENCLAW_MAX_MESSAGE_ARG_BYTES = 120 * 1024;
+
 const PROVIDER_PATH_ENV: Record<CliProvider, string> = {
   claude: "CLAUDE_PATH",
   codex: "CODEX_PATH",
@@ -168,12 +170,20 @@ export async function runCliModel({
     providerExtraArgs.push(...extraArgs);
   }
   if (provider === "openclaw") {
+    const promptBytes = Buffer.byteLength(prompt, "utf8");
+    if (promptBytes > OPENCLAW_MAX_MESSAGE_ARG_BYTES) {
+      throw new Error(
+        `OpenClaw CLI requires --message and cannot safely receive large prompts over argv (${promptBytes} bytes). ` +
+          "Use a different CLI provider for this input, reduce extracted content, or update OpenClaw to support stdin/file input.",
+      );
+    }
     const openclawArgs = [
       ...providerExtraArgs,
       "agent",
       "--agent",
       requestedModel ?? "main",
-      "-",
+      "-m",
+      prompt,
       "--json",
       "--timeout",
       String(Math.max(1, Math.ceil(timeoutMs / 1000))),
@@ -182,7 +192,7 @@ export async function runCliModel({
       execFileImpl: execFileFn,
       cmd: binary,
       args: openclawArgs,
-      input: prompt,
+      input: "",
       timeoutMs,
       env: effectiveEnv,
       cwd,
