@@ -1,16 +1,9 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-export type RingFileOptions = {
-  filePath: string;
-  maxBytes: number;
-  maxFiles: number;
-};
+export interface RingFileOptions { filePath: string; maxBytes: number; maxFiles: number }
 
-export type RingFileWriter = {
-  write: (line: string) => void;
-  flush: () => Promise<void>;
-};
+export interface RingFileWriter { write: (line: string) => void; flush: () => Promise<void> }
 
 const normalizeMaxFiles = (value: number) =>
   Number.isFinite(value) && value > 0 ? Math.max(1, Math.trunc(value)) : 1;
@@ -32,7 +25,7 @@ async function rotateFiles(filePath: string, maxFiles: number) {
     try {
       await fs.truncate(filePath, 0);
     } catch {
-      // ignore
+      // Ignore
     }
     return;
   }
@@ -43,18 +36,18 @@ async function rotateFiles(filePath: string, maxFiles: number) {
     try {
       await fs.unlink(dest);
     } catch {
-      // ignore
+      // Ignore
     }
     try {
       await fs.rename(src, dest);
     } catch {
-      // ignore
+      // Ignore
     }
   }
 }
 
 export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
-  const filePath = options.filePath;
+  const {filePath} = options;
   const maxBytes = normalizeMaxBytes(options.maxBytes);
   const maxFiles = normalizeMaxFiles(options.maxFiles);
   const dir = path.dirname(filePath);
@@ -66,19 +59,19 @@ export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
   };
 
   const write = (line: string) => {
-    const normalized = line.endsWith("\n") ? line : `${line}\n`;
-    const bytes = Buffer.byteLength(normalized, "utf8");
+    const normalized = line.endsWith('\n') ? line : `${line}\n`;
+    const bytes = Buffer.byteLength(normalized, 'utf8');
     enqueue(async () => {
       await ensureDir;
       const currentSize = await fileSize(filePath);
       if (currentSize + bytes > maxBytes) {
         await rotateFiles(filePath, maxFiles);
       }
-      await fs.appendFile(filePath, normalized, "utf8");
+      await fs.appendFile(filePath, normalized, 'utf8');
     });
   };
 
-  const flush = async () => await chain;
+  const flush = async () =>{  await chain; };
 
-  return { write, flush };
+  return { flush, write };
 }

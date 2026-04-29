@@ -1,9 +1,10 @@
-import { createMarkdownStreamer, render as renderMarkdownAnsi } from "markdansi";
-import { prepareMarkdownForTerminalStreaming } from "../../markdown.js";
-import { createStreamOutputGate, type StreamOutputMode } from "../../stream-output.js";
-import type { SummaryStreamHandler } from "../../summary-engine.js";
-import { isRichTty, markdownRenderWidth, supportsColor } from "../../terminal.js";
-import { splitSlideTitleFromText } from "./slides-text.js";
+import { createMarkdownStreamer, render as renderMarkdownAnsi } from 'markdansi';
+
+import { prepareMarkdownForTerminalStreaming } from '../../markdown.js';
+import { createStreamOutputGate, type StreamOutputMode } from '../../stream-output.js';
+import type { SummaryStreamHandler } from '../../summary-engine.js';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
+import { splitSlideTitleFromText } from './slides-text.js';
 
 export function createSlidesSummaryStreamHandler({
   stdout,
@@ -33,50 +34,50 @@ export function createSlidesSummaryStreamHandler({
   const shouldRenderMarkdown = !plain && isRichTty(stdout);
   const outputGate = !shouldRenderMarkdown
     ? createStreamOutputGate({
-        stdout,
         clearProgressForStdout,
-        restoreProgressAfterStdout: restoreProgressAfterStdout ?? null,
         outputMode,
+        restoreProgressAfterStdout: restoreProgressAfterStdout ?? null,
         richTty: isRichTty(stdout),
+        stdout,
       })
     : null;
   const streamer = shouldRenderMarkdown
     ? createMarkdownStreamer({
         render: (markdown) =>
           renderMarkdownAnsi(prepareMarkdownForTerminalStreaming(markdown), {
-            width: markdownRenderWidth(stdout, env),
-            wrap: true,
             color: supportsColor(stdout, envForRun),
             hyperlinks: true,
+            width: markdownRenderWidth(stdout, env),
+            wrap: true,
           }),
-        spacing: "single",
+        spacing: 'single',
       })
     : null;
 
   let wroteLeadingBlankLine = false;
-  let buffered = "";
+  let buffered = '';
   const renderedSlides = new Set<number>();
-  let visible = "";
+  let visible = '';
   let pendingSlide: { index: number; buffer: string } | null = null;
   const slideTagRegex = /\[[^\]]*slide[^\d\]]*(\d+)[^\]]*\]/i;
   const slideLabelRegex =
-    /(^|\n)[\t ]*slide\s+(\d+)(?:\s*(?:\/|of)\s*\d+)?(?:\s*[\u00b7:-].*)?(?=\n|$)/i;
+    /(^|\n)[\t ]*slide\s+(\d+)(?:\s*(?:\/|of)\s*\d+)?(?:\s*[\u00B7:-].*)?(?=\n|$)/i;
   const bareSlideTagRegex = /(?<=^|\n)[\t ]*slide\s*:\s*(\d+)\](?=\s*(?:\n|$))/i;
   const slideStripRegex = /\[[^\]]*slide[^\]]*\]/gi;
   const bareSlideStripRegex = /(?<=^|\n)[\t ]*slide\s*:\s*\d+\](?=\s*(?:\n|$))/gi;
 
   const stripSlideMarkers = (segment: string) =>
-    segment.replace(slideStripRegex, "").replace(bareSlideStripRegex, "");
+    segment.replace(slideStripRegex, '').replace(bareSlideStripRegex, '');
 
   const handleMarkdownChunk = (nextVisible: string, prevVisible: string) => {
-    if (!streamer) return;
+    if (!streamer) {return;}
     const appended = nextVisible.slice(prevVisible.length);
-    if (!appended) return;
+    if (!appended) {return;}
     const out = streamer.push(appended);
-    if (!out) return;
+    if (!out) {return;}
     clearProgressForStdout();
     if (!wroteLeadingBlankLine) {
-      stdout.write(`\n${out.replace(/^\n+/, "")}`);
+      stdout.write(`\n${out.replace(/^\n+/, '')}`);
       wroteLeadingBlankLine = true;
     } else {
       stdout.write(out);
@@ -85,9 +86,9 @@ export function createSlidesSummaryStreamHandler({
   };
 
   const pushVisible = (segment: string) => {
-    if (!segment) return;
+    if (!segment) {return;}
     const sanitized = stripSlideMarkers(segment);
-    if (!sanitized) return;
+    if (!sanitized) {return;}
     const prevVisible = visible;
     visible += sanitized;
     if (outputGate) {
@@ -98,60 +99,56 @@ export function createSlidesSummaryStreamHandler({
   };
 
   const pushVisibleLines = (segment: string) => {
-    if (!segment) return;
-    const parts = segment.split("\n");
+    if (!segment) {return;}
+    const parts = segment.split('\n');
     for (let i = 0; i < parts.length; i += 1) {
-      const line = parts[i] ?? "";
-      const suffix = i < parts.length - 1 ? "\n" : "";
-      if (!line && !suffix) continue;
+      const line = parts[i] ?? '';
+      const suffix = i < parts.length - 1 ? '\n' : '';
+      if (!line && !suffix) {continue;}
       pushVisible(`${line}${suffix}`);
     }
   };
 
   const renderSlideBlock = async (index: number, title?: string | null) => {
-    if (renderedSlides.has(index)) return;
+    if (renderedSlides.has(index)) {return;}
     renderedSlides.add(index);
     await renderSlide(index, title);
   };
 
   const flushPendingSlide = async (force: boolean) => {
-    if (!pendingSlide) return;
+    if (!pendingSlide) {return;}
     const text = pendingSlide.buffer;
     if (!text.trim()) {
       if (force) {
-        const index = pendingSlide.index;
+        const {index} = pendingSlide;
         pendingSlide = null;
         await renderSlideBlock(index, null);
       }
       return;
     }
 
-    const index = pendingSlide.index;
+    const {index} = pendingSlide;
     const meta = getSlideMeta?.(index);
     const total = meta?.total ?? getSlideIndexOrder().length;
-    const newlineIndex = text.indexOf("\n");
+    const newlineIndex = text.indexOf('\n');
     const shouldResolve = force || newlineIndex !== -1 || text.length >= 160;
-    if (!shouldResolve) return;
+    if (!shouldResolve) {return;}
 
-    const parsed = splitSlideTitleFromText({
-      text,
-      slideIndex: index,
-      total,
-    });
+    const parsed = splitSlideTitleFromText({ slideIndex: index, text, total });
     if (parsed.title && !parsed.body && !force) {
       return;
     }
     const title = parsed.title ?? null;
-    const body = parsed.body;
+    const {body} = parsed;
     pendingSlide = null;
     await renderSlideBlock(index, title);
-    if (body.trim()) pushVisibleLines(body);
+    if (body.trim()) {pushVisibleLines(body);}
   };
 
   const appendVisible = async (segment: string) => {
-    if (!segment) return;
+    if (!segment) {return;}
     const sanitized = stripSlideMarkers(segment);
-    if (!sanitized) return;
+    if (!sanitized) {return;}
     if (pendingSlide) {
       pendingSlide.buffer += sanitized;
       await flushPendingSlide(false);
@@ -166,47 +163,47 @@ export function createSlidesSummaryStreamHandler({
       const labelMatch = slideLabelRegex.exec(buffered);
       const bareTagMatch = bareSlideTagRegex.exec(buffered);
       const lower = buffered.toLowerCase();
-      const fallbackStart = lower.indexOf("[slide");
-      const fallbackEnd = fallbackStart >= 0 ? buffered.indexOf("]", fallbackStart) : -1;
+      const fallbackStart = lower.indexOf('[slide');
+      const fallbackEnd = fallbackStart !== -1 ? buffered.indexOf(']', fallbackStart) : -1;
       const fallbackMatch =
-        fallbackStart >= 0 && fallbackEnd > fallbackStart
-          ? { start: fallbackStart, end: fallbackEnd }
+        fallbackStart !== -1 && fallbackEnd > fallbackStart
+          ? { end: fallbackEnd, start: fallbackStart }
           : null;
       const nextMatch =
         [
-          tagMatch ? { kind: "tag" as const, index: tagMatch.index ?? 0, match: tagMatch } : null,
+          tagMatch ? { index: tagMatch.index ?? 0, kind: 'tag' as const, match: tagMatch } : null,
           labelMatch
-            ? { kind: "label" as const, index: labelMatch.index ?? 0, match: labelMatch }
+            ? { index: labelMatch.index ?? 0, kind: 'label' as const, match: labelMatch }
             : null,
           bareTagMatch
-            ? { kind: "bare" as const, index: bareTagMatch.index ?? 0, match: bareTagMatch }
+            ? { index: bareTagMatch.index ?? 0, kind: 'bare' as const, match: bareTagMatch }
             : null,
           fallbackMatch
-            ? { kind: "fallback" as const, index: fallbackMatch.start, match: fallbackMatch }
+            ? { index: fallbackMatch.start, kind: 'fallback' as const, match: fallbackMatch }
             : null,
         ]
           .filter(Boolean)
-          .sort((a, b) => (a?.index ?? 0) - (b?.index ?? 0))[0] ?? null;
+          .toSorted((a, b) => (a?.index ?? 0) - (b?.index ?? 0))[0] ?? null;
 
       if (!nextMatch) {
         if (final) {
           await appendVisible(buffered);
-          buffered = "";
+          buffered = '';
           return;
         }
-        let start = lower.lastIndexOf("[slide");
+        let start = lower.lastIndexOf('[slide');
         if (start === -1) {
-          const bracket = lower.lastIndexOf("[");
+          const bracket = lower.lastIndexOf('[');
           if (bracket !== -1) {
-            const tail = lower.slice(bracket + 1).replace(/\s+/g, "");
-            if (tail === "" || "slide".startsWith(tail)) {
+            const tail = lower.slice(bracket + 1).replaceAll(/\s+/g, '');
+            if (tail === '' || 'slide'.startsWith(tail)) {
               start = bracket;
             }
           }
         }
         if (start === -1) {
           await appendVisible(buffered);
-          buffered = "";
+          buffered = '';
           return;
         }
         const head = buffered.slice(0, start);
@@ -214,9 +211,9 @@ export function createSlidesSummaryStreamHandler({
         buffered = buffered.slice(start);
         return;
       }
-      const matchIndex = nextMatch.kind === "fallback" ? nextMatch.match.start : nextMatch.index;
+      const matchIndex = nextMatch.kind === 'fallback' ? nextMatch.match.start : nextMatch.index;
       const matchLength =
-        nextMatch.kind === "fallback"
+        nextMatch.kind === 'fallback'
           ? nextMatch.match.end - nextMatch.match.start + 1
           : nextMatch.match[0].length;
       const rawTag = buffered.slice(matchIndex, matchIndex + matchLength);
@@ -230,28 +227,28 @@ export function createSlidesSummaryStreamHandler({
       }
       buffered = after;
       let index: number | null = null;
-      if (nextMatch.kind === "fallback") {
-        const digitMatch = rawTag.match(/(\d+)/);
-        index = digitMatch ? Number.parseInt(digitMatch[1] ?? "", 10) : null;
+      if (nextMatch.kind === 'fallback') {
+        const digitMatch = /(\d+)/.exec(rawTag);
+        index = digitMatch ? Number.parseInt(digitMatch[1] ?? '', 10) : null;
       } else {
         const rawIndex =
-          nextMatch.kind === "tag"
+          nextMatch.kind === 'tag'
             ? nextMatch.match[1]
-            : nextMatch.kind === "label"
+            : (nextMatch.kind === 'label'
               ? (nextMatch.match[2] ?? nextMatch.match[1])
-              : nextMatch.match[1];
-        index = Number.parseInt(rawIndex ?? "", 10);
+              : nextMatch.match[1]);
+        index = Number.parseInt(rawIndex ?? '', 10);
       }
       if (debugWrite) {
         debugWrite(
-          `slides marker: ${nextMatch.kind} raw=${JSON.stringify(rawTag)} index=${index ?? "null"}\n`,
+          `slides marker: ${nextMatch.kind} raw=${JSON.stringify(rawTag)} index=${index ?? 'null'}\n`,
         );
       }
       if (Number.isFinite(index) && (index ?? 0) > 0) {
         if (getSlideMeta) {
-          pendingSlide = { index: index as number, buffer: "" };
+          pendingSlide = { buffer: '', index: index! };
         } else {
-          await renderSlideBlock(index as number, null);
+          await renderSlideBlock(index!, null);
         }
       }
     }
@@ -259,7 +256,7 @@ export function createSlidesSummaryStreamHandler({
 
   return {
     onChunk: async ({ appended }) => {
-      if (!appended) return;
+      if (!appended) {return;}
       buffered += appended;
       await flushBuffered({ final: false });
     },
@@ -282,7 +279,7 @@ export function createSlidesSummaryStreamHandler({
       if (out) {
         clearProgressForStdout();
         if (!wroteLeadingBlankLine) {
-          stdout.write(`\n${out.replace(/^\n+/, "")}`);
+          stdout.write(`\n${out.replace(/^\n+/, '')}`);
           wroteLeadingBlankLine = true;
         } else {
           stdout.write(out);

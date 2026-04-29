@@ -1,26 +1,26 @@
-import { type SlideExtractionResult } from "../../../slides/index.js";
+import type { SlideExtractionResult } from '../../../slides/index.js';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
-} from "../../../tty/theme.js";
-import { UVX_TIP } from "../../constants.js";
-import { hasUvxCli } from "../../env.js";
+} from '../../../tty/theme.js';
+import { UVX_TIP } from '../../constants.js';
+import { hasUvxCli } from '../../env.js';
 import {
   estimateWhisperTranscriptionCostUsd,
   formatOptionalNumber,
   formatOptionalString,
   formatUSD,
-} from "../../format.js";
-import { writeVerbose } from "../../logging.js";
-import { deriveExtractionUi, logExtractionDiagnostics } from "./extract.js";
-import { createUrlExtractionSession } from "./extraction-session.js";
-import { createUrlFlowProgress, writeSlidesBackgroundFailureWarning } from "./flow-progress.js";
-import { createMarkdownConverters } from "./markdown.js";
-import { createUrlSlidesSession } from "./slides-session.js";
-import { buildUrlPrompt, outputExtractedUrl, summarizeExtractedUrl } from "./summary.js";
-import type { UrlFlowContext } from "./types.js";
-import { handleVideoOnlyExtractedContent } from "./video-only.js";
+} from '../../format.js';
+import { writeVerbose } from '../../logging.js';
+import { deriveExtractionUi, logExtractionDiagnostics } from './extract.js';
+import { createUrlExtractionSession } from './extraction-session.js';
+import { createUrlFlowProgress, writeSlidesBackgroundFailureWarning } from './flow-progress.js';
+import { createMarkdownConverters } from './markdown.js';
+import { createUrlSlidesSession } from './slides-session.js';
+import { buildUrlPrompt, outputExtractedUrl, summarizeExtractedUrl } from './summary.js';
+import type { UrlFlowContext } from './types.js';
+import { handleVideoOnlyExtractedContent } from './video-only.js';
 
 export async function runUrlFlow({
   ctx,
@@ -32,34 +32,34 @@ export async function runUrlFlow({
   isYoutubeUrl: boolean;
 }): Promise<void> {
   if (!url) {
-    throw new Error("Only HTTP and HTTPS URLs can be summarized");
+    throw new Error('Only HTTP and HTTPS URLs can be summarized');
   }
 
   const { io, flags, model, cache: cacheState, hooks } = ctx;
   const theme = createThemeRenderer({
-    themeName: resolveThemeNameFromSources({ env: io.envForRun.SUMMARIZE_THEME }),
     enabled: flags.verboseColor,
+    themeName: resolveThemeNameFromSources({ env: io.envForRun.SUMMARIZE_THEME }),
     trueColor: resolveTrueColor(io.envForRun),
   });
 
   const markdown = createMarkdownConverters(ctx, { isYoutubeUrl });
-  if (flags.firecrawlMode === "always" && isYoutubeUrl) {
+  if (flags.firecrawlMode === 'always' && isYoutubeUrl) {
     throw new Error(
-      "--firecrawl always is not supported for YouTube URLs; use --youtube auto|web|yt-dlp|apify instead",
+      '--firecrawl always is not supported for YouTube URLs; use --youtube auto|web|yt-dlp|apify instead',
     );
   }
-  if (flags.firecrawlMode === "always" && !model.apiStatus.firecrawlConfigured) {
-    throw new Error("--firecrawl always requires FIRECRAWL_API_KEY");
+  if (flags.firecrawlMode === 'always' && !model.apiStatus.firecrawlConfigured) {
+    throw new Error('--firecrawl always requires FIRECRAWL_API_KEY');
   }
 
   writeVerbose(
     io.stderr,
     flags.verbose,
     `config url=${url} timeoutMs=${flags.timeoutMs} youtube=${flags.youtubeMode} firecrawl=${flags.firecrawlMode} length=${
-      flags.lengthArg.kind === "preset"
+      flags.lengthArg.kind === 'preset'
         ? flags.lengthArg.preset
         : `${flags.lengthArg.maxCharacters} chars`
-    } maxOutputTokens=${formatOptionalNumber(flags.maxOutputTokensArg)} retries=${flags.retries} json=${flags.json} extract=${flags.extractMode} format=${flags.format} preprocess=${flags.preprocessMode} markdownMode=${flags.markdownMode} model=${model.requestedModelLabel} videoMode=${flags.videoMode} timestamps=${flags.transcriptTimestamps ? "on" : "off"} stream=${flags.streamingEnabled ? "on" : "off"} plain=${flags.plain}`,
+    } maxOutputTokens=${formatOptionalNumber(flags.maxOutputTokensArg)} retries=${flags.retries} json=${flags.json} extract=${flags.extractMode} format=${flags.format} preprocess=${flags.preprocessMode} markdownMode=${flags.markdownMode} model=${model.requestedModelLabel} videoMode=${flags.videoMode} timestamps=${flags.transcriptTimestamps ? 'on' : 'off'} stream=${flags.streamingEnabled ? 'on' : 'off'} plain=${flags.plain}`,
     flags.verboseColor,
     io.envForRun,
   );
@@ -87,7 +87,7 @@ export async function runUrlFlow({
     io.envForRun,
   );
 
-  writeVerbose(io.stderr, flags.verbose, "extract start", flags.verboseColor, io.envForRun);
+  writeVerbose(io.stderr, flags.verbose, 'extract start', flags.verboseColor, io.envForRun);
   const {
     handleSigint,
     handleSigterm,
@@ -131,46 +131,46 @@ export async function runUrlFlow({
     const formatSummaryProgress = (modelId?: string | null) => {
       const dim = (value: string) => theme.dim(value);
       const accent = (value: string) => theme.accent(value);
-      const sentLabel = `${dim("sent ")}${extractionUi.contentSizeLabel}${extractionUi.viaSourceLabel}`;
-      const modelLabel = modelId ? `${dim("model: ")}${accent(modelId)}` : "";
-      const meta = modelLabel ? `${sentLabel}${dim(", ")}${modelLabel}` : sentLabel;
-      return `${styleLabel("Summarizing")} ${dim("(")}${meta}${dim(")")}${dim("…")}`;
+      const sentLabel = `${dim('sent ')}${extractionUi.contentSizeLabel}${extractionUi.viaSourceLabel}`;
+      const modelLabel = modelId ? `${dim('model: ')}${accent(modelId)}` : '';
+      const meta = modelLabel ? `${sentLabel}${dim(', ')}${modelLabel}` : sentLabel;
+      return `${styleLabel('Summarizing')} ${dim('(')}${meta}${dim(')')}${dim('…')}`;
     };
 
     const updateSummaryProgress = () => {
-      if (!flags.progressEnabled) return;
+      if (!flags.progressEnabled) {return;}
       websiteProgress?.stop?.();
       progressStatus.setSummary(
         flags.extractMode
-          ? `${styleLabel("Extracted")}${styleDim(
+          ? `${styleLabel('Extracted')}${styleDim(
               ` (${extractionUi.contentSizeLabel}${extractionUi.viaSourceLabel})`,
             )}`
           : formatSummaryProgress(),
-        flags.extractMode ? null : "Summarizing",
+        flags.extractMode ? null : 'Summarizing',
       );
     };
 
     const slidesSession = createUrlSlidesSession({
-      ctx: flowCtx,
-      url,
-      extracted,
       cacheStore: extractionSession.cacheStore,
+      ctx: flowCtx,
+      extracted,
       progressStatus,
       renderStatus,
       renderStatusFromText,
       updateSummaryProgress,
+      url,
     });
 
     updateSummaryProgress();
     logExtractionDiagnostics({
+      env: io.envForRun,
       extracted,
       stderr: io.stderr,
       verbose: flags.verbose,
       verboseColor: flags.verboseColor,
-      env: io.envForRun,
     });
     const transcriptCacheStatus = extracted.diagnostics?.transcript?.cacheStatus;
-    if (transcriptCacheStatus && transcriptCacheStatus !== "unknown") {
+    if (transcriptCacheStatus && transcriptCacheStatus !== 'unknown') {
       writeVerbose(
         io.stderr,
         flags.verbose,
@@ -183,8 +183,8 @@ export async function runUrlFlow({
     if (
       flags.extractMode &&
       markdown.markdownRequested &&
-      flags.preprocessMode !== "off" &&
-      markdown.effectiveMarkdownMode === "auto" &&
+      flags.preprocessMode !== 'off' &&
+      markdown.effectiveMarkdownMode === 'auto' &&
       !extracted.diagnostics.markdown.used &&
       !hasUvxCli(io.env)
     ) {
@@ -192,31 +192,31 @@ export async function runUrlFlow({
     }
 
     const videoOnlyResult = await handleVideoOnlyExtractedContent({
+      accent: theme.accent,
       ctx,
       extracted,
       extractionUi,
-      isYoutubeUrl,
       fetchWithCache: (targetUrl) => extractionSession.fetchWithCache(targetUrl),
-      runSlidesExtraction: slidesSession.runSlidesExtraction,
+      isYoutubeUrl,
       renderStatus,
       renderStatusWithMeta,
+      runSlidesExtraction: slidesSession.runSlidesExtraction,
       spinner,
       styleDim,
       updateSummaryProgress,
-      accent: theme.accent,
     });
     if (videoOnlyResult.handled) {
       return;
     }
-    extracted = videoOnlyResult.extracted;
-    extractionUi = videoOnlyResult.extractionUi;
+    ({ extracted } = videoOnlyResult);
+    ({ extractionUi } = videoOnlyResult);
     slidesSession.setExtracted(extracted);
     updateSummaryProgress();
 
     if (flags.slides) {
       void slidesSession.runSlidesExtraction().catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
-        writeSlidesBackgroundFailureWarning({ ctx, theme, message });
+        writeSlidesBackgroundFailureWarning({ ctx, message, theme });
         writeVerbose(
           io.stderr,
           flags.verbose,
@@ -236,23 +236,23 @@ export async function runUrlFlow({
 
     const prompt = buildUrlPrompt({
       extracted,
-      outputLanguage: flags.outputLanguage,
-      lengthArg: flags.lengthArg,
-      promptOverride: flags.promptOverride ?? null,
-      lengthInstruction: flags.lengthInstruction ?? null,
       languageInstruction: flags.languageInstruction ?? null,
+      lengthArg: flags.lengthArg,
+      lengthInstruction: flags.lengthInstruction ?? null,
+      outputLanguage: flags.outputLanguage,
+      promptOverride: flags.promptOverride ?? null,
       slides: slidesForPrompt ?? slidesSession.getSlidesExtracted() ?? null,
     });
 
     // Whisper transcription costs need to be folded into the finish line totals.
     const transcriptionCostUsd = estimateWhisperTranscriptionCostUsd({
-      transcriptionProvider: extracted.transcriptionProvider,
-      transcriptSource: extracted.transcriptSource,
       mediaDurationSeconds: extracted.mediaDurationSeconds,
       openaiWhisperUsdPerMinute: model.openaiWhisperUsdPerMinute,
+      transcriptSource: extracted.transcriptSource,
+      transcriptionProvider: extracted.transcriptionProvider,
     });
     const transcriptionCostLabel =
-      typeof transcriptionCostUsd === "number" ? `txcost=${formatUSD(transcriptionCostUsd)}` : null;
+      typeof transcriptionCostUsd === 'number' ? `txcost=${formatUSD(transcriptionCostUsd)}` : null;
     activeHooks.setTranscriptionCost(transcriptionCostUsd, transcriptionCostLabel);
 
     if (flags.extractMode) {
@@ -260,14 +260,14 @@ export async function runUrlFlow({
       let extractedForOutput = extracted;
       if (markdown.transcriptMarkdownRequested && markdown.convertTranscriptToMarkdown) {
         if (flags.progressEnabled) {
-          spinner.setText(renderStatus("Converting transcript to markdown"));
+          spinner.setText(renderStatus('Converting transcript to markdown'));
         }
         const markdownContent = await markdown.convertTranscriptToMarkdown({
-          title: extracted.title,
-          source: extracted.siteName,
-          transcript: extracted.content,
-          timeoutMs: flags.timeoutMs,
           outputLanguage: flags.outputLanguage,
+          source: extracted.siteName,
+          timeoutMs: flags.timeoutMs,
+          title: extracted.title,
+          transcript: extracted.content,
         });
         extractedForOutput = {
           ...extracted,
@@ -276,10 +276,10 @@ export async function runUrlFlow({
             ...extracted.diagnostics,
             markdown: {
               ...extracted.diagnostics.markdown,
+              notes: 'transcript',
+              provider: 'llm',
               requested: true,
               used: true,
-              provider: "llm",
-              notes: "transcript",
             },
           },
         };
@@ -287,40 +287,40 @@ export async function runUrlFlow({
       }
       await outputExtractedUrl({
         ctx,
-        url,
+        effectiveMarkdownMode: markdown.effectiveMarkdownMode,
         extracted: extractedForOutput,
         extractionUi,
         prompt,
-        effectiveMarkdownMode: markdown.effectiveMarkdownMode,
-        transcriptionCostLabel,
         slides: slidesSession.getSlidesExtracted() ?? slidesForPrompt ?? null,
         slidesOutput: slidesSession.slidesOutput,
+        transcriptionCostLabel,
+        url,
       });
       return;
     }
 
     const onModelChosen = (modelId: string) => {
       activeHooks.onModelChosen?.(modelId);
-      if (!flags.progressEnabled) return;
-      progressStatus.setSummary(formatSummaryProgress(modelId), "Summarizing");
+      if (!flags.progressEnabled) {return;}
+      progressStatus.setSummary(formatSummaryProgress(modelId), 'Summarizing');
     };
 
     await summarizeExtractedUrl({
       ctx: flowCtx,
-      url,
+      effectiveMarkdownMode: markdown.effectiveMarkdownMode,
       extracted,
       extractionUi,
-      prompt,
-      effectiveMarkdownMode: markdown.effectiveMarkdownMode,
-      transcriptionCostLabel,
       onModelChosen,
+      prompt,
       slides: slidesSession.getSlidesExtracted() ?? slidesForPrompt ?? null,
       slidesOutput: slidesSession.slidesOutput,
+      transcriptionCostLabel,
+      url,
     });
   } finally {
     if (flags.progressEnabled) {
-      process.off("SIGINT", handleSigint);
-      process.off("SIGTERM", handleSigterm);
+      process.off('SIGINT', handleSigint);
+      process.off('SIGTERM', handleSigterm);
     }
     activeHooks.clearProgressIfCurrent(pauseProgressLine);
     stopProgress();

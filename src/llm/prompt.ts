@@ -1,18 +1,15 @@
-import type { ImageContent, TextContent, UserMessage } from "@mariozechner/pi-ai";
-import type { Attachment } from "./attachments.js";
+import type { ImageContent, TextContent, UserMessage } from '@mariozechner/pi-ai';
 
-export type Prompt = {
-  system?: string;
-  userText: string;
-  attachments?: Attachment[];
-};
+import type { Attachment } from './attachments.js';
+
+export interface Prompt { system?: string; userText: string; attachments?: Attachment[] }
 
 export function userTextMessage(text: string, timestamp = Date.now()): UserMessage {
-  return { role: "user", content: text, timestamp };
+  return { content: text, role: 'user', timestamp };
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
-  return Buffer.from(bytes).toString("base64");
+  return Buffer.from(bytes).toString('base64');
 }
 
 export function userTextAndImageMessage({
@@ -26,9 +23,9 @@ export function userTextAndImageMessage({
   mimeType: string;
   timestamp?: number;
 }): UserMessage {
-  const parts: Array<TextContent | ImageContent> = [
-    { type: "text", text },
-    { type: "image", data: bytesToBase64(imageBytes), mimeType },
+  const parts: (TextContent | ImageContent)[] = [
+    { text, type: 'text' },
+    { data: bytesToBase64(imageBytes), mimeType, type: 'image' },
   ];
-  return { role: "user", content: parts, timestamp };
+  return { content: parts, role: 'user', timestamp };
 }

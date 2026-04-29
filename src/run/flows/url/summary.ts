@@ -1,34 +1,35 @@
-import { isTwitterStatusUrl, isYouTubeUrl } from "@steipete/summarize-core/content/url";
-import { render as renderMarkdownAnsi } from "markdansi";
-import type { ExtractedLinkContent } from "../../../content/index.js";
-import type { RunMetricsReport } from "../../../costs.js";
-import { buildExtractFinishLabel, writeFinishLine } from "../../finish-line.js";
-import { writeVerbose } from "../../logging.js";
-import { prepareMarkdownForTerminal } from "../../markdown.js";
-import { isRichTty, markdownRenderWidth, supportsColor } from "../../terminal.js";
-import type { UrlExtractionUi } from "./extract.js";
-import type { SlidesTerminalOutput } from "./slides-output.js";
+import { isTwitterStatusUrl, isYouTubeUrl } from '@steipete/summarize-core/content/url';
+import { render as renderMarkdownAnsi } from 'markdansi';
+
+import type { ExtractedLinkContent } from '../../../content/index.js';
+import type { RunMetricsReport } from '../../../costs.js';
+import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
+import { writeVerbose } from '../../logging.js';
+import { prepareMarkdownForTerminal } from '../../markdown.js';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
+import type { UrlExtractionUi } from './extract.js';
+import type { SlidesTerminalOutput } from './slides-output.js';
 import {
   coerceSummaryWithSlides,
   interleaveSlidesIntoTranscript,
   normalizeSummarySlideHeadings,
-} from "./slides-text.js";
+} from './slides-text.js';
 import {
   buildFinishExtras,
   buildModelMetaFromAttempt,
   pickModelForFinishLine,
-} from "./summary-finish.js";
-import { buildUrlJsonEnv, buildUrlJsonInput } from "./summary-json.js";
+} from './summary-finish.js';
+import { buildUrlJsonEnv, buildUrlJsonInput } from './summary-json.js';
 import {
   buildUrlPrompt as buildSummaryPrompt,
   shouldBypassShortContentSummary,
-} from "./summary-prompt.js";
-import { resolveUrlSummaryExecution } from "./summary-resolution.js";
-import { buildSummaryTimestampLimitInstruction } from "./summary-timestamps.js";
-import type { UrlFlowContext } from "./types.js";
+} from './summary-prompt.js';
+import { resolveUrlSummaryExecution } from './summary-resolution.js';
+import { buildSummaryTimestampLimitInstruction } from './summary-timestamps.js';
+import type { UrlFlowContext } from './types.js';
 
 type SlidesResult = Awaited<
-  ReturnType<typeof import("../../../slides/index.js").extractSlidesForSource>
+  ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
 >;
 
 async function writeUrlJsonOutput({
@@ -44,7 +45,7 @@ async function writeUrlJsonOutput({
   ctx: UrlFlowContext;
   url: string;
   extracted: ExtractedLinkContent;
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   prompt: string;
   slides?: SlidesResult | null;
   summary: string | null;
@@ -52,13 +53,15 @@ async function writeUrlJsonOutput({
     provider: string;
     model: string;
     maxCompletionTokens: number | null;
-    strategy: "single";
+    strategy: 'single';
   } | null;
 }): Promise<RunMetricsReport | null> {
   const { io, flags, model, hooks } = ctx;
   hooks.clearProgressForStdout();
   const finishReport = flags.shouldComputeReport ? await hooks.buildReport() : null;
   const payload = {
+    env: buildUrlJsonEnv(model.apiStatus),
+    extracted,
     input: {
       ...buildUrlJsonInput({
         flags,
@@ -67,12 +70,10 @@ async function writeUrlJsonOutput({
         modelLabel: model.requestedModelLabel,
       }),
     },
-    env: buildUrlJsonEnv(model.apiStatus),
-    extracted,
-    slides,
-    prompt,
     llm,
     metrics: flags.metricsEnabled ? finishReport : null,
+    prompt,
+    slides,
     summary,
   };
   io.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -100,25 +101,25 @@ async function writeUrlMetricsFinishLine({
   clearProgress?: boolean;
 }) {
   const { io, flags, hooks } = ctx;
-  if (!flags.metricsEnabled || !report) return;
-  if (clearProgress) hooks.clearProgressForStdout();
+  if (!flags.metricsEnabled || !report) {return;}
+  if (clearProgress) {hooks.clearProgressForStdout();}
   const costUsd = await hooks.estimateCostUsd();
   writeFinishLine({
-    stderr: io.stderr,
-    env: io.envForRun,
-    elapsedMs: Date.now() - flags.runStartedAtMs,
-    elapsedLabel: elapsedLabel ?? null,
-    label,
-    model,
-    report,
+    color: flags.verboseColor,
     costUsd,
     detailed: flags.metricsDetailed,
+    elapsedLabel: elapsedLabel ?? null,
+    elapsedMs: Date.now() - flags.runStartedAtMs,
+    env: io.envForRun,
     extraParts: buildFinishExtras({
       extracted,
       metricsDetailed: flags.metricsDetailed,
       transcriptionCostLabel,
     }),
-    color: flags.verboseColor,
+    label,
+    model,
+    report,
+    stderr: io.stderr,
   });
 }
 
@@ -132,22 +133,22 @@ export function buildUrlPrompt({
   slides,
 }: {
   extracted: ExtractedLinkContent;
-  outputLanguage: UrlFlowContext["flags"]["outputLanguage"];
-  lengthArg: UrlFlowContext["flags"]["lengthArg"];
+  outputLanguage: UrlFlowContext['flags']['outputLanguage'];
+  lengthArg: UrlFlowContext['flags']['lengthArg'];
   promptOverride?: string | null;
   lengthInstruction?: string | null;
   languageInstruction?: string | null;
   slides?: SlidesResult | null;
 }): string {
   return buildSummaryPrompt({
-    extracted,
-    outputLanguage,
-    lengthArg,
-    promptOverride,
-    lengthInstruction,
-    languageInstruction,
-    slides,
     buildSummaryTimestampLimitInstruction,
+    extracted,
+    languageInstruction,
+    lengthArg,
+    lengthInstruction,
+    outputLanguage,
+    promptOverride,
+    slides,
   });
 }
 
@@ -168,10 +169,10 @@ async function outputSummaryFromExtractedContent({
   extracted: ExtractedLinkContent;
   extractionUi: UrlExtractionUi;
   prompt: string;
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
   slides?: Awaited<
-    ReturnType<typeof import("../../../slides/index.js").extractSlidesForSource>
+    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
   > | null;
   footerLabel?: string | null;
   verboseMessage?: string | null;
@@ -184,22 +185,22 @@ async function outputSummaryFromExtractedContent({
   if (flags.json) {
     const finishReport = await writeUrlJsonOutput({
       ctx,
-      url,
-      extracted,
       effectiveMarkdownMode,
+      extracted,
+      llm: null,
       prompt,
       slides,
       summary: extracted.content,
-      llm: null,
+      url,
     });
     await writeUrlMetricsFinishLine({
+      clearProgress: true,
       ctx,
       extracted,
-      report: finishReport,
-      transcriptionCostLabel,
       label: extractionUi.finishSourceLabel,
       model: finishModel,
-      clearProgress: true,
+      report: finishReport,
+      transcriptionCostLabel,
     });
     return;
   }
@@ -233,10 +234,10 @@ export async function outputExtractedUrl({
   extracted: ExtractedLinkContent;
   extractionUi: UrlExtractionUi;
   prompt: string;
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
   slides?: Awaited<
-    ReturnType<typeof import("../../../slides/index.js").extractSlidesForSource>
+    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
   > | null;
   slidesOutput?: SlidesTerminalOutput | null;
 }) {
@@ -246,29 +247,29 @@ export async function outputExtractedUrl({
   const finishLabel = buildExtractFinishLabel({
     extracted: { diagnostics: extracted.diagnostics },
     format: flags.format,
+    hasMarkdownLlmCall: model.llmCalls.some((call) => call.purpose === 'markdown'),
     markdownMode: effectiveMarkdownMode,
-    hasMarkdownLlmCall: model.llmCalls.some((call) => call.purpose === "markdown"),
   });
   const finishModel = pickModelForFinishLine(model.llmCalls, null);
 
   if (flags.json) {
     const finishReport = await writeUrlJsonOutput({
       ctx,
-      url,
-      extracted,
       effectiveMarkdownMode,
+      extracted,
+      llm: null,
       prompt,
       slides,
       summary: null,
-      llm: null,
+      url,
     });
     await writeUrlMetricsFinishLine({
       ctx,
       extracted,
-      report: finishReport,
-      transcriptionCostLabel,
       label: finishLabel,
       model: finishModel,
+      report: finishReport,
+      transcriptionCostLabel,
     });
     return;
   }
@@ -277,14 +278,14 @@ export async function outputExtractedUrl({
     flags.transcriptTimestamps &&
     extracted.transcriptTimedText &&
     extracted.transcriptSource &&
-    extracted.content.toLowerCase().startsWith("transcript:")
+    extracted.content.toLowerCase().startsWith('transcript:')
       ? `Transcript:\n${extracted.transcriptTimedText}`
       : extracted.content;
 
   const slideTags =
     slides?.slides && slides.slides.length > 0
-      ? slides.slides.map((slide) => `[slide:${slide.index}]`).join("\n")
-      : "";
+      ? slides.slides.map((slide) => `[slide:${slide.index}]`).join('\n')
+      : '';
 
   if (slidesOutput && slides?.slides && slides.slides.length > 0) {
     const transcriptText = extracted.transcriptTimedText
@@ -292,11 +293,11 @@ export async function outputExtractedUrl({
       : null;
     const interleaved = transcriptText
       ? interleaveSlidesIntoTranscript({
-          transcriptTimedText: transcriptText,
           slides: slides.slides.map((slide) => ({
             index: slide.index,
             timestamp: slide.timestamp,
           })),
+          transcriptTimedText: transcriptText,
         })
       : `${extractCandidate.trimEnd()}\n\n${slideTags}`;
     await slidesOutput.renderFromText(interleaved);
@@ -307,55 +308,55 @@ export async function outputExtractedUrl({
     if (flags.metricsEnabled && report) {
       const costUsd = await hooks.estimateCostUsd();
       writeFinishLine({
-        stderr: io.stderr,
-        env: io.envForRun,
-        elapsedMs: Date.now() - flags.runStartedAtMs,
-        label: finishLabel,
-        model: finishModel,
-        report,
+        color: flags.verboseColor,
         costUsd,
         detailed: flags.metricsDetailed,
+        elapsedMs: Date.now() - flags.runStartedAtMs,
+        env: io.envForRun,
         extraParts: buildFinishExtras({
           extracted,
           metricsDetailed: flags.metricsDetailed,
           transcriptionCostLabel,
         }),
-        color: flags.verboseColor,
+        label: finishLabel,
+        model: finishModel,
+        report,
+        stderr: io.stderr,
       });
     }
     return;
   }
 
   const renderedExtract =
-    flags.format === "markdown" && !flags.plain && isRichTty(io.stdout)
+    flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)
       ? renderMarkdownAnsi(prepareMarkdownForTerminal(extractCandidate), {
-          width: markdownRenderWidth(io.stdout, io.env),
-          wrap: true,
           color: supportsColor(io.stdout, io.envForRun),
           hyperlinks: true,
+          width: markdownRenderWidth(io.stdout, io.env),
+          wrap: true,
         })
       : extractCandidate;
 
-  if (flags.format === "markdown" && !flags.plain && isRichTty(io.stdout)) {
-    io.stdout.write(`\n${renderedExtract.replace(/^\n+/, "")}`);
+  if (flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)) {
+    io.stdout.write(`\n${renderedExtract.replace(/^\n+/, '')}`);
   } else {
     io.stdout.write(renderedExtract);
   }
-  if (!renderedExtract.endsWith("\n")) {
-    io.stdout.write("\n");
+  if (!renderedExtract.endsWith('\n')) {
+    io.stdout.write('\n');
   }
   hooks.restoreProgressAfterStdout?.();
   const slideFooter = slides ? [`slides ${slides.slides.length}`] : [];
   hooks.writeViaFooter([...extractionUi.footerParts, ...slideFooter]);
   const report = flags.shouldComputeReport ? await hooks.buildReport() : null;
   await writeUrlMetricsFinishLine({
+    clearProgress: true,
     ctx,
     extracted,
-    report,
-    transcriptionCostLabel,
     label: finishLabel,
     model: finishModel,
-    clearProgress: true,
+    report,
+    transcriptionCostLabel,
   });
 }
 
@@ -376,36 +377,36 @@ export async function summarizeExtractedUrl({
   extracted: ExtractedLinkContent;
   extractionUi: UrlExtractionUi;
   prompt: string;
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
   onModelChosen?: ((modelId: string) => void) | null;
   slides?: Awaited<
-    ReturnType<typeof import("../../../slides/index.js").extractSlidesForSource>
+    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
   > | null;
   slidesOutput?: SlidesTerminalOutput | null;
 }) {
   const { io, flags, model, cache: cacheState, hooks } = ctx;
   const resolution = await resolveUrlSummaryExecution({
     ctx,
-    url,
     extracted,
-    prompt,
     onModelChosen,
+    prompt,
     slides,
     slidesOutput,
+    url,
   });
 
-  if (resolution.kind === "use-extracted") {
+  if (resolution.kind === 'use-extracted') {
     await outputSummaryFromExtractedContent({
       ctx,
-      url,
+      effectiveMarkdownMode,
       extracted,
       extractionUi,
-      prompt,
-      effectiveMarkdownMode,
-      transcriptionCostLabel,
-      slides,
       footerLabel: resolution.footerLabel,
+      prompt,
+      slides,
+      transcriptionCostLabel,
+      url,
       verboseMessage: resolution.verboseMessage,
     });
     return;
@@ -422,27 +423,27 @@ export async function summarizeExtractedUrl({
   if (flags.json) {
     const finishReport = await writeUrlJsonOutput({
       ctx,
-      url,
-      extracted,
       effectiveMarkdownMode,
+      extracted,
+      llm: {
+        maxCompletionTokens: maxOutputTokensForCall,
+        model: usedAttempt.userModelId,
+        provider: modelMeta.provider,
+        strategy: 'single',
+      },
       prompt,
       slides,
       summary: normalizedSummary,
-      llm: {
-        provider: modelMeta.provider,
-        model: usedAttempt.userModelId,
-        maxCompletionTokens: maxOutputTokensForCall,
-        strategy: "single",
-      },
+      url,
     });
     await writeUrlMetricsFinishLine({
       ctx,
+      elapsedLabel: summaryFromCache ? 'Cached' : null,
       extracted,
+      label: extractionUi.finishSourceLabel,
+      model: usedAttempt.userModelId,
       report: finishReport,
       transcriptionCostLabel,
-      label: extractionUi.finishSourceLabel,
-      elapsedLabel: summaryFromCache ? "Cached" : null,
-      model: usedAttempt.userModelId,
     });
     return;
   }
@@ -452,13 +453,13 @@ export async function summarizeExtractedUrl({
       const summaryForSlides =
         slides && slides.slides.length > 0
           ? coerceSummaryWithSlides({
+              lengthArg: flags.lengthArg,
               markdown: normalizedSummary,
               slides: slides.slides.map((slide) => ({
                 index: slide.index,
                 timestamp: slide.timestamp,
               })),
               transcriptTimedText: extracted.transcriptTimedText ?? null,
-              lengthArg: flags.lengthArg,
             })
           : normalizedSummary;
       await slidesOutput.renderFromText(summaryForSlides);
@@ -468,21 +469,21 @@ export async function summarizeExtractedUrl({
     const rendered =
       !flags.plain && isRichTty(io.stdout)
         ? renderMarkdownAnsi(prepareMarkdownForTerminal(normalizedSummary), {
-            width: markdownRenderWidth(io.stdout, io.env),
-            wrap: true,
             color: supportsColor(io.stdout, io.envForRun),
             hyperlinks: true,
+            width: markdownRenderWidth(io.stdout, io.env),
+            wrap: true,
           })
         : normalizedSummary;
 
     if (!flags.plain && isRichTty(io.stdout)) {
-      io.stdout.write(`\n${rendered.replace(/^\n+/, "")}`);
+      io.stdout.write(`\n${rendered.replace(/^\n+/, '')}`);
     } else {
-      if (isRichTty(io.stdout)) io.stdout.write("\n");
-      io.stdout.write(rendered.replace(/^\n+/, ""));
+      if (isRichTty(io.stdout)) {io.stdout.write('\n');}
+      io.stdout.write(rendered.replace(/^\n+/, ''));
     }
-    if (!rendered.endsWith("\n")) {
-      io.stdout.write("\n");
+    if (!rendered.endsWith('\n')) {
+      io.stdout.write('\n');
     }
     hooks.restoreProgressAfterStdout?.();
   }
@@ -490,11 +491,11 @@ export async function summarizeExtractedUrl({
   const report = flags.shouldComputeReport ? await hooks.buildReport() : null;
   await writeUrlMetricsFinishLine({
     ctx,
+    elapsedLabel: summaryFromCache ? 'Cached' : null,
     extracted,
+    label: extractionUi.finishSourceLabel,
+    model: modelMeta.canonical,
     report,
     transcriptionCostLabel,
-    label: extractionUi.finishSourceLabel,
-    elapsedLabel: summaryFromCache ? "Cached" : null,
-    model: modelMeta.canonical,
   });
 }

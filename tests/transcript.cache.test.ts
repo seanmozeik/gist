@@ -1,186 +1,187 @@
-import { describe, expect, it, vi } from "vitest";
-import type { TranscriptCache } from "../packages/core/src/content/cache/types.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import type { TranscriptCache } from '../packages/core/src/content/cache/types.js';
 import {
   readTranscriptCache,
   writeTranscriptCache,
-} from "../packages/core/src/content/transcript/cache.js";
-import { resolveTranscriptForLink } from "../packages/core/src/content/transcript/index.js";
+} from '../packages/core/src/content/transcript/cache.js';
+import { resolveTranscriptForLink } from '../packages/core/src/content/transcript/index.js';
 
-describe("transcript cache helpers", () => {
-  it("reads a cached transcript hit", async () => {
+describe('transcript cache helpers', () => {
+  it('reads a cached transcript hit', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: false,
         metadata: null,
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://www.youtube.com/watch?v=abcdefghijk",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache,
+      url: 'https://www.youtube.com/watch?v=abcdefghijk',
     });
 
-    expect(outcome.resolution?.text).toBe("cached transcript");
-    expect(outcome.resolution?.source).toBe("captionTracks");
-    expect(outcome.diagnostics.cacheStatus).toBe("hit");
+    expect(outcome.resolution?.text).toBe('cached transcript');
+    expect(outcome.resolution?.source).toBe('captionTracks');
+    expect(outcome.diagnostics.cacheStatus).toBe('hit');
     expect(vi.mocked(transcriptCache.get)).toHaveBeenCalledTimes(1);
   });
 
-  it("returns cache miss when timestamps requested but cached segments missing", async () => {
+  it('returns cache miss when timestamps requested but cached segments missing', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: false,
         metadata: { timestamps: true },
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://example.com",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache,
       transcriptTimestamps: true,
+      url: 'https://example.com',
     });
 
     expect(outcome.resolution).toBeNull();
-    expect(outcome.diagnostics.notes).toContain("missing timestamps");
+    expect(outcome.diagnostics.notes).toContain('missing timestamps');
   });
 
-  it("keeps cached transcript when timestamps are explicitly unavailable", async () => {
+  it('keeps cached transcript when timestamps are explicitly unavailable', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: false,
         metadata: { timestamps: false },
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://example.com",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache,
       transcriptTimestamps: true,
+      url: 'https://example.com',
     });
 
-    expect(outcome.resolution?.text).toBe("cached transcript");
-    expect(outcome.diagnostics.notes).toContain("timestamps unavailable");
+    expect(outcome.resolution?.text).toBe('cached transcript');
+    expect(outcome.diagnostics.notes).toContain('timestamps unavailable');
   });
 
-  it("returns cached segments when timestamps are requested", async () => {
+  it('returns cached segments when timestamps are requested', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: false,
         metadata: {
           segments: [
-            { startMs: 1000, endMs: 2000, text: "Hello" },
-            { startMs: 2000, endMs: null, text: "world" },
+            { startMs: 1000, endMs: 2000, text: 'Hello' },
+            { startMs: 2000, endMs: null, text: 'world' },
           ],
         },
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://example.com",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache,
       transcriptTimestamps: true,
+      url: 'https://example.com',
     });
 
     expect(outcome.resolution?.segments).toEqual([
-      { startMs: 1000, endMs: 2000, text: "Hello" },
-      { startMs: 2000, endMs: null, text: "world" },
+      { endMs: 2000, startMs: 1000, text: 'Hello' },
+      { endMs: null, startMs: 2000, text: 'world' },
     ]);
   });
 
-  it("skips cache reads when bypass requested", async () => {
+  it('skips cache reads when bypass requested', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: true,
         metadata: null,
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://example.com",
-      cacheMode: "bypass",
+      cacheMode: 'bypass',
       transcriptCache,
+      url: 'https://example.com',
     });
 
     expect(outcome.resolution).toBeNull();
-    expect(outcome.diagnostics.cacheStatus).toBe("bypassed");
+    expect(outcome.diagnostics.cacheStatus).toBe('bypassed');
   });
 
-  it("writes negative cache entries with shorter TTL", async () => {
+  it('writes negative cache entries with shorter TTL', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null),
       set: vi.fn(async () => {}),
     };
 
     await writeTranscriptCache({
-      url: "https://example.com",
-      service: "generic",
       resourceKey: null,
-      result: { text: null, source: "unavailable", metadata: { reason: "nope" } },
+      result: { metadata: { reason: 'nope' }, source: 'unavailable', text: null },
+      service: 'generic',
       transcriptCache,
+      url: 'https://example.com',
     });
 
     expect(vi.mocked(transcriptCache.set)).toHaveBeenCalledTimes(1);
     const args = vi.mocked(transcriptCache.set).mock.calls[0]?.[0];
     expect(args?.ttlMs).toBeGreaterThan(0);
     expect(args?.ttlMs).toBeLessThan(1000 * 60 * 60 * 24);
-    expect(args?.source).toBe("unavailable");
+    expect(args?.source).toBe('unavailable');
   });
 });
 
-describe("transcript cache integration", () => {
-  it("falls back to cached transcript content when provider misses", async () => {
+describe('transcript cache integration', () => {
+  it('falls back to cached transcript content when provider misses', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "captionTracks",
+        content: 'cached transcript',
         expired: true,
         metadata: null,
+        source: 'captionTracks',
       })),
       set: vi.fn(async () => {}),
     };
 
-    const fetchMock = vi.fn(async () => new Response("nope", { status: 500 }));
+    const fetchMock = vi.fn(async () => new Response('nope', { status: 500 }));
 
     const result = await resolveTranscriptForLink(
-      "https://www.youtube.com/watch?v=abcdefghijk",
-      "<html></html>",
+      'https://www.youtube.com/watch?v=abcdefghijk',
+      '<html></html>',
       {
-        fetch: fetchMock as unknown as typeof fetch,
         apifyApiToken: null,
-        ytDlpPath: null,
-        groqApiKey: null,
-        falApiKey: null,
-        openaiApiKey: null,
-        scrapeWithFirecrawl: null,
         convertHtmlToMarkdown: null,
-        transcriptCache,
+        falApiKey: null,
+        fetch: fetchMock as unknown as typeof fetch,
+        groqApiKey: null,
+        openaiApiKey: null,
         readTweetWithBird: null,
+        scrapeWithFirecrawl: null,
+        transcriptCache,
+        ytDlpPath: null,
       },
-      { youtubeTranscriptMode: "web", cacheMode: "default" },
+      { cacheMode: 'default', youtubeTranscriptMode: 'web' },
     );
 
-    expect(result.text).toBe("cached transcript");
-    expect(result.source).toBe("captionTracks");
-    expect(result.diagnostics?.cacheStatus).toBe("fallback");
-    expect(result.diagnostics?.notes).toContain("Falling back");
+    expect(result.text).toBe('cached transcript');
+    expect(result.source).toBe('captionTracks');
+    expect(result.diagnostics?.cacheStatus).toBe('fallback');
+    expect(result.diagnostics?.notes).toContain('Falling back');
   });
 });

@@ -1,13 +1,13 @@
 type Env = Record<string, string | undefined>;
 
 export function normalizeBaseUrl(raw: string | null | undefined): string | null {
-  const trimmed = typeof raw === "string" ? raw.trim() : "";
+  const trimmed = typeof raw === 'string' ? raw.trim() : '';
   return trimmed.length > 0 ? trimmed : null;
 }
 
 export function isOpenRouterBaseUrl(baseUrl: string): boolean {
   try {
-    return new URL(baseUrl).host.toLowerCase().includes("openrouter.ai");
+    return new URL(baseUrl).host.toLowerCase().includes('openrouter.ai');
   } catch {
     return /openrouter\.ai/i.test(baseUrl);
   }
@@ -21,7 +21,7 @@ export function resolveConfiguredBaseUrl({
   configValue: string | null | undefined;
 }): string | null {
   const normalizedEnv = normalizeBaseUrl(envValue);
-  if (normalizedEnv) return normalizedEnv;
+  if (normalizedEnv) {return normalizedEnv;}
   return normalizeBaseUrl(configValue);
 }
 
@@ -29,7 +29,7 @@ export function resolveOpenAiWhisperBaseUrl({
   explicitBaseUrl,
   env,
   allowOpenRouterFallback = false,
-  defaultBaseUrl = "https://api.openai.com/v1",
+  defaultBaseUrl = 'https://api.openai.com/v1',
 }: {
   explicitBaseUrl?: string | null;
   env?: Env;
@@ -37,11 +37,11 @@ export function resolveOpenAiWhisperBaseUrl({
   defaultBaseUrl?: string;
 }): string {
   const explicit = normalizeBaseUrl(explicitBaseUrl);
-  if (explicit) return explicit;
+  if (explicit) {return explicit;}
 
   const effectiveEnv = env ?? process.env;
   const whisperBaseUrl = normalizeBaseUrl(effectiveEnv.OPENAI_WHISPER_BASE_URL);
-  if (whisperBaseUrl) return whisperBaseUrl;
+  if (whisperBaseUrl) {return whisperBaseUrl;}
 
   const openaiBaseUrl = normalizeBaseUrl(effectiveEnv.OPENAI_BASE_URL);
   if (openaiBaseUrl) {

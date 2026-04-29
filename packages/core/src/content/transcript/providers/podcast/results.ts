@@ -1,8 +1,8 @@
-import type { ProviderResult } from "../../types.js";
-import type { TranscriptionResult } from "./media.js";
+import type { ProviderResult } from '../../types.js';
+import type { TranscriptionResult } from './media.js';
 
 export function joinNotes(notes: string[]): string | null {
-  return notes.length > 0 ? notes.join("; ") : null;
+  return notes.length > 0 ? notes.join('; ') : null;
 }
 
 export function buildWhisperResult({
@@ -12,7 +12,7 @@ export function buildWhisperResult({
   metadata,
   includeProviderOnFailure = false,
 }: {
-  attemptedProviders: ProviderResult["attemptedProviders"];
+  attemptedProviders: ProviderResult['attemptedProviders'];
   notes: string[];
   outcome: TranscriptionResult;
   metadata: Record<string, unknown>;
@@ -20,14 +20,11 @@ export function buildWhisperResult({
 }): ProviderResult {
   if (outcome.text) {
     return {
-      text: outcome.text,
-      source: "whisper",
       attemptedProviders,
+      metadata: { ...metadata, transcriptionProvider: outcome.provider },
       notes: joinNotes(notes),
-      metadata: {
-        ...metadata,
-        transcriptionProvider: outcome.provider,
-      },
+      source: 'whisper',
+      text: outcome.text,
     };
   }
 
@@ -37,10 +34,10 @@ export function buildWhisperResult({
       : metadata;
 
   return {
-    text: null,
-    source: null,
     attemptedProviders,
-    notes: outcome.error?.message ?? null,
     metadata: failureMetadata,
+    notes: outcome.error?.message ?? null,
+    source: null,
+    text: null,
   };
 }

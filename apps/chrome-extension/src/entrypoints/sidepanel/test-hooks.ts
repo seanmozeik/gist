@@ -1,11 +1,11 @@
-import type { BgToPanel, RunStart, UiState } from "../../lib/panel-contracts";
-import type { SseSlidesData } from "../../lib/runtime-contracts";
-import type { SlidesLayout } from "../../lib/settings";
-import type { PanelPhase } from "./types";
+import type { BgToPanel, RunStart, UiState } from '../../lib/panel-contracts';
+import type { SseSlidesData } from '../../lib/runtime-contracts';
+import type { SlidesLayout } from '../../lib/settings';
+import type { PanelPhase } from './types';
 
-type SummarizeMode = { mode: "page" | "video"; slides: boolean };
+interface SummarizeMode { mode: 'page' | 'video'; slides: boolean }
 
-type SidepanelTestHooks = {
+interface SidepanelTestHooks {
   applySlidesPayload?: (payload: SseSlidesData) => void;
   getRunId?: () => string | null;
   getSummaryMarkdown?: () => string;
@@ -23,7 +23,7 @@ type SidepanelTestHooks = {
   getSettingsHydrated?: () => boolean;
   setTranscriptTimedText?: (value: string | null) => void;
   setSummarizeMode?: (payload: SummarizeMode) => Promise<void>;
-  getSummarizeMode?: () => { mode: "page" | "video"; slides: boolean; mediaAvailable: boolean };
+  getSummarizeMode?: () => { mode: 'page' | 'video'; slides: boolean; mediaAvailable: boolean };
   getSlidesState?: () => { slidesCount: number; layout: SlidesLayout; hasSlides: boolean };
   renderSlidesNow?: () => void;
   applyUiState?: (state: UiState) => void;
@@ -34,18 +34,18 @@ type SidepanelTestHooks = {
   showInlineError?: (message: string) => void;
   isInlineErrorVisible?: () => boolean;
   getInlineErrorMessage?: () => string;
-};
+}
 
 export function registerSidepanelTestHooks(options: {
   applySlidesPayload: (payload: SseSlidesData) => void;
   getRunId: () => string | null;
   getSummaryMarkdown: () => string;
-  getSlideDescriptions: () => Array<[number, string]>;
-  getSlideSummaryEntries: () => Array<[number, string]>;
-  getSlideTitleEntries: () => Array<[number, string]>;
+  getSlideDescriptions: () => [number, string][];
+  getSlideSummaryEntries: () => [number, string][];
+  getSlideTitleEntries: () => [number, string][];
   getPhase: () => PanelPhase;
   getModel: () => string | null;
-  getSlidesTimeline: () => Array<{ index: number; timestamp: number | null }>;
+  getSlidesTimeline: () => { index: number; timestamp: number | null }[];
   getTranscriptTimedText: () => string | null;
   getSlidesSummaryMarkdown: () => string;
   getSlidesSummaryComplete: () => boolean;
@@ -54,7 +54,7 @@ export function registerSidepanelTestHooks(options: {
   getSettingsHydrated: () => boolean;
   setTranscriptTimedText: (value: string | null) => void;
   setSummarizeMode: (payload: SummarizeMode) => Promise<void>;
-  getSummarizeMode: () => { mode: "page" | "video"; slides: boolean; mediaAvailable: boolean };
+  getSummarizeMode: () => { mode: 'page' | 'video'; slides: boolean; mediaAvailable: boolean };
   getSlidesState: () => { slidesCount: number; layout: SlidesLayout; hasSlides: boolean };
   renderSlidesNow: () => void;
   applyUiState: (state: UiState) => void;
@@ -66,12 +66,8 @@ export function registerSidepanelTestHooks(options: {
   isInlineErrorVisible: () => boolean;
   getInlineErrorMessage: () => string;
 }) {
-  const hooks = (
-    globalThis as {
-      __summarizeTestHooks?: SidepanelTestHooks;
-    }
-  ).__summarizeTestHooks;
-  if (!hooks) return;
+  const hooks = (globalThis as { __summarizeTestHooks?: SidepanelTestHooks }).__summarizeTestHooks;
+  if (!hooks) {return;}
 
   hooks.applySlidesPayload = options.applySlidesPayload;
   hooks.getRunId = options.getRunId;

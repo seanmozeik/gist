@@ -1,18 +1,18 @@
-import type { SseSlidesData } from "../../lib/runtime-contracts";
-import type { SlideTextMode } from "./slides-state";
+import type { SseSlidesData } from '../../lib/runtime-contracts';
+import type { SlideTextMode } from './slides-state';
 
-export type SlideSummarySource = "summary" | "slides" | null;
+export type SlideSummarySource = 'summary' | 'slides' | null;
 
-export type SlideLike = SseSlidesData["slides"][number];
+export type SlideLike = SseSlidesData['slides'][number];
 
-export type SlidesSessionRawState = {
+export interface SlidesSessionRawState {
   summaryMarkdown: string;
   summarySource: SlideSummarySource;
   textMode: SlideTextMode;
   transcriptTimedText: string | null;
-};
+}
 
-export type SlidesSessionDerivedState = {
+export interface SlidesSessionDerivedState {
   descriptions: Map<number, string>;
   summaryByIndex: Map<number, string>;
   titleByIndex: Map<number, string>;
@@ -20,19 +20,16 @@ export type SlidesSessionDerivedState = {
   textToggleVisible: boolean;
   transcriptAvailable: boolean;
   ocrAvailable: boolean;
-};
+}
 
-export type SlidesSessionState = {
-  raw: SlidesSessionRawState;
-  derived: SlidesSessionDerivedState;
-};
+export interface SlidesSessionState { raw: SlidesSessionRawState; derived: SlidesSessionDerivedState }
 
-export type SlidesSessionSummaryOpts = {
+export interface SlidesSessionSummaryOpts {
   preserveIfEmpty?: boolean;
   source?: Exclude<SlideSummarySource, null>;
-};
+}
 
-export type SlidesSessionSnapshot = {
+export interface SlidesSessionSnapshot {
   raw: SlidesSessionRawState;
   derived: SlidesSessionDerivedState;
-};
+}

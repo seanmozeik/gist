@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { parseSlideSummariesFromMarkdown } from "../src/run/flows/url/slides-text.js";
+import { describe, expect, it } from 'vitest';
 
-describe("parseSlideSummariesFromMarkdown", () => {
-  it("extracts slide summaries from Slides section", () => {
+import { parseSlideSummariesFromMarkdown } from '../src/run/flows/url/slides-text.js';
+
+describe('parseSlideSummariesFromMarkdown', () => {
+  it('extracts slide summaries from Slides section', () => {
     const markdown = `
 Intro paragraph.
 
@@ -16,27 +17,27 @@ More detail.
 Other section
 `;
     const map = parseSlideSummariesFromMarkdown(markdown);
-    expect(map.get(1)).toBe("First summary line.\nMore detail.");
-    expect(map.get(3)).toBe("Third summary.");
+    expect(map.get(1)).toBe('First summary line.\nMore detail.');
+    expect(map.get(3)).toBe('Third summary.');
   });
 
-  it("parses slide labels with timestamps", () => {
+  it('parses slide labels with timestamps', () => {
     const markdown = `
 Intro paragraph.
 
 ### Slides
-Slide 1/10 \u00b7 0:01
+Slide 1/10 \u00B7 0:01
 First slide text.
 
 Slide 2 of 10 - 1:05
 Second slide text.
 `;
     const map = parseSlideSummariesFromMarkdown(markdown);
-    expect(map.get(1)).toBe("First slide text.");
-    expect(map.get(2)).toBe("Second slide text.");
+    expect(map.get(1)).toBe('First slide text.');
+    expect(map.get(2)).toBe('Second slide text.');
   });
 
-  it("parses slide markers without a Slides heading", () => {
+  it('parses slide markers without a Slides heading', () => {
     const markdown = `
 Intro paragraph.
 
@@ -46,11 +47,11 @@ More detail.
 [slide:3] Third summary.
 `;
     const map = parseSlideSummariesFromMarkdown(markdown);
-    expect(map.get(1)).toBe("First summary line.\nMore detail.");
-    expect(map.get(3)).toBe("Third summary.");
+    expect(map.get(1)).toBe('First summary line.\nMore detail.');
+    expect(map.get(3)).toBe('Third summary.');
   });
 
-  it("keeps empty slide markers", () => {
+  it('keeps empty slide markers', () => {
     const markdown = `
 Intro paragraph.
 
@@ -61,7 +62,7 @@ Intro paragraph.
 `;
     const map = parseSlideSummariesFromMarkdown(markdown);
     expect(map.has(1)).toBe(true);
-    expect(map.get(1)).toBe("");
-    expect(map.get(2)).toBe("Second summary.");
+    expect(map.get(1)).toBe('');
+    expect(map.get(2)).toBe('Second summary.');
   });
 });

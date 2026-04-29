@@ -1,42 +1,41 @@
-import { Writable } from "node:stream";
-import type { Api } from "@mariozechner/pi-ai";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
-import { makeAssistantMessage } from "./helpers/pi-ai-mock.js";
+import { Writable } from 'node:stream';
 
-type MockModel = { provider: string; id: string; api: Api };
+import type { Api } from '@mariozechner/pi-ai';
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
+import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
+
+interface MockModel { provider: string; id: string; api: Api }
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(),
-  streamSimple: vi.fn(),
   getModel: vi.fn(() => {
-    throw new Error("no model");
+    throw new Error('no model');
   }),
+  streamSimple: vi.fn(),
 }));
 
 mocks.completeSimple.mockImplementation(async (model: MockModel) =>
-  makeAssistantMessage({ text: "   ", provider: model.provider, model: model.id, api: model.api }),
+  makeAssistantMessage({ api: model.api, model: model.id, provider: model.provider, text: '   ' }),
 );
 
-vi.mock("@mariozechner/pi-ai", () => ({
+vi.mock('@mariozechner/pi-ai', () => ({
   completeSimple: mocks.completeSimple,
-  streamSimple: mocks.streamSimple,
   getModel: mocks.getModel,
+  streamSimple: mocks.streamSimple,
 }));
 
-describe("cli empty summary handling", () => {
-  it("throws when model returns only whitespace", async () => {
+describe('cli empty summary handling', () => {
+  it('throws when model returns only whitespace', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") {
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {
         return htmlResponse(
-          "<!doctype html><html><body><article><p>Hello</p></article></body></html>",
+          '<!doctype html><html><body><article><p>Hello</p></article></body></html>',
         );
       }
       throw new Error(`Unexpected fetch call: ${url}`);
@@ -56,11 +55,11 @@ describe("cli empty summary handling", () => {
     });
 
     await expect(
-      runCli(["--model", "openai/gpt-5-chat", "--timeout", "10s", "https://example.com"], {
-        env: { OPENAI_API_KEY: "test" },
+      runCli(['--model', 'openai/gpt-5-chat', '--timeout', '10s', 'https://example.com'], {
+        env: { OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout,
         stderr,
+        stdout,
       }),
     ).rejects.toThrow(/empty summary/i);
   });

@@ -1,12 +1,13 @@
-import path from "node:path";
-import type { CliProvider } from "../../../config.js";
-import { resolveGitHubModelsApiKey } from "../../../llm/github-models.js";
-import { buildAutoModelAttempts } from "../../../model-auto.js";
-import { buildPathSummaryPrompt } from "../../../prompts/index.js";
-import { ensureCliAttachmentPath } from "../../attachments.js";
-import { parseCliUserModelId } from "../../env.js";
-import type { ModelAttempt } from "../../types.js";
-import type { AssetSummaryContext, SummarizeAssetArgs } from "./summary.js";
+import path from 'node:path';
+
+import type { CliProvider } from '../../../config.js';
+import { resolveGitHubModelsApiKey } from '../../../llm/github-models.js';
+import { buildAutoModelAttempts } from '../../../model-auto.js';
+import { buildPathSummaryPrompt } from '../../../prompts/index.js';
+import { ensureCliAttachmentPath } from '../../attachments.js';
+import { parseCliUserModelId } from '../../env.js';
+import type { ModelAttempt } from '../../types.js';
+import type { AssetSummaryContext, SummarizeAssetArgs } from './summary.js';
 
 export async function buildAssetModelAttempts({
   ctx,
@@ -16,7 +17,7 @@ export async function buildAssetModelAttempts({
   lastSuccessfulCliProvider,
 }: {
   ctx: AssetSummaryContext;
-  kind: "video" | "image" | "text" | "file";
+  kind: 'video' | 'image' | 'text' | 'file';
   promptTokensForAuto: number | null;
   requiresVideoUnderstanding: boolean;
   lastSuccessfulCliProvider: CliProvider | null;
@@ -24,74 +25,74 @@ export async function buildAssetModelAttempts({
   if (ctx.isFallbackModel) {
     const catalog = await ctx.getLiteLlmCatalog();
     const all = buildAutoModelAttempts({
-      kind,
-      promptTokens: promptTokensForAuto,
-      desiredOutputTokens: ctx.desiredOutputTokens,
-      requiresVideoUnderstanding,
-      env: ctx.envForAuto,
-      config: ctx.configForModelSelection,
-      catalog,
-      openrouterProvidersFromEnv: null,
-      cliAvailability: ctx.cliAvailability,
-      isImplicitAutoSelection: ctx.isImplicitAutoSelection,
       allowAutoCliFallback: ctx.allowAutoCliFallback,
+      catalog,
+      cliAvailability: ctx.cliAvailability,
+      config: ctx.configForModelSelection,
+      desiredOutputTokens: ctx.desiredOutputTokens,
+      env: ctx.envForAuto,
+      isImplicitAutoSelection: ctx.isImplicitAutoSelection,
+      kind,
       lastSuccessfulCliProvider,
+      openrouterProvidersFromEnv: null,
+      promptTokens: promptTokensForAuto,
+      requiresVideoUnderstanding,
     });
     return all.map((attempt) => {
-      if (attempt.transport !== "cli") {
+      if (attempt.transport !== 'cli') {
         return ctx.summaryEngine.applyOpenAiGatewayOverrides(attempt as ModelAttempt);
       }
       const parsed = parseCliUserModelId(attempt.userModelId);
-      return { ...attempt, cliProvider: parsed.provider, cliModel: parsed.model };
+      return { ...attempt, cliModel: parsed.model, cliProvider: parsed.provider };
     });
   }
 
-  /* v8 ignore next */
+  /* V8 ignore next */
   if (!ctx.fixedModelSpec) {
-    throw new Error("Internal error: missing fixed model spec");
+    throw new Error('Internal error: missing fixed model spec');
   }
-  if (ctx.fixedModelSpec.transport === "cli") {
+  if (ctx.fixedModelSpec.transport === 'cli') {
     return [
       {
-        transport: "cli",
-        userModelId: ctx.fixedModelSpec.userModelId,
-        llmModelId: null,
-        cliProvider: ctx.fixedModelSpec.cliProvider,
         cliModel: ctx.fixedModelSpec.cliModel,
-        openrouterProviders: null,
+        cliProvider: ctx.fixedModelSpec.cliProvider,
         forceOpenRouter: false,
+        llmModelId: null,
+        openrouterProviders: null,
         requiredEnv: ctx.fixedModelSpec.requiredEnv,
+        transport: 'cli',
+        userModelId: ctx.fixedModelSpec.userModelId,
       },
     ];
   }
   const openaiOverrides =
-    ctx.fixedModelSpec.requiredEnv === "Z_AI_API_KEY"
+    ctx.fixedModelSpec.requiredEnv === 'Z_AI_API_KEY'
       ? {
+          forceChatCompletions: true,
           openaiApiKeyOverride: ctx.apiStatus.zaiApiKey,
           openaiBaseUrlOverride: ctx.apiStatus.zaiBaseUrl,
-          forceChatCompletions: true,
         }
-      : ctx.fixedModelSpec.requiredEnv === "NVIDIA_API_KEY"
+      : ctx.fixedModelSpec.requiredEnv === 'NVIDIA_API_KEY'
         ? {
+            forceChatCompletions: true,
             openaiApiKeyOverride: ctx.apiStatus.nvidiaApiKey,
             openaiBaseUrlOverride: ctx.apiStatus.nvidiaBaseUrl,
-            forceChatCompletions: true,
           }
-        : ctx.fixedModelSpec.requiredEnv === "GITHUB_TOKEN"
+        : ctx.fixedModelSpec.requiredEnv === 'GITHUB_TOKEN'
           ? {
+              forceChatCompletions: true,
               openaiApiKeyOverride: resolveGitHubModelsApiKey(ctx.env),
               openaiBaseUrlOverride: ctx.fixedModelSpec.openaiBaseUrlOverride ?? null,
-              forceChatCompletions: true,
             }
           : {};
   return [
     {
-      transport: ctx.fixedModelSpec.transport === "openrouter" ? "openrouter" : "native",
-      userModelId: ctx.fixedModelSpec.userModelId,
+      forceOpenRouter: ctx.fixedModelSpec.forceOpenRouter,
       llmModelId: ctx.fixedModelSpec.llmModelId,
       openrouterProviders: ctx.fixedModelSpec.openrouterProviders,
-      forceOpenRouter: ctx.fixedModelSpec.forceOpenRouter,
       requiredEnv: ctx.fixedModelSpec.requiredEnv,
+      transport: ctx.fixedModelSpec.transport === 'openrouter' ? 'openrouter' : 'native',
+      userModelId: ctx.fixedModelSpec.userModelId,
       ...(ctx.fixedModelSpec.requestOptions
         ? { requestOptions: ctx.fixedModelSpec.requestOptions }
         : {}),
@@ -112,29 +113,32 @@ export async function buildAssetCliContext({
   attempts: ModelAttempt[];
   attachmentsCount: number;
   summaryLengthTarget:
-    | import("../../../shared/contracts.js").SummaryLength
+    | import('../../../shared/contracts.js').SummaryLength
     | { maxCharacters: number };
 }) {
-  if (!attempts.some((attempt) => attempt.transport === "cli")) return null;
-  if (attachmentsCount === 0) return null;
-  const needsPathPrompt = args.attachment.kind === "image" || args.attachment.kind === "file";
-  if (!needsPathPrompt) return null;
+  if (!attempts.some((attempt) => attempt.transport === 'cli')) {return null;}
+  if (attachmentsCount === 0) {return null;}
+  const needsPathPrompt = args.attachment.kind === 'image' || args.attachment.kind === 'file';
+  if (!needsPathPrompt) {return null;}
 
   const filePath = await ensureCliAttachmentPath({
+    attachment: args.attachment,
     sourceKind: args.sourceKind,
     sourceLabel: args.sourceLabel,
-    attachment: args.attachment,
   });
   const dir = path.dirname(filePath);
   const extraArgsByProvider: Partial<Record<CliProvider, string[]>> = {
-    gemini: ["--include-directories", dir],
-    codex: args.attachment.kind === "image" ? ["-i", filePath] : undefined,
-    opencode: ["--file", filePath],
+    codex: args.attachment.kind === 'image' ? ['-i', filePath] : undefined,
+    gemini: ['--include-directories', dir],
+    opencode: ['--file', filePath],
   };
 
   return {
+    allowTools: true,
+    cwd: dir,
+    extraArgsByProvider,
     promptOverride: buildPathSummaryPrompt({
-      kindLabel: args.attachment.kind === "image" ? "image" : "file",
+      kindLabel: args.attachment.kind === 'image' ? 'image' : 'file',
       filePath,
       filename: args.attachment.filename,
       mediaType: args.attachment.mediaType,
@@ -144,8 +148,5 @@ export async function buildAssetCliContext({
       lengthInstruction: ctx.lengthInstruction ?? null,
       languageInstruction: ctx.languageInstruction ?? null,
     }),
-    allowTools: true,
-    cwd: dir,
-    extraArgsByProvider,
   };
 }

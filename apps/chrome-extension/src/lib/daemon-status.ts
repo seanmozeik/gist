@@ -1,24 +1,15 @@
-export type DaemonUiState = {
-  ok: boolean;
-  authed: boolean;
-  error?: string;
-};
+export interface DaemonUiState { ok: boolean; authed: boolean; error?: string }
 
-type DaemonStatusTrackerOptions = {
-  transientGraceMs?: number;
-};
+interface DaemonStatusTrackerOptions { transientGraceMs?: number }
 
-type ResolveOptions = {
-  now?: number;
-  keepReady?: boolean;
-};
+interface ResolveOptions { now?: number; keepReady?: boolean }
 
 const DEFAULT_TRANSIENT_GRACE_MS = 90_000;
 
 export function isTransientDaemonState(state: DaemonUiState): boolean {
-  const message = state.error?.trim().toLowerCase() ?? "";
-  if (!message) return false;
-  return message === "timed out" || message.includes("failed to fetch");
+  const message = state.error?.trim().toLowerCase() ?? '';
+  if (!message) {return false;}
+  return message === 'timed out' || message.includes('failed to fetch');
 }
 
 export function createDaemonStatusTracker(options: DaemonStatusTrackerOptions = {}) {
@@ -28,8 +19,8 @@ export function createDaemonStatusTracker(options: DaemonStatusTrackerOptions = 
 
   const markReady = (now = Date.now()): DaemonUiState => {
     lastReadyAt = now;
-    lastReadyState = { ok: true, authed: true };
-    return { ok: true, authed: true };
+    lastReadyState = { authed: true, ok: true };
+    return { authed: true, ok: true };
   };
 
   return {

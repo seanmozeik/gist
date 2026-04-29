@@ -1,50 +1,50 @@
-import type { LinkPreviewDeps } from "../link-preview/deps.js";
+import type { LinkPreviewDeps } from '../link-preview/deps.js';
 import type {
   CacheMode,
   TranscriptDiagnostics,
   TranscriptResolution,
-} from "../link-preview/types.js";
-import { mapCachedSource, readTranscriptCache, writeTranscriptCache } from "./cache.js";
+} from '../link-preview/types.js';
+import { mapCachedSource, readTranscriptCache, writeTranscriptCache } from './cache.js';
 import {
   canHandle as canHandleGeneric,
   fetchTranscript as fetchGeneric,
-} from "./providers/generic.js";
+} from './providers/generic.js';
 import {
   canHandle as canHandlePodcast,
   fetchTranscript as fetchPodcast,
-} from "./providers/podcast.js";
+} from './providers/podcast.js';
 import {
   canHandle as canHandleYoutube,
   fetchTranscript as fetchYoutube,
-} from "./providers/youtube.js";
-import { resolveTranscriptionConfig } from "./transcription-config.js";
+} from './providers/youtube.js';
+import { resolveTranscriptionConfig } from './transcription-config.js';
 import type {
   ProviderContext,
   ProviderFetchOptions,
   ProviderModule,
   ProviderResult,
-} from "./types.js";
+} from './types.js';
 import {
   extractEmbeddedYouTubeUrlFromHtml,
   extractYouTubeVideoId as extractYouTubeVideoIdInternal,
   isYouTubeUrl as isYouTubeUrlInternal,
-} from "./utils.js";
+} from './utils.js';
 
 interface ResolveTranscriptOptions {
-  youtubeTranscriptMode?: ProviderFetchOptions["youtubeTranscriptMode"];
-  mediaTranscriptMode?: ProviderFetchOptions["mediaTranscriptMode"];
-  mediaKindHint?: ProviderFetchOptions["mediaKindHint"];
-  transcriptTimestamps?: ProviderFetchOptions["transcriptTimestamps"];
+  youtubeTranscriptMode?: ProviderFetchOptions['youtubeTranscriptMode'];
+  mediaTranscriptMode?: ProviderFetchOptions['mediaTranscriptMode'];
+  mediaKindHint?: ProviderFetchOptions['mediaKindHint'];
+  transcriptTimestamps?: ProviderFetchOptions['transcriptTimestamps'];
   cacheMode?: CacheMode;
   fileMtime?: number | null;
 }
 
 const PROVIDERS: ProviderModule[] = [
-  { id: "youtube", canHandle: canHandleYoutube, fetchTranscript: fetchYoutube },
-  { id: "podcast", canHandle: canHandlePodcast, fetchTranscript: fetchPodcast },
-  { id: "generic", canHandle: canHandleGeneric, fetchTranscript: fetchGeneric },
+  { canHandle: canHandleYoutube, fetchTranscript: fetchYoutube, id: 'youtube' },
+  { canHandle: canHandlePodcast, fetchTranscript: fetchPodcast, id: 'podcast' },
+  { canHandle: canHandleGeneric, fetchTranscript: fetchGeneric, id: 'generic' },
 ];
-const GENERIC_PROVIDER_ID = "generic";
+const GENERIC_PROVIDER_ID = 'generic';
 
 export const resolveTranscriptForLink = async (
   url: string,
@@ -66,84 +66,81 @@ export const resolveTranscriptForLink = async (
       : null;
   const effectiveUrl = embeddedYoutubeUrl ?? normalizedUrl;
   const resourceKey = extractResourceKey(effectiveUrl);
-  const baseContext: ProviderContext = { url: effectiveUrl, html, resourceKey };
+  const baseContext: ProviderContext = { html, resourceKey, url: effectiveUrl };
   const provider: ProviderModule = selectProvider(baseContext);
-  const cacheMode: CacheMode = providedCacheMode ?? "default";
+  const cacheMode: CacheMode = providedCacheMode ?? 'default';
 
   const cacheOutcome = await readTranscriptCache({
-    url: normalizedUrl,
     cacheMode,
+    fileMtime: fileMtime ?? null,
     transcriptCache: deps.transcriptCache,
     transcriptTimestamps: Boolean(transcriptTimestamps),
-    fileMtime: fileMtime ?? null,
+    url: normalizedUrl,
   });
 
   const diagnostics: TranscriptDiagnostics = {
+    attemptedProviders: [],
     cacheMode,
     cacheStatus: cacheOutcome.diagnostics.cacheStatus,
-    textProvided: cacheOutcome.diagnostics.textProvided,
-    provider: cacheOutcome.diagnostics.provider,
-    attemptedProviders: [],
     notes: cacheOutcome.diagnostics.notes ?? null,
+    provider: cacheOutcome.diagnostics.provider,
+    textProvided: cacheOutcome.diagnostics.textProvided,
   };
 
   if (cacheOutcome.resolution) {
-    return {
-      ...cacheOutcome.resolution,
-      diagnostics,
-    };
+    return { ...cacheOutcome.resolution, diagnostics };
   }
 
-  const shouldReportProgress = provider.id === "youtube" || provider.id === "podcast";
+  const shouldReportProgress = provider.id === 'youtube' || provider.id === 'podcast';
   if (shouldReportProgress) {
     deps.onProgress?.({
-      kind: "transcript-start",
-      url: normalizedUrl,
-      service: provider.id,
       hint:
-        provider.id === "youtube"
-          ? "YouTube: resolving transcript"
-          : "Podcast: resolving transcript",
+        provider.id === 'youtube'
+          ? 'YouTube: resolving transcript'
+          : 'Podcast: resolving transcript',
+      kind: 'transcript-start',
+      service: provider.id,
+      url: normalizedUrl,
     });
   }
 
   const transcription = resolveTranscriptionConfig({
     env: deps.env,
-    transcription: deps.transcription ?? null,
     falApiKey: deps.falApiKey,
-    groqApiKey: deps.groqApiKey,
     geminiApiKey: deps.geminiApiKey,
+    groqApiKey: deps.groqApiKey,
     openaiApiKey: deps.openaiApiKey,
+    transcription: deps.transcription ?? null,
   });
 
   const providerResult = await executeProvider(provider, baseContext, {
-    fetch: deps.fetch,
-    env: deps.env,
-    scrapeWithFirecrawl: deps.scrapeWithFirecrawl,
     apifyApiToken: deps.apifyApiToken,
-    ytDlpPath: deps.ytDlpPath,
-    transcription,
+    env: deps.env,
     falApiKey: transcription.falApiKey,
-    groqApiKey: transcription.groqApiKey,
+    fetch: deps.fetch,
     geminiApiKey: transcription.geminiApiKey,
-    openaiApiKey: transcription.openaiApiKey,
+    groqApiKey: transcription.groqApiKey,
     mediaCache: deps.mediaCache ?? null,
-    resolveTwitterCookies: deps.resolveTwitterCookies ?? null,
-    onProgress: deps.onProgress ?? null,
-    youtubeTranscriptMode: youtubeTranscriptMode ?? "auto",
-    mediaTranscriptMode: mediaTranscriptMode ?? "auto",
     mediaKindHint: mediaKindHint ?? null,
+    mediaTranscriptMode: mediaTranscriptMode ?? 'auto',
+    onProgress: deps.onProgress ?? null,
+    openaiApiKey: transcription.openaiApiKey,
+    resolveTwitterCookies: deps.resolveTwitterCookies ?? null,
+    scrapeWithFirecrawl: deps.scrapeWithFirecrawl,
     transcriptTimestamps: transcriptTimestamps ?? false,
+    transcription,
+    youtubeTranscriptMode: youtubeTranscriptMode ?? 'auto',
+    ytDlpPath: deps.ytDlpPath,
   });
 
   if (shouldReportProgress) {
     deps.onProgress?.({
-      kind: "transcript-done",
-      url: normalizedUrl,
+      hint: providerResult.source ? `${provider.id}/${providerResult.source}` : provider.id,
+      kind: 'transcript-done',
       ok: Boolean(providerResult.text && providerResult.text.length > 0),
       service: provider.id,
       source: providerResult.source,
-      hint: providerResult.source ? `${provider.id}/${providerResult.source}` : provider.id,
+      url: normalizedUrl,
     });
   }
 
@@ -156,58 +153,56 @@ export const resolveTranscriptForLink = async (
 
   if (providerResult.source !== null || providerResult.text !== null) {
     if (transcriptTimestamps) {
-      const nextMeta = { ...(providerResult.metadata ?? {}) };
+      const nextMeta = { ...providerResult.metadata };
       if (providerResult.segments && providerResult.segments.length > 0) {
         nextMeta.timestamps = true;
         nextMeta.segments = providerResult.segments;
-      } else if (nextMeta.timestamps == null) {
-        nextMeta.timestamps = false;
-      }
+      } else nextMeta.timestamps ??= false;
       providerResult.metadata = nextMeta;
     } else if (providerResult.segments && providerResult.segments.length > 0) {
       providerResult.metadata = {
-        ...(providerResult.metadata ?? {}),
+        ...providerResult.metadata,
         segments: providerResult.segments,
       };
     }
     await writeTranscriptCache({
-      url: normalizedUrl,
-      service: provider.id,
+      fileMtime,
       resourceKey,
       result: providerResult,
+      service: provider.id,
       transcriptCache: deps.transcriptCache,
-      fileMtime,
+      url: normalizedUrl,
     });
   }
 
-  if (!providerResult.text && cacheOutcome.cached?.content && cacheMode !== "bypass") {
-    diagnostics.cacheStatus = "fallback";
+  if (!providerResult.text && cacheOutcome.cached?.content && cacheMode !== 'bypass') {
+    diagnostics.cacheStatus = 'fallback';
     diagnostics.provider = mapCachedSource(cacheOutcome.cached.source);
     diagnostics.textProvided = Boolean(
       cacheOutcome.cached.content && cacheOutcome.cached.content.length > 0,
     );
     diagnostics.notes = appendNote(
       diagnostics.notes,
-      "Falling back to cached transcript content after provider miss",
+      'Falling back to cached transcript content after provider miss',
     );
 
     return {
-      text: cacheOutcome.cached.content,
-      source: diagnostics.provider,
-      metadata: cacheOutcome.cached.metadata ?? null,
       diagnostics,
+      metadata: cacheOutcome.cached.metadata ?? null,
       segments: transcriptTimestamps
         ? resolveSegmentsFromMetadata(cacheOutcome.cached.metadata)
         : null,
+      source: diagnostics.provider,
+      text: cacheOutcome.cached.content,
     };
   }
 
   return {
-    text: providerResult.text,
-    source: providerResult.source,
-    metadata: providerResult.metadata ?? null,
     diagnostics,
+    metadata: providerResult.metadata ?? null,
     segments: transcriptTimestamps ? (providerResult.segments ?? null) : null,
+    source: providerResult.source,
+    text: providerResult.text,
   };
 };
 
@@ -232,7 +227,7 @@ const selectProvider = (context: ProviderContext): ProviderModule => {
     return genericProviderModule;
   }
 
-  throw new Error("Generic transcript provider is not registered");
+  throw new Error('Generic transcript provider is not registered');
 };
 
 const executeProvider = async (
@@ -249,9 +244,9 @@ const appendNote = (existing: string | null | undefined, next: string): string =
 };
 
 const resolveSegmentsFromMetadata = (metadata?: Record<string, unknown> | null) => {
-  if (!metadata) return null;
-  const segments = (metadata as { segments?: unknown }).segments;
+  if (!metadata) {return null;}
+  const {segments} = (metadata as { segments?: unknown });
   return Array.isArray(segments) && segments.length > 0
-    ? (segments as TranscriptResolution["segments"])
+    ? (segments as TranscriptResolution['segments'])
     : null;
 };

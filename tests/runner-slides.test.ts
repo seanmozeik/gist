@@ -1,37 +1,38 @@
-import { describe, expect, it } from "vitest";
-import { resolveRunnerSlidesSettings } from "../src/run/runner-slides.js";
+import { describe, expect, it } from 'vitest';
 
-describe("resolveRunnerSlidesSettings", () => {
-  it("allows slides for local video files", () => {
+import { resolveRunnerSlidesSettings } from '../src/run/runner-slides.js';
+
+describe('resolveRunnerSlidesSettings', () => {
+  it('allows slides for local video files', () => {
     const settings = resolveRunnerSlidesSettings({
-      normalizedArgv: ["--slides"],
-      programOpts: { slides: true },
       config: null,
-      inputTarget: { kind: "file", filePath: "/tmp/video.webm" },
+      inputTarget: { filePath: '/tmp/video.webm', kind: 'file' },
+      normalizedArgv: ['--slides'],
+      programOpts: { slides: true },
     });
 
     expect(settings?.enabled).toBe(true);
   });
 
-  it("rejects slides for stdin", () => {
+  it('rejects slides for stdin', () => {
     expect(() =>
       resolveRunnerSlidesSettings({
-        normalizedArgv: ["--slides"],
-        programOpts: { slides: true },
         config: null,
-        inputTarget: { kind: "stdin" },
+        inputTarget: { kind: 'stdin' },
+        normalizedArgv: ['--slides'],
+        programOpts: { slides: true },
       }),
-    ).toThrow("--slides is only supported for URLs or local video files");
+    ).toThrow('--slides is only supported for URLs or local video files');
   });
 
-  it("rejects direct audio URLs", () => {
+  it('rejects direct audio URLs', () => {
     expect(() =>
       resolveRunnerSlidesSettings({
-        normalizedArgv: ["--slides"],
-        programOpts: { slides: true },
         config: null,
-        inputTarget: { kind: "url", url: "https://cdn.example.com/audio.mp3" },
+        inputTarget: { kind: 'url', url: 'https://cdn.example.com/audio.mp3' },
+        normalizedArgv: ['--slides'],
+        programOpts: { slides: true },
       }),
-    ).toThrow("--slides is only supported for video URLs or local video files");
+    ).toThrow('--slides is only supported for video URLs or local video files');
   });
 });

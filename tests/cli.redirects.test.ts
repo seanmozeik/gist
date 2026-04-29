@@ -1,28 +1,30 @@
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
 
-describe("cli redirect handling", () => {
-  it("uses the final URL after redirects for extraction output", async () => {
-    const home = mkdtempSync(join(tmpdir(), "summarize-cli-redirects-"));
-    const html = "<!doctype html><html><head><title>Ok</title></head><body><p>Hi</p></body></html>";
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
+
+describe('cli redirect handling', () => {
+  it('uses the final URL after redirects for extraction output', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'summarize-cli-redirects-'));
+    const html = '<!doctype html><html><head><title>Ok</title></head><body><p>Hi</p></body></html>';
 
     const fetchMock = vi.fn(async () => {
       const response = new Response(html, {
+        headers: { 'content-type': 'text/html' },
         status: 200,
-        headers: { "content-type": "text/html" },
       });
-      Object.defineProperty(response, "url", {
-        value: "https://summarize.sh/",
+      Object.defineProperty(response, 'url', {
         configurable: true,
+        value: 'https://summarize.sh/',
       });
       return response;
     });
 
-    let stdoutText = "";
+    let stdoutText = '';
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
         stdoutText += chunk.toString();
@@ -31,20 +33,20 @@ describe("cli redirect handling", () => {
     });
 
     await runCli(
-      ["--json", "--extract", "--format", "text", "--timeout", "2s", "https://t.co/abc"],
+      ['--json', '--extract', '--format', 'text', '--timeout', '2s', 'https://t.co/abc'],
       {
         env: { HOME: home },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout,
         stderr: new Writable({
           write(_chunk, _encoding, callback) {
             callback();
           },
         }),
+        stdout,
       },
     );
 
     const parsed = JSON.parse(stdoutText) as { extracted: { url: string } };
-    expect(parsed.extracted.url).toBe("https://summarize.sh/");
+    expect(parsed.extracted.url).toBe('https://summarize.sh/');
   });
 });

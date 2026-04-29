@@ -1,31 +1,32 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import type { SlideImage } from "../slides/types.js";
-import { isRichTty, terminalWidth } from "./terminal.js";
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
-export type SlidesRenderMode = "none" | "auto" | "kitty" | "iterm";
-export type InlineProtocol = "none" | "kitty" | "iterm";
+import type { SlideImage } from '../slides/types.js';
+import { isRichTty, terminalWidth } from './terminal.js';
 
-type RenderSlide = Pick<SlideImage, "imagePath" | "index" | "timestamp">;
+export type SlidesRenderMode = 'none' | 'auto' | 'kitty' | 'iterm';
+export type InlineProtocol = 'none' | 'kitty' | 'iterm';
+
+type RenderSlide = Pick<SlideImage, 'imagePath' | 'index' | 'timestamp'>;
 
 function parsePngSize(data: Buffer): { width: number; height: number } | null {
-  if (data.length < 24) return null;
+  if (data.length < 24) {return null;}
   if (
     data[0] !== 0x89 ||
     data[1] !== 0x50 ||
-    data[2] !== 0x4e ||
+    data[2] !== 0x4E ||
     data[3] !== 0x47 ||
-    data[4] !== 0x0d ||
-    data[5] !== 0x0a ||
-    data[6] !== 0x1a ||
-    data[7] !== 0x0a
+    data[4] !== 0x0D ||
+    data[5] !== 0x0A ||
+    data[6] !== 0x1A ||
+    data[7] !== 0x0A
   ) {
     return null;
   }
   const width = data.readUInt32BE(16);
   const height = data.readUInt32BE(20);
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
-  return { width, height };
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {return null;}
+  return { height, width };
 }
 
 function resolveInlineProtocol({
@@ -37,32 +38,32 @@ function resolveInlineProtocol({
   env: Record<string, string | undefined>;
   stdout: NodeJS.WritableStream;
 }): InlineProtocol {
-  if (mode === "none") return "none";
-  if (!isRichTty(stdout)) return "none";
-  if (mode === "kitty" || mode === "iterm") return mode;
+  if (mode === 'none') {return 'none';}
+  if (!isRichTty(stdout)) {return 'none';}
+  if (mode === 'kitty' || mode === 'iterm') {return mode;}
 
-  const termProgram = (env.TERM_PROGRAM ?? "").toLowerCase();
-  const term = (env.TERM ?? "").toLowerCase();
-  const isWezTerm = termProgram.includes("wezterm") || Boolean(env.WEZTERM_EXECUTABLE);
+  const termProgram = (env.TERM_PROGRAM ?? '').toLowerCase();
+  const term = (env.TERM ?? '').toLowerCase();
+  const isWezTerm = termProgram.includes('wezterm') || Boolean(env.WEZTERM_EXECUTABLE);
   if (
     env.KITTY_WINDOW_ID ||
-    term.includes("xterm-kitty") ||
+    term.includes('xterm-kitty') ||
     isWezTerm ||
-    termProgram.includes("ghostty") ||
-    termProgram.includes("konsole") ||
+    termProgram.includes('ghostty') ||
+    termProgram.includes('konsole') ||
     env.KONSOLE_VERSION
   ) {
-    return isWezTerm ? "iterm" : "kitty";
+    return isWezTerm ? 'iterm' : 'kitty';
   }
-  if (termProgram.includes("iterm") || env.ITERM_SESSION_ID) {
-    return "iterm";
+  if (termProgram.includes('iterm') || env.ITERM_SESSION_ID) {
+    return 'iterm';
   }
-  return "none";
+  return 'none';
 }
 
 function clampInt(min: number, max: number, value: number): number {
-  if (value < min) return min;
-  if (value > max) return max;
+  if (value < min) {return min;}
+  if (value > max) {return max;}
   return value;
 }
 
@@ -99,7 +100,7 @@ function writeKittyImage({
   rows: number;
   id: number;
 }) {
-  const encoded = data.toString("base64");
+  const encoded = data.toString('base64');
   const chunkSize = 4096;
   let offset = 0;
   let first = true;
@@ -109,19 +110,19 @@ function writeKittyImage({
     const more = offset < encoded.length ? 1 : 0;
     if (first) {
       const params = [
-        "a=T",
-        "f=100",
+        'a=T',
+        'f=100',
         `i=${id}`,
         `m=${more}`,
-        "q=2",
+        'q=2',
         `c=${cols}`,
         `r=${rows}`,
-        "C=1",
-      ].join(",");
-      stdout.write(`\u001b_G${params};${chunk}\u001b\\`);
+        'C=1',
+      ].join(',');
+      stdout.write(`\u001B_G${params};${chunk}\u001B\\`);
       first = false;
     } else {
-      stdout.write(`\u001b_Gm=${more};${chunk}\u001b\\`);
+      stdout.write(`\u001B_Gm=${more};${chunk}\u001B\\`);
     }
   }
 }
@@ -139,17 +140,17 @@ function writeItermImage({
   rows: number;
   name: string;
 }) {
-  const encodedName = Buffer.from(name).toString("base64");
-  const encodedData = data.toString("base64");
+  const encodedName = Buffer.from(name).toString('base64');
+  const encodedData = data.toString('base64');
   const args = [
     `name=${encodedName}`,
     `size=${data.length}`,
-    "inline=1",
-    "preserveAspectRatio=1",
+    'inline=1',
+    'preserveAspectRatio=1',
     `width=${cols}`,
     `height=${rows}`,
-  ].join(";");
-  stdout.write(`\u001b]1337;File=${args}:${encodedData}\u001b\\`);
+  ].join(';');
+  stdout.write(`\u001B]1337;File=${args}:${encodedData}\u001B\\`);
 }
 
 export async function renderSlidesInline({
@@ -165,8 +166,8 @@ export async function renderSlidesInline({
   stdout: NodeJS.WritableStream;
   labelForSlide?: ((slide: RenderSlide) => string) | null;
 }): Promise<{ rendered: number; protocol: InlineProtocol }> {
-  const renderer = createSlidesInlineRenderer({ mode, env, stdout });
-  return renderer.renderSlides({ slides, labelForSlide });
+  const renderer = createSlidesInlineRenderer({ env, mode, stdout });
+  return renderer.renderSlides({ labelForSlide, slides });
 }
 
 export function createSlidesInlineRenderer({
@@ -185,46 +186,46 @@ export function createSlidesInlineRenderer({
     labelForSlide?: ((slide: RenderSlide) => string) | null;
   }) => Promise<{ rendered: number; protocol: InlineProtocol }>;
 } {
-  const protocol = resolveInlineProtocol({ mode, env, stdout });
+  const protocol = resolveInlineProtocol({ env, mode, stdout });
   let nextId = 1;
 
   const renderSlide = async (slide: RenderSlide, label?: string | null) => {
-    if (protocol === "none") return false;
-    if (label) stdout.write(`${label}\n`);
+    if (protocol === 'none') {return false;}
+    if (label) {stdout.write(`${label}\n`);}
 
     let data: Buffer;
     try {
       data = await fs.readFile(slide.imagePath);
     } catch {
-      stdout.write("(missing slide image)\n");
+      stdout.write('(missing slide image)\n');
       return false;
     }
     if (data.length === 0) {
-      stdout.write("(empty slide image)\n");
+      stdout.write('(empty slide image)\n');
       return false;
     }
     const termCols = terminalWidth(stdout, env);
     const size = parsePngSize(data);
     const { cols, rows } = resolveSlideCellSize({
-      width: size?.width ?? null,
       height: size?.height ?? null,
       termCols,
+      width: size?.width ?? null,
     });
 
-    if (protocol === "kitty") {
-      writeKittyImage({ stdout, data, cols, rows, id: nextId });
+    if (protocol === 'kitty') {
+      writeKittyImage({ cols, data, id: nextId, rows, stdout });
       nextId += 1;
-    } else if (protocol === "iterm") {
+    } else if (protocol === 'iterm') {
       writeItermImage({
-        stdout,
-        data,
         cols,
+        data,
+        name: path.basename(slide.imagePath) ?? 'slide.png',
         rows,
-        name: path.basename(slide.imagePath) || "slide.png",
+        stdout,
       });
     }
-    stdout.write("\n".repeat(Math.max(1, rows)));
-    stdout.write("\n");
+    stdout.write('\n'.repeat(Math.max(1, rows)));
+    stdout.write('\n');
     return true;
   };
 
@@ -235,13 +236,13 @@ export function createSlidesInlineRenderer({
     slides: RenderSlide[];
     labelForSlide?: ((slide: RenderSlide) => string) | null;
   }) => {
-    if (protocol === "none") return { rendered: 0, protocol };
+    if (protocol === 'none') {return { rendered: 0, protocol };}
     let rendered = 0;
     for (const slide of slides) {
       const label = labelForSlide?.(slide) ?? null;
-      if (await renderSlide(slide, label)) rendered += 1;
+      if (await renderSlide(slide, label)) {rendered += 1;}
     }
-    return { rendered, protocol };
+    return { protocol, rendered };
   };
 
   return { protocol, renderSlide, renderSlides };

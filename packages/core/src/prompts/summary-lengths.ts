@@ -1,62 +1,62 @@
-import type { SummaryLength } from "../shared/contracts.js";
+import type { SummaryLength } from '../shared/contracts.js';
 
-export type SummaryLengthSpec = {
+export interface SummaryLengthSpec {
   guidance: string;
   formatting: string;
   targetCharacters: number;
   minCharacters: number;
   maxCharacters: number;
   maxTokens: number;
-};
+}
 
 export const SUMMARY_LENGTH_SPECS: Record<SummaryLength, SummaryLengthSpec> = {
-  short: {
-    guidance:
-      "Write a tight summary that delivers the primary claim plus one high-signal supporting detail.",
-    formatting:
-      "Use 1-2 short paragraphs (a single paragraph is fine). Aim for 2-5 sentences total.",
-    targetCharacters: 900,
-    minCharacters: 600,
-    maxCharacters: 1200,
-    maxTokens: 768,
-  },
-  medium: {
-    guidance:
-      "Write a clear summary that covers the core claim plus the most important supporting evidence or data points.",
-    formatting:
-      "Use 1-3 short paragraphs (2 is typical, but a single paragraph is okay if the content is simple). Aim for 2-3 sentences per paragraph.",
-    targetCharacters: 1800,
-    minCharacters: 1200,
-    maxCharacters: 2500,
-    maxTokens: 1536,
-  },
   long: {
-    guidance:
-      "Write a detailed summary that prioritizes the most important points first, followed by key supporting facts or events, then secondary details or conclusions stated in the source.",
     formatting:
-      "Paragraphs are optional; use up to 3 short paragraphs. Aim for 2-4 sentences per paragraph when you split into paragraphs.",
-    targetCharacters: 4200,
-    minCharacters: 2500,
+      'Paragraphs are optional; use up to 3 short paragraphs. Aim for 2-4 sentences per paragraph when you split into paragraphs.',
+    guidance:
+      'Write a detailed summary that prioritizes the most important points first, followed by key supporting facts or events, then secondary details or conclusions stated in the source.',
     maxCharacters: 6000,
     maxTokens: 3072,
+    minCharacters: 2500,
+    targetCharacters: 4200,
+  },
+  medium: {
+    formatting:
+      'Use 1-3 short paragraphs (2 is typical, but a single paragraph is okay if the content is simple). Aim for 2-3 sentences per paragraph.',
+    guidance:
+      'Write a clear summary that covers the core claim plus the most important supporting evidence or data points.',
+    maxCharacters: 2500,
+    maxTokens: 1536,
+    minCharacters: 1200,
+    targetCharacters: 1800,
+  },
+  short: {
+    formatting:
+      'Use 1-2 short paragraphs (a single paragraph is fine). Aim for 2-5 sentences total.',
+    guidance:
+      'Write a tight summary that delivers the primary claim plus one high-signal supporting detail.',
+    maxCharacters: 1200,
+    maxTokens: 768,
+    minCharacters: 600,
+    targetCharacters: 900,
   },
   xl: {
+    formatting: 'Use 2-5 short paragraphs. Aim for 2-4 sentences per paragraph.',
     guidance:
-      "Write a detailed summary that captures the main points, supporting facts, and concrete numbers or quotes when present.",
-    formatting: "Use 2-5 short paragraphs. Aim for 2-4 sentences per paragraph.",
-    targetCharacters: 9000,
-    minCharacters: 6000,
+      'Write a detailed summary that captures the main points, supporting facts, and concrete numbers or quotes when present.',
     maxCharacters: 14000,
     maxTokens: 6144,
+    minCharacters: 6000,
+    targetCharacters: 9000,
   },
   xxl: {
+    formatting: 'Use 3-7 short paragraphs. Aim for 2-4 sentences per paragraph.',
     guidance:
-      "Write a comprehensive summary that covers background, main points, evidence, and stated outcomes in the source text; avoid adding implications or recommendations unless explicitly stated.",
-    formatting: "Use 3-7 short paragraphs. Aim for 2-4 sentences per paragraph.",
-    targetCharacters: 17000,
-    minCharacters: 14000,
+      'Write a comprehensive summary that covers background, main points, evidence, and stated outcomes in the source text; avoid adding implications or recommendations unless explicitly stated.',
     maxCharacters: 22000,
     maxTokens: 12288,
+    minCharacters: 14000,
+    targetCharacters: 17000,
   },
 };
 

@@ -1,17 +1,12 @@
-export type UrlProgressStatusState = {
+export interface UrlProgressStatusState {
   summaryText: string | null;
   slidesActive: boolean;
   slidesText: string | null;
   lastSlideRenderAt: number;
-};
+}
 
 export function createUrlProgressStatusState(): UrlProgressStatusState {
-  return {
-    summaryText: null,
-    slidesActive: false,
-    slidesText: null,
-    lastSlideRenderAt: 0,
-  };
+  return { lastSlideRenderAt: 0, slidesActive: false, slidesText: null, summaryText: null };
 }
 
 export function applySummaryText(

@@ -1,2 +1,2 @@
-export type TranscriptSegment = { startSeconds: number; text: string };
-export type SlideTimelineEntry = { index: number; timestamp: number };
+export interface TranscriptSegment { startSeconds: number; text: string }
+export interface SlideTimelineEntry { index: number; timestamp: number }

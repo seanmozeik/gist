@@ -1,12 +1,9 @@
-import { splitStatusPercent } from "../../lib/status";
-import type { PanelPhase } from "./types";
+import { splitStatusPercent } from '../../lib/status';
+import type { PanelPhase } from './types';
 
-type HeaderState = {
-  phase: PanelPhase;
-  summaryFromCache: boolean | null;
-};
+interface HeaderState { phase: PanelPhase; summaryFromCache: boolean | null }
 
-export type HeaderController = {
+export interface HeaderController {
   setBaseTitle: (text: string) => void;
   setBaseSubtitle: (text: string) => void;
   setStatus: (text: string) => void;
@@ -14,7 +11,7 @@ export type HeaderController = {
   stopProgress: () => void;
   setProgressOverride: (next: boolean) => void;
   updateHeaderOffset: () => void;
-};
+}
 
 export function createHeaderController({
   headerEl,
@@ -29,59 +26,59 @@ export function createHeaderController({
   progressFillEl: HTMLElement;
   getState: () => HeaderState;
 }): HeaderController {
-  let baseTitle = "Summarize";
-  let baseSubtitle = "";
-  let statusText = "";
+  let baseTitle = 'Summarize';
+  let baseSubtitle = '';
+  let statusText = '';
   let showProgress = false;
   let progressOverride = false;
   let rafId: number | null = null;
-  let lastTitle = "";
-  let lastSubtitle = "";
+  let lastTitle = '';
+  let lastSubtitle = '';
   let lastIsError = false;
   let lastIsRunning = false;
   let lastIsIndeterminate = false;
-  let lastProgress = "";
-  let lastProgressDisplay = "";
+  let lastProgress = '';
+  let lastProgressDisplay = '';
 
   const shouldAllowProgress = (force = false) =>
     force || progressOverride || getState().summaryFromCache !== true;
 
   const isActiveStatus = (text: string) => {
     const trimmed = text.trim().toLowerCase();
-    if (!trimmed) return false;
-    if (trimmed.startsWith("error:")) return false;
-    if (trimmed === "copied") return false;
+    if (!trimmed) {return false;}
+    if (trimmed.startsWith('error:')) {return false;}
+    if (trimmed === 'copied') {return false;}
     return (
-      trimmed.startsWith("extracting") ||
-      trimmed.startsWith("connecting") ||
-      trimmed.startsWith("summarizing") ||
-      trimmed.startsWith("sending") ||
-      trimmed.startsWith("slides:") ||
-      trimmed.startsWith("downloading") ||
-      trimmed.startsWith("transcribing") ||
-      trimmed.startsWith("processing") ||
-      trimmed.startsWith("refreshing") ||
-      trimmed.startsWith("starting") ||
-      trimmed.startsWith("scanning") ||
-      trimmed.includes("whisper") ||
-      trimmed.includes("transcript") ||
-      trimmed.includes("caption")
+      trimmed.startsWith('extracting') ||
+      trimmed.startsWith('connecting') ||
+      trimmed.startsWith('summarizing') ||
+      trimmed.startsWith('sending') ||
+      trimmed.startsWith('slides:') ||
+      trimmed.startsWith('downloading') ||
+      trimmed.startsWith('transcribing') ||
+      trimmed.startsWith('processing') ||
+      trimmed.startsWith('refreshing') ||
+      trimmed.startsWith('starting') ||
+      trimmed.startsWith('scanning') ||
+      trimmed.includes('whisper') ||
+      trimmed.includes('transcript') ||
+      trimmed.includes('caption')
     );
   };
 
   const renderHeader = () => {
     const { phase } = getState();
-    const isStreaming = phase === "connecting" || phase === "streaming";
+    const isStreaming = phase === 'connecting' || phase === 'streaming';
     const trimmed = statusText.trim();
     const showStatus = trimmed.length > 0;
     const split = showStatus
       ? splitStatusPercent(trimmed)
-      : { text: "", percent: null as string | null };
+      : { percent: null as string | null, text: '' };
     const percentNum = split.percent ? Number.parseInt(split.percent, 10) : null;
     const statusLabel = split.text || trimmed;
     const isError =
       showStatus &&
-      (trimmed.toLowerCase().startsWith("error:") || trimmed.toLowerCase().includes(" error"));
+      (trimmed.toLowerCase().startsWith('error:') || trimmed.toLowerCase().includes(' error'));
     const isRunning = showProgress && !isError;
     const allowStatusWithSubtitle = showStatus && (isRunning || isActiveStatus(trimmed));
     const shouldShowStatus =
@@ -101,31 +98,31 @@ export function createHeaderController({
     ) {
       const next = `${percentNum}%`;
       if (next !== lastProgress) {
-        headerEl.style.setProperty("--progress", next);
+        headerEl.style.setProperty('--progress', next);
         lastProgress = next;
       }
     } else {
-      if (lastProgress !== "0%") {
-        headerEl.style.setProperty("--progress", "0%");
-        lastProgress = "0%";
+      if (lastProgress !== '0%') {
+        headerEl.style.setProperty('--progress', '0%');
+        lastProgress = '0%';
       }
     }
 
     if (isError !== lastIsError) {
-      headerEl.classList.toggle("isError", isError);
+      headerEl.classList.toggle('isError', isError);
       lastIsError = isError;
     }
     if (isRunning !== lastIsRunning) {
-      headerEl.classList.toggle("isRunning", isRunning);
+      headerEl.classList.toggle('isRunning', isRunning);
       lastIsRunning = isRunning;
     }
     const isIndeterminate = isRunning && percentNum == null;
     if (isIndeterminate !== lastIsIndeterminate) {
-      headerEl.classList.toggle("isIndeterminate", isIndeterminate);
+      headerEl.classList.toggle('isIndeterminate', isIndeterminate);
       lastIsIndeterminate = isIndeterminate;
     }
 
-    const progressDisplay = isRunning || isError ? "" : "none";
+    const progressDisplay = isRunning || isError ? '' : 'none';
     if (progressDisplay !== lastProgressDisplay) {
       progressFillEl.style.display = progressDisplay;
       lastProgressDisplay = progressDisplay;
@@ -134,7 +131,7 @@ export function createHeaderController({
       allowStatusWithSubtitle && baseSubtitle && !isError
         ? `${statusLabel} · ${baseSubtitle}`
         : statusLabel;
-    const nextSubtitle = isError ? statusLabel : shouldShowStatus ? combinedSubtitle : baseSubtitle;
+    const nextSubtitle = isError ? statusLabel : (shouldShowStatus ? combinedSubtitle : baseSubtitle);
     if (nextSubtitle !== lastSubtitle) {
       subtitleEl.textContent = nextSubtitle;
       lastSubtitle = nextSubtitle;
@@ -142,7 +139,7 @@ export function createHeaderController({
   };
 
   const updateHeader = () => {
-    if (rafId != null) return;
+    if (rafId != null) {return;}
     rafId = window.requestAnimationFrame(() => {
       rafId = null;
       renderHeader();
@@ -150,8 +147,8 @@ export function createHeaderController({
   };
 
   const updateHeaderOffset = () => {
-    const height = headerEl.getBoundingClientRect().height;
-    document.documentElement.style.setProperty("--header-height", `${height}px`);
+    const {height} = headerEl.getBoundingClientRect();
+    document.documentElement.style.setProperty('--header-height', `${height}px`);
   };
 
   const setBaseSubtitle = (text: string) => {
@@ -160,7 +157,7 @@ export function createHeaderController({
   };
 
   const setBaseTitle = (text: string) => {
-    const next = text.trim() || "Summarize";
+    const next = text.trim() || 'Summarize';
     baseTitle = next;
     updateHeader();
   };
@@ -170,7 +167,7 @@ export function createHeaderController({
     const trimmed = text.trim();
     const isError =
       trimmed.length > 0 &&
-      (trimmed.toLowerCase().startsWith("error:") || trimmed.toLowerCase().includes(" error"));
+      (trimmed.toLowerCase().startsWith('error:') || trimmed.toLowerCase().includes(' error'));
     const forceProgress = isActiveStatus(trimmed);
     const split = splitStatusPercent(text);
     const { phase } = getState();
@@ -178,21 +175,21 @@ export function createHeaderController({
       armProgress();
     } else if (trimmed && shouldAllowProgress(forceProgress) && !isError) {
       armProgress();
-    } else if (!trimmed && !(phase === "connecting" || phase === "streaming")) {
+    } else if (!trimmed && !(phase === 'connecting' || phase === 'streaming')) {
       stopProgress();
     }
     updateHeader();
   };
 
   const armProgress = () => {
-    if (!shouldAllowProgress()) return;
-    if (showProgress) return;
+    if (!shouldAllowProgress()) {return;}
+    if (showProgress) {return;}
     showProgress = true;
     updateHeader();
   };
 
   const stopProgress = () => {
-    if (!showProgress) return;
+    if (!showProgress) {return;}
     showProgress = false;
     updateHeader();
   };
@@ -200,10 +197,10 @@ export function createHeaderController({
   const setProgressOverride = (next: boolean) => {
     progressOverride = next;
     if (next) {
-      if (!showProgress) showProgress = true;
+      if (!showProgress) {showProgress = true;}
     } else if (
       !statusText.trim() &&
-      !(getState().phase === "connecting" || getState().phase === "streaming")
+      !(getState().phase === 'connecting' || getState().phase === 'streaming')
     ) {
       showProgress = false;
     }
@@ -211,12 +208,12 @@ export function createHeaderController({
   };
 
   return {
-    setBaseTitle,
-    setBaseSubtitle,
-    setStatus,
     armProgress,
-    stopProgress,
+    setBaseSubtitle,
+    setBaseTitle,
     setProgressOverride,
+    setStatus,
+    stopProgress,
     updateHeaderOffset,
   };
 }

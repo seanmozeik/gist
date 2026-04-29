@@ -1,32 +1,31 @@
-import { load } from "cheerio";
-import { extractYouTubeVideoId } from "../url.js";
+import { load } from 'cheerio';
 
-export { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from "../url.js";
+import { extractYouTubeVideoId } from '../url.js';
+
+export { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from '../url.js';
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 const MAX_EMBED_YOUTUBE_TEXT_CHARS = 2000;
 const MAX_EMBED_YOUTUBE_READABILITY_CHARS = 2000;
 
-type ReadabilityDeps = {
-  Readability: typeof import("@mozilla/readability").Readability;
-  JSDOM: typeof import("jsdom").JSDOM;
-  VirtualConsole: typeof import("jsdom").VirtualConsole;
-};
+interface ReadabilityDeps {
+  Readability: typeof import('@mozilla/readability').Readability;
+  JSDOM: typeof import('jsdom').JSDOM;
+  VirtualConsole: typeof import('jsdom').VirtualConsole;
+}
 
 let readabilityDepsPromise: Promise<ReadabilityDeps> | null = null;
 
 async function loadReadabilityDeps(): Promise<ReadabilityDeps> {
-  if (!readabilityDepsPromise) {
-    readabilityDepsPromise = (async () => {
+  readabilityDepsPromise ??= (async () => {
       const [{ Readability }, { JSDOM, VirtualConsole }] = await Promise.all([
-        import("@mozilla/readability"),
-        import("jsdom"),
+        import('@mozilla/readability'),
+        import('jsdom'),
       ]);
-      return { Readability, JSDOM, VirtualConsole };
+      return { JSDOM, Readability, VirtualConsole };
     })();
-  }
   return readabilityDepsPromise;
 }
 
@@ -35,27 +34,27 @@ async function extractReadabilityText(html: string): Promise<string> {
     const cleanedHtml = stripCssFromHtml(html);
     const { Readability, JSDOM, VirtualConsole } = await loadReadabilityDeps();
     const virtualConsole = new VirtualConsole();
-    virtualConsole.on("jsdomError", (err) => {
+    virtualConsole.on('jsdomError', (err) => {
       const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message?: unknown }).message ?? "")
-          : "";
-      if (message.includes("Could not parse CSS stylesheet")) return;
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message ?? '')
+          : '';
+      if (message.includes('Could not parse CSS stylesheet')) {return;}
       console.error(err);
     });
 
     const dom = new JSDOM(cleanedHtml, { virtualConsole });
     const reader = new Readability(dom.window.document);
     const article = reader.parse();
-    const text = (article?.textContent ?? "").replace(/\s+/g, " ").trim();
+    const text = (article?.textContent ?? '').replaceAll(/\s+/g, ' ').trim();
     return text;
   } catch {
-    return "";
+    return '';
   }
 }
 
 function stripCssFromHtml(html: string): string {
-  return html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "");
+  return html.replaceAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 }
 
 export async function extractEmbeddedYouTubeUrlFromHtml(
@@ -65,13 +64,13 @@ export async function extractEmbeddedYouTubeUrlFromHtml(
 ): Promise<string | null> {
   try {
     const $ = load(html);
-    const rawText = $("body").text() || $.text();
-    const normalizedText = rawText.replace(/\s+/g, " ").trim();
+    const rawText = $('body').text() ?? $.text();
+    const normalizedText = rawText.replaceAll(/\s+/g, ' ').trim();
 
     if (normalizedText.length > maxTextChars) {
       const readabilityText = await extractReadabilityText(html);
       if (readabilityText.length > 0) {
-        if (readabilityText.length > maxReadabilityChars) return null;
+        if (readabilityText.length > maxReadabilityChars) {return null;}
       } else {
         return null;
       }
@@ -80,24 +79,24 @@ export async function extractEmbeddedYouTubeUrlFromHtml(
     const candidates: string[] = [];
 
     const iframeSrc =
-      $('iframe[src*="youtube.com/embed/"], iframe[src*="youtu.be/"]').first().attr("src") ?? null;
-    if (iframeSrc) candidates.push(iframeSrc);
+      $('iframe[src*="youtube.com/embed/"], iframe[src*="youtu.be/"]').first().attr('src') ?? null;
+    if (iframeSrc) {candidates.push(iframeSrc);}
 
     const ogVideo =
       $(
         'meta[property="og:video"], meta[property="og:video:url"], meta[property="og:video:secure_url"], meta[name="og:video"], meta[name="og:video:url"], meta[name="og:video:secure_url"]',
       )
         .first()
-        .attr("content") ?? null;
-    if (ogVideo) candidates.push(ogVideo);
+        .attr('content') ?? null;
+    if (ogVideo) {candidates.push(ogVideo);}
 
     for (const candidate of candidates) {
       let url = candidate.trim();
-      if (!url) continue;
-      if (url.startsWith("//")) url = `https:${url}`;
-      if (url.startsWith("/")) url = `https://www.youtube.com${url}`;
+      if (!url) {continue;}
+      if (url.startsWith('//')) {url = `https:${url}`;}
+      if (url.startsWith('/')) {url = `https://www.youtube.com${url}`;}
       const id = extractYouTubeVideoId(url);
-      if (id) return `https://www.youtube.com/watch?v=${id}`;
+      if (id) {return `https://www.youtube.com/watch?v=${id}`;}
     }
   } catch {
     return null;
@@ -115,20 +114,20 @@ export function sanitizeYoutubeJsonResponse(input: string): string {
 
 export function decodeHtmlEntities(input: string): string {
   return input
-    .replaceAll("&amp;", "&")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'")
-    .replaceAll("&#x27;", "'")
-    .replaceAll("&#x2F;", "/")
-    .replaceAll("&nbsp;", " ");
+    .replaceAll('&amp;', '&')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&#x27;', "'")
+    .replaceAll('&#x2F;', '/')
+    .replaceAll('&nbsp;', ' ');
 }
 
 export function extractYoutubeBootstrapConfig(html: string): Record<string, unknown> | null {
   try {
     const $ = load(html);
-    const scripts = $("script").toArray();
+    const scripts = $('script').toArray();
 
     for (const script of scripts) {
       const source = $(script).html();
@@ -142,18 +141,18 @@ export function extractYoutubeBootstrapConfig(html: string): Record<string, unkn
       }
     }
   } catch {
-    // fall through to legacy regex
+    // Fall through to legacy regex
   }
 
   return parseBootstrapFromScript(html);
 }
 
-const YTCFG_SET_TOKEN = "ytcfg.set";
-const YTCFG_VAR_TOKEN = "var ytcfg";
+const YTCFG_SET_TOKEN = 'ytcfg.set';
+const YTCFG_VAR_TOKEN = 'var ytcfg';
 
 function extractBalancedJsonObject(source: string, startAt: number): string | null {
-  const start = source.indexOf("{", startAt);
-  if (start < 0) {
+  const start = source.indexOf('{', startAt);
+  if (start === -1) {
     return null;
   }
 
@@ -173,7 +172,7 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
         escaping = false;
         continue;
       }
-      if (ch === "\\") {
+      if (ch === '\\') {
         escaping = true;
         continue;
       }
@@ -190,11 +189,11 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
       continue;
     }
 
-    if (ch === "{") {
+    if (ch === '{') {
       depth += 1;
       continue;
     }
-    if (ch === "}") {
+    if (ch === '}') {
       depth -= 1;
       if (depth === 0) {
         return source.slice(start, i + 1);
@@ -221,14 +220,14 @@ function parseBootstrapFromScript(source: string): Record<string, unknown> | nul
           return parsed;
         }
       } catch {
-        // keep searching
+        // Keep searching
       }
     }
     index += YTCFG_SET_TOKEN.length;
   }
 
   const varIndex = sanitizedSource.indexOf(YTCFG_VAR_TOKEN);
-  if (varIndex >= 0) {
+  if (varIndex !== -1) {
     const object = extractBalancedJsonObject(sanitizedSource, varIndex);
     if (object) {
       try {

@@ -5,9 +5,9 @@ const DAEMON_STATUS_MAX_ATTEMPTS = 2;
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function shouldRetryDaemon(err: unknown) {
-  if (err instanceof DOMException && err.name === "AbortError") return true;
-  const message = err instanceof Error ? err.message : "";
-  return message.toLowerCase() === "failed to fetch";
+  if (err instanceof DOMException && err.name === 'AbortError') {return true;}
+  const message = err instanceof Error ? err.message : '';
+  return message.toLowerCase() === 'failed to fetch';
 }
 
 export function createDaemonStatusChecker({
@@ -19,8 +19,8 @@ export function createDaemonStatusChecker({
   fetchImpl?: typeof fetch;
   getExtensionVersion: () => string;
 }) {
-  const setDaemonStatus = (text: string, state?: "ok" | "warn" | "error") => {
-    const textEl = statusEl.querySelector<HTMLElement>(".daemonStatus__text");
+  const setDaemonStatus = (text: string, state?: 'ok' | 'warn' | 'error') => {
+    const textEl = statusEl.querySelector<HTMLElement>('.daemonStatus__text');
     if (textEl) {
       textEl.textContent = text;
     } else {
@@ -52,67 +52,67 @@ export function createDaemonStatusChecker({
         window.clearTimeout(timeout);
       }
     }
-    throw new Error("health failed");
+    throw new Error('health failed');
   };
 
   const checkDaemonStatus = async (token: string) => {
     const trimmedToken = token.trim();
     if (!trimmedToken) {
-      setDaemonStatus("Add token to verify daemon connection", "warn");
+      setDaemonStatus('Add token to verify daemon connection', 'warn');
       return;
     }
 
     daemonCheckId += 1;
     const checkId = daemonCheckId;
-    setDaemonStatus("Checking daemon…");
+    setDaemonStatus('Checking daemon…');
 
     try {
-      const res = await fetchWithRetry("http://127.0.0.1:8787/health");
-      if (checkId !== daemonCheckId) return;
+      const res = await fetchWithRetry('http://127.0.0.1:8787/health');
+      if (checkId !== daemonCheckId) {return;}
       if (!res.ok) {
         setDaemonStatus(
           `Daemon error (${res.status} ${res.statusText}) — run \`summarize daemon status\``,
-          "error",
+          'error',
         );
         return;
       }
       const json = (await res.json()) as { version?: unknown };
-      const daemonVersion = typeof json.version === "string" ? json.version.trim() : "";
+      const daemonVersion = typeof json.version === 'string' ? json.version.trim() : '';
       const extVersion = getExtensionVersion();
-      const versionNote = daemonVersion ? `v${daemonVersion}` : "version unknown";
+      const versionNote = daemonVersion ? `v${daemonVersion}` : 'version unknown';
 
       try {
-        const ping = await fetchWithRetry("http://127.0.0.1:8787/v1/ping", {
+        const ping = await fetchWithRetry('http://127.0.0.1:8787/v1/ping', {
           headers: { Authorization: `Bearer ${trimmedToken}` },
         });
-        if (checkId !== daemonCheckId) return;
+        if (checkId !== daemonCheckId) {return;}
         if (!ping.ok) {
           setDaemonStatus(
             `Daemon ${versionNote} (token mismatch) — update token in side panel and Save`,
-            "warn",
+            'warn',
           );
           return;
         }
       } catch {
-        if (checkId !== daemonCheckId) return;
+        if (checkId !== daemonCheckId) {return;}
         setDaemonStatus(
           `Daemon ${versionNote} (auth failed) — update token in side panel and Save`,
-          "warn",
+          'warn',
         );
         return;
       }
 
       if (daemonVersion && extVersion && daemonVersion !== extVersion) {
-        setDaemonStatus(`Daemon ${versionNote} (extension v${extVersion})`, "warn");
+        setDaemonStatus(`Daemon ${versionNote} (extension v${extVersion})`, 'warn');
         return;
       }
 
-      setDaemonStatus(`Daemon ${versionNote} connected`, "ok");
+      setDaemonStatus(`Daemon ${versionNote} connected`, 'ok');
     } catch {
-      if (checkId !== daemonCheckId) return;
+      if (checkId !== daemonCheckId) {return;}
       setDaemonStatus(
-        "Daemon unreachable — run `summarize daemon status` and check ~/.summarize/logs/daemon.err.log",
-        "error",
+        'Daemon unreachable — run `summarize daemon status` and check ~/.summarize/logs/daemon.err.log',
+        'error',
       );
     }
   };

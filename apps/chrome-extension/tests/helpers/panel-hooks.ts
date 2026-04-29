@@ -1,11 +1,9 @@
-import type { Page } from "@playwright/test";
+import type { Page } from '@playwright/test';
 
 export async function getPanelPhase(page: Page): Promise<string | null> {
   return await page.evaluate(() => {
     const hooks = (
-      window as typeof globalThis & {
-        __summarizeTestHooks?: { getPhase?: () => string };
-      }
+      window as typeof globalThis & { __summarizeTestHooks?: { getPhase?: () => string } }
     ).__summarizeTestHooks;
     return hooks?.getPhase?.() ?? null;
   });
@@ -14,20 +12,16 @@ export async function getPanelPhase(page: Page): Promise<string | null> {
 export async function getPanelSummaryMarkdown(page: Page): Promise<string> {
   return await page.evaluate(() => {
     const hooks = (
-      window as typeof globalThis & {
-        __summarizeTestHooks?: { getSummaryMarkdown?: () => string };
-      }
+      window as typeof globalThis & { __summarizeTestHooks?: { getSummaryMarkdown?: () => string } }
     ).__summarizeTestHooks;
-    return hooks?.getSummaryMarkdown?.() ?? "";
+    return hooks?.getSummaryMarkdown?.() ?? '';
   });
 }
 
 export async function getPanelModel(page: Page): Promise<string | null> {
   return await page.evaluate(() => {
     const hooks = (
-      window as typeof globalThis & {
-        __summarizeTestHooks?: { getModel?: () => string | null };
-      }
+      window as typeof globalThis & { __summarizeTestHooks?: { getModel?: () => string | null } }
     ).__summarizeTestHooks;
     return hooks?.getModel?.() ?? null;
   });
@@ -35,12 +29,12 @@ export async function getPanelModel(page: Page): Promise<string | null> {
 
 export async function getPanelSlidesTimeline(
   page: Page,
-): Promise<Array<{ index: number; timestamp: number | null }>> {
+): Promise<{ index: number; timestamp: number | null }[]> {
   return await page.evaluate(() => {
     const hooks = (
       window as typeof globalThis & {
         __summarizeTestHooks?: {
-          getSlidesTimeline?: () => Array<{ index: number; timestamp: number | null }>;
+          getSlidesTimeline?: () => { index: number; timestamp: number | null }[];
         };
       }
     ).__summarizeTestHooks;
@@ -77,7 +71,7 @@ export async function getPanelSlidesSummaryMarkdown(page: Page): Promise<string>
         __summarizeTestHooks?: { getSlidesSummaryMarkdown?: () => string };
       }
     ).__summarizeTestHooks;
-    return hooks?.getSlidesSummaryMarkdown?.() ?? "";
+    return hooks?.getSlidesSummaryMarkdown?.() ?? '';
   });
 }
 
@@ -103,33 +97,33 @@ export async function getPanelSlidesSummaryModel(page: Page): Promise<string | n
   });
 }
 
-export async function getPanelSlideDescriptions(page: Page): Promise<Array<[number, string]>> {
+export async function getPanelSlideDescriptions(page: Page): Promise<[number, string][]> {
   return await page.evaluate(() => {
     const hooks = (
       window as typeof globalThis & {
-        __summarizeTestHooks?: { getSlideDescriptions?: () => Array<[number, string]> };
+        __summarizeTestHooks?: { getSlideDescriptions?: () => [number, string][] };
       }
     ).__summarizeTestHooks;
     return hooks?.getSlideDescriptions?.() ?? [];
   });
 }
 
-export async function getPanelSlideSummaryEntries(page: Page): Promise<Array<[number, string]>> {
+export async function getPanelSlideSummaryEntries(page: Page): Promise<[number, string][]> {
   return await page.evaluate(() => {
     const hooks = (
       window as typeof globalThis & {
-        __summarizeTestHooks?: { getSlideSummaryEntries?: () => Array<[number, string]> };
+        __summarizeTestHooks?: { getSlideSummaryEntries?: () => [number, string][] };
       }
     ).__summarizeTestHooks;
     return hooks?.getSlideSummaryEntries?.() ?? [];
   });
 }
 
-export async function getPanelSlideTitleEntries(page: Page): Promise<Array<[number, string]>> {
+export async function getPanelSlideTitleEntries(page: Page): Promise<[number, string][]> {
   return await page.evaluate(() => {
     const hooks = (
       window as typeof globalThis & {
-        __summarizeTestHooks?: { getSlideTitleEntries?: () => Array<[number, string]> };
+        __summarizeTestHooks?: { getSlideTitleEntries?: () => [number, string][] };
       }
     ).__summarizeTestHooks;
     return hooks?.getSlideTitleEntries?.() ?? [];
@@ -147,7 +141,7 @@ export async function waitForApplySlidesHook(page: Page) {
       return Boolean(hooks?.applySlidesPayload);
     },
     null,
-    { timeout: 5_000 },
+    { timeout: 5000 },
   );
 }
 
@@ -165,10 +159,10 @@ export async function waitForSlidesRuntimeHooks(page: Page) {
         }
       ).__summarizeTestHooks;
       return (
-        typeof hooks?.applySlidesPayload === "function" &&
-        typeof hooks?.applyBgMessage === "function" &&
-        typeof hooks?.applySummaryMarkdown === "function" &&
-        typeof hooks?.getSlidesSummaryMarkdown === "function"
+        typeof hooks?.applySlidesPayload === 'function' &&
+        typeof hooks?.applyBgMessage === 'function' &&
+        typeof hooks?.applySummaryMarkdown === 'function' &&
+        typeof hooks?.getSlidesSummaryMarkdown === 'function'
       );
     },
     null,
@@ -188,12 +182,12 @@ export async function waitForTranscriptTimedTextHook(page: Page) {
         }
       ).__summarizeTestHooks;
       return (
-        typeof hooks?.getTranscriptTimedText === "function" &&
-        typeof hooks?.setTranscriptTimedText === "function"
+        typeof hooks?.getTranscriptTimedText === 'function' &&
+        typeof hooks?.setTranscriptTimedText === 'function'
       );
     },
     null,
-    { timeout: 5_000 },
+    { timeout: 5000 },
   );
 }
 
@@ -209,13 +203,14 @@ export async function waitForSettingsHydratedHook(page: Page) {
         }
       ).__summarizeTestHooks;
       return (
-        typeof hooks?.getSettingsHydrated === "function" &&
-        typeof hooks?.getChatEnabled === "function" &&
-        hooks.getSettingsHydrated() === true
+        typeof hooks?.getSettingsHydrated === 'function' &&
+        typeof hooks?.getChatEnabled === 'function' &&
+        
+        hooks.getSettingsHydrated()
       );
     },
     null,
-    { timeout: 5_000 },
+    { timeout: 5000 },
   );
 }
 
@@ -223,14 +218,12 @@ export async function waitForChatEnabled(page: Page, expected: boolean) {
   await page.waitForFunction(
     (target) => {
       const hooks = (
-        window as typeof globalThis & {
-          __summarizeTestHooks?: { getChatEnabled?: () => boolean };
-        }
+        window as typeof globalThis & { __summarizeTestHooks?: { getChatEnabled?: () => boolean } }
       ).__summarizeTestHooks;
       return hooks?.getChatEnabled?.() === target;
     },
     expected,
-    { timeout: 5_000 },
+    { timeout: 5000 },
   );
 }
 

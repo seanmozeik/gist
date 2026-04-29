@@ -1,7 +1,7 @@
 ---
-summary: "CLI model providers and config for Claude, Codex, Gemini, Cursor Agent, OpenClaw, and OpenCode."
+summary: 'CLI model providers and config for Claude, Codex, Gemini, Cursor Agent, OpenClaw, and OpenCode.'
 read_when:
-  - "When changing CLI model integration."
+  - 'When changing CLI model integration.'
 ---
 
 # CLI models
@@ -45,9 +45,7 @@ Gemini CLI performance: summarize sets `GEMINI_CLI_NO_RELAUNCH=true` for Gemini 
 Set explicit CLI allowlist:
 
 ```json
-{
-  "cli": { "enabled": ["gemini"] }
-}
+{ "cli": { "enabled": ["gemini"] } }
 ```
 
 Configure auto CLI fallback:
@@ -67,9 +65,7 @@ Configure auto CLI fallback:
 Disable auto CLI fallback:
 
 ```json
-{
-  "cli": { "autoFallback": { "enabled": false } }
-}
+{ "cli": { "autoFallback": { "enabled": false } } }
 ```
 
 Note: `--model auto` (explicit) does not trigger auto CLI fallback unless `cli.enabled` is set.
@@ -108,22 +104,10 @@ path-based prompt and enables the required tool flags:
     },
     "codex": { "model": "gpt-5.2" },
     "gemini": { "model": "flash", "extraArgs": ["--verbose"] },
-    "claude": {
-      "model": "sonnet",
-      "binary": "/usr/local/bin/claude",
-      "extraArgs": ["--verbose"]
-    },
-    "agent": {
-      "model": "auto",
-      "binary": "/usr/local/bin/agent"
-    },
-    "openclaw": {
-      "model": "main",
-      "binary": "/usr/local/bin/openclaw"
-    },
-    "opencode": {
-      "binary": "/usr/local/bin/opencode"
-    }
+    "claude": { "model": "sonnet", "binary": "/usr/local/bin/claude", "extraArgs": ["--verbose"] },
+    "agent": { "model": "auto", "binary": "/usr/local/bin/agent" },
+    "openclaw": { "model": "main", "binary": "/usr/local/bin/openclaw" },
+    "opencode": { "binary": "/usr/local/bin/opencode" }
   }
 }
 ```

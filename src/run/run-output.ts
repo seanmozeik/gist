@@ -1,6 +1,6 @@
-import type { LengthArg } from "../flags.js";
-import { SUMMARY_LENGTH_MAX_CHARACTERS } from "../prompts/index.js";
-import { resolveTargetCharacters } from "./format.js";
+import type { LengthArg } from '../flags.js';
+import { SUMMARY_LENGTH_MAX_CHARACTERS } from '../prompts/index.js';
+import { resolveTargetCharacters } from './format.js';
 
 export function resolveDesiredOutputTokens({
   lengthArg,
@@ -9,7 +9,7 @@ export function resolveDesiredOutputTokens({
   lengthArg: LengthArg;
   maxOutputTokensArg: number | null;
 }): number | null {
-  if (typeof maxOutputTokensArg === "number") return maxOutputTokensArg;
+  if (typeof maxOutputTokensArg === 'number') {return maxOutputTokensArg;}
   const targetChars = resolveTargetCharacters(lengthArg, SUMMARY_LENGTH_MAX_CHARACTERS);
   if (
     !Number.isFinite(targetChars) ||

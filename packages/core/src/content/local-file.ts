@@ -1,19 +1,20 @@
-import { statSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { statSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import {
   inferDirectMediaKind,
   resolveDirectMediaExtension,
   resolveDirectMediaType,
   type DirectMediaKind,
-} from "./direct-media.js";
+} from './direct-media.js';
 
-export type LocalFileReference = {
+export interface LocalFileReference {
   filePath: string;
   fileUrl: string;
   filename: string;
   mtimeMs: number;
-};
+}
 
 export type LocalDirectMediaSource = LocalFileReference & {
   extension: string | null;
@@ -23,7 +24,7 @@ export type LocalDirectMediaSource = LocalFileReference & {
 
 export function isLocalFileUrl(value: string): boolean {
   try {
-    return new URL(value).protocol === "file:";
+    return new URL(value).protocol === 'file:';
   } catch {
     return false;
   }
@@ -35,7 +36,7 @@ export function resolveLocalFileReference(value: string): LocalFileReference | n
       ? fileURLToPath(stripFileUrlSearchAndHash(new URL(value)))
       : path.resolve(value);
     const stat = statSync(filePath);
-    if (!stat.isFile()) return null;
+    if (!stat.isFile()) {return null;}
     return {
       filePath,
       fileUrl: pathToFileURL(filePath).href,
@@ -56,24 +57,19 @@ export function resolveLocalDirectMediaSource(
   kindHint: DirectMediaKind | null = null,
 ): LocalDirectMediaSource | null {
   const file = resolveLocalFileReference(value);
-  if (!file) return null;
+  if (!file) {return null;}
   const mediaKind =
     kindHint ?? inferDirectMediaKind(file.filePath) ?? inferDirectMediaKind(file.fileUrl);
-  if (!mediaKind) return null;
+  if (!mediaKind) {return null;}
   const mediaType =
     resolveDirectMediaType(file.filePath, mediaKind) ??
     resolveDirectMediaType(file.fileUrl, mediaKind);
-  if (!mediaType) return null;
-  return {
-    ...file,
-    extension: resolveDirectMediaExtension(file.filePath),
-    mediaKind,
-    mediaType,
-  };
+  if (!mediaType) {return null;}
+  return { ...file, extension: resolveDirectMediaExtension(file.filePath), mediaKind, mediaType };
 }
 
 function stripFileUrlSearchAndHash(url: URL): URL {
-  url.search = "";
-  url.hash = "";
+  url.search = '';
+  url.hash = '';
   return url;
 }

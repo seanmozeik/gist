@@ -1,29 +1,29 @@
-import { formatOutputLanguageForJson } from "../../../language.js";
-import type { UrlFlowContext } from "./types.js";
+import { formatOutputLanguageForJson } from '../../../language.js';
+import type { UrlFlowContext } from './types.js';
 
 export function buildUrlJsonInput(options: {
-  flags: UrlFlowContext["flags"];
+  flags: UrlFlowContext['flags'];
   url: string;
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   modelLabel: string | null;
 }) {
   const { flags, url, effectiveMarkdownMode, modelLabel } = options;
   return {
-    kind: "url" as const,
-    url,
-    timeoutMs: flags.timeoutMs,
-    youtube: flags.youtubeMode,
     firecrawl: flags.firecrawlMode,
     format: flags.format,
-    markdown: effectiveMarkdownMode,
-    timestamps: flags.transcriptTimestamps,
+    kind: 'url' as const,
+    language: formatOutputLanguageForJson(flags.outputLanguage),
     length:
-      flags.lengthArg.kind === "preset"
-        ? { kind: "preset" as const, preset: flags.lengthArg.preset }
-        : { kind: "chars" as const, maxCharacters: flags.lengthArg.maxCharacters },
+      flags.lengthArg.kind === 'preset'
+        ? { kind: 'preset' as const, preset: flags.lengthArg.preset }
+        : { kind: 'chars' as const, maxCharacters: flags.lengthArg.maxCharacters },
+    markdown: effectiveMarkdownMode,
     maxOutputTokens: flags.maxOutputTokensArg,
     model: modelLabel,
-    language: formatOutputLanguageForJson(flags.outputLanguage),
+    timeoutMs: flags.timeoutMs,
+    timestamps: flags.transcriptTimestamps,
+    url,
+    youtube: flags.youtubeMode,
   };
 }
 
@@ -37,12 +37,12 @@ export function buildUrlJsonEnv(apiStatus: {
   anthropicConfigured: boolean;
 }) {
   return {
-    hasXaiKey: Boolean(apiStatus.xaiApiKey),
-    hasOpenAIKey: Boolean(apiStatus.apiKey),
-    hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
+    hasAnthropicKey: apiStatus.anthropicConfigured,
     hasApifyToken: Boolean(apiStatus.apifyToken),
     hasFirecrawlKey: apiStatus.firecrawlConfigured,
     hasGoogleKey: apiStatus.googleConfigured,
-    hasAnthropicKey: apiStatus.anthropicConfigured,
+    hasOpenAIKey: Boolean(apiStatus.apiKey),
+    hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
+    hasXaiKey: Boolean(apiStatus.xaiApiKey),
   };
 }

@@ -1,30 +1,31 @@
-import { describe, expect, it, vi } from "vitest";
-import { createPanelPortRuntime } from "../apps/chrome-extension/src/entrypoints/sidepanel/panel-port.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import { createPanelPortRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/panel-port.js';
 
 function createMockPort() {
-  const onMessageListeners: Array<(message: unknown) => void> = [];
-  const onDisconnectListeners: Array<() => void> = [];
+  const onMessageListeners: ((message: unknown) => void)[] = [];
+  const onDisconnectListeners: (() => void)[] = [];
   return {
-    posted: [] as unknown[],
-    onMessage: {
-      addListener(listener: (message: unknown) => void) {
-        onMessageListeners.push(listener);
-      },
+    disconnect() {
+      for (const listener of onDisconnectListeners) listener();
+    },
+    emitMessage(message: unknown) {
+      for (const listener of onMessageListeners) listener(message);
     },
     onDisconnect: {
       addListener(listener: () => void) {
         onDisconnectListeners.push(listener);
       },
     },
+    onMessage: {
+      addListener(listener: (message: unknown) => void) {
+        onMessageListeners.push(listener);
+      },
+    },
     postMessage(message: unknown) {
       this.posted.push(message);
     },
-    emitMessage(message: unknown) {
-      for (const listener of onMessageListeners) listener(message);
-    },
-    disconnect() {
-      for (const listener of onDisconnectListeners) listener();
-    },
+    posted: [] as unknown[],
   } as unknown as chrome.runtime.Port & {
     posted: unknown[];
     emitMessage: (message: unknown) => void;
@@ -32,8 +33,8 @@ function createMockPort() {
   };
 }
 
-describe("sidepanel panel port runtime", () => {
-  it("reuses the same connected port", async () => {
+describe('sidepanel panel port runtime', () => {
+  it('reuses the same connected port', async () => {
     const port = createMockPort();
     const connect = vi.fn(() => port);
     const runtime = createPanelPortRuntime({
@@ -44,14 +45,14 @@ describe("sidepanel panel port runtime", () => {
 
     await runtime.ensure();
     await runtime.ensure();
-    await runtime.send({ type: "panel:ping" });
+    await runtime.send({ type: 'panel:ping' });
 
     expect(connect).toHaveBeenCalledTimes(1);
-    expect(connect).toHaveBeenCalledWith("sidepanel:17");
-    expect(port.posted).toEqual([{ type: "panel:ping" }]);
+    expect(connect).toHaveBeenCalledWith('sidepanel:17');
+    expect(port.posted).toEqual([{ type: 'panel:ping' }]);
   });
 
-  it("forwards incoming messages and clears the debug port on disconnect", async () => {
+  it('forwards incoming messages and clears the debug port on disconnect', async () => {
     const port = createMockPort();
     const onMessage = vi.fn();
     const runtime = createPanelPortRuntime({
@@ -65,8 +66,8 @@ describe("sidepanel panel port runtime", () => {
       (globalThis as { __summarizePanelPort?: chrome.runtime.Port }).__summarizePanelPort,
     ).toBe(port);
 
-    port.emitMessage({ type: "ui:status", status: "ok" });
-    expect(onMessage).toHaveBeenCalledWith({ type: "ui:status", status: "ok" });
+    port.emitMessage({ status: 'ok', type: 'ui:status' });
+    expect(onMessage).toHaveBeenCalledWith({ status: 'ok', type: 'ui:status' });
 
     port.disconnect();
     expect(
@@ -74,7 +75,7 @@ describe("sidepanel panel port runtime", () => {
     ).toBeUndefined();
   });
 
-  it("skips connecting when chrome has no current window id", async () => {
+  it('skips connecting when chrome has no current window id', async () => {
     const connect = vi.fn();
     const runtime = createPanelPortRuntime({
       connect,
@@ -82,14 +83,14 @@ describe("sidepanel panel port runtime", () => {
       onMessage: () => {},
     });
 
-    await runtime.send({ type: "panel:ready" });
+    await runtime.send({ type: 'panel:ready' });
     expect(connect).not.toHaveBeenCalled();
   });
 
-  it("ignores postMessage races while the port is reloading", async () => {
+  it('ignores postMessage races while the port is reloading', async () => {
     const port = createMockPort();
     port.postMessage = vi.fn(() => {
-      throw new Error("disconnected");
+      throw new Error('disconnected');
     });
     const runtime = createPanelPortRuntime({
       connect: () => port,
@@ -97,7 +98,7 @@ describe("sidepanel panel port runtime", () => {
       onMessage: () => {},
     });
 
-    await expect(runtime.send({ type: "panel:ready" })).resolves.toBeUndefined();
-    expect(port.postMessage).toHaveBeenCalledWith({ type: "panel:ready" });
+    await expect(runtime.send({ type: 'panel:ready' })).resolves.toBeUndefined();
+    expect(port.postMessage).toHaveBeenCalledWith({ type: 'panel:ready' });
   });
 });

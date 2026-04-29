@@ -1,5 +1,6 @@
-import type { ExecFileException } from "node:child_process";
-import type { ExecFileFn } from "../markitdown.js";
+import type { ExecFileException } from 'node:child_process';
+
+import type { ExecFileFn } from '../markitdown.js';
 
 type CliExecError = ExecFileException & {
   cmd?: string;
@@ -8,50 +9,50 @@ type CliExecError = ExecFileException & {
 };
 
 function toUtf8String(value: string | Buffer): string {
-  return typeof value === "string" ? value : value.toString("utf8");
+  return typeof value === 'string' ? value : value.toString('utf8');
 }
 
 function formatErrorMessageWithStderr(
   message: string,
   stderrText: string,
-  separator: ": " | "\n" = ": ",
+  separator: ': ' | '\n' = ': ',
 ): string {
   const trimmedStderr = stderrText.trim();
-  if (!trimmedStderr || message.includes(trimmedStderr)) return message;
+  if (!trimmedStderr || message.includes(trimmedStderr)) {return message;}
   return `${message}${separator}${trimmedStderr}`;
 }
 
 function formatTimeoutLabel(timeoutMs: number): string {
   if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
-    if (timeoutMs % 60_000 === 0) return `${Math.floor(timeoutMs / 60_000)}m`;
-    if (timeoutMs % 1000 === 0) return `${Math.floor(timeoutMs / 1000)}s`;
+    if (timeoutMs % 60_000 === 0) {return `${Math.floor(timeoutMs / 60_000)}m`;}
+    if (timeoutMs % 1000 === 0) {return `${Math.floor(timeoutMs / 1000)}s`;}
     return `${Math.floor(timeoutMs)}ms`;
   }
-  return "unknown time";
+  return 'unknown time';
 }
 
 function getExecErrorCodeText(error: CliExecError): string {
-  if (typeof error.code === "string") return error.code;
-  if (Buffer.isBuffer(error.code)) return toUtf8String(error.code);
-  if (typeof error.code === "number") return String(error.code);
-  return "";
+  if (typeof error.code === 'string') {return error.code;}
+  if (Buffer.isBuffer(error.code)) {return toUtf8String(error.code);}
+  if (typeof error.code === 'number') {return String(error.code);}
+  return '';
 }
 
 function isExecTimeoutError(error: CliExecError): boolean {
-  if (getExecErrorCodeText(error).toUpperCase() === "ETIMEDOUT") return true;
-  return error.killed === true && error.signal === "SIGTERM";
+  if (getExecErrorCodeText(error).toUpperCase() === 'ETIMEDOUT') {return true;}
+  return error.killed === true && error.signal === 'SIGTERM';
 }
 
 function getExecErrorMessage(error: CliExecError): string {
-  return typeof error.message === "string" && error.message.trim().length > 0
+  return typeof error.message === 'string' && error.message.trim().length > 0
     ? error.message.trim()
-    : "CLI command failed";
+    : 'CLI command failed';
 }
 
 function getExecCommand(error: CliExecError, cmd: string, args: string[]): string {
-  return typeof error.cmd === "string" && error.cmd.trim().length > 0
+  return typeof error.cmd === 'string' && error.cmd.trim().length > 0
     ? error.cmd.trim()
-    : [cmd, ...args].join(" ");
+    : [cmd, ...args].join(' ');
 }
 
 export async function execCliWithInput({
@@ -71,25 +72,20 @@ export async function execCliWithInput({
   env: Record<string, string | undefined>;
   cwd?: string;
 }): Promise<{ stdout: string; stderr: string }> {
-  return await new Promise((resolve, reject) => {
+  return  new Promise((resolve, reject) => {
     const child = execFileImpl(
       cmd,
       args,
-      {
-        timeout: timeoutMs,
-        env: { ...process.env, ...env },
-        cwd,
-        maxBuffer: 50 * 1024 * 1024,
-      },
+      { cwd, env: { ...process.env, ...env }, maxBuffer: 50 * 1024 * 1024, timeout: timeoutMs },
       (error, stdout, stderr) => {
         const stderrText = toUtf8String(stderr);
         if (error) {
           if (isExecTimeoutError(error)) {
             const timeoutMessage =
               `CLI command timed out after ${formatTimeoutLabel(timeoutMs)}: ${getExecCommand(error, cmd, args)}. ` +
-              "Increase --timeout (e.g. 5m).";
+              'Increase --timeout (e.g. 5m).';
             reject(
-              new Error(formatErrorMessageWithStderr(timeoutMessage, stderrText, "\n"), {
+              new Error(formatErrorMessageWithStderr(timeoutMessage, stderrText, '\n'), {
                 cause: error,
               }),
             );
@@ -102,7 +98,7 @@ export async function execCliWithInput({
           );
           return;
         }
-        resolve({ stdout: toUtf8String(stdout), stderr: stderrText });
+        resolve({ stderr: stderrText, stdout: toUtf8String(stdout) });
       },
     );
     if (child.stdin) {

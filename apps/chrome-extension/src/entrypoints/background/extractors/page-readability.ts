@@ -1,8 +1,6 @@
-import type { Extractor, ExtractorContext, ExtractorResult } from "./types";
+import type { Extractor, ExtractorContext, ExtractorResult } from './types';
 
 export const pageReadabilityExtractor: Extractor = {
-  name: "page-readability",
-  match: () => true,
   async extract(ctx: ExtractorContext): Promise<ExtractorResult | null> {
     const attempt = await ctx.extractFromTab(ctx.tabId, ctx.maxChars, {
       timeoutMs: 8_000,
@@ -13,9 +11,8 @@ export const pageReadabilityExtractor: Extractor = {
     const text = attempt.data.text.trim();
     if (text.length < ctx.minTextChars) return null;
 
-    return {
-      source: "page",
-      extracted: attempt.data,
-    };
+    return { source: 'page', extracted: attempt.data };
   },
+  match: () => true,
+  name: 'page-readability',
 };

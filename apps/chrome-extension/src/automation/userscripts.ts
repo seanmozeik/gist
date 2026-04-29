@@ -1,25 +1,21 @@
-export type UserScriptsStatus = {
+export interface UserScriptsStatus {
   apiAvailable: boolean;
   permissionGranted: boolean;
   chromeVersion: number | null;
-};
+}
 
 export function getChromeVersion(): number | null {
   const match = navigator.userAgent.match(/(Chrome|Chromium)\/(\d+)/);
-  if (!match) return null;
+  if (!match) {return null;}
   return Number(match[2]);
 }
 
 export async function getUserScriptsStatus(): Promise<UserScriptsStatus> {
   const apiAvailable = Boolean(chrome.userScripts);
   const permissionGranted = Boolean(
-    await chrome.permissions?.contains?.({ permissions: ["userScripts"] }),
+    await chrome.permissions?.contains?.({ permissions: ['userScripts'] }),
   );
-  return {
-    apiAvailable,
-    permissionGranted,
-    chromeVersion: getChromeVersion(),
-  };
+  return { apiAvailable, chromeVersion: getChromeVersion(), permissionGranted };
 }
 
 // Returns a user-facing, actionable message for the current userScripts status.
@@ -27,15 +23,15 @@ export function buildUserScriptsGuidance(status: UserScriptsStatus): string {
   const chromeVersion = status.chromeVersion ?? 0;
   const permissionHint = status.permissionGranted
     ? null
-    : "First click “Enable automation permissions” in Settings.";
+    : 'First click “Enable automation permissions” in Settings.';
 
   if (status.apiAvailable) {
     return [
       permissionHint,
-      "User Scripts permission is required. Enable it in Options → Automation permissions, then allow “User Scripts” in chrome://extensions.",
+      'User Scripts permission is required. Enable it in Options → Automation permissions, then allow “User Scripts” in chrome://extensions.',
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
   }
 
   if (chromeVersion >= 138) {
@@ -44,7 +40,7 @@ export function buildUserScriptsGuidance(status: UserScriptsStatus): string {
       `Chrome ${chromeVersion} detected. To enable User Scripts:\n\n1. Go to chrome://extensions/\n2. Find this extension and click "Details"\n3. Enable the "Allow User Scripts" toggle\n4. Reload the page and try again`,
     ]
       .filter(Boolean)
-      .join("\n\n");
+      .join('\n\n');
   }
 
   if (chromeVersion >= 120) {
@@ -53,7 +49,7 @@ export function buildUserScriptsGuidance(status: UserScriptsStatus): string {
       `Chrome ${chromeVersion} detected. The userScripts API requires Chrome 120+ with experimental features enabled. Update Chrome and retry.`,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
   }
 
   if (chromeVersion > 0) {
@@ -62,10 +58,10 @@ export function buildUserScriptsGuidance(status: UserScriptsStatus): string {
       `Chrome ${chromeVersion} detected. The userScripts API requires Chrome 120 or higher. Please update Chrome.`,
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
   }
 
-  return [permissionHint, "User Scripts API is not available in this browser."]
+  return [permissionHint, 'User Scripts API is not available in this browser.']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 }

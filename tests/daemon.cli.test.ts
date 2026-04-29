@@ -1,36 +1,35 @@
-import { PassThrough } from "node:stream";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PassThrough } from 'node:stream';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  spawn: vi.fn(),
-  readDaemonConfig: vi.fn(),
-  writeDaemonConfig: vi.fn(),
-  runDaemonServer: vi.fn(),
-  resolveCliEntrypointPathForService: vi.fn(),
   installLaunchAgent: vi.fn(),
-  isLaunchAgentLoaded: vi.fn(),
-  readLaunchAgentProgramArguments: vi.fn(),
-  restartLaunchAgent: vi.fn(),
-  uninstallLaunchAgent: vi.fn(),
-  installSystemdService: vi.fn(),
-  isSystemdServiceEnabled: vi.fn(),
-  readSystemdServiceExecStart: vi.fn(),
-  restartSystemdService: vi.fn(),
-  uninstallSystemdService: vi.fn(),
   installScheduledTask: vi.fn(),
-  isWindowsContainerEnvironment: vi.fn(),
+  installSystemdService: vi.fn(),
+  isLaunchAgentLoaded: vi.fn(),
   isScheduledTaskInstalled: vi.fn(),
+  isSystemdServiceEnabled: vi.fn(),
+  isWindowsContainerEnvironment: vi.fn(),
+  readDaemonConfig: vi.fn(),
+  readLaunchAgentProgramArguments: vi.fn(),
   readScheduledTaskCommand: vi.fn(),
+  readSystemdServiceExecStart: vi.fn(),
+  resolveCliEntrypointPathForService: vi.fn(),
+  restartLaunchAgent: vi.fn(),
   restartScheduledTask: vi.fn(),
+  restartSystemdService: vi.fn(),
+  runDaemonServer: vi.fn(),
+  spawn: vi.fn(),
+  uninstallLaunchAgent: vi.fn(),
   uninstallScheduledTask: vi.fn(),
+  uninstallSystemdService: vi.fn(),
+  writeDaemonConfig: vi.fn(),
 }));
 
-vi.mock("node:child_process", () => ({
-  spawn: mocks.spawn,
-}));
+vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
 
-vi.mock("../src/daemon/config.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../src/daemon/config.js")>();
+vi.mock('../src/daemon/config.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/daemon/config.js')>();
   return {
     ...actual,
     readDaemonConfig: mocks.readDaemonConfig,
@@ -38,28 +37,26 @@ vi.mock("../src/daemon/config.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../src/daemon/server.js", () => ({
-  runDaemonServer: mocks.runDaemonServer,
-}));
+vi.mock('../src/daemon/server.js', () => ({ runDaemonServer: mocks.runDaemonServer }));
 
-vi.mock("../src/daemon/cli-entrypoint.js", () => ({
+vi.mock('../src/daemon/cli-entrypoint.js', () => ({
   resolveCliEntrypointPathForService: mocks.resolveCliEntrypointPathForService,
 }));
 
-vi.mock("../src/daemon/launchd.js", () => ({
+vi.mock('../src/daemon/launchd.js', () => ({
   installLaunchAgent: mocks.installLaunchAgent,
   isLaunchAgentLoaded: mocks.isLaunchAgentLoaded,
   readLaunchAgentProgramArguments: mocks.readLaunchAgentProgramArguments,
+  resolveDaemonLogPaths: () => ({
+    logDir: '/tmp/.summarize/logs',
+    stdoutPath: '/tmp/.summarize/logs/daemon.log',
+    stderrPath: '/tmp/.summarize/logs/daemon.err.log',
+  }),
   restartLaunchAgent: mocks.restartLaunchAgent,
   uninstallLaunchAgent: mocks.uninstallLaunchAgent,
-  resolveDaemonLogPaths: () => ({
-    logDir: "/tmp/.summarize/logs",
-    stdoutPath: "/tmp/.summarize/logs/daemon.log",
-    stderrPath: "/tmp/.summarize/logs/daemon.err.log",
-  }),
 }));
 
-vi.mock("../src/daemon/systemd.js", () => ({
+vi.mock('../src/daemon/systemd.js', () => ({
   installSystemdService: mocks.installSystemdService,
   isSystemdServiceEnabled: mocks.isSystemdServiceEnabled,
   readSystemdServiceExecStart: mocks.readSystemdServiceExecStart,
@@ -67,7 +64,7 @@ vi.mock("../src/daemon/systemd.js", () => ({
   uninstallSystemdService: mocks.uninstallSystemdService,
 }));
 
-vi.mock("../src/daemon/schtasks.js", () => ({
+vi.mock('../src/daemon/schtasks.js', () => ({
   installScheduledTask: mocks.installScheduledTask,
   isScheduledTaskInstalled: mocks.isScheduledTaskInstalled,
   readScheduledTaskCommand: mocks.readScheduledTaskCommand,
@@ -75,13 +72,13 @@ vi.mock("../src/daemon/schtasks.js", () => ({
   uninstallScheduledTask: mocks.uninstallScheduledTask,
 }));
 
-vi.mock("../src/daemon/windows-container.js", () => ({
+vi.mock('../src/daemon/windows-container.js', () => ({
   isWindowsContainerEnvironment: mocks.isWindowsContainerEnvironment,
 }));
 
-import { handleDaemonRequest } from "../src/daemon/cli.js";
+import { handleDaemonRequest } from '../src/daemon/cli.js';
 
-describe("daemon cli", () => {
+describe('daemon cli', () => {
   const originalPath = process.env.PATH;
   const originalOpenAiKey = process.env.OPENAI_API_KEY;
   const originalHome = process.env.HOME;
@@ -89,149 +86,139 @@ describe("daemon cli", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.PATH = "/usr/bin:/bin";
-    process.env.OPENAI_API_KEY = "from-process";
-    process.env.HOME = "/tmp/original-home";
-    mocks.resolveCliEntrypointPathForService.mockResolvedValue("/usr/local/bin/summarize-cli.js");
+    process.env.PATH = '/usr/bin:/bin';
+    process.env.OPENAI_API_KEY = 'from-process';
+    process.env.HOME = '/tmp/original-home';
+    mocks.resolveCliEntrypointPathForService.mockResolvedValue('/usr/local/bin/summarize-cli.js');
     mocks.readLaunchAgentProgramArguments.mockResolvedValue(null);
     mocks.readSystemdServiceExecStart.mockResolvedValue(null);
     mocks.readScheduledTaskCommand.mockResolvedValue(null);
     mocks.isWindowsContainerEnvironment.mockReturnValue(false);
-    mocks.installLaunchAgent.mockResolvedValue(undefined);
-    mocks.installSystemdService.mockResolvedValue(undefined);
-    mocks.installScheduledTask.mockResolvedValue(undefined);
+    mocks.installLaunchAgent.mockResolvedValue();
+    mocks.installSystemdService.mockResolvedValue();
+    mocks.installScheduledTask.mockResolvedValue();
     mocks.spawn.mockReturnValue({ unref: vi.fn() });
   });
 
   afterEach(() => {
-    if (originalPath === undefined) delete process.env.PATH;
-    else process.env.PATH = originalPath;
-    if (originalOpenAiKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = originalOpenAiKey;
-    if (originalHome === undefined) delete process.env.HOME;
-    else process.env.HOME = originalHome;
-    Object.defineProperty(process, "platform", { value: originalPlatform });
+    if (originalPath === undefined) {delete process.env.PATH;}
+    else {process.env.PATH = originalPath;}
+    if (originalOpenAiKey === undefined) {delete process.env.OPENAI_API_KEY;}
+    else {process.env.OPENAI_API_KEY = originalOpenAiKey;}
+    if (originalHome === undefined) {delete process.env.HOME;}
+    else {process.env.HOME = originalHome;}
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
   });
 
-  it("applies daemon snapshot env to process.env for child processes on run (#99)", async () => {
+  it('applies daemon snapshot env to process.env for child processes on run (#99)', async () => {
     mocks.readDaemonConfig.mockResolvedValueOnce({
-      token: "test-token",
+      env: { OPENAI_API_KEY: 'from-snapshot', PATH: '/opt/homebrew/bin:/usr/bin:/bin' },
       port: 8787,
-      env: {
-        PATH: "/opt/homebrew/bin:/usr/bin:/bin",
-        OPENAI_API_KEY: "from-snapshot",
-      },
+      token: 'test-token',
     });
-    mocks.runDaemonServer.mockResolvedValueOnce(undefined);
+    mocks.runDaemonServer.mockResolvedValueOnce();
 
-    const envForRun = {
-      HOME: "/Users/peter",
-      PATH: "/usr/bin:/bin",
-      OPENAI_API_KEY: "from-run",
-    };
+    const envForRun = { HOME: '/Users/peter', OPENAI_API_KEY: 'from-run', PATH: '/usr/bin:/bin' };
 
     const handled = await handleDaemonRequest({
-      normalizedArgv: ["daemon", "run"],
       envForRun,
       fetchImpl: fetch,
-      stdout: new PassThrough(),
+      normalizedArgv: ['daemon', 'run'],
       stderr: new PassThrough(),
+      stdout: new PassThrough(),
     });
 
     expect(handled).toBe(true);
     expect(mocks.readDaemonConfig).toHaveBeenCalledWith({ env: envForRun });
     expect(mocks.runDaemonServer).toHaveBeenCalledWith({
+      config: {
+        env: { OPENAI_API_KEY: 'from-snapshot', PATH: '/opt/homebrew/bin:/usr/bin:/bin' },
+        port: 8787,
+        token: 'test-token',
+      },
       env: {
-        HOME: "/Users/peter",
-        PATH: "/opt/homebrew/bin:/usr/bin:/bin",
-        OPENAI_API_KEY: "from-snapshot",
+        HOME: '/Users/peter',
+        OPENAI_API_KEY: 'from-snapshot',
+        PATH: '/opt/homebrew/bin:/usr/bin:/bin',
       },
       fetchImpl: fetch,
-      config: {
-        token: "test-token",
-        port: 8787,
-        env: {
-          PATH: "/opt/homebrew/bin:/usr/bin:/bin",
-          OPENAI_API_KEY: "from-snapshot",
-        },
-      },
     });
 
-    expect(process.env.PATH).toBe("/opt/homebrew/bin:/usr/bin:/bin");
-    expect(process.env.OPENAI_API_KEY).toBe("from-snapshot");
-    expect(process.env.HOME).toBe("/tmp/original-home");
+    expect(process.env.PATH).toBe('/opt/homebrew/bin:/usr/bin:/bin');
+    expect(process.env.OPENAI_API_KEY).toBe('from-snapshot');
+    expect(process.env.HOME).toBe('/tmp/original-home');
   });
 
-  it("appends a new daemon token on install instead of replacing existing tokens", async () => {
+  it('appends a new daemon token on install instead of replacing existing tokens', async () => {
     mocks.readDaemonConfig.mockResolvedValueOnce({
-      version: 2,
-      token: "existing-token-1234",
-      tokens: ["existing-token-1234"],
-      port: 8787,
       env: {},
-      installedAt: "2026-01-01T00:00:00.000Z",
+      installedAt: '2026-01-01T00:00:00.000Z',
+      port: 8787,
+      token: 'existing-token-1234',
+      tokens: ['existing-token-1234'],
+      version: 2,
     });
-    mocks.writeDaemonConfig.mockResolvedValueOnce("/tmp/.summarize/daemon.json");
+    mocks.writeDaemonConfig.mockResolvedValueOnce('/tmp/.summarize/daemon.json');
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.endsWith("/health"))
-        return new Response(JSON.stringify({ ok: true }), { status: 200 });
-      if (url.endsWith("/v1/ping"))
-        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      if (url.endsWith('/health'))
+        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
+      if (url.endsWith('/v1/ping'))
+        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
     const handled = await handleDaemonRequest({
-      normalizedArgv: ["daemon", "install", "--token", "new-token-123456"],
-      envForRun: { HOME: "/Users/peter" },
+      envForRun: { HOME: '/Users/peter' },
       fetchImpl: fetchMock as unknown as typeof fetch,
-      stdout: new PassThrough(),
+      normalizedArgv: ['daemon', 'install', '--token', 'new-token-123456'],
       stderr: new PassThrough(),
+      stdout: new PassThrough(),
     });
 
     expect(handled).toBe(true);
     expect(mocks.writeDaemonConfig).toHaveBeenCalledWith({
-      env: { HOME: "/Users/peter" },
       config: expect.objectContaining({
-        token: "existing-token-1234",
-        tokens: ["existing-token-1234", "new-token-123456"],
+        token: 'existing-token-1234',
+        tokens: ['existing-token-1234', 'new-token-123456'],
       }),
+      env: { HOME: '/Users/peter' },
     });
   });
 
-  it("starts the daemon and prints container autostart instructions for Windows containers", async () => {
-    Object.defineProperty(process, "platform", { value: "win32" });
+  it('starts the daemon and prints container autostart instructions for Windows containers', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
     mocks.isWindowsContainerEnvironment.mockReturnValue(true);
     mocks.readDaemonConfig.mockResolvedValueOnce(null);
     mocks.writeDaemonConfig.mockResolvedValueOnce(
-      "C:\\Users\\ContainerAdministrator\\.summarize\\daemon.json",
+      String.raw`C:\Users\ContainerAdministrator\.summarize\daemon.json`,
     );
 
     const stdout = new PassThrough();
-    let text = "";
-    stdout.on("data", (chunk) => {
+    let text = '';
+    stdout.on('data', (chunk) => {
       text += chunk.toString();
     });
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.endsWith("/health"))
-        return new Response(JSON.stringify({ ok: true }), { status: 200 });
-      if (url.endsWith("/v1/ping"))
-        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      if (url.endsWith('/health'))
+        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
+      if (url.endsWith('/v1/ping'))
+        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
     const handled = await handleDaemonRequest({
-      normalizedArgv: ["daemon", "install", "--token", "new-token-123456"],
       envForRun: {
-        USERPROFILE: "C:\\Users\\ContainerAdministrator",
-        CONTAINER_SANDBOX_MOUNT_POINT: "C:\\ContainerMappedDirectories",
+        CONTAINER_SANDBOX_MOUNT_POINT: 'C:\\ContainerMappedDirectories',
+        USERPROFILE: 'C:\\Users\\ContainerAdministrator',
       },
       fetchImpl: fetchMock as unknown as typeof fetch,
-      stdout,
+      normalizedArgv: ['daemon', 'install', '--token', 'new-token-123456'],
       stderr: new PassThrough(),
+      stdout,
     });
 
     expect(handled).toBe(true);
@@ -239,18 +226,15 @@ describe("daemon cli", () => {
     expect(mocks.spawn).toHaveBeenCalledTimes(1);
     expect(mocks.spawn).toHaveBeenCalledWith(
       process.execPath,
-      expect.arrayContaining(["daemon", "run"]),
-      expect.objectContaining({
-        detached: true,
-        windowsHide: true,
-      }),
+      expect.arrayContaining(['daemon', 'run']),
+      expect.objectContaining({ detached: true, windowsHide: true }),
     );
-    expect(text).toContain("Windows container detected: skipped Scheduled Task registration.");
-    expect(text).toContain("Daemon autostart is not available in Windows container mode.");
+    expect(text).toContain('Windows container detected: skipped Scheduled Task registration.');
+    expect(text).toContain('Daemon autostart is not available in Windows container mode.');
     expect(text).toContain(
-      "Run `summarize daemon install --token <TOKEN>` each time the container starts",
+      'Run `summarize daemon install --token <TOKEN>` each time the container starts',
     );
-    expect(text).toContain("Publish port 8787:8787 so the host browser can reach the daemon.");
-    expect(text).toContain("OK: daemon is running in this container session and authenticated.");
+    expect(text).toContain('Publish port 8787:8787 so the host browser can reach the daemon.');
+    expect(text).toContain('OK: daemon is running in this container session and authenticated.');
   });
 });

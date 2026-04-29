@@ -1,18 +1,18 @@
-import { createOscProgressController } from "../../../tty/osc-progress.js";
-import { startSpinner } from "../../../tty/spinner.js";
-import type { createThemeRenderer } from "../../../tty/theme.js";
-import { createWebsiteProgress } from "../../../tty/website-progress.js";
-import { createUrlProgressStatus } from "./progress-status.js";
-import { composeUrlFlowHooks, type UrlFlowContext } from "./types.js";
+import { createOscProgressController } from '../../../tty/osc-progress.js';
+import { startSpinner } from '../../../tty/spinner.js';
+import type { createThemeRenderer } from '../../../tty/theme.js';
+import { createWebsiteProgress } from '../../../tty/website-progress.js';
+import { createUrlProgressStatus } from './progress-status.js';
+import { composeUrlFlowHooks, type UrlFlowContext } from './types.js';
 
 function isMissingSlidesDependencyError(message: string): boolean {
   const lower = message.toLowerCase();
   return (
-    lower.includes("missing ffmpeg") ||
-    lower.includes("install ffmpeg") ||
-    lower.includes("require yt-dlp") ||
-    lower.includes("install yt-dlp") ||
-    lower.includes("missing tesseract")
+    lower.includes('missing ffmpeg') ||
+    lower.includes('install ffmpeg') ||
+    lower.includes('require yt-dlp') ||
+    lower.includes('install yt-dlp') ||
+    lower.includes('missing tesseract')
   );
 }
 
@@ -21,18 +21,18 @@ export function writeSlidesBackgroundFailureWarning({
   theme,
   message,
 }: {
-  ctx: Pick<UrlFlowContext, "io" | "flags" | "hooks">;
+  ctx: Pick<UrlFlowContext, 'io' | 'flags' | 'hooks'>;
   theme: ReturnType<typeof createThemeRenderer>;
   message: string;
 }) {
-  if (ctx.flags.json || ctx.flags.extractMode) return;
+  if (ctx.flags.json || ctx.flags.extractMode) {return;}
   ctx.hooks.clearProgressForStdout();
   ctx.io.stderr.write(
-    `${theme.warning("Warning:")} --slides could not extract slide images: ${message}\n`,
+    `${theme.warning('Warning:')} --slides could not extract slide images: ${message}\n`,
   );
   if (isMissingSlidesDependencyError(message)) {
     ctx.io.stderr.write(
-      `${theme.dim("Install ffmpeg + yt-dlp for --slides, and tesseract for --slides-ocr.")}\n`,
+      `${theme.dim('Install ffmpeg + yt-dlp for --slides, and tesseract for --slides-ocr.')}\n`,
     );
   }
   ctx.hooks.restoreProgressAfterStdout?.();
@@ -47,38 +47,38 @@ export function createUrlFlowProgress({
 }) {
   const { io, flags, hooks } = ctx;
   const oscProgress = createOscProgressController({
-    label: "Fetching website",
     env: io.env,
     isTty: flags.progressEnabled,
+    label: 'Fetching website',
     write: (data: string) => io.stderr.write(data),
   });
-  oscProgress.setIndeterminate("Fetching website");
+  oscProgress.setIndeterminate('Fetching website');
   const spinner = startSpinner({
-    text: `${theme.label("Fetching website")}${theme.dim(" (connecting)…")}`,
+    color: theme.palette.spinner,
     enabled: flags.progressEnabled,
     stream: io.stderr,
-    color: theme.palette.spinner,
+    text: `${theme.label('Fetching website')}${theme.dim(' (connecting)…')}`,
   });
   const styleLabel = (text: string) => theme.label(text);
   const styleDim = (text: string) => theme.dim(text);
-  const renderStatus = (label: string, detail = "…") => `${styleLabel(label)}${styleDim(detail)}`;
-  const renderStatusWithMeta = (label: string, meta: string, suffix = "…") =>
+  const renderStatus = (label: string, detail = '…') => `${styleLabel(label)}${styleDim(detail)}`;
+  const renderStatusWithMeta = (label: string, meta: string, suffix = '…') =>
     `${styleLabel(label)} ${meta}${styleDim(suffix)}`;
   const renderStatusFromText = (text: string) => {
-    const match = text.match(/^([^:]+):(.*)$/);
-    if (!match) return styleLabel(text);
+    const match = /^([^:]+):(.*)$/.exec(text);
+    if (!match) {return styleLabel(text);}
     return `${styleLabel(match[1])}${styleDim(`:${match[2]}`)}`;
   };
   const progressStatus = createUrlProgressStatus({
     enabled: flags.progressEnabled,
-    spinner,
     oscProgress,
+    spinner,
   });
   const handleSignal = () => {
     try {
       spinner.stopAndClear();
     } catch {
-      // ignore
+      // Ignore
     }
     oscProgress.clear();
   };
@@ -91,14 +91,14 @@ export function createUrlFlowProgress({
     process.exit(143);
   };
   if (flags.progressEnabled) {
-    process.once("SIGINT", handleSigint);
-    process.once("SIGTERM", handleSigterm);
+    process.once('SIGINT', handleSigint);
+    process.once('SIGTERM', handleSigterm);
   }
   const progressHooks =
     !hooks.onSlidesProgress && flags.progressEnabled
       ? composeUrlFlowHooks(hooks, {
           onSlidesProgress: (text: string) => {
-            const match = text.match(/(\d{1,3})%/);
+            const match = /(\d{1,3})%/.exec(text);
             const percent = match ? Number(match[1]) : null;
             progressStatus.setSlides(
               renderStatusFromText(text),
@@ -109,40 +109,40 @@ export function createUrlFlowProgress({
       : hooks;
   const websiteProgress = createWebsiteProgress({
     enabled: flags.progressEnabled,
-    spinner,
     oscProgress,
+    spinner,
     theme,
   });
 
   const stopProgress = () => {
-    if (!flags.progressEnabled) return;
+    if (!flags.progressEnabled) {return;}
     websiteProgress?.stop?.();
     try {
       spinner.stopAndClear();
     } catch {
-      // ignore
+      // Ignore
     }
     oscProgress.clear();
-    process.removeListener("SIGINT", handleSigint);
-    process.removeListener("SIGTERM", handleSigterm);
+    process.removeListener('SIGINT', handleSigint);
+    process.removeListener('SIGTERM', handleSigterm);
   };
 
   return {
-    progressStatus,
+    handleSigint,
+    handleSigterm,
     hooks: progressHooks,
     pauseProgress: () => {
       spinner.pause();
-      return () => spinner.resume();
+      return () =>{  spinner.resume(); };
     },
+    progressStatus,
     renderStatus,
     renderStatusFromText,
     renderStatusWithMeta,
     spinner,
+    stopProgress,
     styleDim,
     styleLabel,
-    handleSigint,
-    handleSigterm,
-    stopProgress,
     websiteProgress,
   };
 }

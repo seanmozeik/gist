@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createSidepanelSlidesRuntime } from "../apps/chrome-extension/src/entrypoints/sidepanel/slides-runtime";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createSidepanelSlidesRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-runtime';
 
 let capturedHydratorOptions: Record<string, Function> | null = null;
 let capturedRunOptions: Record<string, Function> | null = null;
@@ -23,31 +24,31 @@ let hydrator: {
   syncFromCache: ReturnType<typeof vi.fn>;
 } | null = null;
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/slides-summary-controller", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/slides-summary-controller', () => ({
   createSlidesSummaryController: vi.fn(() => {
     summaryController = {
       applyMarkdown: vi.fn(),
-      maybeApplyPending: vi.fn(),
-      start: vi.fn(),
       getRunId: vi.fn(() => null),
-      setRunId: vi.fn(),
-      setUrl: vi.fn(),
+      maybeApplyPending: vi.fn(),
       resetSummaryState: vi.fn(),
       setModel: vi.fn(),
+      setRunId: vi.fn(),
+      setUrl: vi.fn(),
+      start: vi.fn(),
     };
     return summaryController;
   }),
 }));
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator', () => ({
   createSlidesHydrator: vi.fn((options) => {
     capturedHydratorOptions = options;
     hydrator = {
-      hydrateSnapshot: vi.fn(async () => {}),
-      start: vi.fn(async () => {}),
       handlePayload: vi.fn(),
       handleSummaryFromCache: vi.fn(),
+      hydrateSnapshot: vi.fn(async () => {}),
       isStreaming: vi.fn(() => false),
+      start: vi.fn(async () => {}),
       stop: vi.fn(),
       syncFromCache: vi.fn(),
     };
@@ -55,19 +56,19 @@ vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator", ()
   }),
 }));
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/slides-run-runtime", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/slides-run-runtime', () => ({
   createSlidesRunRuntime: vi.fn((options) => {
     capturedRunOptions = options;
     return {
       handleSlidesStatus: vi.fn(),
-      startSlidesStreamForRunId: vi.fn(),
       startSlidesStream: vi.fn(),
+      startSlidesStreamForRunId: vi.fn(),
       startSlidesSummaryStreamForRunId: vi.fn(),
     };
   }),
 }));
 
-describe("sidepanel slides runtime", () => {
+describe('sidepanel slides runtime', () => {
   beforeEach(() => {
     capturedHydratorOptions = null;
     capturedRunOptions = null;
@@ -76,19 +77,19 @@ describe("sidepanel slides runtime", () => {
     vi.clearAllMocks();
   });
 
-  it("delegates summary helpers to the summary controller", () => {
+  it('delegates summary helpers to the summary controller', () => {
     const runtime = createSidepanelSlidesRuntime({
       applySlidesPayload: vi.fn(),
       clearSummarySource: vi.fn(),
       friendlyFetchError: vi.fn((_error, fallback) => fallback),
-      getActiveTabUrl: vi.fn(() => "https://example.com"),
-      getInputMode: vi.fn(() => "video"),
-      getInputModeOverride: vi.fn(() => "video"),
-      getLengthValue: vi.fn(() => "medium"),
-      getPanelPhase: vi.fn(() => "idle"),
-      getPanelState: vi.fn(() => ({ phase: "idle" })),
+      getActiveTabUrl: vi.fn(() => 'https://example.com'),
+      getInputMode: vi.fn(() => 'video'),
+      getInputModeOverride: vi.fn(() => 'video'),
+      getLengthValue: vi.fn(() => 'medium'),
+      getPanelPhase: vi.fn(() => 'idle'),
+      getPanelState: vi.fn(() => ({ phase: 'idle' })),
       getSlidesEnabled: vi.fn(() => true),
-      getToken: vi.fn(async () => "token"),
+      getToken: vi.fn(async () => 'token'),
       getTranscriptTimedText: vi.fn(() => null),
       getUiState: vi.fn(() => null),
       headerSetStatus: vi.fn(),
@@ -109,29 +110,29 @@ describe("sidepanel slides runtime", () => {
       updateSlideSummaryFromMarkdown: vi.fn(),
     });
 
-    runtime.applySlidesSummaryMarkdown("slides");
+    runtime.applySlidesSummaryMarkdown('slides');
     runtime.maybeApplyPendingSlidesSummary();
 
-    expect(summaryController?.applyMarkdown).toHaveBeenCalledWith("slides");
+    expect(summaryController?.applyMarkdown).toHaveBeenCalledWith('slides');
     expect(summaryController?.maybeApplyPending).toHaveBeenCalledOnce();
   });
 
-  it("hydrates snapshot and surfaces retryable errors through the hydrator callback", async () => {
+  it('hydrates snapshot and surfaces retryable errors through the hydrator callback', async () => {
     const showSlideNotice = vi.fn();
     const setSlidesBusy = vi.fn();
     const headerSetStatus = vi.fn();
     createSidepanelSlidesRuntime({
       applySlidesPayload: vi.fn(),
       clearSummarySource: vi.fn(),
-      friendlyFetchError: vi.fn(() => "friendly slides error"),
-      getActiveTabUrl: vi.fn(() => "https://example.com"),
-      getInputMode: vi.fn(() => "video"),
-      getInputModeOverride: vi.fn(() => "video"),
-      getLengthValue: vi.fn(() => "medium"),
-      getPanelPhase: vi.fn(() => "idle"),
-      getPanelState: vi.fn(() => ({ phase: "idle" })),
+      friendlyFetchError: vi.fn(() => 'friendly slides error'),
+      getActiveTabUrl: vi.fn(() => 'https://example.com'),
+      getInputMode: vi.fn(() => 'video'),
+      getInputModeOverride: vi.fn(() => 'video'),
+      getLengthValue: vi.fn(() => 'medium'),
+      getPanelPhase: vi.fn(() => 'idle'),
+      getPanelState: vi.fn(() => ({ phase: 'idle' })),
       getSlidesEnabled: vi.fn(() => true),
-      getToken: vi.fn(async () => "token"),
+      getToken: vi.fn(async () => 'token'),
       getTranscriptTimedText: vi.fn(() => null),
       getUiState: vi.fn(() => null),
       headerSetStatus,
@@ -152,32 +153,32 @@ describe("sidepanel slides runtime", () => {
       updateSlideSummaryFromMarkdown: vi.fn(),
     });
 
-    const message = capturedHydratorOptions?.onError?.(new Error("boom"));
+    const message = capturedHydratorOptions?.onError?.(new Error('boom'));
     await Promise.resolve();
 
-    expect(message).toBe("friendly slides error");
-    expect(showSlideNotice).toHaveBeenCalledWith("friendly slides error", { allowRetry: true });
+    expect(message).toBe('friendly slides error');
+    expect(showSlideNotice).toHaveBeenCalledWith('friendly slides error', { allowRetry: true });
     expect(setSlidesBusy).toHaveBeenCalledWith(false);
-    expect(headerSetStatus).toHaveBeenCalledWith("");
-    expect(hydrator?.hydrateSnapshot).toHaveBeenCalledWith("timeout");
-    expect(capturedRunOptions?.startSlidesHydrator).toBeTypeOf("function");
+    expect(headerSetStatus).toHaveBeenCalledWith('');
+    expect(hydrator?.hydrateSnapshot).toHaveBeenCalledWith('timeout');
+    expect(capturedRunOptions?.startSlidesHydrator).toBeTypeOf('function');
   });
 
-  it("keeps the header text when summary streaming is still active", async () => {
+  it('keeps the header text when summary streaming is still active', async () => {
     const headerSetStatus = vi.fn();
     const setSlidesBusy = vi.fn();
     createSidepanelSlidesRuntime({
       applySlidesPayload: vi.fn(),
       clearSummarySource: vi.fn(),
-      friendlyFetchError: vi.fn(() => "friendly slides error"),
-      getActiveTabUrl: vi.fn(() => "https://example.com"),
-      getInputMode: vi.fn(() => "video"),
-      getInputModeOverride: vi.fn(() => "video"),
-      getLengthValue: vi.fn(() => "medium"),
-      getPanelPhase: vi.fn(() => "streaming"),
-      getPanelState: vi.fn(() => ({ phase: "streaming" })),
+      friendlyFetchError: vi.fn(() => 'friendly slides error'),
+      getActiveTabUrl: vi.fn(() => 'https://example.com'),
+      getInputMode: vi.fn(() => 'video'),
+      getInputModeOverride: vi.fn(() => 'video'),
+      getLengthValue: vi.fn(() => 'medium'),
+      getPanelPhase: vi.fn(() => 'streaming'),
+      getPanelState: vi.fn(() => ({ phase: 'streaming' })),
       getSlidesEnabled: vi.fn(() => true),
-      getToken: vi.fn(async () => "token"),
+      getToken: vi.fn(async () => 'token'),
       getTranscriptTimedText: vi.fn(() => null),
       getUiState: vi.fn(() => null),
       headerSetStatus,
@@ -198,30 +199,30 @@ describe("sidepanel slides runtime", () => {
       updateSlideSummaryFromMarkdown: vi.fn(),
     });
 
-    const message = capturedHydratorOptions?.onError?.(new Error("boom"));
+    const message = capturedHydratorOptions?.onError?.(new Error('boom'));
     capturedHydratorOptions?.onDone?.();
     await Promise.resolve();
 
-    expect(message).toBe("friendly slides error");
-    expect(headerSetStatus).not.toHaveBeenCalledWith("");
+    expect(message).toBe('friendly slides error');
+    expect(headerSetStatus).not.toHaveBeenCalledWith('');
     expect(setSlidesBusy).toHaveBeenCalledWith(false);
   });
 
-  it("clears the header when slide streaming finishes in idle phase", () => {
+  it('clears the header when slide streaming finishes in idle phase', () => {
     const headerSetStatus = vi.fn();
     const setSlidesBusy = vi.fn();
     createSidepanelSlidesRuntime({
       applySlidesPayload: vi.fn(),
       clearSummarySource: vi.fn(),
       friendlyFetchError: vi.fn((_error, fallback) => fallback),
-      getActiveTabUrl: vi.fn(() => "https://example.com"),
-      getInputMode: vi.fn(() => "video"),
-      getInputModeOverride: vi.fn(() => "video"),
-      getLengthValue: vi.fn(() => "medium"),
-      getPanelPhase: vi.fn(() => "idle"),
-      getPanelState: vi.fn(() => ({ phase: "idle" })),
+      getActiveTabUrl: vi.fn(() => 'https://example.com'),
+      getInputMode: vi.fn(() => 'video'),
+      getInputModeOverride: vi.fn(() => 'video'),
+      getLengthValue: vi.fn(() => 'medium'),
+      getPanelPhase: vi.fn(() => 'idle'),
+      getPanelState: vi.fn(() => ({ phase: 'idle' })),
       getSlidesEnabled: vi.fn(() => true),
-      getToken: vi.fn(async () => "token"),
+      getToken: vi.fn(async () => 'token'),
       getTranscriptTimedText: vi.fn(() => null),
       getUiState: vi.fn(() => null),
       headerSetStatus,
@@ -245,22 +246,22 @@ describe("sidepanel slides runtime", () => {
     capturedHydratorOptions?.onDone?.();
 
     expect(setSlidesBusy).toHaveBeenCalledWith(false);
-    expect(headerSetStatus).toHaveBeenCalledWith("");
+    expect(headerSetStatus).toHaveBeenCalledWith('');
   });
 
-  it("exposes run runtime helpers for slide starts and status handling", () => {
+  it('exposes run runtime helpers for slide starts and status handling', () => {
     const runtime = createSidepanelSlidesRuntime({
       applySlidesPayload: vi.fn(),
       clearSummarySource: vi.fn(),
       friendlyFetchError: vi.fn((_error, fallback) => fallback),
-      getActiveTabUrl: vi.fn(() => "https://example.com"),
-      getInputMode: vi.fn(() => "video"),
-      getInputModeOverride: vi.fn(() => "video"),
-      getLengthValue: vi.fn(() => "medium"),
-      getPanelPhase: vi.fn(() => "idle"),
-      getPanelState: vi.fn(() => ({ phase: "idle" })),
+      getActiveTabUrl: vi.fn(() => 'https://example.com'),
+      getInputMode: vi.fn(() => 'video'),
+      getInputModeOverride: vi.fn(() => 'video'),
+      getLengthValue: vi.fn(() => 'medium'),
+      getPanelPhase: vi.fn(() => 'idle'),
+      getPanelState: vi.fn(() => ({ phase: 'idle' })),
       getSlidesEnabled: vi.fn(() => true),
-      getToken: vi.fn(async () => "token"),
+      getToken: vi.fn(async () => 'token'),
       getTranscriptTimedText: vi.fn(() => null),
       getUiState: vi.fn(() => null),
       headerSetStatus: vi.fn(),
@@ -281,9 +282,9 @@ describe("sidepanel slides runtime", () => {
       updateSlideSummaryFromMarkdown: vi.fn(),
     });
 
-    expect(typeof runtime.handleSlidesStatus).toBe("function");
-    expect(typeof runtime.startSlidesStream).toBe("function");
-    expect(typeof runtime.startSlidesStreamForRunId).toBe("function");
-    expect(typeof runtime.startSlidesSummaryStreamForRunId).toBe("function");
+    expect(typeof runtime.handleSlidesStatus).toBe('function');
+    expect(typeof runtime.startSlidesStream).toBe('function');
+    expect(typeof runtime.startSlidesStreamForRunId).toBe('function');
+    expect(typeof runtime.startSlidesSummaryStreamForRunId).toBe('function');
   });
 });

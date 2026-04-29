@@ -1,4 +1,4 @@
-import type { TranscriptSource } from "../link-preview/types.js";
+import type { TranscriptSource } from '../link-preview/types.js';
 
 /** Public shape returned by transcript cache implementations. */
 export interface TranscriptCacheGetResult {
@@ -26,7 +26,7 @@ export interface TranscriptCache {
   set(args: TranscriptCacheSetArgs): Promise<void>;
 }
 
-export type MediaCacheEntry = {
+export interface MediaCacheEntry {
   url: string;
   filePath: string;
   sizeBytes: number | null;
@@ -36,7 +36,7 @@ export type MediaCacheEntry = {
   createdAtMs: number;
   lastAccessAtMs: number;
   expiresAtMs: number | null;
-};
+}
 
 export interface MediaCache {
   get(args: { url: string }): Promise<MediaCacheEntry | null>;

@@ -1,25 +1,21 @@
 export type TranscriptSource =
-  | "youtubei"
-  | "captionTracks"
-  | "embedded"
-  | "yt-dlp"
-  | "podcastTranscript"
-  | "whisper"
-  | "apify"
-  | "html"
-  | "unavailable"
-  | "unknown";
+  | 'youtubei'
+  | 'captionTracks'
+  | 'embedded'
+  | 'yt-dlp'
+  | 'podcastTranscript'
+  | 'whisper'
+  | 'apify'
+  | 'html'
+  | 'unavailable'
+  | 'unknown';
 
-export type TranscriptSegment = {
-  startMs: number;
-  endMs?: number | null;
-  text: string;
-};
+export interface TranscriptSegment { startMs: number; endMs?: number | null; text: string }
 
-export const CACHE_MODES = ["default", "bypass"] as const;
+export const CACHE_MODES = ['default', 'bypass'] as const;
 export type CacheMode = (typeof CACHE_MODES)[number];
 
-export type CacheStatus = "hit" | "miss" | "expired" | "bypassed" | "fallback" | "unknown";
+export type CacheStatus = 'hit' | 'miss' | 'expired' | 'bypassed' | 'fallback' | 'unknown';
 
 export interface TranscriptDiagnostics {
   cacheMode: CacheMode;
@@ -41,12 +37,12 @@ export interface FirecrawlDiagnostics {
 export interface MarkdownDiagnostics {
   requested: boolean;
   used: boolean;
-  provider: "firecrawl" | "llm" | null;
+  provider: 'firecrawl' | 'llm' | null;
   notes?: string | null;
 }
 
 export interface ContentFetchDiagnostics {
-  strategy: "bird" | "xurl" | "firecrawl" | "html" | "nitter";
+  strategy: 'bird' | 'xurl' | 'firecrawl' | 'html' | 'nitter';
   firecrawl: FirecrawlDiagnostics;
   markdown: MarkdownDiagnostics;
   transcript: TranscriptDiagnostics;

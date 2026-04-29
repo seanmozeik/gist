@@ -1,4 +1,4 @@
-import type { Message, Tool } from "@mariozechner/pi-ai";
+import type { Message, Tool } from '@mariozechner/pi-ai';
 
 const AGENT_PROMPT_AUTOMATION = `You are Summarize Automation, not Claude.
 
@@ -56,7 +56,7 @@ export function buildSystemPrompt({
   return `${base}
 
 Page URL: ${pageUrl}
-${pageTitle ? `Page Title: ${pageTitle}` : ""}
+${pageTitle ? `Page Title: ${pageTitle}` : ''}
 
 <page_content>
 ${pageContent}
@@ -73,25 +73,25 @@ export function flattenAgentForCli({
 }): string {
   const parts: string[] = [systemPrompt];
   for (const msg of messages) {
-    const role = msg.role === "user" ? "User" : "Assistant";
-    const content = typeof msg.content === "string" ? msg.content : "";
+    const role = msg.role === 'user' ? 'User' : 'Assistant';
+    const content = typeof msg.content === 'string' ? msg.content : '';
     if (content) {
       parts.push(`${role}: ${content}`);
     }
   }
-  return parts.join("\n\n");
+  return parts.join('\n\n');
 }
 
 export function normalizeMessages(raw: unknown): Message[] {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) {return [];}
   const out: Message[] = [];
   for (const item of raw) {
-    if (!item || typeof item !== "object") continue;
-    const role = (item as { role?: unknown }).role;
-    if (role !== "user" && role !== "assistant" && role !== "toolResult") continue;
+    if (!item || typeof item !== 'object') {continue;}
+    const {role} = (item as { role?: unknown });
+    if (role !== 'user' && role !== 'assistant' && role !== 'toolResult') {continue;}
     const msg = item as Message;
-    if (!msg.timestamp || typeof msg.timestamp !== "number") {
-      (msg as Message).timestamp = Date.now();
+    if (!msg.timestamp || typeof msg.timestamp !== 'number') {
+      (msg).timestamp = Date.now();
     }
     out.push(msg);
   }
@@ -103,7 +103,7 @@ export function resolveToolList(
   tools: string[],
   definitions: Record<string, Tool>,
 ): Tool[] {
-  if (!automationEnabled) return [];
+  if (!automationEnabled) {return [];}
   return tools
     .map((toolName) => definitions[toolName])
     .filter((tool): tool is Tool => Boolean(tool));

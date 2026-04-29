@@ -18,11 +18,11 @@ export function createOptionsSaveRuntime(options: {
     saveInFlight = true;
     saveQueued = false;
     const currentSeq = ++saveSequence;
-    setStatus("Saving…");
+    setStatus('Saving…');
     try {
       await persist();
       if (currentSeq === saveSequence) {
-        flashStatus("Saved");
+        flashStatus('Saved');
       }
     } finally {
       saveInFlight = false;
@@ -34,7 +34,7 @@ export function createOptionsSaveRuntime(options: {
   };
 
   const scheduleAutoSave = (delay = 500) => {
-    if (isInitializing()) return;
+    if (isInitializing()) {return;}
     globalThis.clearTimeout(saveTimer);
     saveTimer = globalThis.setTimeout(() => {
       void saveNow();

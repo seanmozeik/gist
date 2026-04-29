@@ -1,70 +1,67 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createSlidesSummaryController } from "../apps/chrome-extension/src/entrypoints/sidepanel/slides-summary-controller";
-import type { StreamControllerOptions } from "../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller";
-import type { PanelState, UiState } from "../apps/chrome-extension/src/entrypoints/sidepanel/types";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createSlidesSummaryController } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-summary-controller';
+import type { StreamControllerOptions } from '../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller';
+import type { PanelState, UiState } from '../apps/chrome-extension/src/entrypoints/sidepanel/types';
 
 let streamOptions: StreamControllerOptions | null = null;
 let streamOptionsList: StreamControllerOptions[] = [];
 let streamStartSpy: ReturnType<typeof vi.fn> | null = null;
 let streamAbortSpy: ReturnType<typeof vi.fn> | null = null;
-let streamAbortSpies: Array<ReturnType<typeof vi.fn>> = [];
+let streamAbortSpies: ReturnType<typeof vi.fn>[] = [];
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller', () => ({
   createStreamController: (options: StreamControllerOptions) => {
     streamOptions = options;
     streamOptionsList.push(options);
     streamStartSpy = vi.fn(async () => {});
     streamAbortSpy = vi.fn();
     streamAbortSpies.push(streamAbortSpy);
-    return {
-      start: streamStartSpy,
-      abort: streamAbortSpy,
-      isStreaming: vi.fn(() => false),
-    };
+    return { abort: streamAbortSpy, isStreaming: vi.fn(() => false), start: streamStartSpy };
   },
 }));
 
 function buildUiState(): UiState {
   return {
+    daemon: { authed: true, ok: true },
+    media: { hasAudio: true, hasCaptions: true, hasVideo: true },
     panelOpen: true,
-    daemon: { ok: true, authed: true },
-    tab: { id: 1, url: "https://example.com/video", title: "Video" },
-    media: { hasVideo: true, hasAudio: true, hasCaptions: true },
-    stats: { pageWords: null, videoDurationSeconds: 120 },
     settings: {
       autoSummarize: false,
-      hoverSummaries: false,
-      chatEnabled: true,
       automationEnabled: false,
+      chatEnabled: true,
+      hoverSummaries: false,
+      length: 'medium',
+      model: 'auto',
       slidesEnabled: true,
-      slidesParallel: true,
+      slidesLayout: 'gallery',
       slidesOcrEnabled: true,
-      slidesLayout: "gallery",
-      model: "auto",
-      length: "medium",
+      slidesParallel: true,
       tokenPresent: true,
     },
-    status: "",
+    stats: { pageWords: null, videoDurationSeconds: 120 },
+    status: '',
+    tab: { id: 1, title: 'Video', url: 'https://example.com/video' },
   };
 }
 
 function buildPanelState(): PanelState {
   return {
-    ui: buildUiState(),
-    runId: null,
-    slidesRunId: null,
-    currentSource: { url: "https://example.com/video", title: "Video" },
-    lastMeta: { inputSummary: null, model: "auto", modelLabel: "auto" },
-    summaryMarkdown: null,
-    summaryFromCache: null,
-    slides: null,
-    phase: "idle",
-    error: null,
     chatStreaming: false,
+    currentSource: { title: 'Video', url: 'https://example.com/video' },
+    error: null,
+    lastMeta: { inputSummary: null, model: 'auto', modelLabel: 'auto' },
+    phase: 'idle',
+    runId: null,
+    slides: null,
+    slidesRunId: null,
+    summaryFromCache: null,
+    summaryMarkdown: null,
+    ui: buildUiState(),
   };
 }
 
-describe("slides summary controller", () => {
+describe('slides summary controller', () => {
   beforeEach(() => {
     streamOptions = null;
     streamOptionsList = [];
@@ -73,7 +70,7 @@ describe("slides summary controller", () => {
     streamAbortSpies = [];
   });
 
-  it("defers markdown while slides are disabled and applies it later", () => {
+  it('defers markdown while slides are disabled and applies it later', () => {
     const panelState = buildPanelState();
     let slidesEnabled = false;
     const updateSlideSummaryFromMarkdown = vi.fn();
@@ -81,312 +78,312 @@ describe("slides summary controller", () => {
     const clearSummarySource = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => "video",
-      getSlidesEnabled: () => slidesEnabled,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => null,
       clearSummarySource,
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => 'video',
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => slidesEnabled,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    controller.applyMarkdown("Slide summary");
+    controller.applyMarkdown('Slide summary');
     expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalled();
 
     slidesEnabled = true;
     controller.maybeApplyPending();
 
-    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith("Slide summary", {
+    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith('Slide summary', {
       preserveIfEmpty: false,
-      source: "slides",
+      source: 'slides',
     });
-    expect(renderMarkdown).toHaveBeenCalledWith("Slide summary");
+    expect(renderMarkdown).toHaveBeenCalledWith('Slide summary');
     expect(clearSummarySource).not.toHaveBeenCalled();
   });
 
-  it("defers markdown while the panel is in page mode", () => {
+  it('defers markdown while the panel is in page mode', () => {
     const panelState = buildPanelState();
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
-    let inputModeOverride: "page" | "video" | null = "page";
+    let inputModeOverride: 'page' | 'video' | null = 'page';
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => inputModeOverride,
-      getSlidesEnabled: () => true,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => null,
       clearSummarySource: vi.fn(),
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => inputModeOverride,
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => true,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    controller.applyMarkdown("Pending summary");
+    controller.applyMarkdown('Pending summary');
     expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalled();
 
-    inputModeOverride = "video";
+    inputModeOverride = 'video';
     controller.maybeApplyPending();
 
     expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledTimes(1);
     expect(renderMarkdown).toHaveBeenCalledTimes(1);
   });
 
-  it("does not render markdown when a primary summary already exists", () => {
+  it('does not render markdown when a primary summary already exists', () => {
     const panelState = buildPanelState();
-    panelState.summaryMarkdown = "Primary summary";
+    panelState.summaryMarkdown = 'Primary summary';
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => "video",
-      getSlidesEnabled: () => true,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => null,
       clearSummarySource: vi.fn(),
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => 'video',
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => true,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    controller.applyMarkdown("Slides-only summary");
+    controller.applyMarkdown('Slides-only summary');
 
     expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledOnce();
     expect(renderMarkdown).not.toHaveBeenCalled();
   });
 
-  it("ignores stale markdown for a different url and clears summary source on stop", () => {
+  it('ignores stale markdown for a different url and clears summary source on stop', () => {
     const panelState = buildPanelState();
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
     const clearSummarySource = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => "video",
-      getSlidesEnabled: () => true,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => null,
       clearSummarySource,
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => 'video',
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => true,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    controller.setUrl("https://example.com/other");
-    controller.applyMarkdown("Stale summary");
+    controller.setUrl('https://example.com/other');
+    controller.applyMarkdown('Stale summary');
     expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalled();
 
-    controller.setRunId("slides-run");
-    controller.setSnapshot({ markdown: "Persisted", complete: true, model: "test-model" });
+    controller.setRunId('slides-run');
+    controller.setSnapshot({ complete: true, markdown: 'Persisted', model: 'test-model' });
     expect(controller.getSnapshot()).toEqual({
-      runId: "slides-run",
-      markdown: "Persisted",
       complete: true,
-      model: "test-model",
+      markdown: 'Persisted',
+      model: 'test-model',
+      runId: 'slides-run',
     });
 
     controller.stop();
     expect(clearSummarySource).toHaveBeenCalledOnce();
     expect(controller.getSnapshot()).toEqual({
-      runId: null,
-      markdown: "",
       complete: false,
+      markdown: '',
       model: null,
+      runId: null,
     });
   });
 
-  it("handles stream lifecycle callbacks for render, meta, error, reset, and done", () => {
+  it('handles stream lifecycle callbacks for render, meta, error, reset, and done', () => {
     const panelState = buildPanelState();
-    panelState.summaryMarkdown = "Primary summary";
+    panelState.summaryMarkdown = 'Primary summary';
     panelState.slides = {
-      sourceUrl: panelState.currentSource?.url ?? "",
-      sourceId: "slides-1",
-      sourceKind: "youtube",
       ocrAvailable: true,
-      slides: [{ index: 1, timestamp: 12, imageUrl: "", ocrText: "Hello world from slide one." }],
+      slides: [{ index: 1, timestamp: 12, imageUrl: '', ocrText: 'Hello world from slide one.' }],
+      sourceId: 'slides-1',
+      sourceKind: 'youtube',
+      sourceUrl: panelState.currentSource?.url ?? '',
     };
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
     const renderInlineSlidesFallback = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => "video",
-      getSlidesEnabled: () => true,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => "[0:12] Transcript fallback text.",
       clearSummarySource: vi.fn(),
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => 'video',
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => true,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => '[0:12] Transcript fallback text.',
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback,
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
     expect(streamOptions).not.toBeNull();
-    streamOptions?.onMeta({ model: "gpt-test" });
-    expect(controller.getModel()).toBe("gpt-test");
+    streamOptions?.onMeta({ model: 'gpt-test' });
+    expect(controller.getModel()).toBe('gpt-test');
 
-    streamOptions?.onRender?.("Rendered summary");
-    expect(controller.getMarkdown()).toBe("Rendered summary");
-    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith("Rendered summary", {
+    streamOptions?.onRender?.('Rendered summary');
+    expect(controller.getMarkdown()).toBe('Rendered summary');
+    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith('Rendered summary', {
       preserveIfEmpty: true,
-      source: "slides",
+      source: 'slides',
     });
     expect(renderInlineSlidesFallback).toHaveBeenCalledOnce();
 
-    const message = streamOptions?.onError?.(new Error("boom"));
-    expect(message).toBe("Slides summary failed");
+    const message = streamOptions?.onError?.(new Error('boom'));
+    expect(message).toBe('Slides summary failed');
 
     streamOptions?.onDone?.();
     expect(controller.getComplete()).toBe(false);
 
     streamOptions?.onReset?.();
     expect(controller.getSnapshot()).toEqual({
-      runId: null,
-      markdown: "",
       complete: false,
-      model: "auto",
+      markdown: '',
+      model: 'auto',
+      runId: null,
     });
 
-    streamOptions?.onRender?.("Final summary");
-    panelState.phase = "streaming";
+    streamOptions?.onRender?.('Final summary');
+    panelState.phase = 'streaming';
     streamOptions?.onDone?.();
     expect(controller.getComplete()).toBe(true);
 
-    panelState.phase = "idle";
+    panelState.phase = 'idle';
     controller.maybeApplyPending();
     expect(updateSlideSummaryFromMarkdown).toHaveBeenLastCalledWith(expect.any(String), {
       preserveIfEmpty: false,
-      source: "slides",
+      source: 'slides',
     });
     expect(renderMarkdown).not.toHaveBeenCalled();
   });
 
-  it("ignores stale callbacks after switching to a newer slides summary run", async () => {
+  it('ignores stale callbacks after switching to a newer slides summary run', async () => {
     const panelState = buildPanelState();
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
-      getInputMode: () => "video",
-      getInputModeOverride: () => "video",
-      getSlidesEnabled: () => true,
-      getLengthValue: () => "medium",
-      getTranscriptTimedText: () => null,
       clearSummarySource: vi.fn(),
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => panelState.currentSource?.url ?? null,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => 'video',
+      getLengthValue: () => 'medium',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => true,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    await controller.start({ runId: "slides-a", url: "https://example.com/alpha" });
+    await controller.start({ runId: 'slides-a', url: 'https://example.com/alpha' });
     const alphaStream = streamOptionsList.at(-1);
     expect(alphaStream).toBeTruthy();
 
-    panelState.currentSource = { url: "https://example.com/bravo", title: "Bravo" };
-    await controller.start({ runId: "slides-b", url: "https://example.com/bravo" });
+    panelState.currentSource = { title: 'Bravo', url: 'https://example.com/bravo' };
+    await controller.start({ runId: 'slides-b', url: 'https://example.com/bravo' });
     const bravoStream = streamOptionsList.at(-1);
     expect(bravoStream).toBeTruthy();
     expect(bravoStream).not.toBe(alphaStream);
 
-    alphaStream?.onRender?.("Alpha stale summary");
+    alphaStream?.onRender?.('Alpha stale summary');
     alphaStream?.onDone?.();
-    expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalledWith("Alpha stale summary", {
+    expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalledWith('Alpha stale summary', {
       preserveIfEmpty: true,
-      source: "slides",
+      source: 'slides',
     });
 
-    bravoStream?.onRender?.("Bravo fresh summary");
+    bravoStream?.onRender?.('Bravo fresh summary');
     bravoStream?.onDone?.();
 
-    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith("Bravo fresh summary", {
+    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith('Bravo fresh summary', {
       preserveIfEmpty: true,
-      source: "slides",
+      source: 'slides',
     });
-    expect(updateSlideSummaryFromMarkdown).toHaveBeenLastCalledWith("Bravo fresh summary", {
+    expect(updateSlideSummaryFromMarkdown).toHaveBeenLastCalledWith('Bravo fresh summary', {
       preserveIfEmpty: false,
-      source: "slides",
+      source: 'slides',
     });
-    expect(controller.getMarkdown()).toBe("Bravo fresh summary");
+    expect(controller.getMarkdown()).toBe('Bravo fresh summary');
     expect(controller.getComplete()).toBe(true);
   });
 
-  it("covers empty, pending, and reset branches", async () => {
+  it('covers empty, pending, and reset branches', async () => {
     const panelState = buildPanelState();
     panelState.lastMeta.model = null;
-    panelState.ui.settings.model = "ui-model";
+    panelState.ui.settings.model = 'ui-model';
     let slidesEnabled = false;
-    let activeTabUrl: string | null = null;
+    const activeTabUrl: string | null = null;
     const updateSlideSummaryFromMarkdown = vi.fn();
     const renderMarkdown = vi.fn();
 
     const controller = createSlidesSummaryController({
-      getToken: async () => "token",
-      friendlyFetchError: (_error, fallback) => fallback,
-      panelUrlsMatch: (left, right) => left === right,
-      getPanelState: () => panelState,
-      getUiState: () => panelState.ui,
-      getActiveTabUrl: () => activeTabUrl,
-      getInputMode: () => "video",
-      getInputModeOverride: () => null,
-      getSlidesEnabled: () => slidesEnabled,
-      getLengthValue: () => "short",
-      getTranscriptTimedText: () => null,
       clearSummarySource: vi.fn(),
-      updateSlideSummaryFromMarkdown,
-      renderMarkdown,
+      friendlyFetchError: (_error, fallback) => fallback,
+      getActiveTabUrl: () => activeTabUrl,
+      getInputMode: () => 'video',
+      getInputModeOverride: () => null,
+      getLengthValue: () => 'short',
+      getPanelState: () => panelState,
+      getSlidesEnabled: () => slidesEnabled,
+      getToken: async () => 'token',
+      getTranscriptTimedText: () => null,
+      getUiState: () => panelState.ui,
+      panelUrlsMatch: (left, right) => left === right,
       renderInlineSlidesFallback: vi.fn(),
+      renderMarkdown,
+      updateSlideSummaryFromMarkdown,
     });
 
-    controller.applyMarkdown("   ");
+    controller.applyMarkdown('   ');
     expect(updateSlideSummaryFromMarkdown).not.toHaveBeenCalled();
 
-    await controller.start({ runId: "run-1", url: "https://example.com/video" });
+    await controller.start({ runId: 'run-1', url: 'https://example.com/video' });
     expect(streamStartSpy).toHaveBeenCalledWith({
-      runId: "run-1",
-      url: "https://example.com/video",
+      runId: 'run-1',
+      url: 'https://example.com/video',
     });
 
-    controller.applyMarkdown("Pending summary");
+    controller.applyMarkdown('Pending summary');
     controller.clearPending();
     slidesEnabled = true;
     controller.maybeApplyPending();
@@ -395,26 +392,26 @@ describe("slides summary controller", () => {
     streamOptions?.onMeta({});
     expect(controller.getModel()).toBeNull();
 
-    streamOptions?.onRender?.("");
+    streamOptions?.onRender?.('');
     streamOptions?.onDone?.();
     expect(controller.getComplete()).toBe(true);
-    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith("", {
+    expect(updateSlideSummaryFromMarkdown).toHaveBeenCalledWith('', {
       preserveIfEmpty: true,
-      source: "slides",
+      source: 'slides',
     });
 
-    streamOptions?.onError?.(new Error("boom"));
+    streamOptions?.onError?.(new Error('boom'));
     controller.clearError();
     streamOptions?.onReset?.();
-    expect(controller.getModel()).toBe("ui-model");
+    expect(controller.getModel()).toBe('ui-model');
 
-    controller.setModel("override-model");
+    controller.setModel('override-model');
     controller.resetSummaryState();
     expect(controller.getSnapshot()).toEqual({
-      runId: null,
-      markdown: "",
       complete: false,
-      model: "override-model",
+      markdown: '',
+      model: 'override-model',
+      runId: null,
     });
 
     controller.stop();

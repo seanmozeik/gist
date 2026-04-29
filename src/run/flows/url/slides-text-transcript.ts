@@ -1,11 +1,12 @@
-import { extractYouTubeVideoId } from "@steipete/summarize-core/content/url";
-import type { SummaryLength } from "../../../shared/contracts.js";
-import type { SlideTimelineEntry, TranscriptSegment } from "./slides-text-types.js";
+import { extractYouTubeVideoId } from '@steipete/summarize-core/content/url';
+
+import type { SummaryLength } from '../../../shared/contracts.js';
+import type { SlideTimelineEntry, TranscriptSegment } from './slides-text-types.js';
 
 const SLIDE_TEXT_BUDGET_BY_PRESET: Record<SummaryLength, number> = {
-  short: 120,
-  medium: 200,
   long: 320,
+  medium: 200,
+  short: 120,
   xl: 480,
   xxl: 700,
 };
@@ -14,9 +15,9 @@ const SLIDE_TEXT_BUDGET_MIN = 80;
 const SLIDE_TEXT_BUDGET_MAX = 900;
 
 const SLIDE_WINDOW_SECONDS_BY_PRESET: Record<SummaryLength, number> = {
-  short: 30,
-  medium: 60,
   long: 90,
+  medium: 60,
+  short: 30,
   xl: 120,
   xxl: 180,
 };
@@ -28,8 +29,8 @@ const clampNumber = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
 function parseTimestampSeconds(value: string): number | null {
-  const parts = value.split(":").map((item) => Number(item));
-  if (parts.some((item) => !Number.isFinite(item))) return null;
+  const parts = value.split(':').map((item) => Number(item));
+  if (parts.some((item) => !Number.isFinite(item))) {return null;}
   if (parts.length === 2) {
     const [minutes, seconds] = parts;
     return minutes * 60 + seconds;
@@ -42,15 +43,15 @@ function parseTimestampSeconds(value: string): number | null {
 }
 
 function normalizeSlideText(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
+  return value.replaceAll(/\s+/g, ' ').trim();
 }
 
 function truncateSlideText(value: string, limit: number): string {
-  if (value.length <= limit) return value;
+  if (value.length <= limit) {return value;}
   const truncated = value.slice(0, limit).trimEnd();
-  const clean = truncated.replace(/\s+\S*$/, "").trim();
+  const clean = truncated.replace(/\s+\S*$/, '').trim();
   const result = clean.length > 0 ? clean : truncated.trim();
-  return result.length > 0 ? `${result}...` : "";
+  return result.length > 0 ? `${result}...` : '';
 }
 
 export function interleaveSlidesIntoTranscript({
@@ -60,24 +61,24 @@ export function interleaveSlidesIntoTranscript({
   transcriptTimedText: string;
   slides: SlideTimelineEntry[];
 }): string {
-  if (!transcriptTimedText.trim() || slides.length === 0) return transcriptTimedText;
+  if (!transcriptTimedText.trim() || slides.length === 0) {return transcriptTimedText;}
   const ordered = slides
     .filter((slide) => Number.isFinite(slide.timestamp))
     .map((slide) => ({ index: slide.index, timestamp: slide.timestamp }))
-    .sort((a, b) => a.timestamp - b.timestamp);
-  if (ordered.length === 0) return transcriptTimedText;
+    .toSorted((a, b) => a.timestamp - b.timestamp);
+  if (ordered.length === 0) {return transcriptTimedText;}
 
   let nextIndex = 0;
   const out: string[] = [];
-  const lines = transcriptTimedText.split("\n");
+  const lines = transcriptTimedText.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
-    const match = trimmed.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?)\]/);
-    const seconds = match ? parseTimestampSeconds(match[1] ?? "") : null;
+    const match = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]/.exec(trimmed);
+    const seconds = match ? parseTimestampSeconds(match[1] ?? '') : null;
     if (seconds != null) {
       while (nextIndex < ordered.length && (ordered[nextIndex]?.timestamp ?? 0) <= seconds) {
         const slide = ordered[nextIndex];
-        if (slide) out.push(`[slide:${slide.index}]`);
+        if (slide) {out.push(`[slide:${slide.index}]`);}
         nextIndex += 1;
       }
     }
@@ -85,24 +86,24 @@ export function interleaveSlidesIntoTranscript({
   }
   while (nextIndex < ordered.length) {
     const slide = ordered[nextIndex];
-    if (slide) out.push(`[slide:${slide.index}]`);
+    if (slide) {out.push(`[slide:${slide.index}]`);}
     nextIndex += 1;
   }
-  return out.join("\n");
+  return out.join('\n');
 }
 
 export function parseTranscriptTimedText(input: string | null | undefined): TranscriptSegment[] {
-  if (!input) return [];
+  if (!input) {return [];}
   const segments: TranscriptSegment[] = [];
-  for (const line of input.split("\n")) {
+  for (const line of input.split('\n')) {
     const trimmed = line.trim();
-    if (!trimmed.startsWith("[")) continue;
-    const match = trimmed.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/);
-    if (!match) continue;
+    if (!trimmed.startsWith('[')) {continue;}
+    const match = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/.exec(trimmed);
+    if (!match) {continue;}
     const seconds = parseTimestampSeconds(match[1]);
-    if (seconds == null) continue;
-    const text = (match[2] ?? "").trim();
-    if (!text) continue;
+    if (seconds == null) {continue;}
+    const text = (match[2] ?? '').trim();
+    if (!text) {continue;}
     segments.push({ startSeconds: seconds, text });
   }
   segments.sort((a, b) => a.startSeconds - b.startSeconds);
@@ -114,10 +115,10 @@ export function formatTimestamp(seconds: number): string {
   const hours = Math.floor(clamped / 3600);
   const minutes = Math.floor((clamped % 3600) / 60);
   const secs = clamped % 60;
-  const mm = String(minutes).padStart(2, "0");
-  const ss = String(secs).padStart(2, "0");
-  if (hours <= 0) return `${minutes}:${ss}`;
-  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(secs).padStart(2, '0');
+  if (hours <= 0) {return `${minutes}:${ss}`;}
+  const hh = String(hours).padStart(2, '0');
   return `${hh}:${mm}:${ss}`;
 }
 
@@ -125,10 +126,10 @@ export function resolveSlideTextBudget({
   lengthArg,
   slideCount,
 }: {
-  lengthArg: { kind: "preset"; preset: SummaryLength } | { kind: "chars"; maxCharacters: number };
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number };
   slideCount: number;
 }): number {
-  if (lengthArg.kind === "preset") {
+  if (lengthArg.kind === 'preset') {
     return SLIDE_TEXT_BUDGET_BY_PRESET[lengthArg.preset];
   }
   const divisor = Math.max(1, Math.min(slideCount, 10));
@@ -139,9 +140,9 @@ export function resolveSlideTextBudget({
 export function resolveSlideWindowSeconds({
   lengthArg,
 }: {
-  lengthArg: { kind: "preset"; preset: SummaryLength } | { kind: "chars"; maxCharacters: number };
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number };
 }): number {
-  if (lengthArg.kind === "preset") {
+  if (lengthArg.kind === 'preset') {
     return SLIDE_WINDOW_SECONDS_BY_PRESET[lengthArg.preset];
   }
   const window = Math.round(lengthArg.maxCharacters / 100);
@@ -161,8 +162,8 @@ export function getTranscriptTextForSlide({
   budget: number;
   windowSeconds: number;
 }): string {
-  if (!Number.isFinite(slide.timestamp)) return "";
-  if (segments.length === 0) return "";
+  if (!Number.isFinite(slide.timestamp)) {return '';}
+  if (segments.length === 0) {return '';}
   const start = Math.max(0, Math.floor(slide.timestamp));
   const leadIn = Math.min(6, Math.floor(windowSeconds * 0.2));
   const lower = Math.max(0, start - leadIn);
@@ -173,55 +174,55 @@ export function getTranscriptTextForSlide({
       upper = Math.min(upper, next);
     }
   }
-  if (upper < lower) return "";
+  if (upper < lower) {return '';}
   const parts: string[] = [];
   for (const segment of segments) {
-    if (segment.startSeconds < lower) continue;
-    if (segment.startSeconds > upper) break;
+    if (segment.startSeconds < lower) {continue;}
+    if (segment.startSeconds > upper) {break;}
     parts.push(segment.text);
   }
-  const text = normalizeSlideText(parts.join(" "));
-  return text ? truncateSlideText(text, budget) : "";
+  const text = normalizeSlideText(parts.join(' '));
+  return text ? truncateSlideText(text, budget) : '';
 }
 
 export function formatOsc8Link(label: string, url: string | null, enabled: boolean): string {
-  if (!enabled || !url) return label;
-  const osc = "\u001b]8;;";
-  const st = "\u001b\\";
+  if (!enabled || !url) {return label;}
+  const osc = '\u001B]8;;';
+  const st = '\u001B\\';
   return `${osc}${url}${st}${label}${osc}${st}`;
 }
 
 export function buildTimestampUrl(sourceUrl: string, seconds: number): string | null {
-  if (!sourceUrl) return null;
+  if (!sourceUrl) {return null;}
   let url: URL;
   try {
     url = new URL(sourceUrl);
   } catch {
     return null;
   }
-  const host = url.hostname.replace(/^www\./, "").toLowerCase();
+  const host = url.hostname.replace(/^www\./, '').toLowerCase();
   const clamped = Math.max(0, Math.floor(seconds));
 
-  if (host === "youtu.be" || host === "youtube.com" || host === "m.youtube.com") {
+  if (host === 'youtu.be' || host === 'youtube.com' || host === 'm.youtube.com') {
     const id = extractYouTubeVideoId(sourceUrl);
-    if (!id) return null;
+    if (!id) {return null;}
     return `https://www.youtube.com/watch?v=${id}&t=${clamped}s`;
   }
 
-  if (host === "vimeo.com" || host === "player.vimeo.com") {
-    const match = url.pathname.match(/\/(\d+)(?:$|\/)/);
-    if (!match) return null;
+  if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+    const match = /\/(\d+)(?:$|\/)/.exec(url.pathname);
+    if (!match) {return null;}
     url.hash = `t=${clamped}s`;
     return url.toString();
   }
 
-  if (host === "loom.com" || host.endsWith(".loom.com")) {
-    url.searchParams.set("t", clamped.toString());
+  if (host === 'loom.com' || host.endsWith('.loom.com')) {
+    url.searchParams.set('t', clamped.toString());
     return url.toString();
   }
 
-  if (host === "dropbox.com" || host.endsWith(".dropbox.com")) {
-    url.searchParams.set("t", clamped.toString());
+  if (host === 'dropbox.com' || host.endsWith('.dropbox.com')) {
+    url.searchParams.set('t', clamped.toString());
     return url.toString();
   }
 

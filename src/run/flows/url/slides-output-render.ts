@@ -1,7 +1,8 @@
-import { promises as fs } from "node:fs";
-import type { SlideExtractionResult } from "../../../slides/index.js";
-import type { SlideState } from "./slides-output-state.js";
-import { buildTimestampUrl, formatOsc8Link, formatTimestamp } from "./slides-text.js";
+import { promises as fs } from 'node:fs';
+
+import type { SlideExtractionResult } from '../../../slides/index.js';
+import type { SlideState } from './slides-output-state.js';
+import { buildTimestampUrl, formatOsc8Link, formatTimestamp } from './slides-text.js';
 
 export function createInlineSlidesUnsupportedNotifier({
   inlineNoticeEnabled,
@@ -13,9 +14,7 @@ export function createInlineSlidesUnsupportedNotifier({
 }: {
   inlineNoticeEnabled: boolean;
   flags: { plain: boolean };
-  io: {
-    stderr: NodeJS.WritableStream;
-  };
+  io: { stderr: NodeJS.WritableStream };
   richTty: boolean;
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
@@ -23,10 +22,10 @@ export function createInlineSlidesUnsupportedNotifier({
   let inlineNoticeShown = false;
 
   return (nextSlides: SlideExtractionResult) => {
-    if (!inlineNoticeEnabled || inlineNoticeShown) return;
-    if (!nextSlides.slidesDir) return;
+    if (!inlineNoticeEnabled || inlineNoticeShown) {return;}
+    if (!nextSlides.slidesDir) {return;}
     inlineNoticeShown = true;
-    const reason = richTty ? "terminal does not support inline images" : "stdout is not a TTY";
+    const reason = richTty ? 'terminal does not support inline images' : 'stdout is not a TTY';
     clearProgressForStdout();
     io.stderr.write(
       `Slides saved to ${nextSlides.slidesDir}. Inline images unavailable (${reason}).\n`,
@@ -77,7 +76,7 @@ export function createSlidesTerminalRenderer({
   let renderedCount = 0;
 
   return async (index: number, title?: string | null) => {
-    if (index <= 0) return;
+    if (index <= 0) {return;}
     const total = getOrder().length || (initialSlides?.slides.length ?? 0);
     const slide = getSlide(index);
     let imagePath = slide?.imagePath ?? null;
@@ -87,35 +86,35 @@ export function createSlidesTerminalRenderer({
     }
     const timestamp = slide?.timestamp;
     const timestampLabel =
-      typeof timestamp === "number" && Number.isFinite(timestamp)
+      typeof timestamp === 'number' && Number.isFinite(timestamp)
         ? formatTimestamp(timestamp)
         : null;
     const timestampUrl =
-      typeof timestamp === "number" && Number.isFinite(timestamp)
+      typeof timestamp === 'number' && Number.isFinite(timestamp)
         ? buildTimestampUrl(getSourceUrl(), timestamp)
         : null;
     const timeLink = timestampLabel ? formatOsc8Link(timestampLabel, timestampUrl, richTty) : null;
     const slideLabelBase = total > 0 ? `Slide ${index}/${total}` : `Slide ${index}`;
-    const rawLabel = [slideLabelBase, timeLink].filter(Boolean).join(" · ");
+    const rawLabel = [slideLabelBase, timeLink].filter(Boolean).join(' · ');
     const label = labelTheme.dim(rawLabel);
-    const cleanTitle = title?.replace(/\s+/g, " ").trim() ?? "";
+    const cleanTitle = title?.replaceAll(/\s+/g, ' ').trim() ?? '';
     const titleMax = 90;
     const shortTitle =
       cleanTitle.length > titleMax
         ? `${cleanTitle.slice(0, titleMax - 3).trimEnd()}...`
         : cleanTitle;
-    const titleLine = shortTitle ? labelTheme.heading(shortTitle) : "";
+    const titleLine = shortTitle ? labelTheme.heading(shortTitle) : '';
     const headerLine = shortTitle
-      ? `${titleLine}${timeLink ? ` ${labelTheme.dim(`· ${timeLink}`)}` : ""}`
+      ? `${titleLine}${timeLink ? ` ${labelTheme.dim(`· ${timeLink}`)}` : ''}`
       : label;
 
     clearProgressForStdout();
-    io.stdout.write("\n");
+    io.stdout.write('\n');
     if (inlineEnabled && imagePath && inlineRenderer && !flags.slidesDebug) {
-      await inlineRenderer.renderSlide({ index, timestamp: timestamp ?? 0, imagePath }, null);
+      await inlineRenderer.renderSlide({ imagePath, index, timestamp: timestamp ?? 0 }, null);
     }
     if (flags.slidesDebug) {
-      let resolvedPath = imagePath ?? "(missing image path)";
+      let resolvedPath = imagePath ?? '(missing image path)';
       if (imagePath) {
         const exists = await fs
           .stat(imagePath)

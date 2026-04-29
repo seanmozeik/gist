@@ -1,7 +1,7 @@
 ---
-summary: "Chrome side panel extension + daemon architecture, setup, and troubleshooting."
+summary: 'Chrome side panel extension + daemon architecture, setup, and troubleshooting.'
 read_when:
-  - "When working on the extension, daemon, or side panel UX."
+  - 'When working on the extension, daemon, or side panel UX.'
 ---
 
 # Browser Side Panel (Chrome + Firefox Extension + Daemon)

@@ -1,9 +1,9 @@
 export function parseClockDuration(value: string): number | null {
   const parts = value
     .trim()
-    .split(":")
+    .split(':')
     .map((part) => Number.parseInt(part.trim(), 10));
-  if (parts.some((part) => !Number.isFinite(part))) return null;
+  if (parts.some((part) => !Number.isFinite(part))) {return null;}
   if (parts.length === 2) {
     const [minutes, seconds] = parts;
     return minutes * 60 + seconds;
@@ -17,11 +17,11 @@ export function parseClockDuration(value: string): number | null {
 
 export function parseIsoDuration(value: string): number | null {
   const match = value.trim().match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i);
-  if (!match) return null;
-  const hours = Number.parseInt(match[1] ?? "0", 10);
-  const minutes = Number.parseInt(match[2] ?? "0", 10);
-  const seconds = Number.parseInt(match[3] ?? "0", 10);
-  if (![hours, minutes, seconds].every((part) => Number.isFinite(part))) return null;
+  if (!match) {return null;}
+  const hours = Number.parseInt(match[1] ?? '0', 10);
+  const minutes = Number.parseInt(match[2] ?? '0', 10);
+  const seconds = Number.parseInt(match[3] ?? '0', 10);
+  if (![hours, minutes, seconds].every((part) => Number.isFinite(part))) {return null;}
   const total = hours * 3600 + minutes * 60 + seconds;
   return total > 0 ? total : null;
 }
@@ -37,15 +37,15 @@ export function resolveMediaDurationSecondsFromData({
 }): number | null {
   if (metaDuration) {
     const parsed = parseIsoDuration(metaDuration);
-    if (parsed) return parsed;
+    if (parsed) {return parsed;}
   }
 
   if (uiDuration) {
     const parsed = parseClockDuration(uiDuration);
-    if (parsed) return parsed;
+    if (parsed) {return parsed;}
   }
 
-  if (typeof videoDuration === "number" && Number.isFinite(videoDuration) && videoDuration > 0) {
+  if (typeof videoDuration === 'number' && Number.isFinite(videoDuration) && videoDuration > 0) {
     return Math.round(videoDuration);
   }
 

@@ -1,41 +1,41 @@
-import type { ProviderResult } from "../../types.js";
+import type { ProviderResult } from '../../types.js';
 import {
   extractAppleEpisodeTitleFromHtml,
   extractApplePodcastIds,
   extractEmbeddedJsonUrl,
-} from "./apple.js";
-import { TRANSCRIPTION_TIMEOUT_MS } from "./constants.js";
-import type { PodcastFlowContext } from "./flow-context.js";
-import { resolveApplePodcastEpisodeFromItunesLookup } from "./itunes.js";
-import { buildWhisperResult, joinNotes } from "./results.js";
+} from './apple.js';
+import { TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
+import type { PodcastFlowContext } from './flow-context.js';
+import { resolveApplePodcastEpisodeFromItunesLookup } from './itunes.js';
+import { buildWhisperResult, joinNotes } from './results.js';
 import {
   decodeXmlEntities,
   extractEnclosureForEpisode,
   extractEnclosureFromFeed,
   tryFetchTranscriptFromFeedXml,
-} from "./rss.js";
+} from './rss.js';
 
 export async function fetchAppleTranscriptFromItunesLookup(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
   const appleIds =
-    typeof flow.context.html !== "string" ? extractApplePodcastIds(flow.context.url) : null;
-  if (!appleIds) return null;
+    typeof flow.context.html !== 'string' ? extractApplePodcastIds(flow.context.url) : null;
+  if (!appleIds) {return null;}
 
   try {
     const episode = await resolveApplePodcastEpisodeFromItunesLookup({
+      episodeId: appleIds.episodeId,
       fetchImpl: flow.options.fetch,
       showId: appleIds.showId,
-      episodeId: appleIds.episodeId,
     });
     if (!episode) {
-      throw new Error("iTunes lookup did not return an episodeUrl");
+      throw new Error('iTunes lookup did not return an episodeUrl');
     }
 
     if (episode.feedUrl && episode.episodeTitle) {
-      flow.pushOnce("podcastTranscript");
+      flow.pushOnce('podcastTranscript');
       const feedResponse = await flow.options.fetch(episode.feedUrl, {
-        redirect: "follow",
+        redirect: 'follow',
         signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
       });
       if (feedResponse.ok) {
@@ -43,69 +43,69 @@ export async function fetchAppleTranscriptFromItunesLookup(
         let maybeTranscript: Awaited<ReturnType<typeof tryFetchTranscriptFromFeedXml>> = null;
         if (/podcast:transcript/i.test(feedXml)) {
           maybeTranscript = await tryFetchTranscriptFromFeedXml({
-            fetchImpl: flow.options.fetch,
-            feedXml,
             episodeTitle: episode.episodeTitle,
+            feedXml,
+            fetchImpl: flow.options.fetch,
             notes: flow.notes,
           });
         }
         if (maybeTranscript) {
-          flow.notes.push("Resolved Apple Podcasts episode via RSS <podcast:transcript>");
+          flow.notes.push('Resolved Apple Podcasts episode via RSS <podcast:transcript>');
           return {
-            text: maybeTranscript.text,
-            source: "podcastTranscript",
-            segments: flow.options.transcriptTimestamps ? (maybeTranscript.segments ?? null) : null,
             attemptedProviders: flow.attemptedProviders,
-            notes: joinNotes(flow.notes),
             metadata: {
-              provider: "podcast",
-              kind: "apple_itunes_rss_transcript",
-              showId: appleIds.showId,
               episodeId: appleIds.episodeId,
-              feedUrl: episode.feedUrl,
               episodeTitle: episode.episodeTitle,
-              transcriptUrl: maybeTranscript.transcriptUrl,
+              feedUrl: episode.feedUrl,
+              kind: 'apple_itunes_rss_transcript',
+              provider: 'podcast',
+              showId: appleIds.showId,
               transcriptType: maybeTranscript.transcriptType,
+              transcriptUrl: maybeTranscript.transcriptUrl,
             },
+            notes: joinNotes(flow.notes),
+            segments: flow.options.transcriptTimestamps ? (maybeTranscript.segments ?? null) : null,
+            source: 'podcastTranscript',
+            text: maybeTranscript.text,
           };
         }
       }
     }
 
     const missing = flow.ensureTranscriptionProvider();
-    if (missing) return missing;
-    flow.pushOnce("whisper");
+    if (missing) {return missing;}
+    flow.pushOnce('whisper');
     const result = await flow.transcribe({
-      url: episode.episodeUrl,
-      filenameHint: episode.fileExtension ? `episode.${episode.fileExtension}` : "episode.mp3",
       durationSecondsHint: episode.durationSeconds,
+      filenameHint: episode.fileExtension ? `episode.${episode.fileExtension}` : 'episode.mp3',
+      url: episode.episodeUrl,
     });
 
     if (result.text) {
-      flow.notes.push("Resolved Apple Podcasts episode via iTunes lookup");
+      flow.notes.push('Resolved Apple Podcasts episode via iTunes lookup');
     }
     return buildWhisperResult({
       attemptedProviders: flow.attemptedProviders,
-      notes: flow.notes,
-      outcome: result,
       includeProviderOnFailure: true,
       metadata: {
-        provider: "podcast",
-        kind: "apple_itunes_episode",
-        showId: appleIds.showId,
+        durationSeconds: episode.durationSeconds,
         episodeId: appleIds.episodeId,
         episodeUrl: episode.episodeUrl,
         feedUrl: episode.feedUrl,
-        durationSeconds: episode.durationSeconds,
+        kind: 'apple_itunes_episode',
+        provider: 'podcast',
+        showId: appleIds.showId,
       },
+      notes: flow.notes,
+      outcome: result,
     });
   } catch (error) {
     return {
-      text: null,
-      source: null,
       attemptedProviders: flow.attemptedProviders,
+      metadata: { kind: 'apple_itunes_episode', provider: 'podcast', showId: appleIds.showId },
       notes: `Apple Podcasts iTunes lookup failed: ${error instanceof Error ? error.message : String(error)}`,
-      metadata: { provider: "podcast", kind: "apple_itunes_episode", showId: appleIds.showId },
+      source: null,
+      text: null,
     };
   }
 }
@@ -113,11 +113,11 @@ export async function fetchAppleTranscriptFromItunesLookup(
 export async function fetchAppleTranscriptFromEmbeddedHtml(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
-  if (typeof flow.context.html !== "string") return null;
+  if (typeof flow.context.html !== 'string') {return null;}
 
   const appleEpisodeTitle = extractAppleEpisodeTitleFromHtml(flow.context.html);
 
-  const appleFeedUrl = extractEmbeddedJsonUrl(flow.context.html, "feedUrl");
+  const appleFeedUrl = extractEmbeddedJsonUrl(flow.context.html, 'feedUrl');
   if (appleFeedUrl) {
     try {
       const feedResponse = await flow.options.fetch(appleFeedUrl, {
@@ -130,29 +130,29 @@ export async function fetchAppleTranscriptFromEmbeddedHtml(
 
       let maybeTranscript: Awaited<ReturnType<typeof tryFetchTranscriptFromFeedXml>> = null;
       if (/podcast:transcript/i.test(xml)) {
-        flow.pushOnce("podcastTranscript");
+        flow.pushOnce('podcastTranscript');
         maybeTranscript = await tryFetchTranscriptFromFeedXml({
-          fetchImpl: flow.options.fetch,
-          feedXml: xml,
           episodeTitle: appleEpisodeTitle,
+          feedXml: xml,
+          fetchImpl: flow.options.fetch,
           notes: flow.notes,
         });
       }
       if (maybeTranscript) {
         return {
-          text: maybeTranscript.text,
-          source: "podcastTranscript",
-          segments: flow.options.transcriptTimestamps ? (maybeTranscript.segments ?? null) : null,
           attemptedProviders: flow.attemptedProviders,
-          notes: joinNotes(flow.notes),
           metadata: {
-            provider: "podcast",
-            kind: "apple_feed_transcript",
-            feedUrl: appleFeedUrl,
             episodeTitle: appleEpisodeTitle,
-            transcriptUrl: maybeTranscript.transcriptUrl,
+            feedUrl: appleFeedUrl,
+            kind: 'apple_feed_transcript',
+            provider: 'podcast',
             transcriptType: maybeTranscript.transcriptType,
+            transcriptUrl: maybeTranscript.transcriptUrl,
           },
+          notes: joinNotes(flow.notes),
+          segments: flow.options.transcriptTimestamps ? (maybeTranscript.segments ?? null) : null,
+          source: 'podcastTranscript',
+          text: maybeTranscript.text,
         };
       }
 
@@ -162,82 +162,82 @@ export async function fetchAppleTranscriptFromEmbeddedHtml(
           : extractEnclosureFromFeed(xml);
       if (enclosure) {
         const resolvedUrl = decodeXmlEntities(enclosure.enclosureUrl);
-        const durationSeconds = enclosure.durationSeconds;
+        const {durationSeconds} = enclosure;
         const missing = flow.ensureTranscriptionProvider();
-        if (missing) return missing;
-        flow.pushOnce("whisper");
+        if (missing) {return missing;}
+        flow.pushOnce('whisper');
         let result: Awaited<ReturnType<typeof flow.transcribe>>;
         try {
           result = await flow.transcribe({
-            url: resolvedUrl,
-            filenameHint: "episode.mp3",
             durationSecondsHint: durationSeconds,
+            filenameHint: 'episode.mp3',
+            url: resolvedUrl,
           });
         } catch (error) {
           return {
-            text: null,
-            source: null,
             attemptedProviders: flow.attemptedProviders,
-            notes: error instanceof Error ? error.message : String(error),
             metadata: {
-              provider: "podcast",
-              kind: "apple_feed_url",
-              feedUrl: appleFeedUrl,
-              episodeTitle: appleEpisodeTitle,
-              enclosureUrl: resolvedUrl,
               durationSeconds,
+              enclosureUrl: resolvedUrl,
+              episodeTitle: appleEpisodeTitle,
+              feedUrl: appleFeedUrl,
+              kind: 'apple_feed_url',
+              provider: 'podcast',
             },
+            notes: error instanceof Error ? error.message : String(error),
+            source: null,
+            text: null,
           };
         }
         return buildWhisperResult({
           attemptedProviders: flow.attemptedProviders,
+          metadata: {
+            durationSeconds,
+            enclosureUrl: resolvedUrl,
+            episodeTitle: appleEpisodeTitle,
+            feedUrl: appleFeedUrl,
+            kind: 'apple_feed_url',
+            provider: 'podcast',
+          },
           notes: flow.notes,
           outcome: result,
-          metadata: {
-            provider: "podcast",
-            kind: "apple_feed_url",
-            feedUrl: appleFeedUrl,
-            episodeTitle: appleEpisodeTitle,
-            enclosureUrl: resolvedUrl,
-            durationSeconds,
-          },
         });
       }
     } catch (error) {
       // Apple pages usually contain both `feedUrl` and `streamUrl`. If the feed is flaky/blocked,
-      // fall back to `streamUrl` instead of failing the whole provider.
+      // Fall back to `streamUrl` instead of failing the whole provider.
       flow.notes.push(
         `Podcast feed fetch failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
-  const appleStreamUrl = extractEmbeddedJsonUrl(flow.context.html, "streamUrl");
+  const appleStreamUrl = extractEmbeddedJsonUrl(flow.context.html, 'streamUrl');
   if (appleStreamUrl) {
     const missing = flow.ensureTranscriptionProvider();
-    if (missing) return missing;
-    flow.pushOnce("whisper");
+    if (missing) {return missing;}
+    flow.pushOnce('whisper');
     let result: Awaited<ReturnType<typeof flow.transcribe>>;
     try {
       result = await flow.transcribe({
-        url: appleStreamUrl,
-        filenameHint: "episode.mp3",
         durationSecondsHint: null,
+        filenameHint: 'episode.mp3',
+        url: appleStreamUrl,
       });
     } catch (error) {
       return {
-        text: null,
-        source: null,
         attemptedProviders: flow.attemptedProviders,
+        metadata: { kind: 'apple_stream_url', provider: 'podcast', streamUrl: appleStreamUrl },
         notes: error instanceof Error ? error.message : String(error),
-        metadata: { provider: "podcast", kind: "apple_stream_url", streamUrl: appleStreamUrl },
+        source: null,
+        text: null,
       };
     }
     return buildWhisperResult({
       attemptedProviders: flow.attemptedProviders,
+      metadata: { kind: 'apple_stream_url', provider: 'podcast', streamUrl: appleStreamUrl },
       notes: flow.notes,
       outcome: result,
-      metadata: { provider: "podcast", kind: "apple_stream_url", streamUrl: appleStreamUrl },
     });
   }
 

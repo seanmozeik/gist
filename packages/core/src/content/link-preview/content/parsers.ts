@@ -1,11 +1,12 @@
-import { type CheerioAPI, load } from "cheerio";
-import { decodeHtmlEntities, normalizeCandidate } from "./cleaner.js";
-import { pickFirstText, safeHostname } from "./utils.js";
+import { type CheerioAPI, load } from 'cheerio';
 
-const ALLOWED_TEXT_TAGS = new Set(["title"]);
+import { decodeHtmlEntities, normalizeCandidate } from './cleaner.js';
+import { pickFirstText, safeHostname } from './utils.js';
+
+const ALLOWED_TEXT_TAGS = new Set(['title']);
 
 interface MetaSelector {
-  attribute: "property" | "name";
+  attribute: 'property' | 'name';
   value: string;
 }
 
@@ -20,45 +21,45 @@ export function extractMetadataFromHtml(html: string, url: string): ParsedMetada
 
   const title = pickFirstText([
     pickMetaContent($, [
-      { attribute: "property", value: "og:title" },
-      { attribute: "name", value: "og:title" },
-      { attribute: "name", value: "twitter:title" },
+      { attribute: 'property', value: 'og:title' },
+      { attribute: 'name', value: 'og:title' },
+      { attribute: 'name', value: 'twitter:title' },
     ]),
-    extractTagText($, "title"),
+    extractTagText($, 'title'),
   ]);
 
   const description = pickFirstText([
     pickMetaContent($, [
-      { attribute: "property", value: "og:description" },
-      { attribute: "name", value: "description" },
-      { attribute: "name", value: "twitter:description" },
+      { attribute: 'property', value: 'og:description' },
+      { attribute: 'name', value: 'description' },
+      { attribute: 'name', value: 'twitter:description' },
     ]),
   ]);
 
   const siteName = pickFirstText([
     pickMetaContent($, [
-      { attribute: "property", value: "og:site_name" },
-      { attribute: "name", value: "application-name" },
+      { attribute: 'property', value: 'og:site_name' },
+      { attribute: 'name', value: 'application-name' },
     ]),
     safeHostname(url),
   ]);
 
-  return { title, description, siteName };
+  return { description, siteName, title };
 }
 
 export function extractMetadataFromFirecrawl(
   metadata: Record<string, unknown> | null | undefined,
 ): ParsedMetadata {
   return {
-    title: pickFirstText([metadataString(metadata, "title"), metadataString(metadata, "ogTitle")]),
     description: pickFirstText([
-      metadataString(metadata, "description"),
-      metadataString(metadata, "ogDescription"),
+      metadataString(metadata, 'description'),
+      metadataString(metadata, 'ogDescription'),
     ]),
     siteName: pickFirstText([
-      metadataString(metadata, "siteName"),
-      metadataString(metadata, "ogSiteName"),
+      metadataString(metadata, 'siteName'),
+      metadataString(metadata, 'ogSiteName'),
     ]),
+    title: pickFirstText([metadataString(metadata, 'title'), metadataString(metadata, 'ogTitle')]),
   };
 }
 
@@ -68,7 +69,7 @@ function pickMetaContent($: CheerioAPI, selectors: MetaSelector[]): string | nul
     if (meta.length === 0) {
       continue;
     }
-    const value = meta.attr("content") ?? meta.attr("value") ?? "";
+    const value = meta.attr('content') ?? meta.attr('value') ?? '';
     const normalized = normalizeCandidate(decodeHtmlEntities(value));
     if (normalized) {
       return normalized;
@@ -98,5 +99,5 @@ function metadataString(
     return null;
   }
   const value = metadata[key];
-  return typeof value === "string" ? normalizeCandidate(value) : null;
+  return typeof value === 'string' ? normalizeCandidate(value) : null;
 }

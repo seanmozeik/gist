@@ -1,11 +1,13 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import JSON5 from "json5";
-import { isRecord } from "./parse-helpers.js";
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import JSON5 from 'json5';
+
+import { isRecord } from './parse-helpers.js';
 
 export function resolveSummarizeConfigPath(env: Record<string, string | undefined>): string | null {
-  const home = env.HOME?.trim() || env.USERPROFILE?.trim() || null;
-  return home ? join(home, ".summarize", "config.json") : null;
+  const home = (env.HOME?.trim() ?? env.USERPROFILE?.trim()) ?? null;
+  return home ? join(home, '.summarize', 'config.json') : null;
 }
 
 function assertNoComments(raw: string, path: string): void {
@@ -15,8 +17,8 @@ function assertNoComments(raw: string, path: string): void {
   let col = 1;
 
   for (let i = 0; i < raw.length; i += 1) {
-    const ch = raw[i] ?? "";
-    const next = raw[i + 1] ?? "";
+    const ch = raw[i] ?? '';
+    const next = raw[i + 1] ?? '';
 
     if (inString) {
       if (escaped) {
@@ -24,7 +26,7 @@ function assertNoComments(raw: string, path: string): void {
         col += 1;
         continue;
       }
-      if (ch === "\\") {
+      if (ch === '\\') {
         escaped = true;
         col += 1;
         continue;
@@ -32,7 +34,7 @@ function assertNoComments(raw: string, path: string): void {
       if (ch === inString) {
         inString = null;
       }
-      if (ch === "\n") {
+      if (ch === '\n') {
         line += 1;
         col = 1;
       } else {
@@ -42,25 +44,25 @@ function assertNoComments(raw: string, path: string): void {
     }
 
     if (ch === '"' || ch === "'") {
-      inString = ch as '"' | "'";
+      inString = ch;
       escaped = false;
       col += 1;
       continue;
     }
 
-    if (ch === "/" && next === "/") {
+    if (ch === '/' && next === '/') {
       throw new Error(
         `Invalid config file ${path}: comments are not allowed (found // at ${line}:${col}).`,
       );
     }
 
-    if (ch === "/" && next === "*") {
+    if (ch === '/' && next === '*') {
       throw new Error(
         `Invalid config file ${path}: comments are not allowed (found /* at ${line}:${col}).`,
       );
     }
 
-    if (ch === "\n") {
+    if (ch === '\n') {
       line += 1;
       col = 1;
     } else {
@@ -72,7 +74,7 @@ function assertNoComments(raw: string, path: string): void {
 export function readParsedConfigFile(path: string): Record<string, unknown> | null {
   let raw: string;
   try {
-    raw = readFileSync(path, "utf8");
+    raw = readFileSync(path, 'utf8');
   } catch {
     return null;
   }
@@ -83,7 +85,7 @@ export function readParsedConfigFile(path: string): Record<string, unknown> | nu
     parsed = JSON5.parse(raw);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid JSON in config file ${path}: ${message}`);
+    throw new Error(`Invalid JSON in config file ${path}: ${message}`, { cause: error });
   }
 
   if (!isRecord(parsed)) {

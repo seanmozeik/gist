@@ -1,25 +1,25 @@
-import { parseTranscriptTimedText } from "../../lib/slides-text";
+import { parseTranscriptTimedText } from '../../lib/slides-text';
 import type {
   SlideLike,
   SlidesSessionDerivedState,
   SlidesSessionRawState,
-} from "./slides-session-types";
+} from './slides-session-types';
 import {
   buildSlideDescriptions,
   deriveSlideSummaries,
   resolveSlidesTextState,
   type SlideTextMode,
-} from "./slides-state";
+} from './slides-state';
 
 export function buildEmptySlidesSessionDerivedState(): SlidesSessionDerivedState {
   return {
     descriptions: new Map(),
-    summaryByIndex: new Map(),
-    titleByIndex: new Map(),
-    textMode: "transcript",
-    textToggleVisible: false,
-    transcriptAvailable: false,
     ocrAvailable: false,
+    summaryByIndex: new Map(),
+    textMode: 'transcript',
+    textToggleVisible: false,
+    titleByIndex: new Map(),
+    transcriptAvailable: false,
   };
 }
 
@@ -36,18 +36,18 @@ export function deriveSlidesSessionState({
 }): SlidesSessionDerivedState {
   const transcriptAvailable = parseTranscriptTimedText(raw.transcriptTimedText).length > 0;
   const nextTextState = resolveSlidesTextState({
+    currentMode: raw.textMode,
     slides,
     slidesOcrEnabled,
     slidesTranscriptAvailable: transcriptAvailable,
-    currentMode: raw.textMode,
   });
   const summaries =
     raw.summaryMarkdown.trim().length > 0
       ? deriveSlideSummaries({
+          lengthValue,
           markdown: raw.summaryMarkdown,
           slides,
           transcriptTimedText: raw.transcriptTimedText,
-          lengthValue,
         })
       : null;
 
@@ -62,12 +62,12 @@ export function deriveSlidesSessionState({
       slidesOcrAvailable: nextTextState.slidesOcrAvailable,
       slidesTranscriptAvailable: transcriptAvailable,
     }),
+    ocrAvailable: nextTextState.slidesOcrAvailable,
     summaryByIndex: summaries?.summaries ?? new Map(),
-    titleByIndex: summaries?.titles ?? new Map(),
     textMode: nextTextState.slidesTextMode,
     textToggleVisible: nextTextState.slidesTextToggleVisible,
+    titleByIndex: summaries?.titles ?? new Map(),
     transcriptAvailable,
-    ocrAvailable: nextTextState.slidesOcrAvailable,
   };
 }
 
@@ -75,6 +75,6 @@ export function canSetSlidesSessionTextMode(
   mode: SlideTextMode,
   derived: SlidesSessionDerivedState,
 ): boolean {
-  if (mode !== "ocr") return true;
+  if (mode !== 'ocr') {return true;}
   return derived.ocrAvailable;
 }

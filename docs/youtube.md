@@ -1,7 +1,7 @@
 ---
-summary: "YouTube transcript extraction modes and fallbacks."
+summary: 'YouTube transcript extraction modes and fallbacks.'
 read_when:
-  - "When changing YouTube handling."
+  - 'When changing YouTube handling.'
 ---
 
 # YouTube mode

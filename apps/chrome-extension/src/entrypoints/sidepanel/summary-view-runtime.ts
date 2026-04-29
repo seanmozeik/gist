@@ -1,32 +1,30 @@
-import { buildIdleSubtitle } from "../../lib/header";
-import type { PanelCachePayload } from "./panel-cache";
-import { normalizeSlideImageUrl } from "./slide-images";
-import type { PanelPhase, PanelState } from "./types";
+import { buildIdleSubtitle } from '../../lib/header';
+import type { PanelCachePayload } from './panel-cache';
+import { normalizeSlideImageUrl } from './slide-images';
+import type { PanelPhase, PanelState } from './types';
 
-type SlidesTextControllerLike = {
+interface SlidesTextControllerLike {
   reset: () => void;
   getTranscriptTimedText: () => string | null;
   getTranscriptAvailable: () => boolean;
-};
+}
 
-type SlidesHydratorLike = {
+interface SlidesHydratorLike {
   syncFromCache: (payload: {
     runId: string | null;
     summaryFromCache: boolean | null;
     hasSlides: boolean;
   }) => void;
-};
+}
 
-type MetricsControllerLike = {
-  clearForMode: (mode: "summary" | "chat") => void;
-};
+interface MetricsControllerLike { clearForMode: (mode: 'summary' | 'chat') => void }
 
-type HeaderControllerLike = {
+interface HeaderControllerLike {
   setBaseTitle: (value: string) => void;
   setBaseSubtitle: (value: string) => void;
-};
+}
 
-type SummaryViewRuntimeOpts = {
+interface SummaryViewRuntimeOpts {
   panelState: PanelState;
   renderEl: HTMLElement;
   renderSlidesHostEl: HTMLElement;
@@ -68,29 +66,25 @@ type SummaryViewRuntimeOpts = {
   requestSlidesContext: () => void | Promise<void>;
   updateSlideSummaryFromMarkdown: (
     markdown: string,
-    opts?: { preserveIfEmpty?: boolean; source?: "summary" | "slides" },
+    opts?: { preserveIfEmpty?: boolean; source?: 'summary' | 'slides' },
   ) => void;
   renderMarkdown: (markdown: string) => void;
   renderMarkdownDisplay: () => void;
   queueSlidesRender: () => void;
   setPhase: (phase: PanelPhase, opts?: { error?: string | null }) => void;
-};
+}
 
 export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
   function resetSummaryView({
     preserveChat = false,
     clearRunId = true,
     stopSlides = true,
-  }: {
-    preserveChat?: boolean;
-    clearRunId?: boolean;
-    stopSlides?: boolean;
-  } = {}) {
+  }: { preserveChat?: boolean; clearRunId?: boolean; stopSlides?: boolean } = {}) {
     opts.setCurrentRunTabId(null);
     opts.renderEl.replaceChildren(opts.renderSlidesHostEl, opts.renderMarkdownHostEl);
-    opts.renderMarkdownHostEl.innerHTML = "";
+    opts.renderMarkdownHostEl.innerHTML = '';
     opts.getSlidesRenderer().clear();
-    opts.metricsController.clearForMode("summary");
+    opts.metricsController.clearForMode('summary');
     opts.panelState.summaryMarkdown = null;
     opts.panelState.summaryFromCache = null;
     opts.panelState.slides = null;
@@ -117,23 +111,23 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
   function buildPanelCachePayload(): PanelCachePayload | null {
     const tabId = opts.getCurrentRunTabId() ?? opts.getActiveTabId();
     const url = opts.panelState.currentSource?.url ?? opts.getActiveTabUrl();
-    if (!tabId || !url) return null;
+    if (!tabId || !url) {return null;}
     const slidesSummary = opts.getSlidesSummaryState();
     const hasSlidesSummaryState = Boolean(slidesSummary.runId || slidesSummary.markdown.trim());
     return {
-      tabId,
-      url,
-      title: opts.panelState.currentSource?.title ?? null,
-      runId: opts.panelState.runId ?? null,
-      slidesRunId: opts.panelState.slidesRunId ?? null,
-      summaryMarkdown: opts.panelState.summaryMarkdown ?? null,
-      summaryFromCache: opts.panelState.summaryFromCache ?? null,
-      slidesSummaryMarkdown: slidesSummary.markdown || null,
-      slidesSummaryComplete: hasSlidesSummaryState ? slidesSummary.complete : null,
-      slidesSummaryModel: hasSlidesSummaryState ? slidesSummary.model : null,
       lastMeta: opts.panelState.lastMeta,
+      runId: opts.panelState.runId ?? null,
       slides: opts.panelState.slides ?? null,
+      slidesRunId: opts.panelState.slidesRunId ?? null,
+      slidesSummaryComplete: hasSlidesSummaryState ? slidesSummary.complete : null,
+      slidesSummaryMarkdown: slidesSummary.markdown || null,
+      slidesSummaryModel: hasSlidesSummaryState ? slidesSummary.model : null,
+      summaryFromCache: opts.panelState.summaryFromCache ?? null,
+      summaryMarkdown: opts.panelState.summaryMarkdown ?? null,
+      tabId,
+      title: opts.panelState.currentSource?.title ?? null,
       transcriptTimedText: opts.slidesTextController.getTranscriptTimedText() ?? null,
+      url,
     };
   }
 
@@ -144,7 +138,7 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
     opts.panelState.slidesRunId =
       payload.slidesRunId ?? (opts.getSlidesParallelValue() ? null : (payload.runId ?? null));
     opts.setCurrentRunTabId(payload.tabId);
-    opts.panelState.currentSource = { url: payload.url, title: payload.title ?? null };
+    opts.panelState.currentSource = { title: payload.title ?? null, url: payload.url };
     opts.panelState.lastMeta = payload.lastMeta ?? {
       inputSummary: null,
       model: null,
@@ -152,9 +146,9 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
     };
     opts.panelState.summaryFromCache = payload.summaryFromCache ?? null;
     opts.setSlidesSummaryState({
-      markdown: payload.slidesSummaryMarkdown ?? "",
       complete:
-        payload.slidesSummaryComplete ?? Boolean((payload.slidesSummaryMarkdown ?? "").trim()),
+        payload.slidesSummaryComplete ?? Boolean((payload.slidesSummaryMarkdown ?? '').trim()),
+      markdown: payload.slidesSummaryMarkdown ?? '',
       model:
         payload.slidesSummaryModel ??
         opts.panelState.lastMeta.model ??
@@ -163,12 +157,12 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
     });
     opts.clearSlidesSummaryPending();
     opts.clearSlidesSummaryError();
-    opts.headerController.setBaseTitle(payload.title || payload.url || "Summarize");
+    opts.headerController.setBaseTitle(payload.title || payload.url || 'Summarize');
     opts.headerController.setBaseSubtitle(
       buildIdleSubtitle({
         inputSummary: opts.panelState.lastMeta.inputSummary,
-        modelLabel: opts.panelState.lastMeta.modelLabel,
         model: opts.panelState.lastMeta.model,
+        modelLabel: opts.panelState.lastMeta.modelLabel,
       }),
     );
     opts.setSlidesTranscriptTimedText(payload.transcriptTimedText ?? null);
@@ -179,7 +173,7 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
           ...slide,
           imageUrl: normalizeSlideImageUrl(
             slide.imageUrl,
-            payload.slides?.sourceId ?? "",
+            payload.slides?.sourceId ?? '',
             slide.index,
           ),
         })),
@@ -198,15 +192,17 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
       opts.updateSlidesTextState();
       opts.setSlidesAppliedRunId(null);
     }
-    opts.getSlidesHydrator().syncFromCache({
-      runId: opts.panelState.slidesRunId ?? null,
-      summaryFromCache: payload.summaryFromCache,
-      hasSlides: Boolean(payload.slides && payload.slides.slides.length > 0),
-    });
-    if ((payload.slidesSummaryMarkdown ?? "").trim()) {
-      opts.updateSlideSummaryFromMarkdown(payload.slidesSummaryMarkdown ?? "", {
+    opts
+      .getSlidesHydrator()
+      .syncFromCache({
+        hasSlides: Boolean(payload.slides && payload.slides.slides.length > 0),
+        runId: opts.panelState.slidesRunId ?? null,
+        summaryFromCache: payload.summaryFromCache,
+      });
+    if ((payload.slidesSummaryMarkdown ?? '').trim()) {
+      opts.updateSlideSummaryFromMarkdown(payload.slidesSummaryMarkdown ?? '', {
         preserveIfEmpty: false,
-        source: "slides",
+        source: 'slides',
       });
     }
     if (payload.summaryMarkdown) {
@@ -215,12 +211,8 @@ export function createSummaryViewRuntime(opts: SummaryViewRuntimeOpts) {
       opts.renderMarkdownDisplay();
     }
     opts.queueSlidesRender();
-    opts.setPhase("idle");
+    opts.setPhase('idle');
   }
 
-  return {
-    applyPanelCache,
-    buildPanelCachePayload,
-    resetSummaryView,
-  };
+  return { applyPanelCache, buildPanelCachePayload, resetSummaryView };
 }

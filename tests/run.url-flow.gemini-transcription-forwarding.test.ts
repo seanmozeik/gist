@@ -1,11 +1,13 @@
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import type { CacheState } from "../src/cache.js";
-import type { ExtractedLinkContent } from "../src/content/index.js";
-import type { LinkPreviewClientOptions } from "../src/content/index.js";
-import { createDaemonUrlFlowContext } from "../src/daemon/flow-context.js";
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import type { CacheState } from '../src/cache.js';
+import type { ExtractedLinkContent } from '../src/content/index.js';
+import type { LinkPreviewClientOptions } from '../src/content/index.js';
+import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
 
 const mocks = vi.hoisted(() => {
   const fetchLinkContent = vi.fn<(url: string) => Promise<ExtractedLinkContent>>();
@@ -13,99 +15,88 @@ const mocks = vi.hoisted(() => {
     fetchLinkContent: async (url: string) => fetchLinkContent(url),
     options,
   }));
-  return { fetchLinkContent, createLinkPreviewClient };
+  return { createLinkPreviewClient, fetchLinkContent };
 });
 
-vi.mock("../src/content/index.js", () => ({
+vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runUrlFlow } from "../src/run/flows/url/flow.js";
+import { runUrlFlow } from '../src/run/flows/url/flow.js';
 
 afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("runUrlFlow transcription wiring", () => {
-  it("forwards googleApiKey into link preview transcription config", async () => {
-    const root = mkdtempSync(join(tmpdir(), "summarize-gemini-url-flow-"));
-    const url = "https://www.youtube.com/watch?v=hhAbp3iQA44";
-    const cache: CacheState = {
-      mode: "bypass",
-      store: null,
-      ttlMs: 0,
-      maxBytes: 0,
-      path: null,
-    };
+describe('runUrlFlow transcription wiring', () => {
+  it('forwards googleApiKey into link preview transcription config', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'summarize-gemini-url-flow-'));
+    const url = 'https://www.youtube.com/watch?v=hhAbp3iQA44';
+    const cache: CacheState = { maxBytes: 0, mode: 'bypass', path: null, store: null, ttlMs: 0 };
 
     mocks.fetchLinkContent.mockResolvedValueOnce({
-      url,
-      title: "Video",
+      content: 'Transcript text',
       description: null,
-      siteName: "YouTube",
-      content: "Transcript text",
-      truncated: false,
-      totalCharacters: 15,
-      wordCount: 2,
-      transcriptCharacters: 15,
-      transcriptLines: 1,
-      transcriptWordCount: 2,
-      transcriptSource: "yt-dlp",
-      transcriptionProvider: "gemini-2.5-flash",
-      transcriptMetadata: null,
-      transcriptSegments: null,
-      transcriptTimedText: null,
-      mediaDurationSeconds: 120,
-      video: { kind: "youtube", url },
-      isVideoOnly: false,
       diagnostics: {
-        strategy: "html",
         firecrawl: {
           attempted: false,
-          used: false,
-          cacheMode: "bypass",
-          cacheStatus: "bypassed",
+          cacheMode: 'bypass',
+          cacheStatus: 'bypassed',
           notes: null,
-        },
-        markdown: {
-          requested: false,
           used: false,
-          provider: null,
-          notes: null,
         },
+        markdown: { notes: null, provider: null, requested: false, used: false },
+        strategy: 'html',
         transcript: {
-          cacheMode: "bypass",
-          cacheStatus: "unknown",
-          textProvided: true,
-          provider: "yt-dlp",
-          attemptedProviders: ["yt-dlp"],
+          attemptedProviders: ['yt-dlp'],
+          cacheMode: 'bypass',
+          cacheStatus: 'unknown',
           notes: null,
+          provider: 'yt-dlp',
+          textProvided: true,
         },
       },
+      isVideoOnly: false,
+      mediaDurationSeconds: 120,
+      siteName: 'YouTube',
+      title: 'Video',
+      totalCharacters: 15,
+      transcriptCharacters: 15,
+      transcriptLines: 1,
+      transcriptMetadata: null,
+      transcriptSegments: null,
+      transcriptSource: 'yt-dlp',
+      transcriptTimedText: null,
+      transcriptWordCount: 2,
+      transcriptionProvider: 'gemini-2.5-flash',
+      truncated: false,
+      url,
+      video: { kind: 'youtube', url },
+      wordCount: 2,
     });
 
     const ctx = createDaemonUrlFlowContext({
-      env: { HOME: root, OPENAI_API_KEY: "test" },
-      fetchImpl: vi.fn() as unknown as typeof fetch,
       cache,
-      modelOverride: "google/gemini-3-flash",
-      promptOverride: null,
-      lengthRaw: "short",
-      languageRaw: "auto",
-      maxExtractCharacters: null,
+      env: { HOME: root, OPENAI_API_KEY: 'test' },
       extractOnly: true,
+      fetchImpl: vi.fn() as unknown as typeof fetch,
+      languageRaw: 'auto',
+      lengthRaw: 'short',
+      maxExtractCharacters: null,
+      modelOverride: 'google/gemini-3-flash',
+      promptOverride: null,
       runStartedAtMs: Date.now(),
       stdoutSink: { writeChunk: () => {} },
     });
 
-    ctx.model.apiStatus.googleApiKey = "gemini-key";
+    ctx.model.apiStatus.googleApiKey = 'gemini-key';
     ctx.model.apiStatus.googleConfigured = true;
 
-    await runUrlFlow({ ctx, url, isYoutubeUrl: true });
+    await runUrlFlow({ ctx, isYoutubeUrl: true, url });
 
     expect(mocks.createLinkPreviewClient).toHaveBeenCalledTimes(1);
     const options = mocks.createLinkPreviewClient.mock.calls[0]?.[0];
-    expect(options?.transcription?.geminiApiKey).toBe("gemini-key");
-    expect(options?.transcription?.openaiApiKey).toBe("test");
+    expect(options?.transcription?.geminiApiKey).toBe('gemini-key');
+    expect(options?.transcription?.openaiApiKey).toBe('test');
   });
 });

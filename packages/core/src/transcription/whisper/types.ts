@@ -1,21 +1,21 @@
 export type TranscriptionProvider =
-  | "groq"
-  | "assemblyai"
-  | "gemini"
-  | "openai"
-  | "fal"
-  | "whisper.cpp"
-  | "onnx-parakeet"
-  | "onnx-canary";
+  | 'groq'
+  | 'assemblyai'
+  | 'gemini'
+  | 'openai'
+  | 'fal'
+  | 'whisper.cpp'
+  | 'onnx-parakeet'
+  | 'onnx-canary';
 
-export type WhisperTranscriptionResult = {
+export interface WhisperTranscriptionResult {
   text: string | null;
   provider: TranscriptionProvider | null;
   error: Error | null;
   notes: string[];
-};
+}
 
-export type WhisperProgressEvent = {
+export interface WhisperProgressEvent {
   /** 1-based segment index (only when chunked via ffmpeg). */
   partIndex: number | null;
   /** Total number of segments (only when chunked via ffmpeg). */
@@ -24,4 +24,4 @@ export type WhisperProgressEvent = {
   processedDurationSeconds: number | null;
   /** Best-effort total duration of the source media. */
   totalDurationSeconds: number | null;
-};
+}

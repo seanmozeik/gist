@@ -1,17 +1,17 @@
-import type { TranscriptCache } from "../cache/types.js";
+import type { TranscriptCache } from '../cache/types.js';
 import type {
   CacheMode,
   TranscriptDiagnostics,
   TranscriptResolution,
   TranscriptSource,
-} from "../link-preview/types.js";
+} from '../link-preview/types.js';
 
 export const DEFAULT_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 export const NEGATIVE_TTL_MS = 1000 * 60 * 60 * 6;
 
 type CacheDiagnostics = Pick<
   TranscriptDiagnostics,
-  "cacheStatus" | "notes" | "provider" | "textProvided" | "cacheMode" | "attemptedProviders"
+  'cacheStatus' | 'notes' | 'provider' | 'textProvided' | 'cacheMode' | 'attemptedProviders'
 >;
 
 export interface CacheReadArguments {
@@ -23,7 +23,7 @@ export interface CacheReadArguments {
 }
 
 export interface TranscriptCacheLookup {
-  cached: Awaited<ReturnType<TranscriptCache["get"]>> | null;
+  cached: Awaited<ReturnType<TranscriptCache['get']>> | null;
   resolution: TranscriptResolution | null;
   diagnostics: CacheDiagnostics;
 }
@@ -36,12 +36,12 @@ export const readTranscriptCache = async ({
   fileMtime,
 }: CacheReadArguments): Promise<TranscriptCacheLookup> => {
   const cached = transcriptCache
-    ? await transcriptCache.get({ url, fileMtime: fileMtime ?? null })
+    ? await transcriptCache.get({ fileMtime: fileMtime ?? null, url })
     : null;
   const diagnostics = buildBaseDiagnostics(cacheMode);
 
   if (!cached) {
-    return { cached: null, resolution: null, diagnostics };
+    return { cached: null, diagnostics, resolution: null };
   }
 
   const provider = mapCachedSource(cached.source);
@@ -49,25 +49,25 @@ export const readTranscriptCache = async ({
   diagnostics.attemptedProviders = provider ? [provider] : [];
   diagnostics.textProvided = Boolean(cached.content && cached.content.length > 0);
 
-  if (cacheMode === "bypass") {
+  if (cacheMode === 'bypass') {
     diagnostics.notes = appendNote(
       diagnostics.notes,
-      "Cached transcript ignored due to bypass request",
+      'Cached transcript ignored due to bypass request',
     );
-    return { cached, resolution: null, diagnostics };
+    return { cached, diagnostics, resolution: null };
   }
 
   if (cached.expired) {
-    diagnostics.cacheStatus = "expired";
+    diagnostics.cacheStatus = 'expired';
     diagnostics.notes = appendNote(
       diagnostics.notes,
-      "Cached transcript expired; fetching fresh copy",
+      'Cached transcript expired; fetching fresh copy',
     );
-    return { cached, resolution: null, diagnostics };
+    return { cached, diagnostics, resolution: null };
   }
 
-  diagnostics.cacheStatus = "hit";
-  diagnostics.notes = appendNote(diagnostics.notes, "Served transcript from cache");
+  diagnostics.cacheStatus = 'hit';
+  diagnostics.notes = appendNote(diagnostics.notes, 'Served transcript from cache');
 
   const cachedSegments = extractSegments(cached.metadata);
   const hasSegments = Boolean(cachedSegments && cachedSegments.length > 0);
@@ -79,30 +79,30 @@ export const readTranscriptCache = async ({
   ) {
     diagnostics.notes = appendNote(
       diagnostics.notes,
-      "Cached transcript missing timestamps; fetching fresh copy",
+      'Cached transcript missing timestamps; fetching fresh copy',
     );
-    return { cached, resolution: null, diagnostics };
+    return { cached, diagnostics, resolution: null };
   }
   if (transcriptTimestamps && timestampsFlag === false) {
-    diagnostics.notes = appendNote(diagnostics.notes, "Transcript timestamps unavailable");
+    diagnostics.notes = appendNote(diagnostics.notes, 'Transcript timestamps unavailable');
   }
 
   const resolution: TranscriptResolution = {
-    text: cached.content,
-    source: provider,
     metadata: cached.metadata ?? null,
     segments: transcriptTimestamps && hasSegments ? cachedSegments : null,
+    source: provider,
+    text: cached.content,
   };
-  return { cached, resolution, diagnostics };
+  return { cached, diagnostics, resolution };
 };
 
 const buildBaseDiagnostics = (cacheMode: CacheMode): CacheDiagnostics => ({
-  cacheMode,
-  cacheStatus: cacheMode === "bypass" ? "bypassed" : "miss",
-  provider: null,
   attemptedProviders: [],
+  cacheMode,
+  cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'miss',
+  notes: cacheMode === 'bypass' ? 'Cache bypass requested' : null,
+  provider: null,
   textProvided: false,
-  notes: cacheMode === "bypass" ? "Cache bypass requested" : null,
 });
 
 const appendNote = (existing: string | null | undefined, next: string): string => {
@@ -113,21 +113,21 @@ const appendNote = (existing: string | null | undefined, next: string): string =
 };
 
 export const mapCachedSource = (source: string | null): TranscriptSource | null => {
-  if (source === null) return null;
+  if (source === null) {return null;}
   if (
-    source === "youtubei" ||
-    source === "captionTracks" ||
-    source === "embedded" ||
-    source === "yt-dlp" ||
-    source === "podcastTranscript" ||
-    source === "whisper" ||
-    source === "apify" ||
-    source === "html" ||
-    source === "unavailable"
+    source === 'youtubei' ||
+    source === 'captionTracks' ||
+    source === 'embedded' ||
+    source === 'yt-dlp' ||
+    source === 'podcastTranscript' ||
+    source === 'whisper' ||
+    source === 'apify' ||
+    source === 'html' ||
+    source === 'unavailable'
   ) {
     return source;
   }
-  return "unknown";
+  return 'unknown';
 };
 
 export const writeTranscriptCache = async ({
@@ -158,24 +158,24 @@ export const writeTranscriptCache = async ({
   }
 
   const ttlMs = result.text ? DEFAULT_TTL_MS : NEGATIVE_TTL_MS;
-  const resolvedSource = result.source ?? (result.text ? "unknown" : "unavailable");
+  const resolvedSource = result.source ?? (result.text ? 'unknown' : 'unavailable');
 
   await transcriptCache.set({
-    url,
-    service,
-    resourceKey,
-    ttlMs,
     content: result.text,
-    source: resolvedSource,
-    metadata: result.metadata ?? null,
     fileMtime,
+    metadata: result.metadata ?? null,
+    resourceKey,
+    service,
+    source: resolvedSource,
+    ttlMs,
+    url,
   });
 };
 
 function extractSegments(metadata: Record<string, unknown> | null | undefined) {
-  if (!metadata) return null;
-  const segments = (metadata as { segments?: unknown }).segments;
-  if (!Array.isArray(segments)) return null;
-  const normalized = segments.filter((segment) => segment && typeof segment === "object");
-  return normalized.length > 0 ? (normalized as TranscriptResolution["segments"]) : null;
+  if (!metadata) {return null;}
+  const {segments} = (metadata as { segments?: unknown });
+  if (!Array.isArray(segments)) {return null;}
+  const normalized = segments.filter((segment) => segment && typeof segment === 'object');
+  return normalized.length > 0 ? (normalized as TranscriptResolution['segments']) : null;
 }

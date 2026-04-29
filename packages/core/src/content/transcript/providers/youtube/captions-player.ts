@@ -1,16 +1,16 @@
-import { withBunCompressionHeaders } from "../../../bun.js";
-import { fetchWithTimeout } from "../../../link-preview/fetch-with-timeout.js";
-import { extractYoutubeiBootstrap } from "./api.js";
+import { withBunCompressionHeaders } from '../../../bun.js';
+import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout.js';
+import { extractYoutubeiBootstrap } from './api.js';
 import {
   INNERTUBE_API_KEY_REGEX,
   REQUEST_HEADERS,
   YT_INITIAL_PLAYER_RESPONSE_TOKEN,
   isObjectLike,
-} from "./captions-shared.js";
+} from './captions-shared.js';
 
 function extractBalancedJsonObject(source: string, startAt: number): string | null {
-  const start = source.indexOf("{", startAt);
-  if (start < 0) {
+  const start = source.indexOf('{', startAt);
+  if (start === -1) {
     return null;
   }
 
@@ -21,14 +21,14 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
 
   for (let i = start; i < source.length; i += 1) {
     const ch = source[i];
-    if (!ch) continue;
+    if (!ch) {continue;}
 
     if (inString) {
       if (escaping) {
         escaping = false;
         continue;
       }
-      if (ch === "\\") {
+      if (ch === '\\') {
         escaping = true;
         continue;
       }
@@ -45,11 +45,11 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
       continue;
     }
 
-    if (ch === "{") {
+    if (ch === '{') {
       depth += 1;
       continue;
     }
-    if (ch === "}") {
+    if (ch === '}') {
       depth -= 1;
       if (depth === 0) {
         return source.slice(start, i + 1);
@@ -62,11 +62,11 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
 
 export function extractInitialPlayerResponse(html: string): Record<string, unknown> | null {
   const tokenIndex = html.indexOf(YT_INITIAL_PLAYER_RESPONSE_TOKEN);
-  if (tokenIndex < 0) {
+  if (tokenIndex === -1) {
     return null;
   }
-  const assignmentIndex = html.indexOf("=", tokenIndex);
-  if (assignmentIndex < 0) {
+  const assignmentIndex = html.indexOf('=', tokenIndex);
+  if (assignmentIndex === -1) {
     return null;
   }
   const objectText = extractBalancedJsonObject(html, assignmentIndex);
@@ -84,8 +84,8 @@ export function extractInitialPlayerResponse(html: string): Record<string, unkno
 
 function coerceDurationSeconds(value: unknown): number | null {
   const asNumber =
-    typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN;
-  if (!Number.isFinite(asNumber) || asNumber <= 0) return null;
+    typeof value === 'number' ? value : (typeof value === 'string' ? Number(value) : Number.NaN);
+  if (!Number.isFinite(asNumber) || asNumber <= 0) {return null;}
   return asNumber;
 }
 
@@ -98,9 +98,9 @@ function extractDurationSecondsFromHtml(html: string): number | null {
   ];
   for (const pattern of candidates) {
     const match = html.match(pattern);
-    if (!match?.[1]) continue;
+    if (!match?.[1]) {continue;}
     const value = Number(match[1]);
-    if (Number.isFinite(value) && value > 0) return value;
+    if (Number.isFinite(value) && value > 0) {return value;}
   }
   return null;
 }
@@ -108,18 +108,18 @@ function extractDurationSecondsFromHtml(html: string): number | null {
 export function extractDurationSecondsFromPlayerPayload(
   payload: Record<string, unknown>,
 ): number | null {
-  const videoDetails = payload.videoDetails;
+  const {videoDetails} = payload;
   if (isObjectLike(videoDetails)) {
     const duration = coerceDurationSeconds(videoDetails.lengthSeconds);
-    if (duration) return duration;
+    if (duration) {return duration;}
   }
 
-  const microformat = payload.microformat;
+  const {microformat} = payload;
   if (isObjectLike(microformat)) {
     const renderer = microformat.playerMicroformatRenderer;
     if (isObjectLike(renderer)) {
       const duration = coerceDurationSeconds(renderer.lengthSeconds);
-      if (duration) return duration;
+      if (duration) {return duration;}
     }
   }
 
@@ -130,7 +130,7 @@ export function extractYoutubeDurationSeconds(html: string): number | null {
   const playerResponse = extractInitialPlayerResponse(html);
   if (playerResponse) {
     const duration = extractDurationSecondsFromPlayerPayload(playerResponse);
-    if (duration) return duration;
+    if (duration) {return duration;}
   }
 
   return extractDurationSecondsFromHtml(html);
@@ -139,7 +139,7 @@ export function extractYoutubeDurationSeconds(html: string): number | null {
 export function extractInnertubeApiKey(html: string): string | null {
   const match = html.match(INNERTUBE_API_KEY_REGEX);
   const key = match?.[1] ?? match?.[2] ?? null;
-  return typeof key === "string" && key.trim().length > 0 ? key.trim() : null;
+  return typeof key === 'string' && key.trim().length > 0 ? key.trim() : null;
 }
 
 export async function fetchYoutubePlayerPayload(
@@ -148,7 +148,7 @@ export async function fetchYoutubePlayerPayload(
 ): Promise<Record<string, unknown> | null> {
   const bootstrap = extractYoutubeiBootstrap(html);
   const apiKey = bootstrap?.apiKey ?? extractInnertubeApiKey(html);
-  if (!apiKey) return null;
+  if (!apiKey) {return null;}
 
   const context = bootstrap?.context;
   const clientContext =
@@ -158,36 +158,31 @@ export async function fetchYoutubePlayerPayload(
     context:
       clientContext && isObjectLike(context)
         ? context
-        : {
-            client: {
-              clientName: "ANDROID",
-              clientVersion: "20.10.38",
-            },
-          },
+        : { client: { clientName: 'ANDROID', clientVersion: '20.10.38' } },
     videoId,
   };
 
   try {
     const userAgent =
-      REQUEST_HEADERS["User-Agent"] ??
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+      REQUEST_HEADERS['User-Agent'] ??
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 
     const response = await fetchWithTimeout(
       fetchImpl,
       `https://www.youtube.com/youtubei/v1/player?key=${apiKey}`,
       {
-        method: "POST",
-        headers: withBunCompressionHeaders({
-          "Content-Type": "application/json",
-          "User-Agent": userAgent,
-          "Accept-Language": REQUEST_HEADERS["Accept-Language"] ?? "en-US,en;q=0.9",
-          Accept: "application/json",
-        }),
         body: JSON.stringify(requestBody),
+        headers: withBunCompressionHeaders({
+          'Content-Type': 'application/json',
+          'User-Agent': userAgent,
+          'Accept-Language': REQUEST_HEADERS['Accept-Language'] ?? 'en-US,en;q=0.9',
+          Accept: 'application/json',
+        }),
+        method: 'POST',
       },
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {return null;}
     const parsed: unknown = await response.json();
     return isObjectLike(parsed) ? parsed : null;
   } catch {
@@ -200,6 +195,6 @@ export async function fetchYoutubeDurationSecondsViaPlayer(
   { html, videoId }: { html: string; videoId: string },
 ): Promise<number | null> {
   const payload = await fetchYoutubePlayerPayload(fetchImpl, { html, videoId });
-  if (!payload) return null;
+  if (!payload) {return null;}
   return extractDurationSecondsFromPlayerPayload(payload);
 }

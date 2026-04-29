@@ -1,7 +1,8 @@
-import type { LinkPreviewProgressEvent } from "@steipete/summarize-core/content";
-import { formatBytes, formatBytesPerSecond, formatElapsedMs } from "../format.js";
-import type { OscProgressController } from "../osc-progress.js";
-import type { ThemeRenderer } from "../theme.js";
+import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
+
+import { formatBytes, formatBytesPerSecond, formatElapsedMs } from '../format.js';
+import type { OscProgressController } from '../osc-progress.js';
+import type { ThemeRenderer } from '../theme.js';
 
 export function createFetchHtmlProgressRenderer({
   spinner,
@@ -11,21 +12,13 @@ export function createFetchHtmlProgressRenderer({
   spinner: { setText: (text: string) => void; refresh?: () => void };
   oscProgress?: OscProgressController | null;
   theme?: ThemeRenderer | null;
-}): {
-  stop: () => void;
-  onProgress: (event: LinkPreviewProgressEvent) => void;
-} {
+}): { stop: () => void; onProgress: (event: LinkPreviewProgressEvent) => void } {
   const state: {
     downloadedBytes: number;
     totalBytes: number | null;
     startedAtMs: number | null;
     lastSpinnerUpdateAtMs: number;
-  } = {
-    downloadedBytes: 0,
-    totalBytes: null,
-    startedAtMs: null,
-    lastSpinnerUpdateAtMs: 0,
-  };
+  } = { downloadedBytes: 0, lastSpinnerUpdateAtMs: 0, startedAtMs: null, totalBytes: null };
 
   let ticker: ReturnType<typeof setInterval> | null = null;
   const styleLabel = (text: string) => (theme ? theme.label(text) : text);
@@ -35,7 +28,7 @@ export function createFetchHtmlProgressRenderer({
 
   const updateSpinner = (text: string, options?: { force?: boolean }) => {
     const now = Date.now();
-    if (!options?.force && now - state.lastSpinnerUpdateAtMs < 100) return;
+    if (!options?.force && now - state.lastSpinnerUpdateAtMs < 100) {return;}
     state.lastSpinnerUpdateAtMs = now;
     spinner.setText(text);
   };
@@ -44,15 +37,15 @@ export function createFetchHtmlProgressRenderer({
   };
 
   const render = () => {
-    const label = "Fetching website";
+    const label = 'Fetching website';
     const downloaded = formatBytes(state.downloadedBytes);
     const total =
-      typeof state.totalBytes === "number" &&
+      typeof state.totalBytes === 'number' &&
       state.totalBytes > 0 &&
       state.downloadedBytes <= state.totalBytes
         ? `/${formatBytes(state.totalBytes)}`
-        : "";
-    const elapsedMs = typeof state.startedAtMs === "number" ? Date.now() - state.startedAtMs : 0;
+        : '';
+    const elapsedMs = typeof state.startedAtMs === 'number' ? Date.now() - state.startedAtMs : 0;
     const elapsed = formatElapsedMs(elapsedMs);
     if (state.downloadedBytes === 0 && !state.totalBytes) {
       return renderLine(label, ` (connecting, ${elapsed})…`);
@@ -60,17 +53,17 @@ export function createFetchHtmlProgressRenderer({
     const rate =
       elapsedMs > 0 && state.downloadedBytes > 0
         ? `, ${formatBytesPerSecond(state.downloadedBytes / (elapsedMs / 1000))}`
-        : "";
+        : '';
     return renderLine(label, ` (${downloaded}${total}, ${elapsed}${rate})…`);
   };
 
   const startTicker = () => {
-    if (ticker) return;
-    ticker = setInterval(() => updateSpinner(render()), 1000);
+    if (ticker) {return;}
+    ticker = setInterval(() =>{  updateSpinner(render()); }, 1000);
   };
 
   const stopTicker = () => {
-    if (!ticker) return;
+    if (!ticker) {return;}
     clearInterval(ticker);
     ticker = null;
   };
@@ -83,40 +76,40 @@ export function createFetchHtmlProgressRenderer({
   };
 
   return {
-    stop: stopTicker,
     onProgress: (event) => {
-      if (event.kind === "fetch-html-start") {
+      if (event.kind === 'fetch-html-start') {
         state.downloadedBytes = 0;
         state.totalBytes = null;
         state.startedAtMs = Date.now();
         startTicker();
-        updateSpinner(renderLine("Fetching website", " (connecting)…"));
-        oscProgress?.setIndeterminate("Fetching website");
+        updateSpinner(renderLine('Fetching website', ' (connecting)…'));
+        oscProgress?.setIndeterminate('Fetching website');
         refreshSpinner();
         return;
       }
 
-      if (event.kind === "fetch-html-progress") {
+      if (event.kind === 'fetch-html-progress') {
         state.downloadedBytes = event.downloadedBytes;
         state.totalBytes = event.totalBytes;
         updateSpinner(render());
-        if (typeof state.totalBytes === "number" && state.totalBytes > 0) {
+        if (typeof state.totalBytes === 'number' && state.totalBytes > 0) {
           oscProgress?.setPercent(
-            "Fetching website",
+            'Fetching website',
             (state.downloadedBytes / state.totalBytes) * 100,
           );
         } else {
-          oscProgress?.setIndeterminate("Fetching website");
+          oscProgress?.setIndeterminate('Fetching website');
         }
         refreshSpinner();
         return;
       }
 
-      if (event.kind === "fetch-html-done") {
+      if (event.kind === 'fetch-html-done') {
         state.downloadedBytes = event.downloadedBytes;
         state.totalBytes = event.totalBytes;
         freeze();
       }
     },
+    stop: stopTicker,
   };
 }

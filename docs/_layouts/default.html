@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
-    {% assign page_title = page.title | default: page.name | default: "Docs" | replace: ".md", "" | replace: "-", " " %}
+    {% assign page_title = page.title | default: page.name | default: "Docs" | replace: ".md", "" |
+    replace: "-", " " %}
     <title>{{ page_title }} — summarize</title>
     <meta name="description" content="{{ page.summary | default: site.description | escape }}" />
     <link rel="canonical" href="https://summarize.sh{{ page.url | replace: 'index.html', '' }}" />
@@ -44,14 +45,15 @@
           <a href="/docs/config.html">Config</a>
         </aside>
 
-        <article class="doc reveal">
-          {{ content }}
-        </article>
+        <article class="doc reveal">{{ content }}</article>
       </section>
 
       <footer class="footer">
         <span>summarize — Link → clean text → summary.</span>
-        <span><a href="/docs/index.html">Docs</a> · <a href="https://github.com/steipete/summarize">Repo</a></span>
+        <span
+          ><a href="/docs/index.html">Docs</a> ·
+          <a href="https://github.com/steipete/summarize">Repo</a></span
+        >
       </footer>
     </main>
 

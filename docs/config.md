@@ -1,7 +1,7 @@
 ---
-summary: "Config file location, precedence, and schema."
+summary: 'Config file location, precedence, and schema.'
 read_when:
-  - "When adding config keys or defaults."
+  - 'When adding config keys or defaults.'
 ---
 
 # Config
@@ -79,25 +79,19 @@ For UI theme:
 Shorthand (equivalent):
 
 ```json
-{
-  "model": "google/gemini-3-flash"
-}
+{ "model": "google/gemini-3-flash" }
 ```
 
 `model` can also be auto:
 
 ```json
-{
-  "model": { "mode": "auto" }
-}
+{ "model": { "mode": "auto" } }
 ```
 
 Shorthand (equivalent):
 
 ```json
-{
-  "model": "auto"
-}
+{ "model": "auto" }
 ```
 
 ## Prompt
@@ -107,9 +101,7 @@ Shorthand (equivalent):
 Example:
 
 ```json
-{
-  "prompt": "Explain for a kid. Short sentences. Simple words."
-}
+{ "prompt": "Explain for a kid. Short sentences. Simple words." }
 ```
 
 ## Environment defaults
@@ -181,9 +173,7 @@ Notes:
 Set a default CLI theme:
 
 ```json
-{
-  "ui": { "theme": "moss" }
-}
+{ "ui": { "theme": "moss" } }
 ```
 
 ## Slides defaults
@@ -258,13 +248,7 @@ Notes:
 OpenAI request options can be set globally:
 
 ```json
-{
-  "openai": {
-    "serviceTier": "fast",
-    "thinking": "medium",
-    "textVerbosity": "low"
-  }
-}
+{ "openai": { "serviceTier": "fast", "thinking": "medium", "textVerbosity": "low" } }
 ```
 
 Or per preset:
@@ -272,11 +256,7 @@ Or per preset:
 ```json
 {
   "models": {
-    "fast-mini": {
-      "id": "openai/gpt-5.4-mini",
-      "serviceTier": "fast",
-      "thinking": "low"
-    }
+    "fast-mini": { "id": "openai/gpt-5.4-mini", "serviceTier": "fast", "thinking": "low" }
   }
 }
 ```
@@ -288,9 +268,7 @@ Or per preset:
 Use a preset as your default `model`:
 
 ```json
-{
-  "model": "small"
-}
+{ "model": "small" }
 ```
 
 Notes:
@@ -304,25 +282,15 @@ For auto selection with rules:
   "model": {
     "mode": "auto",
     "rules": [
-      {
-        "when": ["video"],
-        "candidates": ["google/gemini-3-flash"]
-      },
+      { "when": ["video"], "candidates": ["google/gemini-3-flash"] },
       {
         "when": ["website", "youtube"],
         "bands": [
-          {
-            "token": { "max": 8000 },
-            "candidates": ["openai/gpt-5-mini"]
-          },
-          {
-            "candidates": ["xai/grok-4-fast-non-reasoning"]
-          }
+          { "token": { "max": 8000 }, "candidates": ["openai/gpt-5-mini"] },
+          { "candidates": ["xai/grok-4-fast-non-reasoning"] }
         ]
       },
-      {
-        "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"]
-      }
+      { "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"] }
     ]
   },
   "media": { "videoMode": "auto" }
@@ -342,9 +310,7 @@ Notes:
 Set a default output language for summaries:
 
 ```json
-{
-  "output": { "language": "auto" }
-}
+{ "output": { "language": "auto" } }
 ```
 
 Examples:

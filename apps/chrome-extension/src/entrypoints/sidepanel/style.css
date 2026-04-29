@@ -1,9 +1,9 @@
-@import "./styles/header.css";
-@import "./styles/drawer.css";
-@import "./styles/controls.css";
-@import "./styles/summary.css";
-@import "./styles/slides.css";
-@import "./styles/chat.css";
+@import './styles/header.css';
+@import './styles/drawer.css';
+@import './styles/controls.css';
+@import './styles/summary.css';
+@import './styles/slides.css';
+@import './styles/chat.css';
 
 :root {
   color-scheme: light dark;
@@ -11,27 +11,27 @@
   --ui-focus: color-mix(in srgb, var(--accent) 70%, var(--text));
   --ui-link: color-mix(in srgb, var(--accent) 82%, var(--text));
 
-  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
   --ui-font-size: 14px;
   --font-size: 14px;
   --line-height: 1.45;
 }
 
-:root[data-mode="light"] {
+:root[data-mode='light'] {
   color-scheme: light;
 }
 
-:root[data-mode="dark"] {
+:root[data-mode='dark'] {
   color-scheme: dark;
 }
 
-:root[data-mode="system"] {
+:root[data-mode='system'] {
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: light) {
   :root,
-  :root[data-theme="slate"][data-mode="system"] {
+  :root[data-theme='slate'][data-mode='system'] {
     --bg0: #f5f7fb;
     --bg1: #ffffff;
     --bg2: #eaf0f8;
@@ -50,7 +50,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root,
-  :root[data-theme="slate"][data-mode="system"] {
+  :root[data-theme='slate'][data-mode='system'] {
     --bg0: #151a22;
     --bg1: #1a2230;
     --bg2: #0f141b;
@@ -67,7 +67,7 @@
   }
 }
 
-:root[data-theme="slate"][data-mode="light"] {
+:root[data-theme='slate'][data-mode='light'] {
   --bg0: #f5f7fb;
   --bg1: #ffffff;
   --bg2: #eaf0f8;
@@ -83,7 +83,7 @@
   --field-bg: rgba(255, 255, 255, 0.95);
 }
 
-:root[data-theme="slate"][data-mode="dark"] {
+:root[data-theme='slate'][data-mode='dark'] {
   --bg0: #151a22;
   --bg1: #1a2230;
   --bg2: #0f141b;
@@ -100,7 +100,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root[data-theme="cedar"][data-mode="system"] {
+  :root[data-theme='cedar'][data-mode='system'] {
     --bg0: #fbf6f1;
     --bg1: #fffdf9;
     --bg2: #f1e8dd;
@@ -118,7 +118,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="cedar"][data-mode="system"] {
+  :root[data-theme='cedar'][data-mode='system'] {
     --bg0: #1c1713;
     --bg1: #221b16;
     --bg2: #120f0c;
@@ -135,7 +135,7 @@
   }
 }
 
-:root[data-theme="cedar"][data-mode="light"] {
+:root[data-theme='cedar'][data-mode='light'] {
   --bg0: #fbf6f1;
   --bg1: #fffdf9;
   --bg2: #f1e8dd;
@@ -151,7 +151,7 @@
   --field-bg: rgba(255, 251, 246, 0.95);
 }
 
-:root[data-theme="cedar"][data-mode="dark"] {
+:root[data-theme='cedar'][data-mode='dark'] {
   --bg0: #1c1713;
   --bg1: #221b16;
   --bg2: #120f0c;
@@ -168,7 +168,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root[data-theme="mint"][data-mode="system"] {
+  :root[data-theme='mint'][data-mode='system'] {
     --bg0: #f1faf7;
     --bg1: #fbfffd;
     --bg2: #e4f3ef;
@@ -186,7 +186,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="mint"][data-mode="system"] {
+  :root[data-theme='mint'][data-mode='system'] {
     --bg0: #0f1917;
     --bg1: #14201e;
     --bg2: #0a1211;
@@ -203,7 +203,7 @@
   }
 }
 
-:root[data-theme="mint"][data-mode="light"] {
+:root[data-theme='mint'][data-mode='light'] {
   --bg0: #f1faf7;
   --bg1: #fbfffd;
   --bg2: #e4f3ef;
@@ -219,7 +219,7 @@
   --field-bg: rgba(252, 255, 254, 0.95);
 }
 
-:root[data-theme="mint"][data-mode="dark"] {
+:root[data-theme='mint'][data-mode='dark'] {
   --bg0: #0f1917;
   --bg1: #14201e;
   --bg2: #0a1211;
@@ -236,7 +236,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root[data-theme="ocean"][data-mode="system"] {
+  :root[data-theme='ocean'][data-mode='system'] {
     --bg0: #f1f7fb;
     --bg1: #fdfefe;
     --bg2: #e0edf6;
@@ -254,7 +254,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="ocean"][data-mode="system"] {
+  :root[data-theme='ocean'][data-mode='system'] {
     --bg0: #101c23;
     --bg1: #14222b;
     --bg2: #0a1419;
@@ -271,7 +271,7 @@
   }
 }
 
-:root[data-theme="ocean"][data-mode="light"] {
+:root[data-theme='ocean'][data-mode='light'] {
   --bg0: #f1f7fb;
   --bg1: #fdfefe;
   --bg2: #e0edf6;
@@ -287,7 +287,7 @@
   --field-bg: rgba(253, 254, 255, 0.96);
 }
 
-:root[data-theme="ocean"][data-mode="dark"] {
+:root[data-theme='ocean'][data-mode='dark'] {
   --bg0: #101c23;
   --bg1: #14222b;
   --bg2: #0a1419;
@@ -304,7 +304,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root[data-theme="ember"][data-mode="system"] {
+  :root[data-theme='ember'][data-mode='system'] {
     --bg0: #fbf2ee;
     --bg1: #fffaf7;
     --bg2: #f3e4dc;
@@ -322,7 +322,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="ember"][data-mode="system"] {
+  :root[data-theme='ember'][data-mode='system'] {
     --bg0: #201512;
     --bg1: #261916;
     --bg2: #140d0b;
@@ -339,7 +339,7 @@
   }
 }
 
-:root[data-theme="ember"][data-mode="light"] {
+:root[data-theme='ember'][data-mode='light'] {
   --bg0: #fbf2ee;
   --bg1: #fffaf7;
   --bg2: #f3e4dc;
@@ -355,7 +355,7 @@
   --field-bg: rgba(255, 251, 248, 0.96);
 }
 
-:root[data-theme="ember"][data-mode="dark"] {
+:root[data-theme='ember'][data-mode='dark'] {
   --bg0: #201512;
   --bg1: #261916;
   --bg2: #140d0b;
@@ -372,7 +372,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root[data-theme="iris"][data-mode="system"] {
+  :root[data-theme='iris'][data-mode='system'] {
     --bg0: #f6f3fb;
     --bg1: #fefcff;
     --bg2: #ece6f6;
@@ -390,7 +390,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="iris"][data-mode="system"] {
+  :root[data-theme='iris'][data-mode='system'] {
     --bg0: #181420;
     --bg1: #1e1928;
     --bg2: #0f0c14;
@@ -407,7 +407,7 @@
   }
 }
 
-:root[data-theme="iris"][data-mode="light"] {
+:root[data-theme='iris'][data-mode='light'] {
   --bg0: #f6f3fb;
   --bg1: #fefcff;
   --bg2: #ece6f6;
@@ -423,7 +423,7 @@
   --field-bg: rgba(255, 254, 255, 0.96);
 }
 
-:root[data-theme="iris"][data-mode="dark"] {
+:root[data-theme='iris'][data-mode='dark'] {
   --bg0: #181420;
   --bg1: #1e1928;
   --bg2: #0f0c14;

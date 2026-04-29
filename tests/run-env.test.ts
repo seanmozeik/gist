@@ -1,19 +1,14 @@
-import { describe, expect, it } from "vitest";
-import type { SummarizeConfig } from "../src/config.js";
-import { resolveEnvState } from "../src/run/run-env.js";
+import { describe, expect, it } from 'vitest';
 
-describe("run env", () => {
-  it("falls back to config zai.baseUrl when env is blank", () => {
-    const configForCli: SummarizeConfig = {
-      zai: { baseUrl: "https://api.zhipuai.cn/paas/v4" },
-    };
+import type { SummarizeConfig } from '../src/config.js';
+import { resolveEnvState } from '../src/run/run-env.js';
 
-    const state = resolveEnvState({
-      env: {},
-      envForRun: { Z_AI_BASE_URL: "   " },
-      configForCli,
-    });
+describe('run env', () => {
+  it('falls back to config zai.baseUrl when env is blank', () => {
+    const configForCli: SummarizeConfig = { zai: { baseUrl: 'https://api.zhipuai.cn/paas/v4' } };
 
-    expect(state.zaiBaseUrl).toBe("https://api.zhipuai.cn/paas/v4");
+    const state = resolveEnvState({ configForCli, env: {}, envForRun: { Z_AI_BASE_URL: '   ' } });
+
+    expect(state.zaiBaseUrl).toBe('https://api.zhipuai.cn/paas/v4');
   });
 });

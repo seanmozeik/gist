@@ -1,10 +1,11 @@
-import http from "node:http";
-import { encodeSseEvent, type SseEvent, type SseSlidesData } from "../shared/sse-events.js";
-import type { SlideExtractionResult } from "../slides/index.js";
+import type http from 'node:http';
+
+import { encodeSseEvent, type SseEvent, type SseSlidesData } from '../shared/sse-events.js';
+import type { SlideExtractionResult } from '../slides/index.js';
 
 export type SessionEvent = SseEvent;
 
-export type Session = {
+export interface Session {
   id: string;
   createdAtMs: number;
   buffer: Array<{ event: SessionEvent; bytes: number }>;
@@ -24,47 +25,42 @@ export type Session = {
     summaryFromCache: boolean | null;
   };
   slides: SlideExtractionResult | null;
-};
+}
 
 const MAX_SESSION_BUFFER_BYTES = 1_000_000;
 const SESSION_TTL_MS = 15 * 60 * 1000;
 
 export function createSession(idFactory: () => string): Session {
   return {
-    id: idFactory(),
-    createdAtMs: Date.now(),
     buffer: [],
     bufferBytes: 0,
-    done: false,
     clients: new Set(),
+    createdAtMs: Date.now(),
+    done: false,
+    id: idFactory(),
+    lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
+    slides: null,
     slidesBuffer: [],
     slidesBufferBytes: 0,
     slidesClients: new Set(),
     slidesDone: false,
-    slidesRequested: false,
     slidesLastStatus: null,
-    lastMeta: {
-      model: null,
-      modelLabel: null,
-      inputSummary: null,
-      summaryFromCache: null,
-    },
-    slides: null,
+    slidesRequested: false,
   };
 }
 
 function pushBuffered(
-  target: Array<{ event: SessionEvent; bytes: number }>,
+  target: { event: SessionEvent; bytes: number }[],
   sessionBytes: { current: number },
   event: SessionEvent,
 ) {
   const encoded = encodeSseEvent(event);
-  const entry = { event, bytes: Buffer.byteLength(encoded) };
+  const entry = { bytes: Buffer.byteLength(encoded), event };
   target.push(entry);
   sessionBytes.current += entry.bytes;
   while (sessionBytes.current > MAX_SESSION_BUFFER_BYTES && target.length > 0) {
     const removed = target.shift();
-    if (!removed) break;
+    if (!removed) {break;}
     sessionBytes.current -= removed.bytes;
   }
 }
@@ -74,7 +70,7 @@ export function pushToSession(
   event: SessionEvent,
   onSessionEvent?: ((event: SessionEvent, sessionId: string) => void) | null,
 ) {
-  if (session.done) return;
+  if (session.done) {return;}
   pushBuffered(
     session.buffer,
     {
@@ -88,9 +84,9 @@ export function pushToSession(
     event,
   );
   const encoded = encodeSseEvent(event);
-  for (const client of Array.from(session.clients)) client.write(encoded);
+  for (const client of [...session.clients]) {client.write(encoded);}
   onSessionEvent?.(event, session.id);
-  if (event.event === "done" || event.event === "error") session.done = true;
+  if (event.event === 'done' || event.event === 'error') {session.done = true;}
 }
 
 export function pushSlidesToSession(
@@ -111,10 +107,10 @@ export function pushSlidesToSession(
     event,
   );
   const encoded = encodeSseEvent(event);
-  for (const client of Array.from(session.slidesClients)) client.write(encoded);
+  for (const client of [...session.slidesClients]) {client.write(encoded);}
   onSessionEvent?.(event, session.id);
-  if (event.event === "done" || event.event === "error") session.slidesDone = true;
-  if (event.event === "status") session.slidesLastStatus = event.data.text;
+  if (event.event === 'done' || event.event === 'error') {session.slidesDone = true;}
+  if (event.event === 'status') {session.slidesLastStatus = event.data.text;}
 }
 
 export function emitMeta(
@@ -128,16 +124,16 @@ export function emitMeta(
   onSessionEvent?: ((event: SessionEvent, sessionId: string) => void) | null,
 ) {
   session.lastMeta = {
-    model: typeof data.model === "string" ? data.model : session.lastMeta.model,
-    modelLabel: typeof data.modelLabel === "string" ? data.modelLabel : session.lastMeta.modelLabel,
     inputSummary:
-      typeof data.inputSummary === "string" ? data.inputSummary : session.lastMeta.inputSummary,
+      typeof data.inputSummary === 'string' ? data.inputSummary : session.lastMeta.inputSummary,
+    model: typeof data.model === 'string' ? data.model : session.lastMeta.model,
+    modelLabel: typeof data.modelLabel === 'string' ? data.modelLabel : session.lastMeta.modelLabel,
     summaryFromCache:
-      typeof data.summaryFromCache === "boolean"
+      typeof data.summaryFromCache === 'boolean'
         ? data.summaryFromCache
         : session.lastMeta.summaryFromCache,
   };
-  pushToSession(session, { event: "meta", data: session.lastMeta }, onSessionEvent);
+  pushToSession(session, { data: session.lastMeta, event: 'meta' }, onSessionEvent);
 }
 
 export function emitSlides(
@@ -145,8 +141,8 @@ export function emitSlides(
   data: SseSlidesData,
   onSessionEvent?: ((event: SessionEvent, sessionId: string) => void) | null,
 ) {
-  pushToSession(session, { event: "slides", data }, onSessionEvent);
-  pushSlidesToSession(session, { event: "slides", data }, onSessionEvent);
+  pushToSession(session, { data, event: 'slides' }, onSessionEvent);
+  pushSlidesToSession(session, { data, event: 'slides' }, onSessionEvent);
 }
 
 export function emitSlidesStatus(
@@ -155,8 +151,8 @@ export function emitSlidesStatus(
   onSessionEvent?: ((event: SessionEvent, sessionId: string) => void) | null,
 ) {
   const trimmed = text.trim();
-  if (!trimmed) return;
-  pushSlidesToSession(session, { event: "status", data: { text: trimmed } }, onSessionEvent);
+  if (!trimmed) {return;}
+  pushSlidesToSession(session, { data: { text: trimmed }, event: 'status' }, onSessionEvent);
 }
 
 export function emitSlidesDone(
@@ -165,15 +161,15 @@ export function emitSlidesDone(
   onSessionEvent?: ((event: SessionEvent, sessionId: string) => void) | null,
 ) {
   if (!result.ok) {
-    const message = result.error?.trim() || "Slides failed.";
-    pushSlidesToSession(session, { event: "error", data: { message } }, onSessionEvent);
+    const message = result.error?.trim() ?? 'Slides failed.';
+    pushSlidesToSession(session, { data: { message }, event: 'error' }, onSessionEvent);
   }
-  pushSlidesToSession(session, { event: "done", data: {} }, onSessionEvent);
+  pushSlidesToSession(session, { data: {}, event: 'done' }, onSessionEvent);
 }
 
 export function endSession(session: Session) {
-  for (const client of Array.from(session.clients)) client.end();
-  for (const client of Array.from(session.slidesClients)) client.end();
+  for (const client of [...session.clients]) {client.end();}
+  for (const client of [...session.slidesClients]) {client.end();}
   session.clients.clear();
   session.slidesClients.clear();
 }

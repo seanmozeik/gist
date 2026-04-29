@@ -1,272 +1,233 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("../apps/chrome-extension/src/automation/userscripts.js", () => ({
-  buildUserScriptsGuidance: vi.fn(() => "Enable User Scripts"),
+vi.mock('../apps/chrome-extension/src/automation/userscripts.js', () => ({
+  buildUserScriptsGuidance: vi.fn(() => 'Enable User Scripts'),
   getUserScriptsStatus: vi.fn(async () => ({
     apiAvailable: false,
-    permissionGranted: false,
     chromeVersion: 138,
+    permissionGranted: false,
   })),
 }));
 
 import {
   buildUserScriptsGuidance,
   getUserScriptsStatus,
-} from "../apps/chrome-extension/src/automation/userscripts.js";
+} from '../apps/chrome-extension/src/automation/userscripts.js';
 import {
   applyBuildInfo,
   copyTokenToClipboard,
   createAutomationPermissionsController,
   createStatusController,
   resolveBuildInfoText,
-} from "../apps/chrome-extension/src/entrypoints/options/support.js";
+} from '../apps/chrome-extension/src/entrypoints/options/support.js';
 
 function createFakeElement() {
   return {
-    textContent: "",
     hidden: false,
+    textContent: '',
     toggleAttribute(name: string, force?: boolean) {
-      if (name === "hidden") this.hidden = Boolean(force);
+      if (name === 'hidden') this.hidden = Boolean(force);
     },
   } as unknown as HTMLElement;
 }
 
-function createFakeInput(value = "") {
+function createFakeInput(value = '') {
   return {
-    value,
     focus: vi.fn(),
     select: vi.fn(),
     setSelectionRange: vi.fn(),
+    value,
   } as unknown as HTMLInputElement;
 }
 
-describe("options support", () => {
+describe('options support', () => {
   beforeEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
-    vi.stubGlobal("chrome", {});
-    vi.stubGlobal("window", globalThis);
+    vi.stubGlobal('chrome', {});
+    vi.stubGlobal('window', globalThis);
   });
 
-  it("builds version text from injected or manifest values", () => {
+  it('builds version text from injected or manifest values', () => {
     expect(
       resolveBuildInfoText({
-        injectedVersion: "0.12.0",
-        manifestVersion: "0.11.1",
-        gitHash: "abc123",
+        gitHash: 'abc123',
+        injectedVersion: '0.12.0',
+        manifestVersion: '0.11.1',
       }),
-    ).toBe("v0.12.0 · abc123");
+    ).toBe('v0.12.0 · abc123');
 
     expect(
-      resolveBuildInfoText({
-        injectedVersion: "",
-        manifestVersion: "0.11.1",
-        gitHash: "unknown",
-      }),
-    ).toBe("v0.11.1");
+      resolveBuildInfoText({ gitHash: 'unknown', injectedVersion: '', manifestVersion: '0.11.1' }),
+    ).toBe('v0.11.1');
   });
 
-  it("applies build info text and hidden state", () => {
+  it('applies build info text and hidden state', () => {
     const el = createFakeElement();
-    applyBuildInfo(el, {
-      injectedVersion: "",
-      manifestVersion: "",
-      gitHash: "unknown",
-    });
-    expect(el.textContent).toBe("");
+    applyBuildInfo(el, { gitHash: 'unknown', injectedVersion: '', manifestVersion: '' });
+    expect(el.textContent).toBe('');
     expect(el.hidden).toBe(true);
 
-    applyBuildInfo(el, {
-      injectedVersion: "0.12.0",
-      manifestVersion: "0.11.1",
-      gitHash: "abc123",
-    });
-    expect(el.textContent).toBe("v0.12.0 · abc123");
+    applyBuildInfo(el, { gitHash: 'abc123', injectedVersion: '0.12.0', manifestVersion: '0.11.1' });
+    expect(el.textContent).toBe('v0.12.0 · abc123');
     expect(el.hidden).toBe(false);
   });
 
-  it("sets and clears transient status text", () => {
+  it('sets and clears transient status text', () => {
     vi.useFakeTimers();
     const el = createFakeElement();
     const controller = createStatusController(el);
 
-    controller.setStatus("Ready");
-    expect(el.textContent).toBe("Ready");
+    controller.setStatus('Ready');
+    expect(el.textContent).toBe('Ready');
 
-    controller.flashStatus("Copied", 100);
-    expect(el.textContent).toBe("Copied");
+    controller.flashStatus('Copied', 100);
+    expect(el.textContent).toBe('Copied');
     vi.advanceTimersByTime(100);
-    expect(el.textContent).toBe("");
+    expect(el.textContent).toBe('');
   });
 
-  it("copies token via clipboard when available", async () => {
-    const tokenEl = createFakeInput("  abc123  ");
+  it('copies token via clipboard when available', async () => {
+    const tokenEl = createFakeInput('  abc123  ');
     const flashStatus = vi.fn();
-    vi.stubGlobal("navigator", {
-      clipboard: { writeText: vi.fn(async () => undefined) },
-    });
+    vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => {}) } });
 
-    await copyTokenToClipboard({ tokenEl, flashStatus });
+    await copyTokenToClipboard({ flashStatus, tokenEl });
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("abc123");
-    expect(flashStatus).toHaveBeenCalledWith("Token copied");
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('abc123');
+    expect(flashStatus).toHaveBeenCalledWith('Token copied');
   });
 
-  it("uses execCommand fallback when clipboard write fails", async () => {
-    const tokenEl = createFakeInput("abc123");
+  it('uses execCommand fallback when clipboard write fails', async () => {
+    const tokenEl = createFakeInput('abc123');
     const flashStatus = vi.fn();
-    vi.stubGlobal("navigator", {
-      clipboard: { writeText: vi.fn(async () => Promise.reject(new Error("boom"))) },
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText: vi.fn(async () => { throw new Error('boom'); }) },
     });
     const execCommand = vi.fn(() => true);
-    vi.stubGlobal("document", {
-      execCommand,
-    });
+    vi.stubGlobal('document', { execCommand });
 
-    await copyTokenToClipboard({ tokenEl, flashStatus });
+    await copyTokenToClipboard({ flashStatus, tokenEl });
 
-    expect(execCommand).toHaveBeenCalledWith("copy");
-    expect(flashStatus).toHaveBeenCalledWith("Token copied");
+    expect(execCommand).toHaveBeenCalledWith('copy');
+    expect(flashStatus).toHaveBeenCalledWith('Token copied');
   });
 
-  it("reports empty or failed token copies", async () => {
-    const emptyEl = createFakeInput("   ");
+  it('reports empty or failed token copies', async () => {
+    const emptyEl = createFakeInput('   ');
     const flashStatus = vi.fn();
 
-    await copyTokenToClipboard({ tokenEl: emptyEl, flashStatus });
-    expect(flashStatus).toHaveBeenCalledWith("Token empty");
+    await copyTokenToClipboard({ flashStatus, tokenEl: emptyEl });
+    expect(flashStatus).toHaveBeenCalledWith('Token empty');
 
-    const tokenEl = createFakeInput("abc123");
-    vi.stubGlobal("navigator", {
-      clipboard: { writeText: vi.fn(async () => Promise.reject(new Error("boom"))) },
+    const tokenEl = createFakeInput('abc123');
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText: vi.fn(async () => { throw new Error('boom'); }) },
     });
-    vi.stubGlobal("document", {
-      execCommand: vi.fn(() => false),
-    });
+    vi.stubGlobal('document', { execCommand: vi.fn(() => false) });
 
-    await copyTokenToClipboard({ tokenEl, flashStatus });
-    expect(flashStatus).toHaveBeenLastCalledWith("Copy failed");
+    await copyTokenToClipboard({ flashStatus, tokenEl });
+    expect(flashStatus).toHaveBeenLastCalledWith('Copy failed');
   });
 
-  it("updates automation permissions ui for disabled and satisfied states", async () => {
-    const automationPermissionsBtn = {
-      disabled: false,
-      textContent: "",
-    } as HTMLButtonElement;
+  it('updates automation permissions ui for disabled and satisfied states', async () => {
+    const automationPermissionsBtn = { disabled: false, textContent: '' } as HTMLButtonElement;
     const userScriptsNoticeEl = createFakeElement();
-    vi.stubGlobal("chrome", {
-      permissions: { request: vi.fn(async () => true) },
-    });
+    vi.stubGlobal('chrome', { permissions: { request: vi.fn(async () => true) } });
     vi.mocked(getUserScriptsStatus).mockResolvedValueOnce({
       apiAvailable: false,
-      permissionGranted: false,
       chromeVersion: 138,
+      permissionGranted: false,
     });
 
     const disabledController = createAutomationPermissionsController({
       automationPermissionsBtn,
-      userScriptsNoticeEl,
-      getAutomationEnabled: () => false,
       flashStatus: vi.fn(),
+      getAutomationEnabled: () => false,
+      userScriptsNoticeEl,
     });
     await disabledController.updateUi();
     expect(userScriptsNoticeEl.hidden).toBe(true);
     expect(automationPermissionsBtn.disabled).toBe(false);
-    expect(automationPermissionsBtn.textContent).toBe("Enable automation permissions");
+    expect(automationPermissionsBtn.textContent).toBe('Enable automation permissions');
 
     vi.mocked(getUserScriptsStatus).mockResolvedValueOnce({
       apiAvailable: true,
-      permissionGranted: true,
       chromeVersion: 138,
+      permissionGranted: true,
     });
     const enabledController = createAutomationPermissionsController({
       automationPermissionsBtn,
-      userScriptsNoticeEl,
-      getAutomationEnabled: () => true,
       flashStatus: vi.fn(),
+      getAutomationEnabled: () => true,
+      userScriptsNoticeEl,
     });
     await enabledController.updateUi();
     expect(userScriptsNoticeEl.hidden).toBe(true);
     expect(automationPermissionsBtn.disabled).toBe(true);
-    expect(automationPermissionsBtn.textContent).toBe("Automation permissions granted");
+    expect(automationPermissionsBtn.textContent).toBe('Automation permissions granted');
   });
 
-  it("shows guidance and handles denied automation permission requests", async () => {
-    const automationPermissionsBtn = {
-      disabled: false,
-      textContent: "",
-    } as HTMLButtonElement;
+  it('shows guidance and handles denied automation permission requests', async () => {
+    const automationPermissionsBtn = { disabled: false, textContent: '' } as HTMLButtonElement;
     const userScriptsNoticeEl = createFakeElement();
     const flashStatus = vi.fn();
     const request = vi.fn(async () => false);
-    vi.stubGlobal("chrome", {
-      permissions: { request },
-    });
+    vi.stubGlobal('chrome', { permissions: { request } });
     vi.mocked(getUserScriptsStatus)
-      .mockResolvedValueOnce({
-        apiAvailable: false,
-        permissionGranted: false,
-        chromeVersion: 138,
-      })
-      .mockResolvedValueOnce({
-        apiAvailable: false,
-        permissionGranted: false,
-        chromeVersion: 138,
-      });
+      .mockResolvedValueOnce({ apiAvailable: false, chromeVersion: 138, permissionGranted: false })
+      .mockResolvedValueOnce({ apiAvailable: false, chromeVersion: 138, permissionGranted: false });
 
     const controller = createAutomationPermissionsController({
       automationPermissionsBtn,
-      userScriptsNoticeEl,
-      getAutomationEnabled: () => true,
       flashStatus,
+      getAutomationEnabled: () => true,
+      userScriptsNoticeEl,
     });
     await controller.updateUi();
     expect(buildUserScriptsGuidance).toHaveBeenCalled();
     expect(userScriptsNoticeEl.hidden).toBe(false);
-    expect(userScriptsNoticeEl.textContent).toBe("Enable User Scripts");
+    expect(userScriptsNoticeEl.textContent).toBe('Enable User Scripts');
 
     await controller.requestPermissions();
-    expect(request).toHaveBeenCalledWith({ permissions: ["userScripts"] });
-    expect(flashStatus).toHaveBeenCalledWith("Permission request denied");
+    expect(request).toHaveBeenCalledWith({ permissions: ['userScripts'] });
+    expect(flashStatus).toHaveBeenCalledWith('Permission request denied');
   });
 
-  it("ignores permission requests when permissions api is missing or throws", async () => {
-    const automationPermissionsBtn = {
-      disabled: false,
-      textContent: "",
-    } as HTMLButtonElement;
+  it('ignores permission requests when permissions api is missing or throws', async () => {
+    const automationPermissionsBtn = { disabled: false, textContent: '' } as HTMLButtonElement;
     const userScriptsNoticeEl = createFakeElement();
     const flashStatus = vi.fn();
 
-    vi.stubGlobal("chrome", {});
+    vi.stubGlobal('chrome', {});
     const missingController = createAutomationPermissionsController({
       automationPermissionsBtn,
-      userScriptsNoticeEl,
-      getAutomationEnabled: () => true,
       flashStatus,
+      getAutomationEnabled: () => true,
+      userScriptsNoticeEl,
     });
     await missingController.requestPermissions();
     expect(flashStatus).not.toHaveBeenCalled();
 
-    vi.stubGlobal("chrome", {
+    vi.stubGlobal('chrome', {
       permissions: {
         request: vi.fn(async () => {
-          throw new Error("boom");
+          throw new Error('boom');
         }),
       },
     });
     vi.mocked(getUserScriptsStatus).mockResolvedValueOnce({
       apiAvailable: false,
-      permissionGranted: false,
       chromeVersion: 138,
+      permissionGranted: false,
     });
     const throwingController = createAutomationPermissionsController({
       automationPermissionsBtn,
-      userScriptsNoticeEl,
-      getAutomationEnabled: () => true,
       flashStatus,
+      getAutomationEnabled: () => true,
+      userScriptsNoticeEl,
     });
     await throwingController.requestPermissions();
-    expect(flashStatus).not.toHaveBeenCalledWith("Permission request denied");
+    expect(flashStatus).not.toHaveBeenCalledWith('Permission request denied');
   });
 });

@@ -1,7 +1,7 @@
-import type { defaultSettings } from "../../lib/settings";
-import { createBooleanToggleController } from "./toggles";
+import type { defaultSettings } from '../../lib/settings';
+import { createBooleanToggleController } from './toggles';
 
-type BooleanSettingsState = {
+interface BooleanSettingsState {
   autoSummarize: boolean;
   chatEnabled: boolean;
   automationEnabled: boolean;
@@ -11,11 +11,9 @@ type BooleanSettingsState = {
   slidesOcrEnabled: boolean;
   extendedLogging: boolean;
   autoCliFallback: boolean;
-};
+}
 
-type ToggleController = {
-  render: () => void;
-};
+interface ToggleController { render: () => void }
 
 export function createBooleanSettingsRuntime(options: {
   defaults: typeof defaultSettings;
@@ -34,118 +32,118 @@ export function createBooleanSettingsRuntime(options: {
   onAutomationChanged?: () => void;
 }) {
   const state: BooleanSettingsState = {
-    autoSummarize: options.defaults.autoSummarize,
-    chatEnabled: options.defaults.chatEnabled,
-    automationEnabled: options.defaults.automationEnabled,
-    hoverSummaries: options.defaults.hoverSummaries,
-    summaryTimestamps: options.defaults.summaryTimestamps,
-    slidesParallel: options.defaults.slidesParallel,
-    slidesOcrEnabled: options.defaults.slidesOcrEnabled,
-    extendedLogging: options.defaults.extendedLogging,
     autoCliFallback: options.defaults.autoCliFallback,
+    autoSummarize: options.defaults.autoSummarize,
+    automationEnabled: options.defaults.automationEnabled,
+    chatEnabled: options.defaults.chatEnabled,
+    extendedLogging: options.defaults.extendedLogging,
+    hoverSummaries: options.defaults.hoverSummaries,
+    slidesOcrEnabled: options.defaults.slidesOcrEnabled,
+    slidesParallel: options.defaults.slidesParallel,
+    summaryTimestamps: options.defaults.summaryTimestamps,
   };
 
   const toggles: ToggleController[] = [
     createBooleanToggleController({
-      root: options.roots.autoToggleRoot,
-      id: "options-auto",
-      label: "Auto-summarize when panel is open",
       getValue: () => state.autoSummarize,
+      id: 'options-auto',
+      label: 'Auto-summarize when panel is open',
+      root: options.roots.autoToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.autoSummarize = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.chatToggleRoot,
-      id: "options-chat",
-      label: "Enable Chat mode in the side panel",
       getValue: () => state.chatEnabled,
+      id: 'options-chat',
+      label: 'Enable Chat mode in the side panel',
+      root: options.roots.chatToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.chatEnabled = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.automationToggleRoot,
-      id: "options-automation",
-      label: "Enable website automation",
+      afterChange: options.onAutomationChanged,
       getValue: () => state.automationEnabled,
+      id: 'options-automation',
+      label: 'Enable website automation',
+      root: options.roots.automationToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.automationEnabled = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
-      afterChange: options.onAutomationChanged,
     }),
     createBooleanToggleController({
-      root: options.roots.hoverSummariesToggleRoot,
-      id: "options-hover-summaries",
-      label: "Hover summaries (experimental)",
       getValue: () => state.hoverSummaries,
+      id: 'options-hover-summaries',
+      label: 'Hover summaries (experimental)',
+      root: options.roots.hoverSummariesToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.hoverSummaries = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.summaryTimestampsToggleRoot,
-      id: "options-summary-timestamps",
-      label: "Summary timestamps (media only)",
       getValue: () => state.summaryTimestamps,
+      id: 'options-summary-timestamps',
+      label: 'Summary timestamps (media only)',
+      root: options.roots.summaryTimestampsToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.summaryTimestamps = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.slidesParallelToggleRoot,
-      id: "options-slides-parallel",
-      label: "Show summary first (parallel slides)",
       getValue: () => state.slidesParallel,
+      id: 'options-slides-parallel',
+      label: 'Show summary first (parallel slides)',
+      root: options.roots.slidesParallelToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.slidesParallel = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.slidesOcrToggleRoot,
-      id: "options-slides-ocr",
-      label: "Enable OCR slide text",
       getValue: () => state.slidesOcrEnabled,
+      id: 'options-slides-ocr',
+      label: 'Enable OCR slide text',
+      root: options.roots.slidesOcrToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.slidesOcrEnabled = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.extendedLoggingToggleRoot,
-      id: "options-extended-logging",
-      label: "Extended logging (send full input/output to daemon logs)",
       getValue: () => state.extendedLogging,
+      id: 'options-extended-logging',
+      label: 'Extended logging (send full input/output to daemon logs)',
+      root: options.roots.extendedLoggingToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.extendedLogging = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
     createBooleanToggleController({
-      root: options.roots.autoCliFallbackToggleRoot,
-      id: "options-auto-cli-fallback",
-      label: "Auto CLI fallback for Auto model",
       getValue: () => state.autoCliFallback,
+      id: 'options-auto-cli-fallback',
+      label: 'Auto CLI fallback for Auto model',
+      root: options.roots.autoCliFallbackToggleRoot,
+      scheduleAutoSave: options.scheduleAutoSave,
       setValue: (checked) => {
         state.autoCliFallback = checked;
       },
-      scheduleAutoSave: options.scheduleAutoSave,
     }),
   ];
 
   return {
     getState: () => ({ ...state }),
-    setState: (next: Partial<BooleanSettingsState>) => {
-      Object.assign(state, next);
-    },
     render: () => {
       for (const toggle of toggles) toggle.render();
+    },
+    setState: (next: Partial<BooleanSettingsState>) => {
+      Object.assign(state, next);
     },
   };
 }

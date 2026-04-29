@@ -1,25 +1,24 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { Writable } from 'node:stream';
 
-describe("cli --extract (asset url)", () => {
-  it("prints extracted text and skips the LLM", async () => {
-    const body = "Hello from asset.";
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
+
+describe('cli --extract (asset url)', () => {
+  it('prints extracted text and skips the LLM', async () => {
+    const body = 'Hello from asset.';
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com/file.txt") {
-        return new Response(body, {
-          status: 200,
-          headers: { "Content-Type": "text/plain" },
-        });
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com/file.txt') {
+        return new Response(body, { headers: { 'Content-Type': 'text/plain' }, status: 200 });
       }
-      if (url === "https://api.openai.com/v1/chat/completions") {
-        throw new Error("Unexpected OpenAI call in --extract mode");
+      if (url === 'https://api.openai.com/v1/chat/completions') {
+        throw new Error('Unexpected OpenAI call in --extract mode');
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    let stdoutText = "";
+    let stdoutText = '';
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
         stdoutText += chunk.toString();
@@ -29,22 +28,22 @@ describe("cli --extract (asset url)", () => {
 
     await runCli(
       [
-        "--extract",
-        "--timeout",
-        "2s",
-        "--model",
-        "openai/gpt-4o-mini",
-        "https://example.com/file.txt",
+        '--extract',
+        '--timeout',
+        '2s',
+        '--model',
+        'openai/gpt-4o-mini',
+        'https://example.com/file.txt',
       ],
       {
-        env: { OPENAI_API_KEY: "test" },
+        env: { OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout,
         stderr: new Writable({
           write(_chunk, _encoding, cb) {
             cb();
           },
         }),
+        stdout,
       },
     );
 
@@ -52,20 +51,17 @@ describe("cli --extract (asset url)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("prints extracted content as JSON and skips the LLM", async () => {
-    const body = "Hello from asset.";
+  it('prints extracted content as JSON and skips the LLM', async () => {
+    const body = 'Hello from asset.';
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com/file.txt") {
-        return new Response(body, {
-          status: 200,
-          headers: { "Content-Type": "text/plain" },
-        });
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com/file.txt') {
+        return new Response(body, { headers: { 'Content-Type': 'text/plain' }, status: 200 });
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    let stdoutText = "";
+    let stdoutText = '';
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
         stdoutText += chunk.toString();
@@ -75,23 +71,23 @@ describe("cli --extract (asset url)", () => {
 
     await runCli(
       [
-        "--extract",
-        "--json",
-        "--timeout",
-        "2s",
-        "--model",
-        "openai/gpt-4o-mini",
-        "https://example.com/file.txt",
+        '--extract',
+        '--json',
+        '--timeout',
+        '2s',
+        '--model',
+        'openai/gpt-4o-mini',
+        'https://example.com/file.txt',
       ],
       {
-        env: { OPENAI_API_KEY: "test" },
+        env: { OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout,
         stderr: new Writable({
           write(_chunk, _encoding, cb) {
             cb();
           },
         }),
+        stdout,
       },
     );
 
@@ -101,9 +97,9 @@ describe("cli --extract (asset url)", () => {
       llm: unknown;
       summary: unknown;
     };
-    expect(payload.input.kind).toBe("asset-url");
-    expect(payload.input.url).toBe("https://example.com/file.txt");
-    expect(payload.extracted.kind).toBe("asset");
+    expect(payload.input.kind).toBe('asset-url');
+    expect(payload.input.url).toBe('https://example.com/file.txt');
+    expect(payload.extracted.kind).toBe('asset');
     expect(payload.extracted.content).toBe(body);
     expect(payload.llm).toBeNull();
     expect(payload.summary).toBeNull();

@@ -1,4 +1,4 @@
-import type { EnvSnapshot } from "./env-snapshot.js";
+import type { EnvSnapshot } from './env-snapshot.js';
 
 export function mergeDaemonEnv({
   envForRun,

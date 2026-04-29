@@ -1,1 +1,1 @@
-export * from "@steipete/summarize-core/processes";
+export * from '@steipete/summarize-core/processes';

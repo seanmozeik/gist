@@ -1,17 +1,15 @@
-import type { ChatMessage } from "./types";
+import type { ChatMessage } from './types';
 
-type ToggleableEl = {
-  toggleAttribute: (qualifiedName: string, force?: boolean) => void;
-};
+interface ToggleableEl { toggleAttribute: (qualifiedName: string, force?: boolean) => void }
 
-type ClassListEl = {
+interface ClassListEl {
   classList: {
     remove: (...tokens: string[]) => void;
     toggle?: (token: string, force?: boolean) => void;
   };
-};
+}
 
-type ScrollEl = {
+interface ScrollEl {
   scrollHeight: number;
   scrollTop: number;
   clientHeight: number;
@@ -20,15 +18,11 @@ type ScrollEl = {
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions,
   ) => void;
-};
+}
 
-type InputEl = {
-  focus: () => void;
-};
+interface InputEl { focus: () => void }
 
-type DockEl = {
-  getBoundingClientRect: () => { height: number };
-};
+interface DockEl { getBoundingClientRect: () => { height: number } }
 
 type ResizeObserverCtor = new (callback: ResizeObserverCallback) => {
   observe: (target: Element | DockEl) => void;
@@ -91,39 +85,39 @@ export function createChatUiRuntime({
 
   const updateAutoScrollLock = () => {
     autoScrollLocked = isNearBottom();
-    chatJumpBtn.classList.toggle?.("isVisible", !autoScrollLocked);
+    chatJumpBtn.classList.toggle?.('isVisible', !autoScrollLocked);
   };
 
   const scrollToBottom = (force = false) => {
-    if (force) autoScrollLocked = true;
-    if (!force && !autoScrollLocked) return;
+    if (force) {autoScrollLocked = true;}
+    if (!force && !autoScrollLocked) {return;}
     mainEl.scrollTop = mainEl.scrollHeight;
-    chatJumpBtn.classList.remove("isVisible");
+    chatJumpBtn.classList.remove('isVisible');
   };
 
   const updateChatDockHeight = () => {
-    const height = chatDockEl.getBoundingClientRect().height;
-    document.documentElement.style.setProperty("--chat-dock-height", `${height}px`);
+    const {height} = chatDockEl.getBoundingClientRect();
+    document.documentElement.style.setProperty('--chat-dock-height', `${height}px`);
   };
 
   const resetChatState = () => {
     resetChatController();
     clearQueuedMessages();
-    chatJumpBtn.classList.remove("isVisible");
+    chatJumpBtn.classList.remove('isVisible');
     resetChatSession();
   };
 
   const applyChatEnabled = () => {
     const chatEnabled = getChatEnabled();
-    chatContainerEl.toggleAttribute("hidden", !chatEnabled);
-    chatDockContainerEl.toggleAttribute("hidden", !chatEnabled);
+    chatContainerEl.toggleAttribute('hidden', !chatEnabled);
+    chatDockContainerEl.toggleAttribute('hidden', !chatEnabled);
     if (!chatEnabled) {
-      chatJumpBtn.classList.remove("isVisible");
+      chatJumpBtn.classList.remove('isVisible');
       clearMetrics();
       resetChatState();
       clearQueuedMessages();
     } else {
-      renderEl.classList.remove("hidden");
+      renderEl.classList.remove('hidden');
     }
   };
 
@@ -145,10 +139,10 @@ export function createChatUiRuntime({
     await restoreHistory(getActiveTabId(), getSummaryMarkdown());
   };
 
-  mainEl.addEventListener("scroll", updateAutoScrollLock, { passive: true });
+  mainEl.addEventListener('scroll', updateAutoScrollLock, { passive: true });
   updateAutoScrollLock();
 
-  chatJumpBtn.addEventListener("click", () => {
+  chatJumpBtn.addEventListener('click', () => {
     scrollToBottom(true);
     chatInputEl.focus();
   });

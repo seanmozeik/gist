@@ -1,13 +1,11 @@
-declare module "bun:sqlite" {
-  export type BunSqliteDatabaseOptions = {
-    readonly?: boolean;
-  };
+declare module 'bun:sqlite' {
+  export interface BunSqliteDatabaseOptions { readonly?: boolean }
 
-  export type BunSqliteStatement = {
+  export interface BunSqliteStatement {
     get: (...args: unknown[]) => unknown;
     all: (...args: unknown[]) => unknown[];
     run: (...args: unknown[]) => unknown;
-  };
+  }
 
   export class Database {
     constructor(filename: string, options?: BunSqliteDatabaseOptions);

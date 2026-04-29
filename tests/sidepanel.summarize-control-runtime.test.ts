@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SlideTextMode } from "../apps/chrome-extension/src/entrypoints/sidepanel/slides-state";
-import { createSummarizeControlRuntime } from "../apps/chrome-extension/src/entrypoints/sidepanel/summarize-control-runtime";
-import type { Settings, SlidesLayout } from "../apps/chrome-extension/src/lib/settings";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-type SummarizeControlProps = {
-  mode: "page" | "video";
+import type { SlideTextMode } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-state';
+import { createSummarizeControlRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/summarize-control-runtime';
+import type { Settings, SlidesLayout } from '../apps/chrome-extension/src/lib/settings';
+
+interface SummarizeControlProps {
+  mode: 'page' | 'video';
   slidesEnabled: boolean;
   mediaAvailable: boolean;
   busy?: boolean;
@@ -14,14 +15,14 @@ type SummarizeControlProps = {
   slidesTextMode?: SlideTextMode;
   slidesTextToggleVisible?: boolean;
   onSlidesTextModeChange?: (value: SlideTextMode) => void;
-  onChange: (value: { mode: "page" | "video"; slides: boolean }) => void | Promise<void>;
+  onChange: (value: { mode: 'page' | 'video'; slides: boolean }) => void | Promise<void>;
   onSummarize: () => void;
-};
+}
 
 let currentProps: SummarizeControlProps | null = null;
 const summarizeControlUpdate = vi.fn();
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/pickers", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/pickers', () => ({
   mountSummarizeControl: (_root: HTMLElement, props: SummarizeControlProps) => {
     currentProps = props;
     return {
@@ -39,20 +40,20 @@ function buildState(overrides: Partial<ReturnType<typeof baseState>> = {}) {
 
 function baseState() {
   return {
-    inputMode: "page" as const,
-    inputModeOverride: null as "page" | "video" | null,
-    hasSummaryMarkdown: false,
-    slidesEnabled: false,
-    slidesOcrEnabled: true,
+    activeTabUrl: 'https://example.com/video',
     autoSummarize: false,
-    slidesBusy: false,
+    currentSourceUrl: 'https://example.com/video',
+    hasSummaryMarkdown: false,
+    inputMode: 'page' as const,
+    inputModeOverride: null as 'page' | 'video' | null,
     mediaAvailable: true,
-    slidesLayout: "gallery" as SlidesLayout,
-    summarizeVideoLabel: "Video",
+    slidesBusy: false,
+    slidesEnabled: false,
+    slidesLayout: 'gallery' as SlidesLayout,
+    slidesOcrEnabled: true,
     summarizePageWords: 320,
     summarizeVideoDurationSeconds: 120,
-    activeTabUrl: "https://example.com/video",
-    currentSourceUrl: "https://example.com/video",
+    summarizeVideoLabel: 'Video',
   };
 }
 
@@ -68,128 +69,123 @@ function buildRuntime(
 
   const state = buildState(overrides.state);
   const calls = {
-    patchSettings: vi.fn(async (_patch: Partial<Settings>) => {}),
-    loadSettings: vi.fn(async () => ({ token: "token" })),
-    showSlideNotice: vi.fn(),
+    applySlidesRendererLayout: vi.fn(),
     hideSlideNotice: vi.fn(),
+    loadSettings: vi.fn(async () => ({ token: 'token' })),
+    maybeApplyPendingSlidesSummary: vi.fn(),
+    maybeStartPendingSlidesForUrl: vi.fn(),
+    patchSettings: vi.fn(async (_patch: Partial<Settings>) => {}),
+    queueSlidesRender: vi.fn(),
+    renderInlineSlidesFallback: vi.fn(),
+    renderMarkdownDisplay: vi.fn(),
+    sendSummarize: vi.fn(),
     setSlidesBusy: vi.fn((value: boolean) => {
       state.slidesBusy = value;
     }),
-    stopSlidesStream: vi.fn(),
-    maybeApplyPendingSlidesSummary: vi.fn(),
-    maybeStartPendingSlidesForUrl: vi.fn(),
-    sendSummarize: vi.fn(),
+    showSlideNotice: vi.fn(),
     startSlidesStreamForRunId: vi.fn(),
     startSlidesSummaryStreamForRunId: vi.fn(),
-    renderMarkdownDisplay: vi.fn(),
-    renderInlineSlidesFallback: vi.fn(),
-    queueSlidesRender: vi.fn(),
-    applySlidesRendererLayout: vi.fn(),
+    stopSlidesStream: vi.fn(),
   };
 
-  const renderMarkdownHostEl = {
-    classList: { remove: vi.fn() },
-  } as unknown as HTMLElement;
+  const renderMarkdownHostEl = { classList: { remove: vi.fn() } } as unknown as HTMLElement;
   const renderSlidesHostEl = { dataset: {} as Record<string, string> } as HTMLElement;
   const slidesLayoutEl = { value: state.slidesLayout } as HTMLSelectElement;
 
   const slidesTextController = {
-    getTextMode: vi.fn(() => "transcript" as SlideTextMode),
+    getTextMode: vi.fn(() => 'transcript' as SlideTextMode),
     getTextToggleVisible: vi.fn(() => true),
     setTextMode: vi.fn(() => overrides.slidesTextSetResult ?? true),
   };
 
   const runtime = createSummarizeControlRuntime({
-    summarizeControlRoot: {} as HTMLElement,
+    applySlidesRendererLayout: calls.applySlidesRendererLayout,
+    getState: () => state,
+    hideSlideNotice: calls.hideSlideNotice,
+    loadSettings: calls.loadSettings,
+    maybeApplyPendingSlidesSummary: calls.maybeApplyPendingSlidesSummary,
+    maybeStartPendingSlidesForUrl: calls.maybeStartPendingSlidesForUrl,
+    patchSettings: calls.patchSettings,
+    queueSlidesRender: calls.queueSlidesRender,
+    renderInlineSlidesFallback: calls.renderInlineSlidesFallback,
+    renderMarkdownDisplay: calls.renderMarkdownDisplay,
     renderMarkdownHostEl,
     renderSlidesHostEl,
-    slidesLayoutEl,
-    slidesTextController,
-    getState: () => state,
+    resolveActiveSlidesRunId: overrides.resolveActiveSlidesRunId ?? (() => null),
+    sendSummarize: calls.sendSummarize,
     setInputMode: (value) => {
       state.inputMode = value;
     },
     setInputModeOverride: (value) => {
       state.inputModeOverride = value;
     },
+    setSlidesBusy: calls.setSlidesBusy,
     setSlidesEnabled: (value) => {
       state.slidesEnabled = value;
     },
     setSlidesLayoutValue: (value) => {
       state.slidesLayout = value;
     },
-    patchSettings: calls.patchSettings,
-    loadSettings: calls.loadSettings,
     showSlideNotice: calls.showSlideNotice,
-    hideSlideNotice: calls.hideSlideNotice,
-    setSlidesBusy: calls.setSlidesBusy,
-    stopSlidesStream: calls.stopSlidesStream,
-    maybeApplyPendingSlidesSummary: calls.maybeApplyPendingSlidesSummary,
-    maybeStartPendingSlidesForUrl: calls.maybeStartPendingSlidesForUrl,
-    sendSummarize: calls.sendSummarize,
-    resolveActiveSlidesRunId: overrides.resolveActiveSlidesRunId ?? (() => null),
+    slidesLayoutEl,
+    slidesTextController,
     startSlidesStreamForRunId: calls.startSlidesStreamForRunId,
     startSlidesSummaryStreamForRunId: calls.startSlidesSummaryStreamForRunId,
-    renderMarkdownDisplay: calls.renderMarkdownDisplay,
-    renderInlineSlidesFallback: calls.renderInlineSlidesFallback,
-    queueSlidesRender: calls.queueSlidesRender,
-    applySlidesRendererLayout: calls.applySlidesRendererLayout,
+    stopSlidesStream: calls.stopSlidesStream,
+    summarizeControlRoot: {} as HTMLElement,
   });
 
   return {
-    state,
     calls,
-    runtime,
     currentProps: () => currentProps,
     renderMarkdownHostEl,
     renderSlidesHostEl,
+    runtime,
     slidesLayoutEl,
     slidesTextController,
+    state,
   };
 }
 
-describe("sidepanel summarize control runtime", () => {
+describe('sidepanel summarize control runtime', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     summarizeControlUpdate.mockReset();
     currentProps = null;
   });
 
-  it("blocks enabling slides when required tools are missing", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
-      ok: true,
-      json: async () => ({
+  it('blocks enabling slides when required tools are missing', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue({
+        json: async () => ({
+          ok: true,
+          tools: {
+            ytDlp: { available: true },
+            ffmpeg: { available: false },
+            tesseract: { available: true },
+          },
+        }),
         ok: true,
-        tools: {
-          ytDlp: { available: true },
-          ffmpeg: { available: false },
-          tesseract: { available: true },
-        },
-      }),
-    } as Response);
+      } as Response);
     const { state, calls } = buildRuntime();
 
-    await currentProps?.onChange({ mode: "video", slides: true });
+    await currentProps?.onChange({ mode: 'video', slides: true });
 
     expect(fetchSpy).toHaveBeenCalledOnce();
     expect(calls.showSlideNotice).toHaveBeenCalledWith(
-      "Slide extraction requires ffmpeg. Install and restart the daemon.",
+      'Slide extraction requires ffmpeg. Install and restart the daemon.',
     );
     expect(calls.patchSettings).not.toHaveBeenCalled();
     expect(state.slidesEnabled).toBe(false);
   });
 
-  it("disabling slides stops active work and persists the setting", async () => {
+  it('disabling slides stops active work and persists the setting', async () => {
     const { state, calls } = buildRuntime({
-      state: {
-        slidesEnabled: true,
-        slidesBusy: true,
-        autoSummarize: true,
-        inputMode: "video",
-      },
+      state: { autoSummarize: true, inputMode: 'video', slidesBusy: true, slidesEnabled: true },
     });
 
-    await currentProps?.onChange({ mode: "page", slides: false });
+    await currentProps?.onChange({ mode: 'page', slides: false });
 
     expect(calls.hideSlideNotice).toHaveBeenCalledOnce();
     expect(calls.setSlidesBusy).toHaveBeenCalledWith(false);
@@ -197,30 +193,28 @@ describe("sidepanel summarize control runtime", () => {
     expect(calls.patchSettings).toHaveBeenCalledWith({ slidesEnabled: false });
     expect(calls.sendSummarize).toHaveBeenCalledWith({ refresh: true });
     expect(state.slidesEnabled).toBe(false);
-    expect(state.inputModeOverride).toBe("page");
+    expect(state.inputModeOverride).toBe('page');
   });
 
-  it("retries existing slide streams instead of re-summarizing", () => {
+  it('retries existing slide streams instead of re-summarizing', () => {
     const { calls, runtime } = buildRuntime({
-      state: { slidesEnabled: true, currentSourceUrl: "https://example.com/current" },
-      resolveActiveSlidesRunId: () => "slides-run-1",
+      resolveActiveSlidesRunId: () => 'slides-run-1',
+      state: { currentSourceUrl: 'https://example.com/current', slidesEnabled: true },
     });
 
     runtime.retrySlidesStream();
 
     expect(calls.hideSlideNotice).toHaveBeenCalledOnce();
-    expect(calls.startSlidesStreamForRunId).toHaveBeenCalledWith("slides-run-1");
+    expect(calls.startSlidesStreamForRunId).toHaveBeenCalledWith('slides-run-1');
     expect(calls.startSlidesSummaryStreamForRunId).toHaveBeenCalledWith(
-      "slides-run-1",
-      "https://example.com/current",
+      'slides-run-1',
+      'https://example.com/current',
     );
     expect(calls.sendSummarize).not.toHaveBeenCalled();
   });
 
-  it("refreshes summarize when retrying slides without an active run", () => {
-    const { calls, runtime } = buildRuntime({
-      state: { slidesEnabled: true },
-    });
+  it('refreshes summarize when retrying slides without an active run', () => {
+    const { calls, runtime } = buildRuntime({ state: { slidesEnabled: true } });
 
     runtime.retrySlidesStream();
 
@@ -228,29 +222,27 @@ describe("sidepanel summarize control runtime", () => {
     expect(calls.startSlidesStreamForRunId).not.toHaveBeenCalled();
   });
 
-  it("switches slide text mode through fallback rendering when summary markdown exists", () => {
-    const { calls, slidesTextController } = buildRuntime({
-      state: { hasSummaryMarkdown: true },
-    });
+  it('switches slide text mode through fallback rendering when summary markdown exists', () => {
+    const { calls, slidesTextController } = buildRuntime({ state: { hasSummaryMarkdown: true } });
 
-    currentProps?.onSlidesTextModeChange?.("ocr");
+    currentProps?.onSlidesTextModeChange?.('ocr');
 
-    expect(slidesTextController.setTextMode).toHaveBeenCalledWith("ocr");
+    expect(slidesTextController.setTextMode).toHaveBeenCalledWith('ocr');
     expect(calls.renderInlineSlidesFallback).toHaveBeenCalledOnce();
     expect(calls.queueSlidesRender).not.toHaveBeenCalled();
   });
 
-  it("queues slides render when switching text mode without summary markdown", () => {
+  it('queues slides render when switching text mode without summary markdown', () => {
     const { calls, runtime, renderMarkdownHostEl, renderSlidesHostEl } = buildRuntime({
-      state: { hasSummaryMarkdown: false, slidesEnabled: true, inputMode: "video" },
+      state: { hasSummaryMarkdown: false, inputMode: 'video', slidesEnabled: true },
     });
 
-    currentProps?.onSlidesTextModeChange?.("ocr");
+    currentProps?.onSlidesTextModeChange?.('ocr');
     runtime.applySlidesLayout();
 
     expect(calls.queueSlidesRender).toHaveBeenCalledOnce();
     expect(calls.renderInlineSlidesFallback).not.toHaveBeenCalled();
-    expect(renderMarkdownHostEl.classList.remove).toHaveBeenCalledWith("hidden");
-    expect(renderSlidesHostEl.dataset.layout).toBe("gallery");
+    expect(renderMarkdownHostEl.classList.remove).toHaveBeenCalledWith('hidden');
+    expect(renderSlidesHostEl.dataset.layout).toBe('gallery');
   });
 });

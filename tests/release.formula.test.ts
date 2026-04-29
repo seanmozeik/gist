@@ -1,18 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   LINUX_HOMEBREW_MESSAGE,
   updateFormulaForMacArtifacts,
-} from "../scripts/release-formula.js";
+} from '../scripts/release-formula.js';
 
 const urls = {
-  urlArm: "https://example.com/summarize-macos-arm64.tar.gz",
-  shaArm: "arm-sha",
-  urlX64: "https://example.com/summarize-macos-x64.tar.gz",
-  shaX64: "x64-sha",
+  shaArm: 'arm-sha',
+  shaX64: 'x64-sha',
+  urlArm: 'https://example.com/summarize-macos-arm64.tar.gz',
+  urlX64: 'https://example.com/summarize-macos-x64.tar.gz',
 };
 
-describe("updateFormulaForMacArtifacts", () => {
-  it("updates existing dual-arch formula blocks", () => {
+describe('updateFormulaForMacArtifacts', () => {
+  it('updates existing dual-arch formula blocks', () => {
     const input = `class Summarize < Formula
   on_arm do
     url "https://old.example/arm.tgz"
@@ -28,18 +29,18 @@ end
 
     const output = updateFormulaForMacArtifacts(input, urls);
 
-    expect(output).toContain("on_macos do");
+    expect(output).toContain('on_macos do');
     expect(output).toContain(`# ${LINUX_HOMEBREW_MESSAGE}`);
-    expect(output).toContain("depends_on :macos");
+    expect(output).toContain('depends_on :macos');
     expect(output).toContain(`url "${urls.urlArm}"`);
     expect(output).toContain(`sha256 "${urls.shaArm}"`);
     expect(output).toContain(`url "${urls.urlX64}"`);
     expect(output).toContain(`sha256 "${urls.shaX64}"`);
-    expect(output).not.toContain("old-arm");
-    expect(output).not.toContain("old-x64");
+    expect(output).not.toContain('old-arm');
+    expect(output).not.toContain('old-x64');
   });
 
-  it("converts arm64-only formulas to macOS-only dual-arch blocks", () => {
+  it('converts arm64-only formulas to macOS-only dual-arch blocks', () => {
     const input = `class Summarize < Formula
   desc "summarize"
   homepage "https://example.com"
@@ -51,19 +52,19 @@ end
 
     const output = updateFormulaForMacArtifacts(input, urls);
 
-    expect(output).toContain("on_macos do");
-    expect(output).toContain("on_arm do");
-    expect(output).toContain("on_intel do");
+    expect(output).toContain('on_macos do');
+    expect(output).toContain('on_arm do');
+    expect(output).toContain('on_intel do');
     expect(output).toContain(`# ${LINUX_HOMEBREW_MESSAGE}`);
-    expect(output).toContain("depends_on :macos");
+    expect(output).toContain('depends_on :macos');
     expect(output).toContain(`url "${urls.urlArm}"`);
     expect(output).toContain(`sha256 "${urls.shaArm}"`);
     expect(output).toContain(`url "${urls.urlX64}"`);
     expect(output).toContain(`sha256 "${urls.shaX64}"`);
-    expect(output).not.toContain("depends_on arch: :arm64");
+    expect(output).not.toContain('depends_on arch: :arm64');
   });
 
-  it("rewrites fallback formulas to a canonical macOS-only shape", () => {
+  it('rewrites fallback formulas to a canonical macOS-only shape', () => {
     const input = `class Summarize < Formula
   url "https://old.example/default.tgz"
   sha256 "old-default"
@@ -72,9 +73,9 @@ end
 
     const output = updateFormulaForMacArtifacts(input, urls);
 
-    expect(output).toContain("on_macos do");
+    expect(output).toContain('on_macos do');
     expect(output).toContain(`# ${LINUX_HOMEBREW_MESSAGE}`);
-    expect(output).toContain("depends_on :macos");
+    expect(output).toContain('depends_on :macos');
     expect(output).toContain(`url "${urls.urlArm}"`);
     expect(output).toContain(`sha256 "${urls.shaArm}"`);
     expect(output).toContain(`url "${urls.urlX64}"`);

@@ -1,8 +1,8 @@
-import type { ExtractResponse } from "../content-script-bridge";
+import type { ExtractResponse } from '../content-script-bridge';
 
 export type ExtractLog = (event: string, detail?: Record<string, unknown>) => void;
 
-export type ExtractorContext = {
+export interface ExtractorContext {
   tabId: number;
   url: string;
   title: string | null;
@@ -16,17 +16,14 @@ export type ExtractorContext = {
   extractFromTab: (
     tabId: number,
     maxCharacters: number,
-    opts?: {
-      timeoutMs?: number;
-      log?: ExtractLog;
-    },
+    opts?: { timeoutMs?: number; log?: ExtractLog },
   ) => Promise<{ ok: true; data: ExtractResponse & { ok: true } } | { ok: false; error: string }>;
   log: ExtractLog;
-};
+}
 
-export type ExtractorResult = {
+export interface ExtractorResult {
   extracted: ExtractResponse & { ok: true };
-  source: "page" | "url";
+  source: 'page' | 'url';
   diagnostics?: {
     strategy: string;
     markdown?: { used?: boolean; provider?: string | null } | null;
@@ -37,10 +34,10 @@ export type ExtractorResult = {
       attemptedProviders?: string[] | null;
     } | null;
   } | null;
-};
+}
 
-export type Extractor = {
+export interface Extractor {
   name: string;
   match: (ctx: ExtractorContext) => boolean;
   extract: (ctx: ExtractorContext) => Promise<ExtractorResult | null>;
-};
+}

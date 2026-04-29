@@ -1,9 +1,10 @@
-import type { LinkPreviewProgressEvent } from "@steipete/summarize-core/content";
-import { formatBytes } from "./format.js";
-import type { OscProgressController } from "./osc-progress.js";
-import { createFetchHtmlProgressRenderer } from "./progress/fetch-html.js";
-import { createTranscriptProgressRenderer } from "./progress/transcript.js";
-import type { ThemeRenderer } from "./theme.js";
+import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
+
+import { formatBytes } from './format.js';
+import type { OscProgressController } from './osc-progress.js';
+import { createFetchHtmlProgressRenderer } from './progress/fetch-html.js';
+import { createTranscriptProgressRenderer } from './progress/transcript.js';
+import type { ThemeRenderer } from './theme.js';
 
 export function createWebsiteProgress({
   enabled,
@@ -15,21 +16,18 @@ export function createWebsiteProgress({
   spinner: { setText: (text: string) => void };
   oscProgress?: OscProgressController | null;
   theme?: ThemeRenderer | null;
-}): {
-  stop: () => void;
-  onProgress: (event: LinkPreviewProgressEvent) => void;
-} | null {
-  if (!enabled) return null;
+}): { stop: () => void; onProgress: (event: LinkPreviewProgressEvent) => void } | null {
+  if (!enabled) {return null;}
 
-  const fetchRenderer = createFetchHtmlProgressRenderer({ spinner, oscProgress, theme });
-  const transcriptRenderer = createTranscriptProgressRenderer({ spinner, oscProgress, theme });
+  const fetchRenderer = createFetchHtmlProgressRenderer({ oscProgress, spinner, theme });
+  const transcriptRenderer = createTranscriptProgressRenderer({ oscProgress, spinner, theme });
 
   const styleLabel = (text: string) => (theme ? theme.label(text) : text);
   const styleDim = (text: string) => (theme ? theme.dim(text) : text);
   const renderStatus = (label: string, detail: string) =>
     theme ? `${styleLabel(label)}${styleDim(detail)}` : `${label}${detail}`;
-  const renderTweetCliLabel = (client?: "xurl" | "bird" | null) =>
-    client === "xurl" ? "Xurl" : client === "bird" ? "Bird" : "X";
+  const renderTweetCliLabel = (client?: 'xurl' | 'bird' | null) =>
+    client === 'xurl' ? 'Xurl' : (client === 'bird' ? 'Bird' : 'X');
 
   const stopAll = () => {
     fetchRenderer.stop();
@@ -38,89 +36,89 @@ export function createWebsiteProgress({
 
   const formatFirecrawlReason = (reason: string) => {
     const lower = reason.toLowerCase();
-    if (lower.includes("forced")) return "forced";
-    if (lower.includes("html fetch failed")) return "fallback: HTML fetch failed";
-    if (lower.includes("blocked") || lower.includes("thin")) return "fallback: blocked/thin HTML";
+    if (lower.includes('forced')) {return 'forced';}
+    if (lower.includes('html fetch failed')) {return 'fallback: HTML fetch failed';}
+    if (lower.includes('blocked') || lower.includes('thin')) {return 'fallback: blocked/thin HTML';}
     return reason;
   };
 
   return {
-    stop: stopAll,
     onProgress: (event) => {
       fetchRenderer.onProgress(event);
       transcriptRenderer.onProgress(event);
 
-      if (event.kind === "bird-start") {
+      if (event.kind === 'bird-start') {
         stopAll();
-        spinner.setText(renderStatus(renderTweetCliLabel(event.client), ": reading tweet…"));
+        spinner.setText(renderStatus(renderTweetCliLabel(event.client), ': reading tweet…'));
         return;
       }
 
-      if (event.kind === "bird-done") {
+      if (event.kind === 'bird-done') {
         stopAll();
         const label = renderTweetCliLabel(event.client);
-        if (event.ok && typeof event.textBytes === "number") {
+        if (event.ok && typeof event.textBytes === 'number') {
           spinner.setText(renderStatus(label, `: got ${formatBytes(event.textBytes)}…`));
           return;
         }
-        spinner.setText(renderStatus(label, ": failed; fallback…"));
+        spinner.setText(renderStatus(label, ': failed; fallback…'));
         return;
       }
 
-      if (event.kind === "nitter-start") {
+      if (event.kind === 'nitter-start') {
         stopAll();
-        spinner.setText(renderStatus("Nitter", ": fetching…"));
+        spinner.setText(renderStatus('Nitter', ': fetching…'));
         return;
       }
 
-      if (event.kind === "nitter-done") {
+      if (event.kind === 'nitter-done') {
         stopAll();
-        if (event.ok && typeof event.textBytes === "number") {
-          spinner.setText(renderStatus("Nitter", `: got ${formatBytes(event.textBytes)}…`));
+        if (event.ok && typeof event.textBytes === 'number') {
+          spinner.setText(renderStatus('Nitter', `: got ${formatBytes(event.textBytes)}…`));
           return;
         }
-        spinner.setText(renderStatus("Nitter", ": failed; fallback…"));
+        spinner.setText(renderStatus('Nitter', ': failed; fallback…'));
         return;
       }
 
-      if (event.kind === "firecrawl-start") {
+      if (event.kind === 'firecrawl-start') {
         stopAll();
-        const reason = event.reason ? formatFirecrawlReason(event.reason) : "";
-        const suffix = reason ? ` (${reason})` : "";
-        spinner.setText(renderStatus("Firecrawl", `: scraping${suffix}…`));
+        const reason = event.reason ? formatFirecrawlReason(event.reason) : '';
+        const suffix = reason ? ` (${reason})` : '';
+        spinner.setText(renderStatus('Firecrawl', `: scraping${suffix}…`));
         return;
       }
 
-      if (event.kind === "firecrawl-done") {
+      if (event.kind === 'firecrawl-done') {
         stopAll();
-        if (event.ok && typeof event.markdownBytes === "number") {
-          spinner.setText(renderStatus("Firecrawl", `: got ${formatBytes(event.markdownBytes)}…`));
+        if (event.ok && typeof event.markdownBytes === 'number') {
+          spinner.setText(renderStatus('Firecrawl', `: got ${formatBytes(event.markdownBytes)}…`));
           return;
         }
-        spinner.setText(renderStatus("Firecrawl", ": no content; fallback…"));
+        spinner.setText(renderStatus('Firecrawl', ': no content; fallback…'));
         return;
       }
 
-      if (event.kind === "transcript-start") {
+      if (event.kind === 'transcript-start') {
         stopAll();
         const label = event.hint?.trim();
-        const text = label && label.length > 0 ? label : "Transcribing";
-        spinner.setText(theme ? `${styleLabel(text)}${styleDim("…")}` : `${text}…`);
+        const text = label && label.length > 0 ? label : 'Transcribing';
+        spinner.setText(theme ? `${styleLabel(text)}${styleDim('…')}` : `${text}…`);
         return;
       }
 
-      if (event.kind === "transcript-done") {
+      if (event.kind === 'transcript-done') {
         stopAll();
         if (event.ok) {
-          spinner.setText(theme ? `${styleLabel("Transcribed")}${styleDim("…")}` : "Transcribed…");
+          spinner.setText(theme ? `${styleLabel('Transcribed')}${styleDim('…')}` : 'Transcribed…');
           return;
         }
         spinner.setText(
           theme
-            ? `${styleLabel("Transcript unavailable")}${styleDim("…")}`
-            : "Transcript unavailable…",
+            ? `${styleLabel('Transcript unavailable')}${styleDim('…')}`
+            : 'Transcript unavailable…',
         );
       }
     },
+    stop: stopAll,
   };
 }

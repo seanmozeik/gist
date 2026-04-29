@@ -4,16 +4,16 @@ import type {
   TranscriptDiagnostics,
   TranscriptSegment,
   TranscriptSource,
-} from "../types.js";
+} from '../types.js';
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_MAX_CONTENT_CHARACTERS = 8000;
-export const DEFAULT_CACHE_MODE: CacheMode = "default";
-export type YoutubeTranscriptMode = "auto" | "web" | "apify" | "yt-dlp" | "no-auto";
-export type MediaTranscriptMode = "auto" | "prefer";
-export type FirecrawlMode = "off" | "auto" | "always";
-export type ContentFormat = "text" | "markdown";
-export type MarkdownMode = "off" | "auto" | "llm" | "readability";
+export const DEFAULT_CACHE_MODE: CacheMode = 'default';
+export type YoutubeTranscriptMode = 'auto' | 'web' | 'apify' | 'yt-dlp' | 'no-auto';
+export type MediaTranscriptMode = 'auto' | 'prefer';
+export type FirecrawlMode = 'off' | 'auto' | 'always';
+export type ContentFormat = 'text' | 'markdown';
+export type MarkdownMode = 'off' | 'auto' | 'llm' | 'readability';
 
 export interface FetchLinkContentOptions {
   timeoutMs?: number;
@@ -54,7 +54,7 @@ export interface ExtractedLinkContent {
   transcriptSegments: TranscriptSegment[] | null;
   transcriptTimedText: string | null;
   mediaDurationSeconds: number | null;
-  video: { kind: "youtube" | "direct"; url: string } | null;
+  video: { kind: 'youtube' | 'direct'; url: string } | null;
   isVideoOnly: boolean;
   diagnostics: ContentFetchDiagnostics;
 }
@@ -67,7 +67,7 @@ export interface FinalizationArguments {
   description: string | null;
   siteName: string | null;
   transcriptResolution: TranscriptResolution;
-  video: { kind: "youtube" | "direct"; url: string } | null;
+  video: { kind: 'youtube' | 'direct'; url: string } | null;
   isVideoOnly: boolean;
   diagnostics: ContentFetchDiagnostics;
 }

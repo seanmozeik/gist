@@ -1,14 +1,10 @@
-type PatchSettingsResult = {
-  fontFamily: string;
-  fontSize: number;
-  lineHeight: number;
-};
+interface PatchSettingsResult { fontFamily: string; fontSize: number; lineHeight: number }
 
 export function createSidepanelInteractionRuntime(options: {
   sendRawMessage: (message: object) => Promise<void>;
-  setLastAction: (value: "chat" | "summarize") => void;
+  setLastAction: (value: 'chat' | 'summarize') => void;
   clearInlineError: () => void;
-  getInputModeOverride: () => "page" | "video" | null;
+  getInputModeOverride: () => 'page' | 'video' | null;
   retryChat: () => void;
   chatEnabled: () => boolean;
   getRawChatInput: () => string;
@@ -38,15 +34,11 @@ export function createSidepanelInteractionRuntime(options: {
   readCurrentModelValue: () => string;
 }) {
   async function send(message: object) {
-    const type = (
-      message as {
-        type?: string;
-      }
-    ).type;
-    if (type === "panel:summarize") {
-      options.setLastAction("summarize");
-    } else if (type === "panel:agent") {
-      options.setLastAction("chat");
+    const {type} = (message as { type?: string });
+    if (type === 'panel:summarize') {
+      options.setLastAction('summarize');
+    } else if (type === 'panel:agent') {
+      options.setLastAction('chat');
     }
     await options.sendRawMessage(message);
   }
@@ -54,14 +46,14 @@ export function createSidepanelInteractionRuntime(options: {
   function sendSummarize(opts?: { refresh?: boolean }) {
     options.clearInlineError();
     void send({
-      type: "panel:summarize",
-      refresh: Boolean(opts?.refresh),
       inputMode: options.getInputModeOverride() ?? undefined,
+      refresh: Boolean(opts?.refresh),
+      type: 'panel:summarize',
     });
   }
 
-  function retryLastAction(lastAction: "chat" | "summarize") {
-    if (lastAction === "chat") {
+  function retryLastAction(lastAction: 'chat' | 'summarize') {
+    if (lastAction === 'chat') {
       options.retryChat();
       return;
     }
@@ -69,10 +61,10 @@ export function createSidepanelInteractionRuntime(options: {
   }
 
   function sendChatMessage() {
-    if (!options.chatEnabled()) return;
+    if (!options.chatEnabled()) {return;}
     const rawInput = options.getRawChatInput();
     const input = rawInput.trim();
-    if (!input) return;
+    if (!input) {return;}
 
     options.clearChatInput();
 
@@ -116,20 +108,20 @@ export function createSidepanelInteractionRuntime(options: {
 
   const persistCurrentModel = (opts?: { focusCustom?: boolean; blurCustom?: boolean }) => {
     options.updateModelRowUI();
-    if (opts?.focusCustom && !options.isCustomModelHidden()) options.focusCustomModel();
-    if (opts?.blurCustom) options.blurCustomModel();
+    if (opts?.focusCustom && !options.isCustomModelHidden()) {options.focusCustomModel();}
+    if (opts?.blurCustom) {options.blurCustomModel();}
     void (async () => {
       await options.patchSettings({ model: options.readCurrentModelValue() });
     })();
   };
 
   return {
-    send,
-    sendSummarize,
-    retryLastAction,
-    sendChatMessage,
     bumpFontSize,
     bumpLineHeight,
     persistCurrentModel,
+    retryLastAction,
+    send,
+    sendChatMessage,
+    sendSummarize,
   };
 }

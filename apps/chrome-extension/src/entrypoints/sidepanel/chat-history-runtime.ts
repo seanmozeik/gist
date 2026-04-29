@@ -1,5 +1,5 @@
-import { compactChatHistory, type ChatHistoryLimits } from "./chat-state";
-import type { ChatMessage } from "./types";
+import { compactChatHistory, type ChatHistoryLimits } from './chat-state';
+import type { ChatMessage } from './types';
 
 export function createChatHistoryRuntime({
   chatController,
@@ -40,7 +40,7 @@ export function createChatHistoryRuntime({
       return chatHistoryStore.load(tabId, getActiveUrl());
     },
     async persist(tabId: number | null, chatEnabled: boolean) {
-      if (!chatEnabled || !tabId) return;
+      if (!chatEnabled || !tabId) {return;}
       const messages = chatController.getMessages();
       const compacted = compactChatHistory(messages, chatLimits);
       if (compacted.length !== messages.length) {
@@ -49,11 +49,11 @@ export function createChatHistoryRuntime({
       await chatHistoryStore.persist(tabId, compacted, chatEnabled, getActiveUrl());
     },
     async restore(tabId: number | null, summaryMarkdown?: string | null) {
-      if (!tabId) return;
+      if (!tabId) {return;}
       loadId += 1;
       const currentLoadId = loadId;
       const history = await chatHistoryStore.load(tabId, getActiveUrl());
-      if (currentLoadId !== loadId) return;
+      if (currentLoadId !== loadId) {return;}
       if (history?.length) {
         const compacted = compactChatHistory(history, chatLimits);
         chatController.setMessages(compacted, { scroll: false });
@@ -66,14 +66,14 @@ export function createChatHistoryRuntime({
           return;
         }
         const parsed = response.messages
-          .filter((msg) => msg && typeof msg === "object")
+          .filter((msg) => msg && typeof msg === 'object')
           .map((msg) => normalizeStoredMessage(msg as Record<string, unknown>))
           .filter((msg): msg is ChatMessage => Boolean(msg));
-        if (!parsed.length) return;
+        if (!parsed.length) {return;}
         const compacted = await chatHistoryStore.persist(tabId, parsed, true, getActiveUrl());
         chatController.setMessages(compacted, { scroll: false });
       } catch {
-        // ignore
+        // Ignore
       }
     },
   };

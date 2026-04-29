@@ -1,78 +1,76 @@
-import { Writable } from "node:stream";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Writable } from 'node:stream';
 
-const mocks = vi.hoisted(() => ({
-  access: vi.fn(),
-  spawn: vi.fn(),
-}));
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("node:fs/promises", () => ({ access: mocks.access }));
-vi.mock("node:child_process", () => ({ spawn: mocks.spawn }));
+const mocks = vi.hoisted(() => ({ access: vi.fn(), spawn: vi.fn() }));
 
-import { handleTranscriberCliRequest } from "../src/run/transcriber-cli.js";
+vi.mock('node:fs/promises', () => ({ access: mocks.access }));
+vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
+
+import { handleTranscriberCliRequest } from '../src/run/transcriber-cli.js';
 
 const collectStream = () => {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 };
 
-const makeSpawnResult = (kind: "error" | "close", code = 0) => {
+const makeSpawnResult = (kind: 'error' | 'close', code = 0) => {
   mocks.spawn.mockImplementation(() => ({
-    on(event: "error" | "close", cb: (arg?: number | Error) => void) {
+    on(event: 'error' | 'close', cb: (arg?: number | Error) => void) {
       if (event === kind) {
-        cb(kind === "error" ? new Error("nope") : code);
+        cb(kind === 'error' ? new Error('nope') : code);
       }
       return this;
     },
   }));
 };
 
-describe("transcriber cli", () => {
+describe('transcriber cli', () => {
   beforeEach(() => {
     mocks.access.mockReset();
     mocks.spawn.mockReset();
   });
 
-  it("ignores non-transcriber commands", async () => {
+  it('ignores non-transcriber commands', async () => {
     const out = collectStream();
     const handled = await handleTranscriberCliRequest({
-      normalizedArgv: ["noop"],
       envForRun: {},
-      stdout: out.stream,
+      normalizedArgv: ['noop'],
       stderr: out.stream,
+      stdout: out.stream,
     });
     expect(handled).toBe(false);
-    expect(out.getText()).toBe("");
+    expect(out.getText()).toBe('');
   });
 
-  it("prints help for transcriber help", async () => {
+  it('prints help for transcriber help', async () => {
     const out = collectStream();
     const handled = await handleTranscriberCliRequest({
-      normalizedArgv: ["transcriber", "help"],
       envForRun: {},
-      stdout: out.stream,
+      normalizedArgv: ['transcriber', 'help'],
       stderr: out.stream,
+      stdout: out.stream,
     });
     expect(handled).toBe(true);
     expect(out.getText()).toMatch(/Transcriber/i);
   });
 
-  it("prints setup and ONNX instructions when not configured", async () => {
-    mocks.access.mockRejectedValue(new Error("missing"));
-    makeSpawnResult("error");
+  it('prints setup and ONNX instructions when not configured', async () => {
+    mocks.access.mockRejectedValue(new Error('missing'));
+    makeSpawnResult('error');
 
     const out = collectStream();
     const handled = await handleTranscriberCliRequest({
-      normalizedArgv: ["transcriber", "setup"],
       envForRun: {},
-      stdout: out.stream,
+      normalizedArgv: ['transcriber', 'setup'],
       stderr: out.stream,
+      stdout: out.stream,
     });
     expect(handled).toBe(true);
     const text = out.getText();
@@ -80,16 +78,16 @@ describe("transcriber cli", () => {
     expect(text).toMatch(/To enable ONNX locally/);
   });
 
-  it("skips ONNX instructions when configured", async () => {
-    mocks.access.mockResolvedValue(undefined);
-    makeSpawnResult("close", 0);
+  it('skips ONNX instructions when configured', async () => {
+    mocks.access.mockResolvedValue();
+    makeSpawnResult('close', 0);
 
     const out = collectStream();
     const handled = await handleTranscriberCliRequest({
-      normalizedArgv: ["transcriber", "setup"],
       envForRun: { SUMMARIZE_ONNX_PARAKEET_CMD: '["sherpa-onnx"]' },
-      stdout: out.stream,
+      normalizedArgv: ['transcriber', 'setup'],
       stderr: out.stream,
+      stdout: out.stream,
     });
     expect(handled).toBe(true);
     const text = out.getText();
@@ -97,13 +95,13 @@ describe("transcriber cli", () => {
     expect(text).not.toMatch(/To enable ONNX locally/);
   });
 
-  it("throws on invalid --model", async () => {
+  it('throws on invalid --model', async () => {
     await expect(
       handleTranscriberCliRequest({
-        normalizedArgv: ["transcriber", "setup", "--model", "nope"],
         envForRun: {},
-        stdout: collectStream().stream,
+        normalizedArgv: ['transcriber', 'setup', '--model', 'nope'],
         stderr: collectStream().stream,
+        stdout: collectStream().stream,
       }),
     ).rejects.toThrow(/Unsupported --model/);
   });

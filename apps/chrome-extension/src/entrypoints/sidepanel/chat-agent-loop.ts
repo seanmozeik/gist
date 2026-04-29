@@ -1,6 +1,7 @@
-import type { Message, ToolCall, ToolResultMessage } from "@mariozechner/pi-ai";
-import type { ChatController } from "./chat-controller";
-import type { ChatMessage } from "./types";
+import type { Message, ToolCall, ToolResultMessage } from '@mariozechner/pi-ai';
+
+import type { ChatController } from './chat-controller';
+import type { ChatMessage } from './types';
 
 export async function runChatAgentLoop({
   automationEnabled,
@@ -20,12 +21,12 @@ export async function runChatAgentLoop({
   summaryMarkdown: string | null;
   chatController: Pick<
     ChatController,
-    | "addMessage"
-    | "buildRequestMessages"
-    | "finishStreamingMessage"
-    | "removeMessage"
-    | "replaceMessage"
-    | "updateStreamingMessage"
+    | 'addMessage'
+    | 'buildRequestMessages'
+    | 'finishStreamingMessage'
+    | 'removeMessage'
+    | 'replaceMessage'
+    | 'updateStreamingMessage'
   >;
   chatSession: {
     isAbortRequested: () => boolean;
@@ -46,18 +47,18 @@ export async function runChatAgentLoop({
   wrapMessage: (message: Message) => ChatMessage;
 }) {
   let tools = automationEnabled ? getAutomationToolNames() : [];
-  if (tools.includes("debugger")) {
+  if (tools.includes('debugger')) {
     const hasDebugger = await hasDebuggerPermission();
     if (!hasDebugger) {
-      tools = tools.filter((tool) => tool !== "debugger");
+      tools = tools.filter((tool) => tool !== 'debugger');
     }
   }
 
   while (true) {
-    if (chatSession.isAbortRequested()) return;
+    if (chatSession.isAbortRequested()) {return;}
     const messages = chatController.buildRequestMessages() as Message[];
     const streamingMessage = createStreamingAssistantMessage();
-    let streamedContent = "";
+    let streamedContent = '';
     chatController.addMessage(streamingMessage);
     scrollToBottom(true);
 
@@ -71,13 +72,13 @@ export async function runChatAgentLoop({
       });
     } catch (error) {
       chatController.removeMessage(streamingMessage.id);
-      if (chatSession.isAbortRequested()) return;
+      if (chatSession.isAbortRequested()) {return;}
       throw error;
     }
 
     if (!response.ok || !response.assistant) {
       chatController.removeMessage(streamingMessage.id);
-      throw new Error(response.error || "Agent failed");
+      throw new Error(response.error || 'Agent failed');
     }
 
     const assistant = { ...response.assistant, id: streamingMessage.id } as ChatMessage;
@@ -90,18 +91,18 @@ export async function runChatAgentLoop({
     scrollToBottom(true);
 
     const toolCalls = Array.isArray(assistant.content)
-      ? (assistant.content.filter((part) => part.type === "toolCall") as ToolCall[])
+      ? (assistant.content.filter((part) => part.type === 'toolCall') as ToolCall[])
       : [];
-    if (toolCalls.length === 0) break;
+    if (toolCalls.length === 0) {break;}
 
     for (const call of toolCalls) {
-      if (chatSession.isAbortRequested()) return;
-      if (call.name === "navigate") {
+      if (chatSession.isAbortRequested()) {return;}
+      if (call.name === 'navigate') {
         const args = call.arguments as { url?: string };
         markAgentNavigationIntent(args?.url);
       }
       const result = await executeToolCall(call);
-      if (call.name === "navigate" && !result.isError) {
+      if (call.name === 'navigate' && !result.isError) {
         markAgentNavigationResult(result.details);
       }
       chatController.addMessage(wrapMessage(result));

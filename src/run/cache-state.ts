@@ -1,12 +1,13 @@
-import { existsSync } from "node:fs";
+import { existsSync } from 'node:fs';
+
 import {
   type CacheState,
   createCacheStore,
   DEFAULT_CACHE_MAX_MB,
   DEFAULT_CACHE_TTL_DAYS,
   resolveCachePath,
-} from "../cache.js";
-import type { SummarizeConfig } from "../config.js";
+} from '../cache.js';
+import type { SummarizeConfig } from '../config.js';
 
 export async function createCacheStateFromConfig({
   envForRun,
@@ -20,33 +21,26 @@ export async function createCacheStateFromConfig({
   transcriptNamespace?: string | null;
 }): Promise<CacheState> {
   const cacheEnabled = config?.cache?.enabled !== false;
-  const cachePath = resolveCachePath({
-    env: envForRun,
-    cachePath: config?.cache?.path ?? null,
-  });
+  const cachePath = resolveCachePath({ cachePath: config?.cache?.path ?? null, env: envForRun });
   const cacheMaxMb =
-    typeof config?.cache?.maxMb === "number" ? config.cache.maxMb : DEFAULT_CACHE_MAX_MB;
+    typeof config?.cache?.maxMb === 'number' ? config.cache.maxMb : DEFAULT_CACHE_MAX_MB;
   const cacheTtlDays =
-    typeof config?.cache?.ttlDays === "number" ? config.cache.ttlDays : DEFAULT_CACHE_TTL_DAYS;
+    typeof config?.cache?.ttlDays === 'number' ? config.cache.ttlDays : DEFAULT_CACHE_TTL_DAYS;
   const cacheMaxBytes = Math.max(0, cacheMaxMb) * 1024 * 1024;
   const cacheTtlMs = Math.max(0, cacheTtlDays) * 24 * 60 * 60 * 1000;
-  const cacheMode: CacheState["mode"] =
-    !cacheEnabled || noCacheFlag || !cachePath ? "bypass" : "default";
+  const cacheMode: CacheState['mode'] =
+    !cacheEnabled || noCacheFlag || !cachePath ? 'bypass' : 'default';
   const cacheStore =
-    cacheMode === "default" && cachePath
-      ? await createCacheStore({
-          path: cachePath,
-          maxBytes: cacheMaxBytes,
-          transcriptNamespace,
-        })
+    cacheMode === 'default' && cachePath
+      ? await createCacheStore({ maxBytes: cacheMaxBytes, path: cachePath, transcriptNamespace })
       : null;
 
   return {
+    maxBytes: cacheMaxBytes,
     mode: cacheMode,
+    path: cachePath,
     store: cacheStore,
     ttlMs: cacheTtlMs,
-    maxBytes: cacheMaxBytes,
-    path: cachePath,
   };
 }
 
@@ -57,18 +51,18 @@ export async function refreshCacheStoreIfMissing({
   cacheState: CacheState;
   transcriptNamespace?: string | null;
 }): Promise<boolean> {
-  if (cacheState.mode !== "default") return false;
-  const path = cacheState.path;
-  if (!path) return false;
+  if (cacheState.mode !== 'default') {return false;}
+  const {path} = cacheState;
+  if (!path) {return false;}
   const fileExists = existsSync(path);
   if (cacheState.store) {
     // Keep the existing store to avoid closing statements while requests are in flight.
-    if (fileExists) return false;
+    if (fileExists) {return false;}
     cacheState.store.close();
   }
   cacheState.store = await createCacheStore({
-    path,
     maxBytes: cacheState.maxBytes,
+    path,
     transcriptNamespace,
   });
   return true;

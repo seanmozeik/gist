@@ -1,1 +1,1 @@
-export * from "@steipete/summarize-core/language";
+export * from '@steipete/summarize-core/language';

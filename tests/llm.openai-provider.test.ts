@@ -1,266 +1,236 @@
-import { describe, expect, it, vi } from "vitest";
-import { buildMinimalPdf } from "./helpers/pdf.js";
+import { describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({
-  completeSimple: vi.fn(),
-}));
+import { buildMinimalPdf } from './helpers/pdf.js';
 
-vi.mock("@mariozechner/pi-ai", () => ({
-  completeSimple: mocks.completeSimple,
-}));
+const mocks = vi.hoisted(() => ({ completeSimple: vi.fn() }));
+
+vi.mock('@mariozechner/pi-ai', () => ({ completeSimple: mocks.completeSimple }));
 
 import {
   completeOpenAiDocument,
   completeOpenAiText,
   resolveOpenAiClientConfig,
-} from "../src/llm/providers/openai.js";
+} from '../src/llm/providers/openai.js';
 
-describe("openai provider helpers", () => {
-  it("resolves openrouter config from keys and forced mode", () => {
+describe('openai provider helpers', () => {
+  it('resolves openrouter config from keys and forced mode', () => {
     expect(
-      resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: null,
-          openrouterApiKey: "or-key",
-        },
-      }),
+      resolveOpenAiClientConfig({ apiKeys: { openaiApiKey: null, openrouterApiKey: 'or-key' } }),
     ).toEqual({
-      apiKey: "or-key",
-      baseURL: "https://openrouter.ai/api/v1",
-      useChatCompletions: true,
+      apiKey: 'or-key',
+      baseURL: 'https://openrouter.ai/api/v1',
       isOpenRouter: true,
+      useChatCompletions: true,
     });
 
     expect(
       resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: "oa-key",
-          openrouterApiKey: null,
-        },
+        apiKeys: { openaiApiKey: 'oa-key', openrouterApiKey: null },
         forceOpenRouter: true,
       }),
     ).toEqual({
-      apiKey: "oa-key",
-      baseURL: "https://openrouter.ai/api/v1",
-      useChatCompletions: true,
+      apiKey: 'oa-key',
+      baseURL: 'https://openrouter.ai/api/v1',
       isOpenRouter: true,
-    });
-  });
-
-  it("handles custom and invalid base URLs", () => {
-    expect(
-      resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: "oa-key",
-          openrouterApiKey: null,
-        },
-        openaiBaseUrlOverride: "https://gateway.example/v1",
-      }),
-    ).toEqual({
-      apiKey: "oa-key",
-      baseURL: "https://gateway.example/v1",
       useChatCompletions: true,
+    });
+  });
+
+  it('handles custom and invalid base URLs', () => {
+    expect(
+      resolveOpenAiClientConfig({
+        apiKeys: { openaiApiKey: 'oa-key', openrouterApiKey: null },
+        openaiBaseUrlOverride: 'https://gateway.example/v1',
+      }),
+    ).toEqual({
+      apiKey: 'oa-key',
+      baseURL: 'https://gateway.example/v1',
       isOpenRouter: false,
+      useChatCompletions: true,
     });
 
     expect(
       resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: "oa-key",
-          openrouterApiKey: null,
-        },
-        openaiBaseUrlOverride: "not a url",
+        apiKeys: { openaiApiKey: 'oa-key', openrouterApiKey: null },
+        openaiBaseUrlOverride: 'not a url',
       }),
     ).toEqual({
-      apiKey: "oa-key",
-      baseURL: "not a url",
-      useChatCompletions: false,
+      apiKey: 'oa-key',
+      baseURL: 'not a url',
       isOpenRouter: false,
+      useChatCompletions: false,
     });
   });
 
-  it("raises missing key errors for OpenAI and OpenRouter modes", () => {
+  it('raises missing key errors for OpenAI and OpenRouter modes', () => {
     expect(() =>
-      resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: null,
-          openrouterApiKey: null,
-        },
-      }),
+      resolveOpenAiClientConfig({ apiKeys: { openaiApiKey: null, openrouterApiKey: null } }),
     ).toThrow(/Missing OPENAI_API_KEY/);
 
     expect(() =>
       resolveOpenAiClientConfig({
-        apiKeys: {
-          openaiApiKey: null,
-          openrouterApiKey: null,
-        },
+        apiKeys: { openaiApiKey: null, openrouterApiKey: null },
         forceOpenRouter: true,
       }),
     ).toThrow(/Missing OPENROUTER_API_KEY/);
   });
 
-  it("builds OpenAI document response URLs for /responses, /v1, and root bases", async () => {
-    const pdfBytes = buildMinimalPdf("Hello PDF");
+  it('builds OpenAI document response URLs for /responses, /v1, and root bases', async () => {
+    const pdfBytes = buildMinimalPdf('Hello PDF');
     const fetchMock = vi.fn(async () => {
       return new Response(
         JSON.stringify({
-          output: [{ content: [{ text: "ok" }] }],
+          output: [{ content: [{ text: 'ok' }] }],
           usage: { input_tokens: 1, output_tokens: 2, total_tokens: 3 },
         }),
-        { status: 200, headers: { "content-type": "application/json" } },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
 
-    const promptText = "Summarize";
+    const promptText = 'Summarize';
     const document = {
-      kind: "document" as const,
       bytes: pdfBytes,
-      filename: "test.pdf",
-      mediaType: "application/pdf",
+      filename: 'test.pdf',
+      kind: 'document' as const,
+      mediaType: 'application/pdf',
     };
 
     for (const baseURL of [
-      "https://api.openai.com/responses",
-      "https://api.openai.com/v1",
-      "https://api.openai.com",
+      'https://api.openai.com/responses',
+      'https://api.openai.com/v1',
+      'https://api.openai.com',
     ]) {
       const result = await completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL,
-          useChatCompletions: true,
-          isOpenRouter: false,
-        },
-        promptText,
         document,
-        timeoutMs: 2000,
         fetchImpl: fetchMock as unknown as typeof fetch,
+        modelId: 'gpt-5.2',
+        openaiConfig: { apiKey: 'oa-key', baseURL, isOpenRouter: false, useChatCompletions: true },
+        promptText,
+        timeoutMs: 2000,
       });
 
-      expect(result.text).toBe("ok");
+      expect(result.text).toBe('ok');
     }
 
     expect(fetchMock.mock.calls.map((call) => String(call[0]))).toEqual([
-      "https://api.openai.com/responses",
-      "https://api.openai.com/v1/responses",
-      "https://api.openai.com/v1/responses",
+      'https://api.openai.com/responses',
+      'https://api.openai.com/v1/responses',
+      'https://api.openai.com/v1/responses',
     ]);
   });
 
-  it("rejects unsupported document attachment backends", async () => {
-    const pdfBytes = buildMinimalPdf("Hello PDF");
+  it('rejects unsupported document attachment backends', async () => {
+    const pdfBytes = buildMinimalPdf('Hello PDF');
     const document = {
-      kind: "document" as const,
       bytes: pdfBytes,
-      filename: "test.pdf",
-      mediaType: "application/pdf",
+      filename: 'test.pdf',
+      kind: 'document' as const,
+      mediaType: 'application/pdf',
     };
 
     await expect(
       completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL: "https://openrouter.ai/api/v1",
-          useChatCompletions: true,
-          isOpenRouter: true,
-        },
-        promptText: "Summarize",
         document,
-        timeoutMs: 2000,
         fetchImpl: globalThis.fetch.bind(globalThis),
+        modelId: 'gpt-5.2',
+        openaiConfig: {
+          apiKey: 'oa-key',
+          baseURL: 'https://openrouter.ai/api/v1',
+          isOpenRouter: true,
+          useChatCompletions: true,
+        },
+        promptText: 'Summarize',
+        timeoutMs: 2000,
       }),
     ).rejects.toThrow(/OpenRouter does not support PDF attachments/);
 
     await expect(
       completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL: "https://gateway.example/v1",
-          useChatCompletions: true,
-          isOpenRouter: false,
-        },
-        promptText: "Summarize",
         document,
-        timeoutMs: 2000,
         fetchImpl: globalThis.fetch.bind(globalThis),
+        modelId: 'gpt-5.2',
+        openaiConfig: {
+          apiKey: 'oa-key',
+          baseURL: 'https://gateway.example/v1',
+          isOpenRouter: false,
+          useChatCompletions: true,
+        },
+        promptText: 'Summarize',
+        timeoutMs: 2000,
       }),
     ).rejects.toThrow(/Document attachments require api.openai.com/);
   });
 
-  it("rejects non-document attachments for the document API", async () => {
+  it('rejects non-document attachments for the document API', async () => {
     await expect(
       completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL: "https://api.openai.com/v1",
-          useChatCompletions: true,
-          isOpenRouter: false,
-        },
-        promptText: "Summarize",
         document: {
-          kind: "image",
           bytes: new Uint8Array([1, 2, 3]),
-          filename: "test.png",
-          mediaType: "image/png",
+          filename: 'test.png',
+          kind: 'image',
+          mediaType: 'image/png',
         },
-        timeoutMs: 2000,
         fetchImpl: globalThis.fetch.bind(globalThis),
+        modelId: 'gpt-5.2',
+        openaiConfig: {
+          apiKey: 'oa-key',
+          baseURL: 'https://api.openai.com/v1',
+          isOpenRouter: false,
+          useChatCompletions: true,
+        },
+        promptText: 'Summarize',
+        timeoutMs: 2000,
       }),
     ).rejects.toThrow(/expected a document attachment/);
   });
 
-  it("surfaces document API failures and empty document outputs", async () => {
-    const pdfBytes = buildMinimalPdf("Hello PDF");
+  it('surfaces document API failures and empty document outputs', async () => {
+    const pdfBytes = buildMinimalPdf('Hello PDF');
     const document = {
-      kind: "document" as const,
       bytes: pdfBytes,
-      filename: "test.pdf",
-      mediaType: "application/pdf",
+      filename: 'test.pdf',
+      kind: 'document' as const,
+      mediaType: 'application/pdf',
     };
 
     await expect(
       completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL: "https://api.openai.com/v1",
-          useChatCompletions: true,
-          isOpenRouter: false,
-        },
-        promptText: "Summarize",
         document,
-        timeoutMs: 2000,
         fetchImpl: (async () =>
-          new Response(JSON.stringify({ error: "boom" }), { status: 500 })) as typeof fetch,
+          new Response(JSON.stringify({ error: 'boom' }), { status: 500 })) as typeof fetch,
+        modelId: 'gpt-5.2',
+        openaiConfig: {
+          apiKey: 'oa-key',
+          baseURL: 'https://api.openai.com/v1',
+          isOpenRouter: false,
+          useChatCompletions: true,
+        },
+        promptText: 'Summarize',
+        timeoutMs: 2000,
       }),
     ).rejects.toThrow(/OpenAI API error \(500\)/);
 
     await expect(
       completeOpenAiDocument({
-        modelId: "gpt-5.2",
-        openaiConfig: {
-          apiKey: "oa-key",
-          baseURL: "https://api.openai.com/v1",
-          useChatCompletions: true,
-          isOpenRouter: false,
-        },
-        promptText: "Summarize",
         document,
-        timeoutMs: 2000,
         fetchImpl: (async () =>
-          new Response(JSON.stringify({ output: [{ content: [{ text: "   " }] }] }), {
+          new Response(JSON.stringify({ output: [{ content: [{ text: '   ' }] }] }), {
             status: 200,
           })) as typeof fetch,
+        modelId: 'gpt-5.2',
+        openaiConfig: {
+          apiKey: 'oa-key',
+          baseURL: 'https://api.openai.com/v1',
+          isOpenRouter: false,
+          useChatCompletions: true,
+        },
+        promptText: 'Summarize',
+        timeoutMs: 2000,
       }),
     ).rejects.toThrow(/empty summary/);
   });
 
-  it("reads GitHub chat completion arrays and rejects empty results", async () => {
+  it('reads GitHub chat completion arrays and rejects empty results', async () => {
     const fetchMock = vi
       .fn()
       .mockImplementationOnce(async () => {
@@ -270,65 +240,62 @@ describe("openai provider helpers", () => {
               {
                 message: {
                   content: [
-                    { type: "text", text: "Hello" },
-                    { type: "text", text: " world" },
+                    { text: 'Hello', type: 'text' },
+                    { text: ' world', type: 'text' },
                   ],
                 },
               },
             ],
-            usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
+            usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
           }),
-          { status: 200, headers: { "content-type": "application/json" } },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       })
       .mockImplementationOnce(async () => {
         return new Response(
           JSON.stringify({
-            choices: [{ message: { content: [{ type: "image", image_url: "x" }] } }],
+            choices: [{ message: { content: [{ image_url: 'x', type: 'image' }] } }],
           }),
-          { status: 200, headers: { "content-type": "application/json" } },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
 
     const originalFetch = globalThis.fetch;
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
     try {
       const context = {
-        systemPrompt: "system",
         messages: [
-          { role: "user" as const, content: "hello" },
-          {
-            role: "assistant" as const,
-            content: [{ type: "text" as const, text: "seen" }],
-          },
+          { role: 'user' as const, content: 'hello' },
+          { role: 'assistant' as const, content: [{ type: 'text' as const, text: 'seen' }] },
         ],
+        systemPrompt: 'system',
       };
 
       const result = await completeOpenAiText({
-        modelId: "openai/gpt-4.1",
-        openaiConfig: {
-          apiKey: "gh-key",
-          baseURL: "https://models.github.ai/inference",
-          useChatCompletions: true,
-          isOpenRouter: false,
-          extraHeaders: { Accept: "application/vnd.github+json" },
-        },
         context,
+        modelId: 'openai/gpt-4.1',
+        openaiConfig: {
+          apiKey: 'gh-key',
+          baseURL: 'https://models.github.ai/inference',
+          extraHeaders: { Accept: 'application/vnd.github+json' },
+          isOpenRouter: false,
+          useChatCompletions: true,
+        },
         signal: new AbortController().signal,
       });
 
-      expect(result.text).toBe("Hello world");
+      expect(result.text).toBe('Hello world');
 
       await expect(
         completeOpenAiText({
-          modelId: "openai/gpt-4.1",
-          openaiConfig: {
-            apiKey: "gh-key",
-            baseURL: "https://models.github.ai/inference",
-            useChatCompletions: true,
-            isOpenRouter: false,
-          },
           context,
+          modelId: 'openai/gpt-4.1',
+          openaiConfig: {
+            apiKey: 'gh-key',
+            baseURL: 'https://models.github.ai/inference',
+            isOpenRouter: false,
+            useChatCompletions: true,
+          },
           signal: new AbortController().signal,
         }),
       ).rejects.toThrow(/empty summary/);
@@ -337,233 +304,210 @@ describe("openai provider helpers", () => {
     }
   });
 
-  it("uses the Responses API for OpenAI GPT-5-family text models", async () => {
+  it('uses the Responses API for OpenAI GPT-5-family text models', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      expect(String(input)).toBe("https://api.openai.com/v1/responses");
+      expect(String(input)).toBe('https://api.openai.com/v1/responses');
       const body = JSON.parse(String(init?.body)) as {
         model: string;
         instructions?: string;
-        input: Array<{ role: string; content: Array<{ type: string; text: string }> }>;
+        input: { role: string; content: Array<{ type: string; text: string }> }[];
       };
-      expect(body.model).toBe("gpt-5.4");
-      expect(body.instructions).toBe("system");
+      expect(body.model).toBe('gpt-5.4');
+      expect(body.instructions).toBe('system');
       expect(body.input).toEqual([
-        { role: "user", content: [{ type: "input_text", text: "hello" }] },
-        { role: "assistant", content: [{ type: "input_text", text: "seen" }] },
+        { content: [{ type: 'input_text', text: 'hello' }], role: 'user' },
+        { content: [{ type: 'input_text', text: 'seen' }], role: 'assistant' },
       ]);
       return new Response(
         JSON.stringify({
-          output: [{ content: [{ text: "Hello from responses" }] }],
+          output: [{ content: [{ text: 'Hello from responses' }] }],
           usage: { input_tokens: 1, output_tokens: 2, total_tokens: 3 },
         }),
-        { status: 200, headers: { "content-type": "application/json" } },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
 
     const result = await completeOpenAiText({
-      modelId: "gpt-5.4",
-      openaiConfig: {
-        apiKey: "oa-key",
-        baseURL: "https://api.openai.com/v1",
-        useChatCompletions: false,
-        isOpenRouter: false,
-      },
       context: {
-        systemPrompt: "system",
         messages: [
-          { role: "user", content: "hello" },
-          { role: "assistant", content: [{ type: "text", text: "seen" }] },
+          { role: 'user', content: 'hello' },
+          { role: 'assistant', content: [{ type: 'text', text: 'seen' }] },
         ],
+        systemPrompt: 'system',
+      },
+      fetchImpl: fetchMock as typeof fetch,
+      modelId: 'gpt-5.4',
+      openaiConfig: {
+        apiKey: 'oa-key',
+        baseURL: 'https://api.openai.com/v1',
+        isOpenRouter: false,
+        useChatCompletions: false,
       },
       signal: new AbortController().signal,
-      fetchImpl: fetchMock as typeof fetch,
     });
 
-    expect(result.text).toBe("Hello from responses");
-    expect(result.resolvedModelId).toBe("gpt-5.4");
+    expect(result.text).toBe('Hello from responses');
+    expect(result.resolvedModelId).toBe('gpt-5.4');
   });
 
-  it("forwards OpenAI Responses request options", async () => {
+  it('forwards OpenAI Responses request options', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body)) as {
         service_tier?: string;
         reasoning?: { effort?: string };
         text?: { verbosity?: string };
       };
-      expect(body.service_tier).toBe("priority");
-      expect(body.reasoning?.effort).toBe("medium");
-      expect(body.text?.verbosity).toBe("low");
-      return new Response(JSON.stringify({ output_text: "ok" }), {
+      expect(body.service_tier).toBe('priority');
+      expect(body.reasoning?.effort).toBe('medium');
+      expect(body.text?.verbosity).toBe('low');
+      return new Response(JSON.stringify({ output_text: 'ok' }), {
+        headers: { 'content-type': 'application/json' },
         status: 200,
-        headers: { "content-type": "application/json" },
       });
     });
 
     const result = await completeOpenAiText({
-      modelId: "gpt-5.5",
+      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      fetchImpl: fetchMock as typeof fetch,
+      modelId: 'gpt-5.5',
       openaiConfig: {
-        apiKey: "oa-key",
-        baseURL: "https://api.openai.com/v1",
-        useChatCompletions: false,
+        apiKey: 'oa-key',
+        baseURL: 'https://api.openai.com/v1',
         isOpenRouter: false,
-        requestOptions: {
-          serviceTier: "fast",
-          reasoningEffort: "medium",
-          textVerbosity: "low",
-        },
-      },
-      context: {
-        systemPrompt: null,
-        messages: [{ role: "user", content: "hello" }],
+        requestOptions: { reasoningEffort: 'medium', serviceTier: 'fast', textVerbosity: 'low' },
+        useChatCompletions: false,
       },
       signal: new AbortController().signal,
-      fetchImpl: fetchMock as typeof fetch,
     });
 
-    expect(result.text).toBe("ok");
+    expect(result.text).toBe('ok');
   });
 
-  it("forwards OpenAI Chat Completions request options", async () => {
+  it('forwards OpenAI Chat Completions request options', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body)) as {
         service_tier?: string;
         reasoning_effort?: string;
         verbosity?: string;
       };
-      expect(body.service_tier).toBe("priority");
-      expect(body.reasoning_effort).toBe("low");
-      expect(body.verbosity).toBe("high");
-      return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+      expect(body.service_tier).toBe('priority');
+      expect(body.reasoning_effort).toBe('low');
+      expect(body.verbosity).toBe('high');
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
+        headers: { 'content-type': 'application/json' },
         status: 200,
-        headers: { "content-type": "application/json" },
       });
     });
 
     const result = await completeOpenAiText({
-      modelId: "gpt-5.5",
+      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      fetchImpl: fetchMock as typeof fetch,
+      modelId: 'gpt-5.5',
       openaiConfig: {
-        apiKey: "oa-key",
-        baseURL: "https://api.openai.com/v1",
-        useChatCompletions: true,
+        apiKey: 'oa-key',
+        baseURL: 'https://api.openai.com/v1',
         isOpenRouter: false,
-        requestOptions: {
-          serviceTier: "fast",
-          reasoningEffort: "low",
-          textVerbosity: "high",
-        },
-      },
-      context: {
-        systemPrompt: null,
-        messages: [{ role: "user", content: "hello" }],
+        requestOptions: { reasoningEffort: 'low', serviceTier: 'fast', textVerbosity: 'high' },
+        useChatCompletions: true,
       },
       signal: new AbortController().signal,
-      fetchImpl: fetchMock as typeof fetch,
     });
 
-    expect(result.text).toBe("ok");
+    expect(result.text).toBe('ok');
   });
 
-  it("uses chat completions directly for OpenRouter GPT-5-family text models", async () => {
+  it('uses chat completions directly for OpenRouter GPT-5-family text models', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      expect(String(input)).toBe("https://openrouter.ai/api/v1/chat/completions");
-      expect((init?.headers as Record<string, string>)?.["HTTP-Referer"]).toBe(
-        "https://github.com/steipete/summarize",
+      expect(String(input)).toBe('https://openrouter.ai/api/v1/chat/completions');
+      expect((init?.headers as Record<string, string>)?.['HTTP-Referer']).toBe(
+        'https://github.com/steipete/summarize',
       );
-      expect((init?.headers as Record<string, string>)?.["X-Title"]).toBe("summarize");
+      expect((init?.headers as Record<string, string>)?.['X-Title']).toBe('summarize');
       const body = JSON.parse(String(init?.body)) as {
         model: string;
-        messages: Array<{ role: string; content: string }>;
+        messages: { role: string; content: string }[];
       };
-      expect(body.model).toBe("openai/gpt-5-mini");
-      expect(body.messages).toEqual([{ role: "user", content: "hello" }]);
+      expect(body.model).toBe('openai/gpt-5-mini');
+      expect(body.messages).toEqual([{ content: 'hello', role: 'user' }]);
       return new Response(
         JSON.stringify({
-          choices: [{ message: { content: "Hello from OpenRouter" } }],
-          usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
+          choices: [{ message: { content: 'Hello from OpenRouter' } }],
+          usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
         }),
-        { status: 200, headers: { "content-type": "application/json" } },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
 
     const result = await completeOpenAiText({
-      modelId: "openai/gpt-5-mini",
+      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      fetchImpl: fetchMock as typeof fetch,
+      modelId: 'openai/gpt-5-mini',
       openaiConfig: {
-        apiKey: "or-key",
-        baseURL: "https://openrouter.ai/api/v1",
-        useChatCompletions: true,
+        apiKey: 'or-key',
+        baseURL: 'https://openrouter.ai/api/v1',
         isOpenRouter: true,
-      },
-      context: {
-        systemPrompt: null,
-        messages: [{ role: "user", content: "hello" }],
+        useChatCompletions: true,
       },
       signal: new AbortController().signal,
-      fetchImpl: fetchMock as typeof fetch,
     });
 
-    expect(result.text).toBe("Hello from OpenRouter");
-    expect(result.resolvedModelId).toBe("openai/gpt-5-mini");
+    expect(result.text).toBe('Hello from OpenRouter');
+    expect(result.resolvedModelId).toBe('openai/gpt-5-mini');
   });
 
-  it("falls back GitHub GPT-5-family requests to gpt-5-chat when the direct id fails", async () => {
+  it('falls back GitHub GPT-5-family requests to gpt-5-chat when the direct id fails', async () => {
     const fetchMock = vi
       .fn()
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { model: string };
-        expect(body.model).toBe("openai/gpt-5.4");
-        return new Response(JSON.stringify({ error: "server error" }), { status: 500 });
+        expect(body.model).toBe('openai/gpt-5.4');
+        return new Response(JSON.stringify({ error: 'server error' }), { status: 500 });
       })
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { model: string };
-        expect(body.model).toBe("openai/gpt-5-chat");
+        expect(body.model).toBe('openai/gpt-5-chat');
         return new Response(
           JSON.stringify({
-            choices: [{ message: { content: "Hello from GitHub compat" } }],
-            usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
+            choices: [{ message: { content: 'Hello from GitHub compat' } }],
+            usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
           }),
-          { status: 200, headers: { "content-type": "application/json" } },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
 
     const result = await completeOpenAiText({
-      modelId: "openai/gpt-5.4",
+      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      fetchImpl: fetchMock as typeof fetch,
+      modelId: 'openai/gpt-5.4',
       openaiConfig: {
-        apiKey: "gh-key",
-        baseURL: "https://models.github.ai/inference",
-        useChatCompletions: true,
+        apiKey: 'gh-key',
+        baseURL: 'https://models.github.ai/inference',
         isOpenRouter: false,
-      },
-      context: {
-        systemPrompt: null,
-        messages: [{ role: "user", content: "hello" }],
+        useChatCompletions: true,
       },
       signal: new AbortController().signal,
-      fetchImpl: fetchMock as typeof fetch,
     });
 
-    expect(result.text).toBe("Hello from GitHub compat");
-    expect(result.resolvedModelId).toBe("openai/gpt-5-chat");
+    expect(result.text).toBe('Hello from GitHub compat');
+    expect(result.resolvedModelId).toBe('openai/gpt-5-chat');
   });
 
-  it("surfaces GitHub chat completion HTTP errors", async () => {
+  it('surfaces GitHub chat completion HTTP errors', async () => {
     const originalFetch = globalThis.fetch;
     vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ error: "denied" }), { status: 403 })),
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ error: 'denied' }), { status: 403 })),
     );
     try {
       await expect(
         completeOpenAiText({
-          modelId: "openai/gpt-4.1",
+          context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+          modelId: 'openai/gpt-4.1',
           openaiConfig: {
-            apiKey: "gh-key",
-            baseURL: "https://models.github.ai/inference",
-            useChatCompletions: true,
+            apiKey: 'gh-key',
+            baseURL: 'https://models.github.ai/inference',
             isOpenRouter: false,
-          },
-          context: {
-            systemPrompt: null,
-            messages: [{ role: "user", content: "hello" }],
+            useChatCompletions: true,
           },
           signal: new AbortController().signal,
         }),
@@ -573,25 +517,22 @@ describe("openai provider helpers", () => {
     }
   });
 
-  it("surfaces GitHub Models 429 errors with rate-limit guidance", async () => {
+  it('surfaces GitHub Models 429 errors with rate-limit guidance', async () => {
     const originalFetch = globalThis.fetch;
     vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ error: "rate_limited" }), { status: 429 })),
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429 })),
     );
     try {
       await expect(
         completeOpenAiText({
-          modelId: "openai/gpt-5.4-mini",
+          context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+          modelId: 'openai/gpt-5.4-mini',
           openaiConfig: {
-            apiKey: "gh-key",
-            baseURL: "https://models.github.ai/inference",
-            useChatCompletions: true,
+            apiKey: 'gh-key',
+            baseURL: 'https://models.github.ai/inference',
             isOpenRouter: false,
-          },
-          context: {
-            systemPrompt: null,
-            messages: [{ role: "user", content: "hello" }],
+            useChatCompletions: true,
           },
           signal: new AbortController().signal,
         }),

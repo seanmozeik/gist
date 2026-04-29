@@ -1,6 +1,6 @@
-import { bindSettingsStorage, bindSidepanelLifecycle } from "./bindings";
+import { bindSettingsStorage, bindSidepanelLifecycle } from './bindings';
 
-type LoadedSettings = {
+interface LoadedSettings {
   autoSummarize: boolean;
   chatEnabled: boolean;
   automationEnabled: boolean;
@@ -10,7 +10,7 @@ type LoadedSettings = {
   fontFamily: string;
   model: string;
   token: string;
-};
+}
 
 export function bootstrapSidepanel(options: {
   ensurePanelPort: () => Promise<void>;
@@ -63,7 +63,7 @@ export function bootstrapSidepanel(options: {
     options.setAutomationEnabledValue(settings.automationEnabled);
     options.setSlidesLayoutValue(settings.slidesLayout);
     options.setSlidesLayoutInputValue(settings.slidesLayout);
-    if (!settings.automationEnabled) options.hideAutomationNotice();
+    if (!settings.automationEnabled) {options.hideAutomationNotice();}
     options.appearanceControls.setAutoValue(settings.autoSummarize);
     options.applyChatEnabled();
     options.applySlidesLayout();

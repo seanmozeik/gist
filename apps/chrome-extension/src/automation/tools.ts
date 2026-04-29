@@ -1,27 +1,28 @@
-import type { ToolCall, ToolResultMessage } from "@mariozechner/pi-ai";
-import { parseSseEvent } from "../lib/runtime-contracts";
-import { loadSettings } from "../lib/settings";
-import { parseSseStream } from "../lib/sse";
+import type { ToolCall, ToolResultMessage } from '@mariozechner/pi-ai';
+
+import { parseSseEvent } from '../lib/runtime-contracts';
+import { loadSettings } from '../lib/settings';
+import { parseSseStream } from '../lib/sse';
 import {
   deleteArtifact,
   getArtifactRecord,
   listArtifacts,
   parseArtifact,
   upsertArtifact,
-} from "./artifacts-store";
-import { executeAskUserWhichElementTool } from "./ask-user-which-element";
-import { executeNavigateTool } from "./navigate";
-import { executeReplTool } from "./repl";
-import { executeSkillTool, type SkillToolArgs } from "./skills";
+} from './artifacts-store';
+import { executeAskUserWhichElementTool } from './ask-user-which-element';
+import { executeNavigateTool } from './navigate';
+import { executeReplTool } from './repl';
+import { executeSkillTool, type SkillToolArgs } from './skills';
 
 const TOOL_NAMES = [
-  "navigate",
-  "repl",
-  "ask_user_which_element",
-  "skill",
-  "artifacts",
-  "summarize",
-  "debugger",
+  'navigate',
+  'repl',
+  'ask_user_which_element',
+  'skill',
+  'artifacts',
+  'summarize',
+  'debugger',
 ] as const;
 
 export type AutomationToolName = (typeof TOOL_NAMES)[number];
@@ -44,13 +45,13 @@ function buildToolResultMessage({
   details?: unknown;
 }): ToolResultMessage {
   return {
-    role: "toolResult",
-    toolCallId,
-    toolName,
-    content: [{ type: "text", text }],
+    content: [{ type: 'text', text }],
     details,
     isError,
+    role: 'toolResult',
     timestamp: Date.now(),
+    toolCallId,
+    toolName,
   };
 }
 
@@ -61,15 +62,15 @@ async function getActiveTabUrl(): Promise<string | null> {
 
 async function getActiveTabId(): Promise<number> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) throw new Error("No active tab");
+  if (!tab?.id) {throw new Error('No active tab');}
   return tab.id;
 }
 
-type SummarizeToolArgs = {
+interface SummarizeToolArgs {
   url?: string;
   extractOnly?: boolean;
-  format?: "text" | "markdown";
-  markdownMode?: "off" | "auto" | "llm" | "readability";
+  format?: 'text' | 'markdown';
+  markdownMode?: 'off' | 'auto' | 'llm' | 'readability';
   model?: string;
   length?: string;
   language?: string;
@@ -77,88 +78,77 @@ type SummarizeToolArgs = {
   timeout?: string;
   maxOutputTokens?: string | number;
   noCache?: boolean;
-  firecrawl?: "off" | "auto" | "always";
-  preprocess?: "off" | "auto" | "always";
-  youtube?: "auto" | "web" | "yt-dlp" | "apify" | "no-auto";
-  videoMode?: "auto" | "transcript" | "understand";
+  firecrawl?: 'off' | 'auto' | 'always';
+  preprocess?: 'off' | 'auto' | 'always';
+  youtube?: 'auto' | 'web' | 'yt-dlp' | 'apify' | 'no-auto';
+  videoMode?: 'auto' | 'transcript' | 'understand';
   timestamps?: boolean;
   maxCharacters?: number;
-};
+}
 
-type SummarizeToolResult = {
-  text: string;
-  details?: Record<string, unknown>;
-};
+interface SummarizeToolResult { text: string; details?: Record<string, unknown> }
 
 async function executeSummarizeTool(args: SummarizeToolArgs): Promise<SummarizeToolResult> {
   const settings = await loadSettings();
   const token = settings.token.trim();
   if (!token) {
-    throw new Error("Missing daemon token. Open the side panel setup to pair the daemon.");
+    throw new Error('Missing daemon token. Open the side panel setup to pair the daemon.');
   }
 
   const url = (args.url ?? (await getActiveTabUrl()))?.trim();
-  if (!url) throw new Error("Missing URL (no active tab)");
+  if (!url) {throw new Error('Missing URL (no active tab)');}
 
-  const format = args.format === "markdown" ? "markdown" : "text";
+  const format = args.format === 'markdown' ? 'markdown' : 'text';
   const extractOnly = Boolean(args.extractOnly);
 
-  const body: Record<string, unknown> = {
-    url,
-    mode: "url",
-    format,
-    extractOnly,
-  };
+  const body: Record<string, unknown> = { extractOnly, format, mode: 'url', url };
 
   const model = args.model ?? settings.model;
-  if (model) body.model = model;
+  if (model) {body.model = model;}
   if (!extractOnly) {
     const length = args.length ?? settings.length;
-    if (length) body.length = length;
+    if (length) {body.length = length;}
   }
 
   const language = args.language ?? settings.language;
-  if (language) body.language = language;
+  if (language) {body.language = language;}
 
   const prompt = args.prompt ?? settings.promptOverride;
-  if (prompt) body.prompt = prompt;
+  if (prompt) {body.prompt = prompt;}
 
   const timeout = args.timeout ?? settings.timeout;
-  if (timeout) body.timeout = timeout;
+  if (timeout) {body.timeout = timeout;}
 
   const maxOutputTokens = args.maxOutputTokens ?? settings.maxOutputTokens;
-  if (maxOutputTokens) body.maxOutputTokens = maxOutputTokens;
+  if (maxOutputTokens) {body.maxOutputTokens = maxOutputTokens;}
 
-  if (args.noCache) body.noCache = true;
+  if (args.noCache) {body.noCache = true;}
 
   const firecrawl = args.firecrawl ?? settings.firecrawlMode;
-  if (firecrawl) body.firecrawl = firecrawl;
+  if (firecrawl) {body.firecrawl = firecrawl;}
 
   const markdownMode = args.markdownMode ?? settings.markdownMode;
-  if (markdownMode) body.markdownMode = markdownMode;
+  if (markdownMode) {body.markdownMode = markdownMode;}
 
   const preprocess = args.preprocess ?? settings.preprocessMode;
-  if (preprocess) body.preprocess = preprocess;
+  if (preprocess) {body.preprocess = preprocess;}
 
   const youtube = args.youtube ?? settings.youtubeMode;
-  if (youtube) body.youtube = youtube;
+  if (youtube) {body.youtube = youtube;}
 
-  if (args.videoMode) body.videoMode = args.videoMode;
-  if (typeof args.timestamps === "boolean") body.timestamps = args.timestamps;
+  if (args.videoMode) {body.videoMode = args.videoMode;}
+  if (typeof args.timestamps === 'boolean') {body.timestamps = args.timestamps;}
 
-  if (typeof args.maxCharacters === "number" && Number.isFinite(args.maxCharacters)) {
+  if (typeof args.maxCharacters === 'number' && Number.isFinite(args.maxCharacters)) {
     body.maxCharacters = args.maxCharacters;
-  } else if (typeof settings.maxChars === "number" && Number.isFinite(settings.maxChars)) {
+  } else if (typeof settings.maxChars === 'number' && Number.isFinite(settings.maxChars)) {
     body.maxCharacters = settings.maxChars;
   }
 
-  const res = await fetch("http://127.0.0.1:8787/v1/summarize", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-    },
+  const res = await fetch('http://127.0.0.1:8787/v1/summarize', {
     body: JSON.stringify(body),
+    headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    method: 'POST',
   });
 
   const json = (await res.json()) as
@@ -168,76 +158,68 @@ async function executeSummarizeTool(args: SummarizeToolArgs): Promise<SummarizeT
 
   if (!res.ok || !json.ok) {
     const error = (json as { error?: string }).error ?? `${res.status} ${res.statusText}`.trim();
-    throw new Error(error || "Summarize failed");
+    throw new Error(error || 'Summarize failed');
   }
 
   if (extractOnly) {
-    if (!("extracted" in json) || !json.extracted) {
-      throw new Error("Missing extracted content");
+    if (!('extracted' in json) || !json.extracted) {
+      throw new Error('Missing extracted content');
     }
-    return {
-      text: json.extracted.content,
-      details: json.extracted,
-    };
+    return { details: json.extracted, text: json.extracted.content };
   }
 
-  if (!("id" in json) || !json.id) {
-    throw new Error("Missing summarize run id");
+  if (!('id' in json) || !json.id) {
+    throw new Error('Missing summarize run id');
   }
 
   const streamRes = await fetch(`http://127.0.0.1:8787/v1/summarize/${json.id}/events`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!streamRes.ok) throw new Error(`${streamRes.status} ${streamRes.statusText}`);
-  if (!streamRes.body) throw new Error("Missing stream body");
+  if (!streamRes.ok) {throw new Error(`${streamRes.status} ${streamRes.statusText}`);}
+  if (!streamRes.body) {throw new Error('Missing stream body');}
 
-  let output = "";
+  let output = '';
   let meta: Record<string, unknown> | null = null;
 
   for await (const raw of parseSseStream(streamRes.body)) {
     const event = parseSseEvent(raw);
-    if (!event) continue;
-    if (event.event === "chunk") {
+    if (!event) {continue;}
+    if (event.event === 'chunk') {
       output += event.data.text;
       continue;
     }
-    if (event.event === "meta") {
+    if (event.event === 'meta') {
       meta = event.data;
       continue;
     }
-    if (event.event === "error") {
-      throw new Error(event.data.message || "Summarize failed");
+    if (event.event === 'error') {
+      throw new Error(event.data.message || 'Summarize failed');
     }
-    if (event.event === "done") break;
+    if (event.event === 'done') {break;}
   }
 
   const text = output.trim();
   if (!text) {
-    throw new Error("Model returned no output");
+    throw new Error('Model returned no output');
   }
 
-  return { text, details: meta ?? undefined };
+  return { details: meta ?? undefined, text };
 }
 
-type ArtifactsToolArgs = {
-  action: "list" | "get" | "create" | "update" | "delete";
+interface ArtifactsToolArgs {
+  action: 'list' | 'get' | 'create' | 'update' | 'delete';
   fileName?: string;
   content?: unknown;
   mimeType?: string;
   contentBase64?: string;
   asBase64?: boolean;
-};
+}
 
-type ArtifactInfo = {
-  fileName: string;
-  mimeType: string;
-  size: number;
-  updatedAt: string;
-};
+interface ArtifactInfo { fileName: string; mimeType: string; size: number; updatedAt: string }
 
 function formatArtifactValue(value: unknown): string {
-  if (value == null) return "null";
-  if (typeof value === "string") return value;
+  if (value == null) {return 'null';}
+  if (typeof value === 'string') {return value;}
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -250,9 +232,9 @@ async function executeArtifactsTool(
   args: ArtifactsToolArgs,
 ): Promise<{ text: string; details?: unknown }> {
   const tabId = await getActiveTabId();
-  const action = args.action;
+  const {action} = args;
 
-  if (action === "list") {
+  if (action === 'list') {
     const records = await listArtifacts(tabId);
     const items: ArtifactInfo[] = records.map((record) => ({
       fileName: record.fileName,
@@ -262,55 +244,55 @@ async function executeArtifactsTool(
     }));
     const text =
       items.length === 0
-        ? "No artifacts found."
+        ? 'No artifacts found.'
         : items
             .map((item) => `- ${item.fileName} (${item.mimeType}, ${item.size} bytes)`)
-            .join("\n");
-    return { text, details: { artifacts: items } };
+            .join('\n');
+    return { details: { artifacts: items }, text };
   }
 
-  if (!args.fileName) throw new Error("Missing fileName");
+  if (!args.fileName) {throw new Error('Missing fileName');}
 
-  if (action === "get") {
+  if (action === 'get') {
     const record = await getArtifactRecord(tabId, args.fileName);
-    if (!record) throw new Error(`Artifact not found: ${args.fileName}`);
+    if (!record) {throw new Error(`Artifact not found: ${args.fileName}`);}
     if (args.asBase64) {
       const text = formatArtifactValue(record);
-      return { text, details: { artifact: record } };
+      return { details: { artifact: record }, text };
     }
     const isText =
-      record.mimeType.startsWith("text/") ||
-      record.mimeType === "application/json" ||
-      record.fileName.endsWith(".json");
+      record.mimeType.startsWith('text/') ||
+      record.mimeType === 'application/json' ||
+      record.fileName.endsWith('.json');
     const value = isText ? parseArtifact(record) : record;
     const text = formatArtifactValue(value);
-    return { text, details: { artifact: record } };
+    return { details: { artifact: record }, text };
   }
 
-  if (action === "create") {
+  if (action === 'create') {
     const existing = await getArtifactRecord(tabId, args.fileName);
-    if (existing) throw new Error(`Artifact already exists: ${args.fileName}`);
+    if (existing) {throw new Error(`Artifact already exists: ${args.fileName}`);}
   }
 
-  if (action === "update") {
+  if (action === 'update') {
     const existing = await getArtifactRecord(tabId, args.fileName);
-    if (!existing) throw new Error(`Artifact not found: ${args.fileName}`);
+    if (!existing) {throw new Error(`Artifact not found: ${args.fileName}`);}
   }
 
-  if (action === "create" || action === "update") {
+  if (action === 'create' || action === 'update') {
     const record = await upsertArtifact(tabId, {
-      fileName: args.fileName,
       content: args.content,
-      mimeType: args.mimeType,
       contentBase64: args.contentBase64,
+      fileName: args.fileName,
+      mimeType: args.mimeType,
     });
     return {
-      text: `Saved artifact ${record.fileName} (${record.mimeType}, ${record.size} bytes)`,
       details: { artifact: record },
+      text: `Saved artifact ${record.fileName} (${record.mimeType}, ${record.size} bytes)`,
     };
   }
 
-  if (action === "delete") {
+  if (action === 'delete') {
     const deleted = await deleteArtifact(tabId, args.fileName);
     return {
       text: deleted ? `Deleted artifact ${args.fileName}` : `Artifact not found: ${args.fileName}`,
@@ -321,64 +303,64 @@ async function executeArtifactsTool(
 }
 
 function maybeNotifyUserScriptsNotice(message: string) {
-  if (typeof window === "undefined") return;
-  if (!/user scripts|userscripts/i.test(message)) return;
+  if (typeof window === 'undefined') {return;}
+  if (!/user scripts|userscripts/i.test(message)) {return;}
   window.dispatchEvent(
-    new CustomEvent("summarize:automation-permissions", {
+    new CustomEvent('summarize:automation-permissions', {
       detail: {
-        title: "User Scripts required",
+        ctaAction: 'extensions',
+        ctaLabel: 'Open extension details',
         message,
-        ctaLabel: "Open extension details",
-        ctaAction: "extensions",
+        title: 'User Scripts required',
       },
     }),
   );
 }
 
 async function executeDebuggerTool(args: { action?: string; code?: string }) {
-  if (args.action !== "eval") throw new Error("Unsupported debugger action");
-  if (!args.code) throw new Error("Missing code");
+  if (args.action !== 'eval') {throw new Error('Unsupported debugger action');}
+  if (!args.code) {throw new Error('Missing code');}
 
-  const hasPermission = await chrome.permissions.contains({ permissions: ["debugger"] });
+  const hasPermission = await chrome.permissions.contains({ permissions: ['debugger'] });
   if (!hasPermission) {
     throw new Error(
-      "Debugger permission not granted. Enable it in Options → Automation permissions.",
+      'Debugger permission not granted. Enable it in Options → Automation permissions.',
     );
   }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) throw new Error("No active tab");
+  if (!tab?.id) {throw new Error('No active tab');}
 
   const tabId = tab.id;
   try {
-    await chrome.debugger.attach({ tabId }, "1.3");
-  } catch (err) {
-    if (!(err instanceof Error) || !err.message.includes("already attached")) {
-      throw err;
+    await chrome.debugger.attach({ tabId }, '1.3');
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes('already attached')) {
+      throw error;
     }
   }
 
   try {
-    const result = await chrome.debugger.sendCommand({ tabId }, "Runtime.evaluate", {
+    const result = await chrome.debugger.sendCommand({ tabId }, 'Runtime.evaluate', {
       expression: args.code,
       returnByValue: true,
     });
     const value = result?.result?.value ?? result?.result ?? null;
     const text =
-      value == null ? "null" : typeof value === "string" ? value : JSON.stringify(value, null, 2);
-    return { text, details: result };
+      value == null ? 'null' : (typeof value === 'string' ? value : JSON.stringify(value, null, 2));
+    return { details: result, text };
   } finally {
     try {
       await chrome.debugger.detach({ tabId });
     } catch {
-      // ignore
+      // Ignore
     }
   }
 }
 
 export async function executeToolCall(toolCall: ToolCall): Promise<ToolResultMessage> {
   try {
-    if (toolCall.name === "navigate") {
+    if (toolCall.name === 'navigate') {
       const result = await executeNavigateTool(
         toolCall.arguments as {
           url?: string;
@@ -387,121 +369,121 @@ export async function executeToolCall(toolCall: ToolCall): Promise<ToolResultMes
           switchToTab?: number;
         },
       );
-      let text = "";
+      let text = '';
       if (result.tabs) {
         text =
           result.tabs.length === 0
-            ? "No open tabs."
+            ? 'No open tabs.'
             : result.tabs
-                .map((tab) => `- [${tab.id}] ${tab.title ?? "Untitled"} (${tab.url ?? "no url"})`)
-                .join("\n");
-      } else if (typeof result.switchedToTab === "number") {
-        text = `Switched to tab ${result.switchedToTab}${result.finalUrl ? `: ${result.finalUrl}` : ""}`;
+                .map((tab) => `- [${tab.id}] ${tab.title ?? 'Untitled'} (${tab.url ?? 'no url'})`)
+                .join('\n');
+      } else if (typeof result.switchedToTab === 'number') {
+        text = `Switched to tab ${result.switchedToTab}${result.finalUrl ? `: ${result.finalUrl}` : ''}`;
       } else {
-        text = `Navigated to ${result.finalUrl ?? "unknown url"}`;
+        text = `Navigated to ${result.finalUrl ?? 'unknown url'}`;
       }
 
       if (result.skills && result.skills.length > 0) {
         const skillLines = result.skills.map(
           (skill) => `- ${skill.name}: ${skill.shortDescription}`,
         );
-        text = `${text}\n\nSkills:\n${skillLines.join("\n")}`;
+        text = `${text}\n\nSkills:\n${skillLines.join('\n')}`;
       }
       return buildToolResultMessage({
+        details: result,
+        isError: false,
+        text,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text,
-        isError: false,
-        details: result,
       });
     }
 
-    if (toolCall.name === "repl") {
+    if (toolCall.name === 'repl') {
       const result = await executeReplTool(toolCall.arguments as { title: string; code: string });
       return buildToolResultMessage({
+        details: result.files?.length ? { files: result.files } : undefined,
+        isError: false,
+        text: result.output,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: result.output,
-        isError: false,
-        details: result.files?.length ? { files: result.files } : undefined,
       });
     }
 
-    if (toolCall.name === "ask_user_which_element") {
+    if (toolCall.name === 'ask_user_which_element') {
       const result = await executeAskUserWhichElementTool(
         toolCall.arguments as { message?: string },
       );
       return buildToolResultMessage({
+        details: result,
+        isError: false,
+        text: `Selected ${result.selector}`,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: `Selected ${result.selector}`,
-        isError: false,
-        details: result,
       });
     }
 
-    if (toolCall.name === "skill") {
+    if (toolCall.name === 'skill') {
       const result = await executeSkillTool(toolCall.arguments as SkillToolArgs, getActiveTabUrl);
       return buildToolResultMessage({
+        details: result.details,
+        isError: false,
+        text: result.text,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: result.text,
-        isError: false,
-        details: result.details,
       });
     }
 
-    if (toolCall.name === "debugger") {
+    if (toolCall.name === 'debugger') {
       const result = await executeDebuggerTool(
         toolCall.arguments as { action?: string; code?: string },
       );
       return buildToolResultMessage({
+        details: result.details,
+        isError: false,
+        text: result.text,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: result.text,
-        isError: false,
-        details: result.details,
       });
     }
 
-    if (toolCall.name === "summarize") {
+    if (toolCall.name === 'summarize') {
       const result = await executeSummarizeTool(toolCall.arguments as SummarizeToolArgs);
       return buildToolResultMessage({
+        details: result.details,
+        isError: false,
+        text: result.text,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: result.text,
-        isError: false,
-        details: result.details,
       });
     }
 
-    if (toolCall.name === "artifacts") {
+    if (toolCall.name === 'artifacts') {
       const result = await executeArtifactsTool(toolCall.arguments as ArtifactsToolArgs);
       return buildToolResultMessage({
+        details: result.details,
+        isError: false,
+        text: result.text,
         toolCallId: toolCall.id,
         toolName: toolCall.name,
-        text: result.text,
-        isError: false,
-        details: result.details,
       });
     }
 
     return buildToolResultMessage({
+      isError: true,
+      text: `Unknown tool: ${toolCall.name}`,
       toolCallId: toolCall.id,
       toolName: toolCall.name,
-      text: `Unknown tool: ${toolCall.name}`,
-      isError: true,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (toolCall.name === "repl") {
+    if (toolCall.name === 'repl') {
       maybeNotifyUserScriptsNotice(message);
     }
     return buildToolResultMessage({
+      isError: true,
+      text: message,
       toolCallId: toolCall.id,
       toolName: toolCall.name,
-      text: message,
-      isError: true,
     });
   }
 }

@@ -1,36 +1,35 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import type { Api } from "@mariozechner/pi-ai";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
-import { makeAssistantMessage } from "./helpers/pi-ai-mock.js";
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
 
-type MockModel = { provider: string; id: string; api: Api };
+import type { Api } from '@mariozechner/pi-ai';
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
+import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
+
+interface MockModel { provider: string; id: string; api: Api }
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(),
-  streamSimple: vi.fn(),
   getModel: vi.fn(() => {
-    throw new Error("no model");
+    throw new Error('no model');
   }),
+  streamSimple: vi.fn(),
 }));
 
 mocks.completeSimple.mockImplementation(async (model: MockModel) =>
-  makeAssistantMessage({ text: "OK", provider: model.provider, model: model.id, api: model.api }),
+  makeAssistantMessage({ api: model.api, model: model.id, provider: model.provider, text: 'OK' }),
 );
 
-vi.mock("@mariozechner/pi-ai", () => ({
+vi.mock('@mariozechner/pi-ai', () => ({
   completeSimple: mocks.completeSimple,
-  streamSimple: mocks.streamSimple,
   getModel: mocks.getModel,
+  streamSimple: mocks.streamSimple,
 }));
 
 function noopStream(): Writable {
@@ -42,129 +41,124 @@ function noopStream(): Writable {
 }
 
 function collectStdout() {
-  let text = "";
+  let text = '';
   const stdout = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stdout, getText: () => text };
+  return { getText: () => text, stdout };
 }
 
-describe("cli auto fallback behavior", () => {
-  it("skips models with missing keys (auto)", async () => {
-    mocks.completeSimple.mockReset().mockResolvedValue(makeAssistantMessage({ text: "OK" }));
+describe('cli auto fallback behavior', () => {
+  it('skips models with missing keys (auto)', async () => {
+    mocks.completeSimple.mockReset().mockResolvedValue(makeAssistantMessage({ text: 'OK' }));
 
     const html =
-      "<!doctype html><html><head><title>Hello</title></head>" +
-      `<body><article><p>${"This is a sentence. ".repeat(240)}</p></article></body></html>`;
+      '<!doctype html><html><head><title>Hello</title></head>' +
+      `<body><article><p>${'This is a sentence. '.repeat(240)}</p></article></body></html>`;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") return htmlResponse(html);
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {return htmlResponse(html);}
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), "summarize-auto-fallback-"));
-    mkdirSync(join(tempRoot, ".summarize"), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-auto-fallback-'));
+    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
     writeFileSync(
-      join(tempRoot, ".summarize", "config.json"),
+      join(tempRoot, '.summarize', 'config.json'),
       JSON.stringify({
         model: {
-          mode: "auto",
+          mode: 'auto',
           rules: [
             {
-              when: ["website"],
-              candidates: ["google/gemini-3-flash-preview", "openai/gpt-5-chat"],
+              candidates: ['google/gemini-3-flash-preview', 'openai/gpt-5-chat'],
+              when: ['website'],
             },
           ],
         },
       }),
-      "utf8",
+      'utf8',
     );
 
     const out = collectStdout();
     await runCli(
       [
-        "--model",
-        "auto",
-        "--timeout",
-        "2s",
-        "--max-output-tokens",
-        "50",
-        "--plain",
-        "https://example.com",
+        '--model',
+        'auto',
+        '--timeout',
+        '2s',
+        '--max-output-tokens',
+        '50',
+        '--plain',
+        'https://example.com',
       ],
       {
-        env: { HOME: tempRoot, OPENAI_API_KEY: "test" },
+        env: { HOME: tempRoot, OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout: out.stdout,
         stderr: noopStream(),
+        stdout: out.stdout,
       },
     );
 
-    expect(out.getText().trim()).toBe("OK");
+    expect(out.getText().trim()).toBe('OK');
     expect(mocks.completeSimple).toHaveBeenCalledTimes(1);
     const model = mocks.completeSimple.mock.calls[0]?.[0] as { provider?: string };
-    expect(model.provider).toBe("openai");
+    expect(model.provider).toBe('openai');
   });
 
-  it("falls back on request errors (auto)", async () => {
+  it('falls back on request errors (auto)', async () => {
     mocks.completeSimple
       .mockReset()
-      .mockRejectedValueOnce(new Error("boom"))
-      .mockResolvedValueOnce(makeAssistantMessage({ text: "OK" }));
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce(makeAssistantMessage({ text: 'OK' }));
 
     const html =
-      "<!doctype html><html><head><title>Hello</title></head>" +
-      `<body><article><p>${"This is a sentence. ".repeat(240)}</p></article></body></html>`;
+      '<!doctype html><html><head><title>Hello</title></head>' +
+      `<body><article><p>${'This is a sentence. '.repeat(240)}</p></article></body></html>`;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") return htmlResponse(html);
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {return htmlResponse(html);}
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), "summarize-auto-fallback-"));
-    mkdirSync(join(tempRoot, ".summarize"), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-auto-fallback-'));
+    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
     writeFileSync(
-      join(tempRoot, ".summarize", "config.json"),
+      join(tempRoot, '.summarize', 'config.json'),
       JSON.stringify({
         model: {
-          mode: "auto",
-          rules: [
-            {
-              when: ["website"],
-              candidates: ["openai/gpt-5-chat", "openai/gpt-4.1"],
-            },
-          ],
+          mode: 'auto',
+          rules: [{ candidates: ['openai/gpt-5-chat', 'openai/gpt-4.1'], when: ['website'] }],
         },
       }),
-      "utf8",
+      'utf8',
     );
 
     const out = collectStdout();
     await runCli(
       [
-        "--model",
-        "auto",
-        "--timeout",
-        "2s",
-        "--max-output-tokens",
-        "50",
-        "--plain",
-        "https://example.com",
+        '--model',
+        'auto',
+        '--timeout',
+        '2s',
+        '--max-output-tokens',
+        '50',
+        '--plain',
+        'https://example.com',
       ],
       {
-        env: { HOME: tempRoot, OPENAI_API_KEY: "test" },
+        env: { HOME: tempRoot, OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout: out.stdout,
         stderr: noopStream(),
+        stdout: out.stdout,
       },
     );
 
-    expect(out.getText().trim()).toBe("OK");
+    expect(out.getText().trim()).toBe('OK');
     expect(mocks.completeSimple).toHaveBeenCalledTimes(2);
   });
 });

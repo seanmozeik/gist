@@ -1,7 +1,8 @@
-import type { AssistantMessage, Message } from "@mariozechner/pi-ai";
-import type { SseSlidesData } from "./runtime-contracts";
+import type { AssistantMessage, Message } from '@mariozechner/pi-ai';
 
-export type UiState = {
+import type { SseSlidesData } from './runtime-contracts';
+
+export interface UiState {
   panelOpen: boolean;
   daemon: { ok: boolean; authed: boolean; error?: string };
   tab: { id: number | null; url: string | null; title: string | null };
@@ -15,7 +16,7 @@ export type UiState = {
     slidesEnabled: boolean;
     slidesParallel: boolean;
     slidesOcrEnabled: boolean;
-    slidesLayout: "strip" | "gallery";
+    slidesLayout: 'strip' | 'gallery';
     fontSize: number;
     lineHeight: number;
     model: string;
@@ -23,23 +24,23 @@ export type UiState = {
     tokenPresent: boolean;
   };
   status: string;
-};
+}
 
-export type RunStart = {
+export interface RunStart {
   id: string;
   url: string;
   title: string | null;
   model: string;
   reason: string;
-};
+}
 
-type PanelCacheMeta = {
+interface PanelCacheMeta {
   inputSummary: string | null;
   model: string | null;
   modelLabel: string | null;
-};
+}
 
-export type PanelCachePayload = {
+export interface PanelCachePayload {
   tabId: number;
   url: string;
   title: string | null;
@@ -53,54 +54,50 @@ export type PanelCachePayload = {
   lastMeta: PanelCacheMeta;
   slides: SseSlidesData | null;
   transcriptTimedText: string | null;
-};
+}
 
 export type PanelToBg =
-  | { type: "panel:ready" }
-  | { type: "panel:summarize"; refresh?: boolean; inputMode?: "page" | "video" }
+  | { type: 'panel:ready' }
+  | { type: 'panel:summarize'; refresh?: boolean; inputMode?: 'page' | 'video' }
   | {
-      type: "panel:agent";
+      type: 'panel:agent';
       requestId: string;
       messages: Message[];
       tools: string[];
       summary?: string | null;
     }
-  | {
-      type: "panel:chat-history";
-      requestId: string;
-      summary?: string | null;
-    }
-  | { type: "panel:seek"; seconds: number }
-  | { type: "panel:ping" }
-  | { type: "panel:closed" }
-  | { type: "panel:rememberUrl"; url: string }
-  | { type: "panel:setAuto"; value: boolean }
-  | { type: "panel:setLength"; value: string }
-  | { type: "panel:slides-context"; requestId: string; url?: string }
-  | { type: "panel:cache"; cache: PanelCachePayload }
-  | { type: "panel:get-cache"; requestId: string; tabId: number; url: string }
-  | { type: "panel:openOptions" };
+  | { type: 'panel:chat-history'; requestId: string; summary?: string | null }
+  | { type: 'panel:seek'; seconds: number }
+  | { type: 'panel:ping' }
+  | { type: 'panel:closed' }
+  | { type: 'panel:rememberUrl'; url: string }
+  | { type: 'panel:setAuto'; value: boolean }
+  | { type: 'panel:setLength'; value: string }
+  | { type: 'panel:slides-context'; requestId: string; url?: string }
+  | { type: 'panel:cache'; cache: PanelCachePayload }
+  | { type: 'panel:get-cache'; requestId: string; tabId: number; url: string }
+  | { type: 'panel:openOptions' };
 
 export type BgToPanel =
-  | { type: "ui:state"; state: UiState }
-  | { type: "ui:status"; status: string }
-  | { type: "run:start"; run: RunStart }
-  | { type: "run:error"; message: string }
-  | { type: "slides:run"; ok: boolean; runId?: string; url?: string; error?: string }
-  | { type: "chat:history"; requestId: string; ok: boolean; messages?: Message[]; error?: string }
-  | { type: "agent:chunk"; requestId: string; text: string }
+  | { type: 'ui:state'; state: UiState }
+  | { type: 'ui:status'; status: string }
+  | { type: 'run:start'; run: RunStart }
+  | { type: 'run:error'; message: string }
+  | { type: 'slides:run'; ok: boolean; runId?: string; url?: string; error?: string }
+  | { type: 'chat:history'; requestId: string; ok: boolean; messages?: Message[]; error?: string }
+  | { type: 'agent:chunk'; requestId: string; text: string }
   | {
-      type: "agent:response";
+      type: 'agent:response';
       requestId: string;
       ok: boolean;
       assistant?: AssistantMessage;
       error?: string;
     }
   | {
-      type: "slides:context";
+      type: 'slides:context';
       requestId: string;
       ok: boolean;
       transcriptTimedText?: string | null;
       error?: string;
     }
-  | { type: "ui:cache"; requestId: string; ok: boolean; cache?: PanelCachePayload };
+  | { type: 'ui:cache'; requestId: string; ok: boolean; cache?: PanelCachePayload };

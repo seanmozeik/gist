@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { buildSlidesPayload } from "./helpers/daemon-fixtures";
+import { expect, test } from '@playwright/test';
+
+import { buildSlidesPayload } from './helpers/daemon-fixtures';
 import {
   assertNoErrors,
   buildUiState,
@@ -10,134 +11,131 @@ import {
   seedSettings,
   sendBgMessage,
   waitForPanelPort,
-} from "./helpers/extension-harness";
-import { allowFirefoxExtensionTests } from "./helpers/extension-test-config";
+} from './helpers/extension-harness';
+import { allowFirefoxExtensionTests } from './helpers/extension-test-config';
 import {
   getPanelSlideDescriptions,
   getPanelSlidesTimeline,
   waitForApplySlidesHook,
   waitForSettingsHydratedHook,
-} from "./helpers/panel-hooks";
+} from './helpers/panel-hooks';
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 
-test("sidepanel resumes slides when returning to a tab", async ({
+test('sidepanel resumes slides when returning to a tab', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: true,
       slidesOcrEnabled: true,
+      slidesParallel: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
 
     const slidesPayload = {
-      sourceUrl: "https://www.youtube.com/watch?v=abc123",
-      sourceId: "alpha",
-      sourceKind: "youtube",
       ocrAvailable: true,
       slides: [
         {
           index: 1,
           timestamp: 0,
-          imageUrl: "http://127.0.0.1:8787/v1/slides/alpha/1?v=1",
-          ocrText: "Alpha slide one.",
+          imageUrl: 'http://127.0.0.1:8787/v1/slides/alpha/1?v=1',
+          ocrText: 'Alpha slide one.',
         },
       ],
+      sourceId: 'alpha',
+      sourceKind: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=abc123',
     };
-    await page.route("http://127.0.0.1:8787/v1/summarize/**/slides", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/**/slides', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ ok: true, slides: slidesPayload }),
+        headers: { 'content-type': 'application/json' },
+        status: 200,
       });
     });
 
     const slidesStreamBody = [
-      "event: slides",
+      'event: slides',
       `data: ${JSON.stringify(slidesPayload)}`,
-      "",
-      "event: done",
-      "data: {}",
-      "",
-    ].join("\n");
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/slides/events", async (route) => {
+      '',
+      'event: done',
+      'data: {}',
+      '',
+    ].join('\n');
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/slides/events', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
         body: slidesStreamBody,
+        headers: { 'content-type': 'text/event-stream' },
+        status: 200,
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/events', async (route) => {
       await route.fulfill({
+        body: ['event: done', 'data: {}', ''].join('\n'),
+        headers: { 'content-type': 'text/event-stream' },
         status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body: ["event: done", "data: {}", ""].join("\n"),
       });
     });
 
     const placeholderPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=",
-      "base64",
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',
+      'base64',
     );
-    await page.route("http://127.0.0.1:8787/v1/slides/**", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/slides/**', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: {
-          "content-type": "image/png",
-          "x-summarize-slide-ready": "1",
-        },
         body: placeholderPng,
+        headers: { 'content-type': 'image/png', 'x-summarize-slide-ready': '1' },
+        status: 200,
       });
     });
 
     const tabAState = buildUiState({
-      tab: { id: 1, url: "https://www.youtube.com/watch?v=abc123", title: "Alpha Video" },
-      media: { hasVideo: true, hasAudio: true, hasCaptions: true },
+      media: { hasAudio: true, hasCaptions: true, hasVideo: true },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      tab: { id: 1, title: 'Alpha Video', url: 'https://www.youtube.com/watch?v=abc123' },
     });
     const tabBState = buildUiState({
-      tab: { id: 2, url: "https://example.com", title: "Bravo Tab" },
-      media: { hasVideo: false, hasAudio: false, hasCaptions: false },
+      media: { hasAudio: false, hasCaptions: false, hasVideo: false },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      tab: { id: 2, title: 'Bravo Tab', url: 'https://example.com' },
     });
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
-    await sendBgMessage(harness, { type: "ui:state", state: tabBState });
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
+    await sendBgMessage(harness, { state: tabBState, type: 'ui:state' });
     await expect.poll(async () => (await getPanelSlideDescriptions(page)).length).toBe(0);
     await sendBgMessage(harness, {
-      type: "slides:run",
       ok: true,
-      runId: "slides-a",
-      url: "https://www.youtube.com/watch?v=abc123",
+      runId: 'slides-a',
+      type: 'slides:run',
+      url: 'https://www.youtube.com/watch?v=abc123',
     });
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
-    await expect(page.locator("#title")).toHaveText("Alpha Video");
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
+    await expect(page.locator('#title')).toHaveText('Alpha Video');
 
     await expect.poll(async () => (await getPanelSlideDescriptions(page)).length).toBe(1);
     const slides = await getPanelSlideDescriptions(page);
-    expect(slides[0]?.[1] ?? "").toContain("Alpha");
+    expect(slides[0]?.[1] ?? '').toContain('Alpha');
 
     assertNoErrors(harness);
   } finally {
@@ -145,92 +143,89 @@ test("sidepanel resumes slides when returning to a tab", async ({
   }
 });
 
-test("sidepanel replaces stale slides when rerunning the same video", async ({
+test('sidepanel replaces stale slides when rerunning the same video', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: false,
       slidesOcrEnabled: true,
+      slidesParallel: false,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
 
-    await page.route("http://127.0.0.1:8787/v1/summarize/**/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/**/events', async (route) => {
       const url = route.request().url();
-      if (url.includes("/slides/events")) {
+      if (url.includes('/slides/events')) {
         await route.fulfill({
+          body: ['event: done', 'data: {}', ''].join('\n'),
+          headers: { 'content-type': 'text/event-stream' },
           status: 200,
-          headers: { "content-type": "text/event-stream" },
-          body: ["event: done", "data: {}", ""].join("\n"),
         });
         return;
       }
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
         body: [
-          "event: chunk",
-          `data: ${JSON.stringify({ text: "Summary" })}`,
-          "",
-          "event: done",
-          "data: {}",
-          "",
-        ].join("\n"),
+          'event: chunk',
+          `data: ${JSON.stringify({ text: 'Summary' })}`,
+          '',
+          'event: done',
+          'data: {}',
+          '',
+        ].join('\n'),
+        headers: { 'content-type': 'text/event-stream' },
+        status: 200,
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/**/slides", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/**/slides', async (route) => {
       await route.fulfill({
+        body: JSON.stringify({ ok: false, error: 'not found' }),
+        headers: { 'content-type': 'application/json' },
         status: 200,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ok: false, error: "not found" }),
       });
     });
     const placeholderPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=",
-      "base64",
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',
+      'base64',
     );
-    await page.route("http://127.0.0.1:8787/v1/slides/**", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/slides/**', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: {
-          "content-type": "image/png",
-          "x-summarize-slide-ready": "1",
-        },
         body: placeholderPng,
+        headers: { 'content-type': 'image/png', 'x-summarize-slide-ready': '1' },
+        status: 200,
       });
     });
 
     const uiState = buildUiState({
-      tab: { id: 1, url: "https://www.youtube.com/watch?v=rerun123", title: "Rerun Video" },
-      media: { hasVideo: true, hasAudio: true, hasCaptions: true },
+      media: { hasAudio: true, hasCaptions: true, hasVideo: true },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: false,
         slidesOcrEnabled: true,
+        slidesParallel: false,
         tokenPresent: true,
       },
+      tab: { id: 1, title: 'Rerun Video', url: 'https://www.youtube.com/watch?v=rerun123' },
     });
-    await sendBgMessage(harness, { type: "ui:state", state: uiState });
+    await sendBgMessage(harness, { state: uiState, type: 'ui:state' });
 
     await sendBgMessage(harness, {
-      type: "run:start",
       run: {
-        id: "run-1",
-        url: "https://www.youtube.com/watch?v=rerun123",
-        title: "Rerun Video",
-        model: "auto",
-        reason: "manual",
+        id: 'run-1',
+        model: 'auto',
+        reason: 'manual',
+        title: 'Rerun Video',
+        url: 'https://www.youtube.com/watch?v=rerun123',
       },
+      type: 'run:start',
     });
-    await expect(page.locator("#render")).toContainText("Summary");
+    await expect(page.locator('#render')).toContainText('Summary');
 
     await page.evaluate(
       (payload) => {
@@ -242,45 +237,45 @@ test("sidepanel replaces stale slides when rerunning the same video", async ({
         hooks?.applySlidesPayload?.(payload);
       },
       {
-        sourceUrl: "https://www.youtube.com/watch?v=rerun123",
-        sourceId: "youtube-rerun",
-        sourceKind: "youtube",
         ocrAvailable: true,
         slides: [
           {
             index: 1,
             timestamp: 0,
-            imageUrl: "http://127.0.0.1:8787/v1/slides/youtube-rerun/1?v=1",
-            ocrText: "First run slide one.",
+            imageUrl: 'http://127.0.0.1:8787/v1/slides/youtube-rerun/1?v=1',
+            ocrText: 'First run slide one.',
           },
           {
             index: 2,
             timestamp: 20,
-            imageUrl: "http://127.0.0.1:8787/v1/slides/youtube-rerun/2?v=1",
-            ocrText: "First run slide two.",
+            imageUrl: 'http://127.0.0.1:8787/v1/slides/youtube-rerun/2?v=1',
+            ocrText: 'First run slide two.',
           },
           {
             index: 3,
             timestamp: 40,
-            imageUrl: "http://127.0.0.1:8787/v1/slides/youtube-rerun/3?v=1",
-            ocrText: "First run slide three.",
+            imageUrl: 'http://127.0.0.1:8787/v1/slides/youtube-rerun/3?v=1',
+            ocrText: 'First run slide three.',
           },
         ],
+        sourceId: 'youtube-rerun',
+        sourceKind: 'youtube',
+        sourceUrl: 'https://www.youtube.com/watch?v=rerun123',
       },
     );
     await expect.poll(async () => (await getPanelSlideDescriptions(page)).length).toBe(3);
 
     await sendBgMessage(harness, {
-      type: "run:start",
       run: {
-        id: "run-2",
-        url: "https://www.youtube.com/watch?v=rerun123",
-        title: "Rerun Video",
-        model: "auto",
-        reason: "manual",
+        id: 'run-2',
+        model: 'auto',
+        reason: 'manual',
+        title: 'Rerun Video',
+        url: 'https://www.youtube.com/watch?v=rerun123',
       },
+      type: 'run:start',
     });
-    await expect(page.locator("#render")).toContainText("Summary");
+    await expect(page.locator('#render')).toContainText('Summary');
 
     await page.evaluate(
       (payload) => {
@@ -292,25 +287,25 @@ test("sidepanel replaces stale slides when rerunning the same video", async ({
         hooks?.applySlidesPayload?.(payload);
       },
       {
-        sourceUrl: "https://www.youtube.com/watch?v=rerun123",
-        sourceId: "youtube-rerun",
-        sourceKind: "youtube",
         ocrAvailable: true,
         slides: [
           {
             index: 1,
             timestamp: 5,
-            imageUrl: "http://127.0.0.1:8787/v1/slides/youtube-rerun/1?v=2",
-            ocrText: "Second run only slide.",
+            imageUrl: 'http://127.0.0.1:8787/v1/slides/youtube-rerun/1?v=2',
+            ocrText: 'Second run only slide.',
           },
         ],
+        sourceId: 'youtube-rerun',
+        sourceKind: 'youtube',
+        sourceUrl: 'https://www.youtube.com/watch?v=rerun123',
       },
     );
 
     await expect.poll(async () => (await getPanelSlideDescriptions(page)).length).toBe(1);
     const slides = await getPanelSlideDescriptions(page);
-    expect(slides[0]?.[1] ?? "").toContain("Second run only slide");
-    expect(slides.some(([, text]) => text.includes("First run slide two"))).toBe(false);
+    expect(slides[0]?.[1] ?? '').toContain('Second run only slide');
+    expect(slides.some(([, text]) => text.includes('First run slide two'))).toBe(false);
 
     assertNoErrors(harness);
   } finally {
@@ -318,148 +313,145 @@ test("sidepanel replaces stale slides when rerunning the same video", async ({
   }
 });
 
-test("sidepanel starts pending slides after returning to a tab with seeded placeholders", async ({
+test('sidepanel starts pending slides after returning to a tab with seeded placeholders', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: true,
       slidesOcrEnabled: true,
+      slidesParallel: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
     await waitForApplySlidesHook(page);
 
-    const targetUrl = "https://www.youtube.com/watch?v=abc123";
+    const targetUrl = 'https://www.youtube.com/watch?v=abc123';
     const slidesPayload = buildSlidesPayload({
-      sourceUrl: targetUrl,
-      sourceId: "youtube-abc123",
       count: 1,
-      textPrefix: "Alpha",
+      sourceId: 'youtube-abc123',
+      sourceUrl: targetUrl,
+      textPrefix: 'Alpha',
     });
 
     const summaryBody = (text: string) =>
-      ["event: chunk", `data: ${JSON.stringify({ text })}`, "", "event: done", "data: {}", ""].join(
-        "\n",
+      ['event: chunk', `data: ${JSON.stringify({ text })}`, '', 'event: done', 'data: {}', ''].join(
+        '\n',
       );
 
-    await page.route("http://127.0.0.1:8787/v1/summarize/summary-a/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/summary-a/events', async (route) => {
       await route.fulfill({
+        body: summaryBody('Summary A'),
+        headers: { 'content-type': 'text/event-stream' },
         status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body: summaryBody("Summary A"),
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/events', async (route) => {
       await route.fulfill({
+        body: summaryBody('Slides summary A'),
+        headers: { 'content-type': 'text/event-stream' },
         status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body: summaryBody("Slides summary A"),
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/**/slides", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/**/slides', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ ok: true, slides: slidesPayload }),
+        headers: { 'content-type': 'application/json' },
+        status: 200,
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/slides/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/slides/events', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
         body: [
-          "event: slides",
+          'event: slides',
           `data: ${JSON.stringify(slidesPayload)}`,
-          "",
-          "event: done",
-          "data: {}",
-          "",
-        ].join("\n"),
+          '',
+          'event: done',
+          'data: {}',
+          '',
+        ].join('\n'),
+        headers: { 'content-type': 'text/event-stream' },
+        status: 200,
       });
     });
 
     const placeholderPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=",
-      "base64",
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',
+      'base64',
     );
-    await page.route("http://127.0.0.1:8787/v1/slides/**", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/slides/**', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: {
-          "content-type": "image/png",
-          "x-summarize-slide-ready": "1",
-        },
         body: placeholderPng,
+        headers: { 'content-type': 'image/png', 'x-summarize-slide-ready': '1' },
+        status: 200,
       });
     });
 
     const tabAState = buildUiState({
-      tab: { id: 1, url: targetUrl, title: "Alpha Video" },
-      media: { hasVideo: true, hasAudio: true, hasCaptions: true },
-      stats: { pageWords: 120, videoDurationSeconds: 120 },
+      media: { hasAudio: true, hasCaptions: true, hasVideo: true },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      stats: { pageWords: 120, videoDurationSeconds: 120 },
+      tab: { id: 1, title: 'Alpha Video', url: targetUrl },
     });
     const tabBState = buildUiState({
-      tab: { id: 2, url: "https://example.com", title: "Bravo Tab" },
-      media: { hasVideo: false, hasAudio: false, hasCaptions: false },
+      media: { hasAudio: false, hasCaptions: false, hasVideo: false },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      tab: { id: 2, title: 'Bravo Tab', url: 'https://example.com' },
     });
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
-    await expect(page.locator("#title")).toHaveText("Alpha Video");
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
+    await expect(page.locator('#title')).toHaveText('Alpha Video');
     await sendBgMessage(harness, {
-      type: "run:start",
       run: {
-        id: "summary-a",
+        id: 'summary-a',
+        model: 'auto',
+        reason: 'manual',
+        title: 'Alpha Video',
         url: targetUrl,
-        title: "Alpha Video",
-        model: "auto",
-        reason: "manual",
       },
+      type: 'run:start',
     });
     await expect
       .poll(async () => (await getPanelSlidesTimeline(page)).length, { timeout: 10_000 })
       .toBeGreaterThan(1);
 
-    await sendBgMessage(harness, { type: "ui:state", state: tabBState });
-    await expect(page.locator("#title")).toHaveText("Bravo Tab");
+    await sendBgMessage(harness, { state: tabBState, type: 'ui:state' });
+    await expect(page.locator('#title')).toHaveText('Bravo Tab');
     const waitForSlidesEvents = page.waitForResponse(
       (response) =>
-        response.url().includes("/v1/summarize/slides-a/slides/events") &&
+        response.url().includes('/v1/summarize/slides-a/slides/events') &&
         response.status() === 200,
       { timeout: 10_000 },
     );
     await sendBgMessage(harness, {
-      type: "slides:run",
       ok: true,
-      runId: "slides-a",
+      runId: 'slides-a',
+      type: 'slides:run',
       url: targetUrl,
     });
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
-    await expect(page.locator("#title")).toHaveText("Alpha Video");
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
+    await expect(page.locator('#title')).toHaveText('Alpha Video');
     await waitForSlidesEvents;
 
     await expect.poll(async () => (await getPanelSlidesTimeline(page)).length).toBe(1);
     const slides = await getPanelSlideDescriptions(page);
-    expect(slides.some(([, text]) => text.includes("Alpha"))).toBe(true);
+    expect(slides.some(([, text]) => text.includes('Alpha'))).toBe(true);
 
     assertNoErrors(harness);
   } finally {

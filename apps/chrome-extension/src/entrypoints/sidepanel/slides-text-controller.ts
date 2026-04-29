@@ -1,20 +1,20 @@
-import type { SseSlidesData } from "../../lib/runtime-contracts";
-import { parseTranscriptTimedText } from "../../lib/slides-text";
+import type { SseSlidesData } from '../../lib/runtime-contracts';
+import { parseTranscriptTimedText } from '../../lib/slides-text';
 import {
   buildSlideDescriptions,
   deriveSlideSummaries,
   resolveSlidesTextState,
   type SlideTextMode,
-} from "./slides-state";
+} from './slides-state';
 
-type SlideSummarySource = "summary" | "slides" | null;
+type SlideSummarySource = 'summary' | 'slides' | null;
 
 export function createSlidesTextController(options: {
-  getSlides: () => SseSlidesData["slides"] | null | undefined;
+  getSlides: () => SseSlidesData['slides'] | null | undefined;
   getLengthValue: () => string;
   getSlidesOcrEnabled: () => boolean;
 }) {
-  let slidesTextMode: SlideTextMode = "transcript";
+  let slidesTextMode: SlideTextMode = 'transcript';
   let slidesTextToggleVisible = false;
   let slidesTranscriptTimedText: string | null = null;
   let slidesTranscriptAvailable = false;
@@ -29,22 +29,36 @@ export function createSlidesTextController(options: {
   const rebuildDescriptions = () => {
     slideDescriptions = new Map();
     const slides = getSlides();
-    if (slides.length === 0) return;
+    if (slides.length === 0) {return;}
     slideDescriptions = buildSlideDescriptions({
-      slides,
-      slideSummaries: slideSummaryByIndex,
-      transcriptTimedText: slidesTranscriptTimedText,
       lengthValue: options.getLengthValue(),
-      slidesTextMode,
-      slidesOcrEnabled: options.getSlidesOcrEnabled(),
+      slideSummaries: slideSummaryByIndex,
+      slides,
       slidesOcrAvailable,
+      slidesOcrEnabled: options.getSlidesOcrEnabled(),
+      slidesTextMode,
       slidesTranscriptAvailable,
+      transcriptTimedText: slidesTranscriptTimedText,
     });
   };
 
   return {
+    clearSummarySource() {
+      slideSummarySource = null;
+    },
+    getDescriptionEntries: () => Array.from(slideDescriptions.entries()),
+    getDescriptions: () => slideDescriptions,
+    getOcrAvailable: () => slidesOcrAvailable,
+    getSummaryEntries: () => Array.from(slideSummaryByIndex.entries()),
+    getTextMode: () => slidesTextMode,
+    getTextToggleVisible: () => slidesTextToggleVisible,
+    getTitles: () => slideTitleByIndex,
+    getTranscriptAvailable: () => slidesTranscriptAvailable,
+    getTranscriptTimedText: () => slidesTranscriptTimedText,
+    hasSummaryTitles: () => slideTitleByIndex.size > 0,
+    rebuildDescriptions,
     reset() {
-      slidesTextMode = "transcript";
+      slidesTextMode = 'transcript';
       slidesTextToggleVisible = false;
       slidesTranscriptTimedText = null;
       slidesTranscriptAvailable = false;
@@ -54,10 +68,13 @@ export function createSlidesTextController(options: {
       slideTitleByIndex = new Map();
       slideSummarySource = null;
     },
-    clearSummarySource() {
-      slideSummarySource = null;
+    setTextMode(next: SlideTextMode) {
+      if (next === slidesTextMode) return false;
+      if (next === 'ocr' && !slidesOcrAvailable) return false;
+      slidesTextMode = next;
+      rebuildDescriptions();
+      return true;
     },
-    rebuildDescriptions,
     setTranscriptTimedText(value: string | null) {
       slidesTranscriptTimedText = value ?? null;
       slidesTranscriptAvailable = parseTranscriptTimedText(slidesTranscriptTimedText).length > 0;
@@ -74,19 +91,12 @@ export function createSlidesTextController(options: {
       slidesTextMode = nextState.slidesTextMode;
       rebuildDescriptions();
     },
-    setTextMode(next: SlideTextMode) {
-      if (next === slidesTextMode) return false;
-      if (next === "ocr" && !slidesOcrAvailable) return false;
-      slidesTextMode = next;
-      rebuildDescriptions();
-      return true;
-    },
     updateSummaryFromMarkdown(
       markdown: string,
       opts?: { preserveIfEmpty?: boolean; source?: Exclude<SlideSummarySource, null> },
     ) {
-      const source = opts?.source ?? "summary";
-      if (source === "summary" && slideSummarySource === "slides") return false;
+      const source = opts?.source ?? 'summary';
+      if (source === 'summary' && slideSummarySource === 'slides') return false;
       const derived = deriveSlideSummaries({
         markdown,
         slides: getSlides(),
@@ -97,10 +107,10 @@ export function createSlidesTextController(options: {
         if (opts?.preserveIfEmpty) return false;
         slideSummaryByIndex = new Map();
         slideTitleByIndex = new Map();
-        if (source === "slides") {
+        if (source === 'slides') {
           slideSummarySource = null;
         } else if (!slideSummarySource) {
-          slideSummarySource = "summary";
+          slideSummarySource = 'summary';
         }
         rebuildDescriptions();
         return true;
@@ -111,15 +121,5 @@ export function createSlidesTextController(options: {
       rebuildDescriptions();
       return true;
     },
-    getTextMode: () => slidesTextMode,
-    getTextToggleVisible: () => slidesTextToggleVisible,
-    getTranscriptTimedText: () => slidesTranscriptTimedText,
-    getTranscriptAvailable: () => slidesTranscriptAvailable,
-    getOcrAvailable: () => slidesOcrAvailable,
-    getDescriptions: () => slideDescriptions,
-    getDescriptionEntries: () => Array.from(slideDescriptions.entries()),
-    getSummaryEntries: () => Array.from(slideSummaryByIndex.entries()),
-    getTitles: () => slideTitleByIndex,
-    hasSummaryTitles: () => slideTitleByIndex.size > 0,
   };
 }

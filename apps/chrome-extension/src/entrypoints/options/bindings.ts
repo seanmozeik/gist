@@ -1,8 +1,8 @@
-import type { createLogsViewer } from "./logs-viewer";
-import type { createModelPresetsController } from "./model-presets";
-import type { createProcessesViewer } from "./processes-viewer";
+import type { createLogsViewer } from './logs-viewer';
+import type { createModelPresetsController } from './model-presets';
+import type { createProcessesViewer } from './processes-viewer';
 
-type OptionsBindingsArgs = {
+interface OptionsBindingsArgs {
   elements: {
     formEl: HTMLFormElement;
     tokenEl: HTMLInputElement;
@@ -42,7 +42,7 @@ type OptionsBindingsArgs = {
   copyToken: () => Promise<void>;
   refreshModelsIfStale: () => void;
   defaultHoverPrompt: string;
-};
+}
 
 export function bindOptionsInputs({
   elements,
@@ -58,7 +58,7 @@ export function bindOptionsInputs({
 }: OptionsBindingsArgs) {
   let refreshTimer = 0;
 
-  elements.tokenEl.addEventListener("input", () => {
+  elements.tokenEl.addEventListener('input', () => {
     window.clearTimeout(refreshTimer);
     refreshTimer = window.setTimeout(() => {
       void modelPresets.refreshPresets(elements.tokenEl.value);
@@ -69,29 +69,29 @@ export function bindOptionsInputs({
     scheduleAutoSave(600);
   });
 
-  elements.tokenCopyBtn.addEventListener("click", () => {
+  elements.tokenCopyBtn.addEventListener('click', () => {
     void copyToken();
   });
 
-  elements.modelPresetEl.addEventListener("focus", refreshModelsIfStale);
-  elements.modelPresetEl.addEventListener("pointerdown", refreshModelsIfStale);
-  elements.modelCustomEl.addEventListener("focus", refreshModelsIfStale);
-  elements.modelCustomEl.addEventListener("pointerdown", refreshModelsIfStale);
+  elements.modelPresetEl.addEventListener('focus', refreshModelsIfStale);
+  elements.modelPresetEl.addEventListener('pointerdown', refreshModelsIfStale);
+  elements.modelCustomEl.addEventListener('focus', refreshModelsIfStale);
+  elements.modelCustomEl.addEventListener('pointerdown', refreshModelsIfStale);
 
-  elements.languagePresetEl.addEventListener("change", () => {
-    elements.languageCustomEl.hidden = elements.languagePresetEl.value !== "custom";
-    if (!elements.languageCustomEl.hidden) elements.languageCustomEl.focus();
+  elements.languagePresetEl.addEventListener('change', () => {
+    elements.languageCustomEl.hidden = elements.languagePresetEl.value !== 'custom';
+    if (!elements.languageCustomEl.hidden) {elements.languageCustomEl.focus();}
     scheduleAutoSave(200);
   });
 
-  elements.hoverPromptResetBtn.addEventListener("click", () => {
+  elements.hoverPromptResetBtn.addEventListener('click', () => {
     elements.hoverPromptEl.value = defaultHoverPrompt;
     scheduleAutoSave(200);
   });
 
-  elements.modelPresetEl.addEventListener("change", () => {
-    elements.modelCustomEl.hidden = elements.modelPresetEl.value !== "custom";
-    if (!elements.modelCustomEl.hidden) elements.modelCustomEl.focus();
+  elements.modelPresetEl.addEventListener('change', () => {
+    elements.modelCustomEl.hidden = elements.modelPresetEl.value !== 'custom';
+    if (!elements.modelCustomEl.hidden) {elements.modelCustomEl.focus();}
     scheduleAutoSave(200);
   });
 
@@ -101,12 +101,12 @@ export function bindOptionsInputs({
     elements.promptOverrideEl,
     elements.hoverPromptEl,
   ]) {
-    input.addEventListener("input", () => {
+    input.addEventListener('input', () => {
       scheduleAutoSave(600);
     });
   }
 
-  elements.maxCharsEl.addEventListener("input", () => {
+  elements.maxCharsEl.addEventListener('input', () => {
     scheduleAutoSave(400);
   });
 
@@ -118,7 +118,7 @@ export function bindOptionsInputs({
     elements.youtubeModeEl,
     elements.transcriberEl,
   ]) {
-    select.addEventListener("change", () => {
+    select.addEventListener('change', () => {
       scheduleAutoSave(200);
     });
   }
@@ -131,7 +131,7 @@ export function bindOptionsInputs({
     elements.fontFamilyEl,
     elements.fontSizeEl,
   ]) {
-    input.addEventListener("input", () => {
+    input.addEventListener('input', () => {
       scheduleAutoSave(
         input === elements.timeoutEl
           ? 400
@@ -147,25 +147,25 @@ export function bindOptionsInputs({
     });
   }
 
-  elements.logsSourceEl.addEventListener("change", () => {
+  elements.logsSourceEl.addEventListener('change', () => {
     void logsViewer.refresh();
   });
 
-  elements.logsTailEl.addEventListener("change", () => {
+  elements.logsTailEl.addEventListener('change', () => {
     void logsViewer.refresh();
   });
 
-  elements.logsParsedEl.addEventListener("change", () => {
+  elements.logsParsedEl.addEventListener('change', () => {
     logsViewer.render();
   });
 
   for (const input of elements.logsLevelInputs) {
-    input.addEventListener("change", () => {
+    input.addEventListener('change', () => {
       logsViewer.render();
     });
   }
 
-  elements.logsAutoEl.addEventListener("change", () => {
+  elements.logsAutoEl.addEventListener('change', () => {
     if (elements.logsAutoEl.checked) {
       logsViewer.startAuto();
       void logsViewer.refresh();
@@ -174,11 +174,11 @@ export function bindOptionsInputs({
     }
   });
 
-  window.addEventListener("beforeunload", () => {
+  window.addEventListener('beforeunload', () => {
     logsViewer.stopAuto();
   });
 
-  elements.formEl.addEventListener("submit", (event) => {
+  elements.formEl.addEventListener('submit', (event) => {
     event.preventDefault();
     void saveNow();
   });

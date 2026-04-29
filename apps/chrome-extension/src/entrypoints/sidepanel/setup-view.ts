@@ -1,6 +1,6 @@
-import type { Settings } from "../../lib/settings";
+import type { Settings } from '../../lib/settings';
 
-type PlatformKind = "mac" | "windows" | "linux" | "other";
+type PlatformKind = 'mac' | 'windows' | 'linux' | 'other';
 
 export function installStepsHtml({
   token,
@@ -15,20 +15,20 @@ export function installStepsHtml({
   platformKind: PlatformKind;
   showTroubleshooting?: boolean;
 }) {
-  const npmCmd = "npm i -g @steipete/summarize";
-  const brewCmd = "brew install summarize";
+  const npmCmd = 'npm i -g @steipete/summarize';
+  const brewCmd = 'brew install summarize';
   const daemonCmd = `summarize daemon install --token ${token}`;
-  const isMac = platformKind === "mac";
-  const isLinux = platformKind === "linux";
-  const isWindows = platformKind === "windows";
+  const isMac = platformKind === 'mac';
+  const isLinux = platformKind === 'linux';
+  const isWindows = platformKind === 'windows';
   const isSupported = isMac || isLinux || isWindows;
   const daemonLabel = isMac
-    ? "LaunchAgent"
+    ? 'LaunchAgent'
     : isLinux
-      ? "systemd user service"
+      ? 'systemd user service'
       : isWindows
-        ? "Scheduled Task"
-        : "daemon";
+        ? 'Scheduled Task'
+        : 'daemon';
 
   const installToggle = isMac
     ? `
@@ -37,7 +37,7 @@ export function installStepsHtml({
         <button class="setup__pill" type="button" data-install="brew" role="tab" aria-selected="false">Homebrew</button>
       </div>
     `
-    : "";
+    : '';
 
   const installIntro = `
     <div class="setup__section">
@@ -55,8 +55,8 @@ export function installStepsHtml({
       </div>
       <p class="setup__hint" data-install-hint>${
         isMac
-          ? "Homebrew installs summarize plus the local media dependencies."
-          : "NPM installs the CLI (requires Node.js)."
+          ? 'Homebrew installs summarize plus the local media dependencies.'
+          : 'NPM installs the CLI (requires Node.js).'
       }</p>
     </div>
   `;
@@ -107,11 +107,11 @@ export function installStepsHtml({
         <p class="setup__hint">Restarts the daemon if it’s stuck or not responding.</p>
       </div>
     `
-      : "";
+      : '';
 
   return `
     <h2>${headline}</h2>
-    ${message ? `<p>${message}</p>` : ""}
+    ${message ? `<p>${message}</p>` : ''}
     ${installIntro}
     ${daemonIntro}
     <div class="setup__section setup__actions">
@@ -140,65 +140,65 @@ export function wireSetupButtons({
   generateToken: () => string;
   renderSetup: (token: string) => void;
 }) {
-  const npmCmd = "npm i -g @steipete/summarize";
-  const brewCmd = "brew install summarize";
+  const npmCmd = 'npm i -g @steipete/summarize';
+  const brewCmd = 'brew install summarize';
   const daemonCmd = `summarize daemon install --token ${token}`;
-  const isMac = platformKind === "mac";
-  const installMethodKey = "summarize.installMethod";
-  type InstallMethod = "npm" | "brew";
+  const isMac = platformKind === 'mac';
+  const installMethodKey = 'summarize.installMethod';
+  type InstallMethod = 'npm' | 'brew';
 
   const resolveInstallMethod = (): InstallMethod => {
-    if (!isMac) return "npm";
+    if (!isMac) {return 'npm';}
     try {
       const stored = localStorage.getItem(installMethodKey);
-      if (stored === "npm" || stored === "brew") return stored;
+      if (stored === 'npm' || stored === 'brew') {return stored;}
     } catch {
-      // ignore
+      // Ignore
     }
-    return "brew";
+    return 'brew';
   };
 
   const persistInstallMethod = (method: InstallMethod) => {
-    if (!isMac) return;
+    if (!isMac) {return;}
     try {
       localStorage.setItem(installMethodKey, method);
     } catch {
-      // ignore
+      // Ignore
     }
   };
 
   const flashCopied = () => {
-    headerSetStatus("Copied");
+    headerSetStatus('Copied');
     setTimeout(() => headerSetStatus(getStatusResetText()), 800);
   };
 
-  const installTitleEl = setupEl.querySelector<HTMLElement>("[data-install-title]");
-  const installCodeEl = setupEl.querySelector<HTMLElement>("[data-install-code]");
-  const installHintEl = setupEl.querySelector<HTMLElement>("[data-install-hint]");
-  const installButtons = Array.from(setupEl.querySelectorAll<HTMLButtonElement>("[data-install]"));
+  const installTitleEl = setupEl.querySelector<HTMLElement>('[data-install-title]');
+  const installCodeEl = setupEl.querySelector<HTMLElement>('[data-install-code]');
+  const installHintEl = setupEl.querySelector<HTMLElement>('[data-install-hint]');
+  const installButtons = [...setupEl.querySelectorAll<HTMLButtonElement>('[data-install]')];
 
   const applyInstallMethod = (method: InstallMethod) => {
-    const label = method === "brew" ? "Homebrew" : "NPM";
+    const label = method === 'brew' ? 'Homebrew' : 'NPM';
     if (installTitleEl) {
       installTitleEl.innerHTML = `<strong>1) Install summarize (${label})</strong>`;
     }
     if (installCodeEl) {
-      installCodeEl.textContent = method === "brew" ? brewCmd : npmCmd;
+      installCodeEl.textContent = method === 'brew' ? brewCmd : npmCmd;
     }
     if (installHintEl) {
       if (!isMac) {
-        installHintEl.textContent = "NPM installs the CLI (requires Node.js).";
-      } else if (method === "brew") {
+        installHintEl.textContent = 'NPM installs the CLI (requires Node.js).';
+      } else if (method === 'brew') {
         installHintEl.textContent =
-          "Homebrew installs summarize plus the local media dependencies.";
+          'Homebrew installs summarize plus the local media dependencies.';
       } else {
-        installHintEl.textContent = "NPM installs the CLI (requires Node.js).";
+        installHintEl.textContent = 'NPM installs the CLI (requires Node.js).';
       }
     }
     for (const button of installButtons) {
       const isActive = button.dataset.install === method;
-      button.classList.toggle("isActive", isActive);
-      button.setAttribute("aria-selected", isActive ? "true" : "false");
+      button.classList.toggle('isActive', isActive);
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
     }
     persistInstallMethod(method);
   };
@@ -206,36 +206,36 @@ export function wireSetupButtons({
   applyInstallMethod(resolveInstallMethod());
 
   for (const button of installButtons) {
-    button.addEventListener("click", () => {
-      applyInstallMethod(button.dataset.install === "brew" ? "brew" : "npm");
+    button.addEventListener('click', () => {
+      applyInstallMethod(button.dataset.install === 'brew' ? 'brew' : 'npm');
     });
   }
 
-  setupEl.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((button) => {
-    button.addEventListener("click", () => {
+  setupEl.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => {
+    button.addEventListener('click', () => {
       void (async () => {
         const copyType = button.dataset.copy;
         const installMethod = resolveInstallMethod();
         const payload =
-          copyType === "install"
-            ? installMethod === "brew"
+          copyType === 'install'
+            ? (installMethod === 'brew'
               ? brewCmd
-              : npmCmd
-            : copyType === "daemon"
+              : npmCmd)
+            : copyType === 'daemon'
               ? daemonCmd
-              : copyType === "status"
-                ? "summarize daemon status"
-                : copyType === "restart"
-                  ? "summarize daemon restart"
-                  : "";
-        if (!payload) return;
+              : copyType === 'status'
+                ? 'summarize daemon status'
+                : copyType === 'restart'
+                  ? 'summarize daemon restart'
+                  : '';
+        if (!payload) {return;}
         await navigator.clipboard.writeText(payload);
         flashCopied();
       })();
     });
   });
 
-  setupEl.querySelector<HTMLButtonElement>("#regen")?.addEventListener("click", () => {
+  setupEl.querySelector<HTMLButtonElement>('#regen')?.addEventListener('click', () => {
     void (async () => {
       const nextToken = generateToken();
       await patchSettings({ token: nextToken });

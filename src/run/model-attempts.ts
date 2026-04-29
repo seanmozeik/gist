@@ -1,4 +1,4 @@
-import type { ModelAttempt, ModelAttemptRequiredEnv } from "./types.js";
+import type { ModelAttempt, ModelAttemptRequiredEnv } from './types.js';
 
 export async function runModelAttempts<T>({
   attempts,
@@ -72,5 +72,5 @@ export async function runModelAttempts<T>({
     }
   }
 
-  return { result, usedAttempt, missingRequiredEnvs, lastError, sawOpenRouterNoAllowedProviders };
+  return { lastError, missingRequiredEnvs, result, sawOpenRouterNoAllowedProviders, usedAttempt };
 }

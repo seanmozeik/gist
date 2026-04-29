@@ -1,9 +1,9 @@
-import { readPresetOrCustomValue } from "../../lib/combo";
-import { parseSseEvent } from "../../lib/runtime-contracts";
-import type { Settings } from "../../lib/settings";
-import { parseSseStream } from "../../lib/sse";
+import { readPresetOrCustomValue } from '../../lib/combo';
+import { parseSseEvent } from '../../lib/runtime-contracts';
+import type { Settings } from '../../lib/settings';
+import { parseSseStream } from '../../lib/sse';
 
-type StatusState = "idle" | "running" | "error" | "ok";
+type StatusState = 'idle' | 'running' | 'error' | 'ok';
 
 export function createModelPresetsController({
   modelPresetEl,
@@ -12,7 +12,7 @@ export function createModelPresetsController({
   modelStatusEl,
   modelRowEl,
   defaultModel,
-  defaultPlaceholder = "auto",
+  defaultPlaceholder = 'auto',
   loadSettings,
   friendlyFetchError,
 }: {
@@ -29,24 +29,24 @@ export function createModelPresetsController({
   let refreshAt = 0;
   let refreshFreeRunning = false;
 
-  const setStatus = (text: string, state: StatusState = "idle") => {
+  const setStatus = (text: string, state: StatusState = 'idle') => {
     modelStatusEl.textContent = text;
-    if (state === "idle") {
-      modelStatusEl.removeAttribute("data-state");
+    if (state === 'idle') {
+      delete modelStatusEl.dataset.state;
     } else {
-      modelStatusEl.setAttribute("data-state", state);
+      modelStatusEl.dataset.state = state;
     }
   };
 
   const setDefaultPresets = () => {
-    modelPresetEl.innerHTML = "";
+    modelPresetEl.innerHTML = '';
     for (const { value, label } of [
-      { value: "auto", label: "Auto" },
-      { value: "gpt-fast", label: "GPT Fast" },
-      { value: "free", label: "Free" },
-      { value: "custom", label: "Custom…" },
+      { label: 'Auto', value: 'auto' },
+      { label: 'GPT Fast', value: 'gpt-fast' },
+      { label: 'Free', value: 'free' },
+      { label: 'Custom…', value: 'custom' },
     ]) {
-      const option = document.createElement("option");
+      const option = document.createElement('option');
       option.value = value;
       option.textContent = label;
       modelPresetEl.append(option);
@@ -57,64 +57,64 @@ export function createModelPresetsController({
     providers?: unknown;
     localModelsSource?: unknown;
   }) => {
-    const hints: string[] = ["auto", "gpt-fast"];
-    const providers = discovery.providers;
-    if (providers && typeof providers === "object") {
+    const hints: string[] = ['auto', 'gpt-fast'];
+    const {providers} = discovery;
+    if (providers && typeof providers === 'object') {
       const record = providers as Record<string, unknown>;
-      if (record.openrouter === true) hints.push("free");
-      if (record.openai === true) hints.push("openai/…");
-      if (record.anthropic === true) hints.push("anthropic/…");
-      if (record.google === true) hints.push("google/…");
-      if (record.xai === true) hints.push("xai/…");
-      if (record.zai === true) hints.push("zai/…");
+      if (record.openrouter === true) {hints.push('free');}
+      if (record.openai === true) {hints.push('openai/…');}
+      if (record.anthropic === true) {hints.push('anthropic/…');}
+      if (record.google === true) {hints.push('google/…');}
+      if (record.xai === true) {hints.push('xai/…');}
+      if (record.zai === true) {hints.push('zai/…');}
     }
-    if (discovery.localModelsSource && typeof discovery.localModelsSource === "object") {
-      hints.push("local: openai/<id>");
+    if (discovery.localModelsSource && typeof discovery.localModelsSource === 'object') {
+      hints.push('local: openai/<id>');
     }
-    modelCustomEl.placeholder = hints.join(" / ") || defaultPlaceholder;
+    modelCustomEl.placeholder = hints.join(' / ') || defaultPlaceholder;
   };
 
   const readCurrentValue = () =>
     readPresetOrCustomValue({
-      presetValue: modelPresetEl.value,
       customValue: modelCustomEl.value,
       defaultValue: defaultModel,
+      presetValue: modelPresetEl.value,
     });
 
   const updateRowUI = () => {
-    const isCustom = modelPresetEl.value === "custom";
+    const isCustom = modelPresetEl.value === 'custom';
     modelCustomEl.hidden = !isCustom;
-    modelRowEl.classList.toggle("isCustom", isCustom);
-    modelRefreshBtn.hidden = modelPresetEl.value !== "free";
+    modelRowEl.classList.toggle('isCustom', isCustom);
+    modelRefreshBtn.hidden = modelPresetEl.value !== 'free';
   };
 
   const setValue = (value: string) => {
     const next = value.trim() || defaultModel;
-    const optionValues = new Set(Array.from(modelPresetEl.options).map((option) => option.value));
-    if (optionValues.has(next) && next !== "custom") {
+    const optionValues = new Set([...modelPresetEl.options].map((option) => option.value));
+    if (optionValues.has(next) && next !== 'custom') {
       modelPresetEl.value = next;
       updateRowUI();
       return;
     }
-    modelPresetEl.value = "custom";
+    modelPresetEl.value = 'custom';
     updateRowUI();
     modelCustomEl.value = next;
   };
 
   const captureSelection = () => ({
-    presetValue: modelPresetEl.value,
     customValue: modelCustomEl.value,
+    presetValue: modelPresetEl.value,
   });
 
   const restoreSelection = (selection: { presetValue: string; customValue: string }) => {
-    if (selection.presetValue === "custom") {
-      modelPresetEl.value = "custom";
+    if (selection.presetValue === 'custom') {
+      modelPresetEl.value = 'custom';
       updateRowUI();
       modelCustomEl.value = selection.customValue;
       return;
     }
-    const optionValues = new Set(Array.from(modelPresetEl.options).map((option) => option.value));
-    if (optionValues.has(selection.presetValue) && selection.presetValue !== "custom") {
+    const optionValues = new Set([...modelPresetEl.options].map((option) => option.value));
+    if (optionValues.has(selection.presetValue) && selection.presetValue !== 'custom') {
       modelPresetEl.value = selection.presetValue;
       updateRowUI();
       return;
@@ -132,7 +132,7 @@ export function createModelPresetsController({
       return;
     }
     try {
-      const response = await fetch("http://127.0.0.1:8787/v1/models", {
+      const response = await fetch('http://127.0.0.1:8787/v1/models', {
         headers: { Authorization: `Bearer ${trimmed}` },
       });
       if (!response.ok) {
@@ -141,25 +141,25 @@ export function createModelPresetsController({
         return;
       }
       const json = (await response.json()) as unknown;
-      if (!json || typeof json !== "object") return;
+      if (!json || typeof json !== 'object') {return;}
       const record = json as Record<string, unknown>;
-      if (record.ok !== true) return;
+      if (record.ok !== true) {return;}
 
       setPlaceholderFromDiscovery({
-        providers: record.providers,
         localModelsSource: record.localModelsSource,
+        providers: record.providers,
       });
 
       const optionsRaw = record.options;
-      if (!Array.isArray(optionsRaw)) return;
+      if (!Array.isArray(optionsRaw)) {return;}
 
       const options = optionsRaw
         .map((item) => {
-          if (!item || typeof item !== "object") return null;
+          if (!item || typeof item !== 'object') {return null;}
           const option = item as { id?: unknown; label?: unknown };
-          const id = typeof option.id === "string" ? option.id.trim() : "";
-          const label = typeof option.label === "string" ? option.label.trim() : "";
-          if (!id) return null;
+          const id = typeof option.id === 'string' ? option.id.trim() : '';
+          const label = typeof option.label === 'string' ? option.label.trim() : '';
+          if (!id) {return null;}
           return { id, label };
         })
         .filter((item): item is { id: string; label: string } => item !== null);
@@ -171,51 +171,48 @@ export function createModelPresetsController({
       }
 
       setDefaultPresets();
-      const seen = new Set(Array.from(modelPresetEl.options).map((option) => option.value));
+      const seen = new Set([...modelPresetEl.options].map((option) => option.value));
       for (const option of options) {
-        if (seen.has(option.id)) continue;
+        if (seen.has(option.id)) {continue;}
         seen.add(option.id);
-        const el = document.createElement("option");
+        const el = document.createElement('option');
         el.value = option.id;
         el.textContent = option.label ? `${option.id} — ${option.label}` : option.id;
         modelPresetEl.append(el);
       }
       restoreSelection(selection);
     } catch {
-      // ignore
+      // Ignore
     }
   };
 
   const refreshIfStale = () => {
     const now = Date.now();
-    if (now - refreshAt < 1500) return;
+    if (now - refreshAt < 1500) {return;}
     refreshAt = now;
     void (async () => {
-      const token = (await loadSettings()).token;
+      const {token} = (await loadSettings());
       await refreshPresets(token);
     })();
   };
 
   const runRefreshFree = async () => {
-    if (refreshFreeRunning) return;
+    if (refreshFreeRunning) {return;}
     const token = (await loadSettings()).token.trim();
     if (!token) {
-      setStatus("Setup required (missing token).", "error");
+      setStatus('Setup required (missing token).', 'error');
       return;
     }
     refreshFreeRunning = true;
     modelRefreshBtn.disabled = true;
-    setStatus("Starting scan…", "running");
+    setStatus('Starting scan…', 'running');
     let winnerModel: string | null = null;
 
     try {
-      const response = await fetch("http://127.0.0.1:8787/v1/refresh-free", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-        },
+      const response = await fetch('http://127.0.0.1:8787/v1/refresh-free', {
         body: JSON.stringify({}),
+        headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        method: 'POST',
       });
       const json = (await response.json()) as { ok?: boolean; id?: string; error?: string };
       if (!response.ok || !json.ok || !json.id) {
@@ -227,33 +224,33 @@ export function createModelPresetsController({
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (!streamResponse.ok)
-        throw new Error(`${streamResponse.status} ${streamResponse.statusText}`);
-      if (!streamResponse.body) throw new Error("Missing stream body");
+        {throw new Error(`${streamResponse.status} ${streamResponse.statusText}`);}
+      if (!streamResponse.body) {throw new Error('Missing stream body');}
 
       for await (const raw of parseSseStream(streamResponse.body)) {
         const event = parseSseEvent(raw);
-        if (!event) continue;
-        if (event.event === "status") {
+        if (!event) {continue;}
+        if (event.event === 'status') {
           const text = event.data.text.trim();
           if (text) {
             if (!winnerModel) {
               const match = text.match(/^-\s+([^\s]+)/);
-              if (match?.[1]) winnerModel = match[1];
+              if (match?.[1]) {winnerModel = match[1];}
             }
-            setStatus(text, "running");
+            setStatus(text, 'running');
           }
-        } else if (event.event === "error") {
+        } else if (event.event === 'error') {
           throw new Error(event.data.message);
-        } else if (event.event === "done") {
+        } else if (event.event === 'done') {
           break;
         }
       }
 
-      const winnerNote = winnerModel ? ` Top: ${winnerModel}` : "";
-      setStatus(`Free models updated.${winnerNote}`, "ok");
+      const winnerNote = winnerModel ? ` Top: ${winnerModel}` : '';
+      setStatus(`Free models updated.${winnerNote}`, 'ok');
       await refreshPresets(token);
     } catch (error) {
-      setStatus(friendlyFetchError(error, "Refresh free failed"), "error");
+      setStatus(friendlyFetchError(error, 'Refresh free failed'), 'error');
     } finally {
       refreshFreeRunning = false;
       modelRefreshBtn.disabled = false;

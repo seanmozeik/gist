@@ -1,13 +1,14 @@
-import type { Message } from "@mariozechner/pi-ai";
-import type { RunStart, UiState } from "../../lib/panel-contracts";
-import type { SseSlidesData } from "../../lib/runtime-contracts";
-export type { RunStart, UiState } from "../../lib/panel-contracts";
+import type { Message } from '@mariozechner/pi-ai';
 
-export type PanelPhase = "idle" | "setup" | "connecting" | "streaming" | "error";
+import type { RunStart, UiState } from '../../lib/panel-contracts';
+import type { SseSlidesData } from '../../lib/runtime-contracts';
+export type { RunStart, UiState } from '../../lib/panel-contracts';
+
+export type PanelPhase = 'idle' | 'setup' | 'connecting' | 'streaming' | 'error';
 
 export type ChatMessage = Message & { id: string };
 
-export type PanelState = {
+export interface PanelState {
   ui: UiState | null;
   runId: string | null;
   slidesRunId: string | null;
@@ -19,4 +20,4 @@ export type PanelState = {
   phase: PanelPhase;
   error: string | null;
   chatStreaming: boolean;
-};
+}

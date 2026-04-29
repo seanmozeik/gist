@@ -1,75 +1,74 @@
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import type { AssistantMessage, Tool } from "@mariozechner/pi-ai";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { completeAgentResponse } from "../src/daemon/agent.js";
-import { runCliModel } from "../src/llm/cli.js";
-import * as modelAuto from "../src/model-auto.js";
+import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import type { AssistantMessage, Tool } from '@mariozechner/pi-ai';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { completeAgentResponse } from '../src/daemon/agent.js';
+import { runCliModel } from '../src/llm/cli.js';
+import * as modelAuto from '../src/model-auto.js';
 
 const { mockCompleteSimple, mockGetModel } = vi.hoisted(() => ({
   mockCompleteSimple: vi.fn(),
   mockGetModel: vi.fn(),
 }));
 
-vi.mock("../src/llm/cli.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../src/llm/cli.js")>();
+vi.mock('../src/llm/cli.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/llm/cli.js')>();
   return {
     ...actual,
-    runCliModel: vi.fn(async () => ({ text: "cli agent", usage: null, costUsd: null })),
+    runCliModel: vi.fn(async () => ({ costUsd: null, text: 'cli agent', usage: null })),
   };
 });
 
-vi.mock("@mariozechner/pi-ai", () => {
-  return {
-    completeSimple: mockCompleteSimple,
-    getModel: mockGetModel,
-  };
+vi.mock('@mariozechner/pi-ai', () => {
+  return { completeSimple: mockCompleteSimple, getModel: mockGetModel };
 });
 
 const buildAssistant = (provider: string, model: string): AssistantMessage => ({
-  role: "assistant",
-  content: [{ type: "text", text: "ok" }],
-  api: "openai-completions",
-  provider,
+  api: 'openai-completions',
+  content: [{ type: 'text', text: 'ok' }],
   model,
+  provider,
+  role: 'assistant',
+  stopReason: 'stop',
+  timestamp: Date.now(),
   usage: {
-    input: 0,
-    output: 0,
     cacheRead: 0,
     cacheWrite: 0,
+    cost: { cacheRead: 0, cacheWrite: 0, input: 0, output: 0, total: 0 },
+    input: 0,
+    output: 0,
     totalTokens: 0,
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
   },
-  stopReason: "stop",
-  timestamp: Date.now(),
 });
 
 const makeModel = (provider: string, modelId: string) => ({
+  api: 'openai-completions' as const,
+  baseUrl: 'https://example.com',
+  contextWindow: 8192,
+  cost: { cacheRead: 0, cacheWrite: 0, input: 0, output: 0 },
   id: modelId,
+  input: ['text'],
+  maxTokens: 2048,
   name: modelId,
   provider,
-  api: "openai-completions" as const,
-  baseUrl: "https://example.com",
   reasoning: false,
-  input: ["text"],
-  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-  contextWindow: 8192,
-  maxTokens: 2048,
 });
 
-const makeTempHome = () => mkdtempSync(join(tmpdir(), "summarize-daemon-agent-"));
+const makeTempHome = () => mkdtempSync(join(tmpdir(), 'summarize-daemon-agent-'));
 
 const writeHomeConfig = (home: string, config: unknown) => {
-  const configDir = join(home, ".summarize");
+  const configDir = join(home, '.summarize');
   mkdirSync(configDir, { recursive: true });
-  writeFileSync(join(configDir, "config.json"), JSON.stringify(config, null, 2), "utf8");
+  writeFileSync(join(configDir, 'config.json'), JSON.stringify(config, null, 2), 'utf8');
 };
 
 const makeFakeCliBin = (binary: string) => {
   const dir = mkdtempSync(join(tmpdir(), `summarize-daemon-cli-${binary}-`));
   const file = join(dir, binary);
-  writeFileSync(file, "#!/bin/sh\nexit 0\n");
+  writeFileSync(file, '#!/bin/sh\nexit 0\n');
   chmodSync(file, 0o755);
   return { dir, file };
 };
@@ -78,7 +77,7 @@ beforeEach(() => {
   mockCompleteSimple.mockReset();
   mockGetModel.mockReset();
   vi.mocked(runCliModel).mockReset();
-  vi.mocked(runCliModel).mockResolvedValue({ text: "cli agent", usage: null, costUsd: null });
+  vi.mocked(runCliModel).mockResolvedValue({ costUsd: null, text: 'cli agent', usage: null });
   mockGetModel.mockImplementation((provider: string, modelId: string) =>
     makeModel(provider, modelId),
   );
@@ -87,58 +86,54 @@ beforeEach(() => {
   );
 });
 
-describe("daemon/agent", () => {
-  it("passes openrouter api key to pi-ai when using openrouter models", async () => {
+describe('daemon/agent', () => {
+  it('passes openrouter api key to pi-ai when using openrouter models', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
-      env: { HOME: home, OPENROUTER_API_KEY: "or-key" },
-      pageUrl: "https://example.com",
-      pageTitle: "Example",
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openrouter/openai/gpt-5-mini",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home, OPENROUTER_API_KEY: 'or-key' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openrouter/openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: 'Example',
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
     const options = mockCompleteSimple.mock.calls[0]?.[2] as { apiKey?: string };
-    expect(options.apiKey).toBe("or-key");
+    expect(options.apiKey).toBe('or-key');
   });
 
-  it("passes openai api key to pi-ai for openai models", async () => {
+  it('passes openai api key to pi-ai for openai models', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
-      env: { HOME: home, OPENAI_API_KEY: "sk-openai" },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
     const options = mockCompleteSimple.mock.calls[0]?.[2] as { apiKey?: string };
-    expect(options.apiKey).toBe("sk-openai");
+    expect(options.apiKey).toBe('sk-openai');
   });
 
-  it("falls back to a synthetic model for unknown custom models when a base url is configured", async () => {
+  it('falls back to a synthetic model for unknown custom models when a base url is configured', async () => {
     const home = makeTempHome();
-    mockGetModel.mockReturnValueOnce(undefined);
+    mockGetModel.mockReturnValueOnce();
 
     await completeAgentResponse({
-      env: {
-        HOME: home,
-        OPENAI_API_KEY: "sk-openai",
-        OPENAI_BASE_URL: "http://127.0.0.1:1234/v1",
-      },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/my-custom-model",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai', OPENAI_BASE_URL: 'http://127.0.0.1:1234/v1' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/my-custom-model',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
     const model = mockCompleteSimple.mock.calls[0]?.[0] as {
@@ -148,282 +143,267 @@ describe("daemon/agent", () => {
       baseUrl?: string;
     };
     const options = mockCompleteSimple.mock.calls[0]?.[2] as { apiKey?: string };
-    expect(model.id).toBe("my-custom-model");
-    expect(model.provider).toBe("openai");
-    expect(model.api).toBe("openai-completions");
-    expect(model.baseUrl).toBe("http://127.0.0.1:1234/v1");
-    expect(options.apiKey).toBe("sk-openai");
+    expect(model.id).toBe('my-custom-model');
+    expect(model.provider).toBe('openai');
+    expect(model.api).toBe('openai-completions');
+    expect(model.baseUrl).toBe('http://127.0.0.1:1234/v1');
+    expect(options.apiKey).toBe('sk-openai');
   });
 
-  it("uses chat completions for known openai models when OPENAI_BASE_URL is custom", async () => {
+  it('uses chat completions for known openai models when OPENAI_BASE_URL is custom', async () => {
     const home = makeTempHome();
 
     await completeAgentResponse({
-      env: {
-        HOME: home,
-        OPENAI_API_KEY: "sk-openai",
-        OPENAI_BASE_URL: "http://127.0.0.1:1234/v1",
-      },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai', OPENAI_BASE_URL: 'http://127.0.0.1:1234/v1' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
-    const model = mockCompleteSimple.mock.calls[0]?.[0] as {
-      api: string;
-      baseUrl?: string;
-    };
-    expect(model.baseUrl).toBe("http://127.0.0.1:1234/v1");
-    expect(model.api).toBe("openai-completions");
+    const model = mockCompleteSimple.mock.calls[0]?.[0] as { api: string; baseUrl?: string };
+    expect(model.baseUrl).toBe('http://127.0.0.1:1234/v1');
+    expect(model.api).toBe('openai-completions');
   });
 
-  it("uses chat completions for known openai models when config enables them", async () => {
+  it('uses chat completions for known openai models when config enables them', async () => {
     const home = makeTempHome();
     writeHomeConfig(home, {
-      model: { id: "openai/gpt-5-mini" },
+      model: { id: 'openai/gpt-5-mini' },
       openai: { useChatCompletions: true },
     });
 
     await completeAgentResponse({
-      env: {
-        HOME: home,
-        OPENAI_API_KEY: "sk-openai",
-      },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
-    const model = mockCompleteSimple.mock.calls[0]?.[0] as {
-      api: string;
-    };
-    expect(model.api).toBe("openai-completions");
+    const model = mockCompleteSimple.mock.calls[0]?.[0] as { api: string };
+    expect(model.api).toBe('openai-completions');
   });
 
-  it("throws a helpful error when openrouter key is missing", async () => {
+  it('throws a helpful error when openrouter key is missing', async () => {
     const home = makeTempHome();
     await expect(
       completeAgentResponse({
-        env: { HOME: home },
-        pageUrl: "https://example.com",
-        pageTitle: null,
-        pageContent: "Hello world",
-        messages: [{ role: "user", content: "Hi" }],
-        modelOverride: "openrouter/openai/gpt-5-mini",
-        tools: [],
         automationEnabled: false,
+        env: { HOME: home },
+        messages: [{ role: 'user', content: 'Hi' }],
+        modelOverride: 'openrouter/openai/gpt-5-mini',
+        pageContent: 'Hello world',
+        pageTitle: null,
+        pageUrl: 'https://example.com',
+        tools: [],
       }),
     ).rejects.toThrow(/Missing OPENROUTER_API_KEY/);
   });
 
-  it("includes summarize tool definitions when automation is enabled", async () => {
+  it('includes summarize tool definitions when automation is enabled', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
-      env: { HOME: home, OPENAI_API_KEY: "sk-openai" },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: ["summarize"],
       automationEnabled: true,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: ['summarize'],
     });
 
     const context = mockCompleteSimple.mock.calls[0]?.[1] as { tools?: Tool[] };
-    expect(context.tools?.some((tool) => tool.name === "summarize")).toBe(true);
+    expect(context.tools?.some((tool) => tool.name === 'summarize')).toBe(true);
   });
 
-  it("exposes artifacts tool definitions when automation is enabled", async () => {
+  it('exposes artifacts tool definitions when automation is enabled', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
-      env: { HOME: home, OPENAI_API_KEY: "sk-openai" },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: ["artifacts"],
       automationEnabled: true,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: ['artifacts'],
     });
 
     const context = mockCompleteSimple.mock.calls[0]?.[1] as { tools?: Tool[] };
-    const artifacts = context.tools?.find((tool) => tool.name === "artifacts");
+    const artifacts = context.tools?.find((tool) => tool.name === 'artifacts');
     expect(artifacts).toBeTruthy();
     const properties = (artifacts?.parameters as { properties?: Record<string, unknown> })
       ?.properties;
     const content = properties?.content as { type?: unknown; description?: string } | undefined;
-    expect(content?.type).toBe("string");
+    expect(content?.type).toBe('string');
     expect(content?.description).toMatch(/serialized JSON as a string/i);
   });
 
-  it("navigate tool exposes listTabs and switchToTab parameters", async () => {
+  it('navigate tool exposes listTabs and switchToTab parameters', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
-      env: { HOME: home, OPENAI_API_KEY: "sk-openai" },
-      pageUrl: "https://example.com",
-      pageTitle: null,
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "openai/gpt-5-mini",
-      tools: ["navigate"],
       automationEnabled: true,
+      env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'openai/gpt-5-mini',
+      pageContent: 'Hello world',
+      pageTitle: null,
+      pageUrl: 'https://example.com',
+      tools: ['navigate'],
     });
 
     const context = mockCompleteSimple.mock.calls[0]?.[1] as { tools?: Tool[] };
-    const navigate = context.tools?.find((tool) => tool.name === "navigate");
+    const navigate = context.tools?.find((tool) => tool.name === 'navigate');
     const properties = (navigate?.parameters as { properties?: Record<string, unknown> })
       ?.properties;
-    expect(properties && "listTabs" in properties).toBe(true);
-    expect(properties && "switchToTab" in properties).toBe(true);
+    expect(properties && 'listTabs' in properties).toBe(true);
+    expect(properties && 'switchToTab' in properties).toBe(true);
   });
 
-  it("accepts legacy OpenRouter env mapping for auto fallback attempts", async () => {
+  it('accepts legacy OpenRouter env mapping for auto fallback attempts', async () => {
     const home = makeTempHome();
-    const autoSpy = vi.spyOn(modelAuto, "buildAutoModelAttempts").mockReturnValue([
-      {
-        transport: "openrouter",
-        userModelId: "openrouter/openai/gpt-5-mini",
-        llmModelId: "openai/openai/gpt-5-mini",
-        openrouterProviders: null,
-        forceOpenRouter: true,
-        requiredEnv: "OPENROUTER_API_KEY",
-        debug: "test",
-      },
-    ]);
+    const autoSpy = vi
+      .spyOn(modelAuto, 'buildAutoModelAttempts')
+      .mockReturnValue([
+        {
+          debug: 'test',
+          forceOpenRouter: true,
+          llmModelId: 'openai/openai/gpt-5-mini',
+          openrouterProviders: null,
+          requiredEnv: 'OPENROUTER_API_KEY',
+          transport: 'openrouter',
+          userModelId: 'openrouter/openai/gpt-5-mini',
+        },
+      ]);
 
     try {
       await completeAgentResponse({
+        automationEnabled: false,
         env: {
           HOME: home,
-          OPENAI_BASE_URL: "https://openrouter.ai/api/v1",
-          OPENAI_API_KEY: "sk-openrouter-via-openai",
+          OPENAI_API_KEY: 'sk-openrouter-via-openai',
+          OPENAI_BASE_URL: 'https://openrouter.ai/api/v1',
         },
-        pageUrl: "https://example.com",
-        pageTitle: null,
-        pageContent: "Hello world",
-        messages: [{ role: "user", content: "Hi" }],
+        messages: [{ role: 'user', content: 'Hi' }],
         modelOverride: null,
+        pageContent: 'Hello world',
+        pageTitle: null,
+        pageUrl: 'https://example.com',
         tools: [],
-        automationEnabled: false,
       });
 
       const options = mockCompleteSimple.mock.calls[0]?.[2] as { apiKey?: string };
-      expect(options.apiKey).toBe("sk-openrouter-via-openai");
+      expect(options.apiKey).toBe('sk-openrouter-via-openai');
     } finally {
       autoSpy.mockRestore();
     }
   });
 
-  it("runs fixed CLI agent models through the CLI transport", async () => {
+  it('runs fixed CLI agent models through the CLI transport', async () => {
     const home = makeTempHome();
 
     const assistant = await completeAgentResponse({
-      env: { HOME: home },
-      pageUrl: "https://example.com",
-      pageTitle: "Example",
-      pageContent: "Hello world",
-      messages: [{ role: "user", content: "Hi" }],
-      modelOverride: "cli/codex/gpt-5.2",
-      tools: [],
       automationEnabled: false,
+      env: { HOME: home },
+      messages: [{ role: 'user', content: 'Hi' }],
+      modelOverride: 'cli/codex/gpt-5.2',
+      pageContent: 'Hello world',
+      pageTitle: 'Example',
+      pageUrl: 'https://example.com',
+      tools: [],
     });
 
     expect(runCliModel).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "codex",
-        model: "gpt-5.2",
-        allowTools: false,
-      }),
+      expect.objectContaining({ allowTools: false, model: 'gpt-5.2', provider: 'codex' }),
     );
     const args = vi.mocked(runCliModel).mock.calls[0]?.[0] as { prompt: string };
-    expect(args.prompt).toContain("You are Summarize Chat, not Claude.");
-    expect(args.prompt).toContain("User: Hi");
+    expect(args.prompt).toContain('You are Summarize Chat, not Claude.');
+    expect(args.prompt).toContain('User: Hi');
     expect(mockCompleteSimple).not.toHaveBeenCalled();
-    expect(assistant.content).toBe("cli agent");
+    expect(assistant.content).toBe('cli agent');
   });
 
-  it("falls back to CLI auto attempts when no API-key agent model is available", async () => {
+  it('falls back to CLI auto attempts when no API-key agent model is available', async () => {
     const home = makeTempHome();
-    const fakeCodex = makeFakeCliBin("codex");
-    const autoSpy = vi.spyOn(modelAuto, "buildAutoModelAttempts").mockReturnValue([
-      {
-        transport: "cli",
-        userModelId: "cli/codex/gpt-5.2",
-        llmModelId: null,
-        openrouterProviders: null,
-        forceOpenRouter: false,
-        requiredEnv: "CLI_CODEX",
-        debug: "cli fallback",
-      },
-    ]);
+    const fakeCodex = makeFakeCliBin('codex');
+    const autoSpy = vi
+      .spyOn(modelAuto, 'buildAutoModelAttempts')
+      .mockReturnValue([
+        {
+          debug: 'cli fallback',
+          forceOpenRouter: false,
+          llmModelId: null,
+          openrouterProviders: null,
+          requiredEnv: 'CLI_CODEX',
+          transport: 'cli',
+          userModelId: 'cli/codex/gpt-5.2',
+        },
+      ]);
 
     try {
       const assistant = await completeAgentResponse({
-        env: { HOME: home, PATH: fakeCodex.dir },
-        pageUrl: "https://example.com",
-        pageTitle: null,
-        pageContent: "Hello world",
-        messages: [{ role: "user", content: "Hi" }],
-        modelOverride: null,
-        tools: [],
         automationEnabled: false,
+        env: { HOME: home, PATH: fakeCodex.dir },
+        messages: [{ role: 'user', content: 'Hi' }],
+        modelOverride: null,
+        pageContent: 'Hello world',
+        pageTitle: null,
+        pageUrl: 'https://example.com',
+        tools: [],
       });
 
       expect(runCliModel).toHaveBeenCalledWith(
-        expect.objectContaining({
-          provider: "codex",
-          model: "gpt-5.2",
-        }),
+        expect.objectContaining({ model: 'gpt-5.2', provider: 'codex' }),
       );
       expect(mockCompleteSimple).not.toHaveBeenCalled();
-      expect(assistant.content).toBe("cli agent");
+      expect(assistant.content).toBe('cli agent');
     } finally {
       autoSpy.mockRestore();
     }
   });
 
-  it("explains missing env and CLI availability when no auto agent model is usable", async () => {
+  it('explains missing env and CLI availability when no auto agent model is usable', async () => {
     const home = makeTempHome();
-    const autoSpy = vi.spyOn(modelAuto, "buildAutoModelAttempts").mockReturnValue([
+    const autoSpy = vi.spyOn(modelAuto, 'buildAutoModelAttempts').mockReturnValue([
       {
-        transport: "native",
-        userModelId: "google/gemini-3-flash",
-        llmModelId: "google/gemini-3-flash",
-        openrouterProviders: null,
+        debug: 'google first',
         forceOpenRouter: false,
-        requiredEnv: "GEMINI_API_KEY",
-        debug: "google first",
+        llmModelId: 'google/gemini-3-flash',
+        openrouterProviders: null,
+        requiredEnv: 'GEMINI_API_KEY',
+        transport: 'native',
+        userModelId: 'google/gemini-3-flash',
       },
       {
-        transport: "cli",
-        userModelId: "cli/codex/gpt-5.2",
+        debug: 'cli fallback',
+        forceOpenRouter: false,
         llmModelId: null,
         openrouterProviders: null,
-        forceOpenRouter: false,
-        requiredEnv: "CLI_CODEX",
-        debug: "cli fallback",
+        requiredEnv: 'CLI_CODEX',
+        transport: 'cli',
+        userModelId: 'cli/codex/gpt-5.2',
       },
     ]);
 
     try {
       await expect(
         completeAgentResponse({
-          env: { HOME: home, PATH: "" },
-          pageUrl: "https://example.com",
-          pageTitle: null,
-          pageContent: "Hello world",
-          messages: [{ role: "user", content: "Hi" }],
-          modelOverride: null,
-          tools: [],
           automationEnabled: false,
+          env: { HOME: home, PATH: '' },
+          messages: [{ role: 'user', content: 'Hi' }],
+          modelOverride: null,
+          pageContent: 'Hello world',
+          pageTitle: null,
+          pageUrl: 'https://example.com',
+          tools: [],
         }),
       ).rejects.toThrow(
         /No model available for agent\..*Checked: google\/gemini-3-flash, cli\/codex\/gpt-5\.2\..*Missing env: GEMINI_API_KEY\..*CLI unavailable: codex\..*Restart or reinstall the daemon/i,

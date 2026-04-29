@@ -1,12 +1,8 @@
-export type SlideSourceKind = "youtube" | "direct";
+export type SlideSourceKind = 'youtube' | 'direct';
 
-export type SlideSource = {
-  url: string;
-  kind: SlideSourceKind;
-  sourceId: string;
-};
+export interface SlideSource { url: string; kind: SlideSourceKind; sourceId: string }
 
-export type SlideImage = {
+export interface SlideImage {
   index: number;
   timestamp: number;
   imagePath: string;
@@ -17,16 +13,16 @@ export type SlideImage = {
   imageVersion?: number;
   ocrText?: string | null;
   ocrConfidence?: number | null;
-};
+}
 
-export type SlideAutoTune = {
+export interface SlideAutoTune {
   enabled: boolean;
   chosenThreshold: number;
   confidence: number;
-  strategy: "hash" | "none";
-};
+  strategy: 'hash' | 'none';
+}
 
-export type SlideExtractionResult = {
+export interface SlideExtractionResult {
   sourceUrl: string;
   sourceKind: SlideSourceKind;
   sourceId: string;
@@ -41,4 +37,4 @@ export type SlideExtractionResult = {
   ocrAvailable: boolean;
   slides: SlideImage[];
   warnings: string[];
-};
+}

@@ -42,7 +42,7 @@ navigating to "moz-extension://summarize-test@steipete.com/sidepanel.html"
 
 ```typescript
 // ✅ Works - Playwright exposes service worker events
-const background = await context.waitForEvent("serviceworker", { timeout: 15_000 });
+const background = await context.waitForEvent('serviceworker', { timeout: 15_000 });
 const extensionId = new URL(background.url()).host;
 ```
 
@@ -51,7 +51,7 @@ const extensionId = new URL(background.url()).host;
 ```typescript
 // ❌ Playwright doesn't expose serviceworker event in Firefox
 // Solution: Use explicit ID from manifest
-const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const extensionId = manifest.browser_specific_settings?.gecko?.id;
 ```
 
@@ -72,7 +72,7 @@ browser_specific_settings: {
 **tests/extension.spec.ts:**
 
 ```typescript
-if (browser === "firefox") {
+if (browser === 'firefox') {
   // Read ID from manifest instead of service worker detection
   extensionId = manifest.browser_specific_settings?.gecko?.id;
 } else {
@@ -116,11 +116,11 @@ But this requires separate test infrastructure.
 ### Option 3: Skip Firefox Tests Until Playwright Improves
 
 ```typescript
-const allowFirefoxExtensionTests = process.env.ALLOW_FIREFOX_EXTENSION_TESTS === "1";
+const allowFirefoxExtensionTests = process.env.ALLOW_FIREFOX_EXTENSION_TESTS === '1';
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 ```
 

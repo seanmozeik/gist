@@ -9,9 +9,9 @@ export function resolvePresetOrCustom({
   const lowered = trimmed.toLowerCase();
   const presetSet = new Set(Array.from(presets, (p) => p.toLowerCase()));
   if (presetSet.has(lowered)) {
-    return { presetValue: lowered, customValue: "", isCustom: false };
+    return { customValue: '', isCustom: false, presetValue: lowered };
   }
-  return { presetValue: "custom", customValue: trimmed, isCustom: true };
+  return { customValue: trimmed, isCustom: true, presetValue: 'custom' };
 }
 
 export function readPresetOrCustomValue({
@@ -24,7 +24,7 @@ export function readPresetOrCustomValue({
   defaultValue: string;
 }): string {
   const presetTrimmed = presetValue.trim();
-  if (presetTrimmed === "custom") {
+  if (presetTrimmed === 'custom') {
     const customTrimmed = customValue.trim();
     return customTrimmed || defaultValue;
   }

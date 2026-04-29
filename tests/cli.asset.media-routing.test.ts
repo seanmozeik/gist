@@ -1,9 +1,11 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { withUrlAsset } from "../src/run/flows/asset/input.js";
+import { Writable } from 'node:stream';
 
-describe("media URL routing", () => {
-  it("routes direct media URLs with query parameters to transcription", async () => {
+import { describe, expect, it, vi } from 'vitest';
+
+import { withUrlAsset } from '../src/run/flows/asset/input.js';
+
+describe('media URL routing', () => {
+  it('routes direct media URLs with query parameters to transcription', async () => {
     const stderr = new Writable({
       write(_chunk, _encoding, callback) {
         callback();
@@ -11,27 +13,27 @@ describe("media URL routing", () => {
     });
     const summarizeMediaFile = vi.fn(async () => {});
     const ctx = {
+      clearProgressIfCurrent: vi.fn(),
       env: {},
-      stderr,
       progressEnabled: false,
-      timeoutMs: 1000,
-      trackedFetch: vi.fn(async () => {
-        throw new Error("fetch should not be called");
-      }) as unknown as typeof fetch,
+      setClearProgressBeforeStdout: vi.fn(),
+      stderr,
       summarizeAsset: vi.fn(async () => {
-        throw new Error("summarizeAsset should not be called");
+        throw new Error('summarizeAsset should not be called');
       }),
       summarizeMediaFile,
-      setClearProgressBeforeStdout: vi.fn(),
-      clearProgressIfCurrent: vi.fn(),
+      timeoutMs: 1000,
+      trackedFetch: vi.fn(async () => {
+        throw new Error('fetch should not be called');
+      }) as unknown as typeof fetch,
     };
 
     const handled = await withUrlAsset(
       ctx,
-      "https://example.com/audio.mp3?token=abc",
+      'https://example.com/audio.mp3?token=abc',
       false,
       async () => {
-        throw new Error("handler should not be called");
+        throw new Error('handler should not be called');
       },
     );
 

@@ -1,24 +1,25 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
+
 import {
   createPanelCacheController,
   type PanelCachePayload,
-} from "../apps/chrome-extension/src/entrypoints/sidepanel/panel-cache.js";
+} from '../apps/chrome-extension/src/entrypoints/sidepanel/panel-cache.js';
 
 const samplePayload = (overrides: Partial<PanelCachePayload> = {}): PanelCachePayload => ({
-  tabId: 1,
-  url: "https://example.com",
-  title: "Example",
-  runId: "run-1",
-  summaryMarkdown: "Hello",
-  summaryFromCache: true,
-  lastMeta: { inputSummary: "Summary", model: "model", modelLabel: "label" },
+  lastMeta: { inputSummary: 'Summary', model: 'model', modelLabel: 'label' },
+  runId: 'run-1',
   slides: null,
+  summaryFromCache: true,
+  summaryMarkdown: 'Hello',
+  tabId: 1,
+  title: 'Example',
   transcriptTimedText: null,
+  url: 'https://example.com',
   ...overrides,
 });
 
-describe("panel cache controller", () => {
-  it("stores and resolves snapshots per tab", () => {
+describe('panel cache controller', () => {
+  it('stores and resolves snapshots per tab', () => {
     const sendCache = vi.fn();
     const sendRequest = vi.fn();
     const payload = samplePayload();
@@ -30,15 +31,15 @@ describe("panel cache controller", () => {
 
     controller.syncNow();
     expect(sendCache).toHaveBeenCalledWith(payload);
-    expect(controller.resolve(1, "https://example.com")).toEqual(payload);
-    expect(controller.resolve(1, "https://other.example")).toBeNull();
+    expect(controller.resolve(1, 'https://example.com')).toEqual(payload);
+    expect(controller.resolve(1, 'https://other.example')).toBeNull();
   });
 
-  it("debounces scheduled sync and stores latest snapshot", () => {
+  it('debounces scheduled sync and stores latest snapshot', () => {
     vi.useFakeTimers();
     const sendCache = vi.fn();
     const sendRequest = vi.fn();
-    let snapshot = samplePayload({ summaryMarkdown: "First" });
+    let snapshot = samplePayload({ summaryMarkdown: 'First' });
     const controller = createPanelCacheController({
       getSnapshot: () => snapshot,
       sendCache,
@@ -46,31 +47,31 @@ describe("panel cache controller", () => {
     });
 
     controller.scheduleSync(10);
-    snapshot = samplePayload({ summaryMarkdown: "Second" });
+    snapshot = samplePayload({ summaryMarkdown: 'Second' });
     controller.scheduleSync(10);
 
     vi.runAllTimers();
 
     expect(sendCache).toHaveBeenCalledTimes(1);
     expect(sendCache).toHaveBeenCalledWith(snapshot);
-    expect(controller.resolve(1, "https://example.com")?.summaryMarkdown).toBe("Second");
+    expect(controller.resolve(1, 'https://example.com')?.summaryMarkdown).toBe('Second');
     vi.useRealTimers();
   });
 
-  it("stores scheduled snapshots before the async sync fires", () => {
+  it('stores scheduled snapshots before the async sync fires', () => {
     vi.useFakeTimers();
     const sendCache = vi.fn();
     const sendRequest = vi.fn();
     const payload = samplePayload({
       slides: {
-        sourceUrl: "https://example.com",
-        sourceId: "youtube-abc123",
-        sourceKind: "youtube",
         ocrAvailable: false,
         slides: [
-          { index: 1, timestamp: 0, imageUrl: "" },
-          { index: 2, timestamp: 30, imageUrl: "" },
+          { index: 1, timestamp: 0, imageUrl: '' },
+          { index: 2, timestamp: 30, imageUrl: '' },
         ],
+        sourceId: 'youtube-abc123',
+        sourceKind: 'youtube',
+        sourceUrl: 'https://example.com',
       },
     });
     const controller = createPanelCacheController({
@@ -81,7 +82,7 @@ describe("panel cache controller", () => {
 
     controller.scheduleSync(0);
 
-    expect(controller.resolve(1, "https://example.com")).toEqual(payload);
+    expect(controller.resolve(1, 'https://example.com')).toEqual(payload);
     expect(sendCache).not.toHaveBeenCalled();
 
     vi.runAllTimers();
@@ -89,7 +90,7 @@ describe("panel cache controller", () => {
     vi.useRealTimers();
   });
 
-  it("returns pending request info on cache response", () => {
+  it('returns pending request info on cache response', () => {
     const sendCache = vi.fn();
     const sendRequest = vi.fn();
     const payload = samplePayload();
@@ -99,23 +100,23 @@ describe("panel cache controller", () => {
       sendRequest,
     });
 
-    const request = controller.request(2, "https://example.com/2", true);
+    const request = controller.request(2, 'https://example.com/2', true);
     const result = controller.consumeResponse({
-      requestId: request.requestId,
-      ok: true,
       cache: payload,
+      ok: true,
+      requestId: request.requestId,
     });
 
     expect(sendRequest).toHaveBeenCalledWith(request);
     expect(result).toEqual({
-      tabId: 2,
-      url: "https://example.com/2",
-      preserveChat: true,
       cache: payload,
+      preserveChat: true,
+      tabId: 2,
+      url: 'https://example.com/2',
     });
   });
 
-  it("ignores stale cache responses", () => {
+  it('ignores stale cache responses', () => {
     const sendCache = vi.fn();
     const sendRequest = vi.fn();
     const payload = samplePayload();
@@ -125,11 +126,11 @@ describe("panel cache controller", () => {
       sendRequest,
     });
 
-    controller.request(2, "https://example.com/2", false);
+    controller.request(2, 'https://example.com/2', false);
     const result = controller.consumeResponse({
-      requestId: "cache-unknown",
-      ok: true,
       cache: payload,
+      ok: true,
+      requestId: 'cache-unknown',
     });
 
     expect(result).toBeNull();

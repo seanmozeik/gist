@@ -1,24 +1,24 @@
-import type { LlmTokenUsage } from "./llm/generate-text.js";
+import type { LlmTokenUsage } from './llm/generate-text.js';
 
 export type LlmProvider =
-  | "xai"
-  | "openai"
-  | "google"
-  | "anthropic"
-  | "zai"
-  | "nvidia"
-  | "github-copilot"
-  | "cli";
+  | 'xai'
+  | 'openai'
+  | 'google'
+  | 'anthropic'
+  | 'zai'
+  | 'nvidia'
+  | 'github-copilot'
+  | 'cli';
 
-export type LlmCall = {
+export interface LlmCall {
   provider: LlmProvider;
   model: string;
   usage: LlmTokenUsage | null;
   costUsd?: number | null;
-  purpose: "summary" | "markdown";
-};
+  purpose: 'summary' | 'markdown';
+}
 
-export type RunMetricsReport = {
+export interface RunMetricsReport {
   llm: Array<{
     provider: LlmProvider;
     model: string;
@@ -27,17 +27,14 @@ export type RunMetricsReport = {
     completionTokens: number | null;
     totalTokens: number | null;
   }>;
-  services: {
-    firecrawl: { requests: number };
-    apify: { requests: number };
-  };
-};
+  services: { firecrawl: { requests: number }; apify: { requests: number } };
+}
 
-function sumOrNull(values: Array<number | null>): number | null {
+function sumOrNull(values: (number | null)[]): number | null {
   let sum = 0;
   let any = false;
   for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
       sum += value;
       any = true;
     }
@@ -60,9 +57,9 @@ export function buildRunMetricsReport({
       provider: LlmProvider;
       model: string;
       calls: number;
-      promptTokens: Array<number | null>;
-      completionTokens: Array<number | null>;
-      totalTokens: Array<number | null>;
+      promptTokens: (number | null)[];
+      completionTokens: (number | null)[];
+      totalTokens: (number | null)[];
     }
   >();
 
@@ -74,11 +71,11 @@ export function buildRunMetricsReport({
     const totalTokens = call.usage?.totalTokens ?? null;
     if (!existing) {
       llmMap.set(key, {
-        provider: call.provider,
-        model: call.model,
         calls: 1,
-        promptTokens: [promptTokens],
         completionTokens: [completionTokens],
+        model: call.model,
+        promptTokens: [promptTokens],
+        provider: call.provider,
         totalTokens: [totalTokens],
       });
       continue;
@@ -89,25 +86,22 @@ export function buildRunMetricsReport({
     existing.totalTokens.push(totalTokens);
   }
 
-  const llm = Array.from(llmMap.values()).map((row) => {
+  const llm = [...llmMap.values()].map((row) => {
     const promptTokens = sumOrNull(row.promptTokens);
     const completionTokens = sumOrNull(row.completionTokens);
     const totalTokens = sumOrNull(row.totalTokens);
     return {
-      provider: row.provider,
-      model: row.model,
       calls: row.calls,
-      promptTokens,
       completionTokens,
+      model: row.model,
+      promptTokens,
+      provider: row.provider,
       totalTokens,
     };
   });
 
   return {
     llm,
-    services: {
-      firecrawl: { requests: firecrawlRequests },
-      apify: { requests: apifyRequests },
-    },
+    services: { apify: { requests: apifyRequests }, firecrawl: { requests: firecrawlRequests } },
   };
 }

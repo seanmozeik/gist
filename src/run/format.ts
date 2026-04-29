@@ -1,24 +1,24 @@
-import type { SummaryLength } from "../shared/contracts.js";
+import type { SummaryLength } from '../shared/contracts.js';
 
 export function formatOptionalString(value: string | null | undefined): string {
-  if (typeof value === "string" && value.trim().length > 0) {
+  if (typeof value === 'string' && value.trim().length > 0) {
     return value.trim();
   }
-  return "none";
+  return 'none';
 }
 
 export function formatOptionalNumber(value: number | null | undefined): string {
-  if (typeof value === "number" && Number.isFinite(value)) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     return String(value);
   }
-  return "none";
+  return 'none';
 }
 
-export function sumNumbersOrNull(values: Array<number | null>): number | null {
+export function sumNumbersOrNull(values: (number | null)[]): number | null {
   let sum = 0;
   let any = false;
   for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
       sum += value;
       any = true;
     }
@@ -27,7 +27,7 @@ export function sumNumbersOrNull(values: Array<number | null>): number | null {
 }
 
 export function formatUSD(value: number): string {
-  if (!Number.isFinite(value)) return "n/a";
+  if (!Number.isFinite(value)) {return 'n/a';}
   return `$${value.toFixed(4)}`;
 }
 
@@ -42,10 +42,10 @@ export function estimateWhisperTranscriptionCostUsd({
   mediaDurationSeconds: number | null;
   openaiWhisperUsdPerMinute: number;
 }): number | null {
-  if (transcriptSource !== "whisper") return null;
-  if (!transcriptionProvider || transcriptionProvider.toLowerCase() !== "openai") return null;
+  if (transcriptSource !== 'whisper') {return null;}
+  if (transcriptionProvider?.toLowerCase() !== 'openai') {return null;}
   if (
-    typeof mediaDurationSeconds !== "number" ||
+    typeof mediaDurationSeconds !== 'number' ||
     !Number.isFinite(mediaDurationSeconds) ||
     mediaDurationSeconds <= 0
   ) {
@@ -57,13 +57,8 @@ export function estimateWhisperTranscriptionCostUsd({
 }
 
 export function resolveTargetCharacters(
-  lengthArg:
-    | {
-        kind: "preset";
-        preset: SummaryLength;
-      }
-    | { kind: "chars"; maxCharacters: number },
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number },
   maxMap: Record<SummaryLength, number>,
 ): number {
-  return lengthArg.kind === "chars" ? lengthArg.maxCharacters : maxMap[lengthArg.preset];
+  return lengthArg.kind === 'chars' ? lengthArg.maxCharacters : maxMap[lengthArg.preset];
 }

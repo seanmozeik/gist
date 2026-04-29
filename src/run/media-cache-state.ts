@@ -1,5 +1,5 @@
-import type { SummarizeConfig } from "../config.js";
-import type { MediaCache } from "../content/index.js";
+import type { SummarizeConfig } from '../config.js';
+import type { MediaCache } from '../content/index.js';
 import {
   createMediaCache,
   DEFAULT_MEDIA_CACHE_MAX_MB,
@@ -7,7 +7,7 @@ import {
   DEFAULT_MEDIA_CACHE_VERIFY,
   type MediaCacheVerifyMode,
   resolveMediaCachePath,
-} from "../media-cache.js";
+} from '../media-cache.js';
 
 export async function createMediaCacheFromConfig({
   envForRun,
@@ -20,34 +20,29 @@ export async function createMediaCacheFromConfig({
 }): Promise<MediaCache | null> {
   const mediaConfig = config?.cache?.media;
   const enabled = mediaConfig?.enabled !== false;
-  if (!enabled || noMediaCacheFlag) return null;
+  if (!enabled || noMediaCacheFlag) {return null;}
 
   const cachePath = resolveMediaCachePath({
+    cachePath: typeof mediaConfig?.path === 'string' ? mediaConfig.path : null,
     env: envForRun,
-    cachePath: typeof mediaConfig?.path === "string" ? mediaConfig.path : null,
   });
-  if (!cachePath) return null;
+  if (!cachePath) {return null;}
 
   const maxMb =
-    typeof mediaConfig?.maxMb === "number" && Number.isFinite(mediaConfig.maxMb)
+    typeof mediaConfig?.maxMb === 'number' && Number.isFinite(mediaConfig.maxMb)
       ? mediaConfig.maxMb
       : DEFAULT_MEDIA_CACHE_MAX_MB;
   const ttlDays =
-    typeof mediaConfig?.ttlDays === "number" && Number.isFinite(mediaConfig.ttlDays)
+    typeof mediaConfig?.ttlDays === 'number' && Number.isFinite(mediaConfig.ttlDays)
       ? mediaConfig.ttlDays
       : DEFAULT_MEDIA_CACHE_TTL_DAYS;
   const verify =
-    typeof mediaConfig?.verify === "string"
+    typeof mediaConfig?.verify === 'string'
       ? (mediaConfig.verify as MediaCacheVerifyMode)
       : DEFAULT_MEDIA_CACHE_VERIFY;
   const maxBytes = Math.max(0, maxMb) * 1024 * 1024;
   const ttlMs = Math.max(0, ttlDays) * 24 * 60 * 60 * 1000;
-  if (maxBytes <= 0) return null;
+  if (maxBytes <= 0) {return null;}
 
-  return await createMediaCache({
-    path: cachePath,
-    maxBytes,
-    ttlMs,
-    verify,
-  });
+  return  createMediaCache({ maxBytes, path: cachePath, ttlMs, verify });
 }

@@ -1,22 +1,22 @@
-import * as checkbox from "@zag-js/checkbox";
-import { normalizeProps, useMachine } from "@zag-js/preact";
-import { render } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import * as checkbox from '@zag-js/checkbox';
+import { normalizeProps, useMachine } from '@zag-js/preact';
+import { render } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 
-type UseZagCheckboxArgs = {
+interface UseZagCheckboxArgs {
   id: string;
   checked: boolean;
   disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
-};
+}
 
 export function useZagCheckbox({ id, checked, disabled, onCheckedChange }: UseZagCheckboxArgs) {
   const syncing = useRef(false);
 
   const service = useMachine(checkbox.machine, {
-    id,
     checked,
     disabled,
+    id,
     onCheckedChange: ({ checked: next }: checkbox.CheckedChangeDetails) => {
       if (syncing.current) return;
       onCheckedChange(Boolean(next));
@@ -28,7 +28,7 @@ export function useZagCheckbox({ id, checked, disabled, onCheckedChange }: UseZa
   apiRef.current = api;
 
   useEffect(() => {
-    if (apiRef.current.checked === checked) return;
+    if (apiRef.current.checked === checked) {return;}
     syncing.current = true;
     apiRef.current.setChecked(checked);
     queueMicrotask(() => {
@@ -60,7 +60,7 @@ function CheckboxField({
   disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
-  const api = useZagCheckbox({ id, checked, disabled, onCheckedChange });
+  const api = useZagCheckbox({ checked, disabled, id, onCheckedChange });
   const rootProps = api.getRootProps();
   const controlProps = api.getControlProps();
   const indicatorProps = api.getIndicatorProps();
@@ -70,13 +70,13 @@ function CheckboxField({
   const { className: indicatorClassName, ...indicatorRest } = indicatorProps;
   const { className: labelClassName, ...labelRest } = labelProps;
   return (
-    <label className={`checkboxRoot ${rootClassName ?? ""}`.trim()} {...rootRest}>
-      <span className={`checkboxControl ${controlClassName ?? ""}`.trim()} {...controlRest}>
-        <span className={`checkboxIndicator ${indicatorClassName ?? ""}`.trim()} {...indicatorRest}>
+    <label className={`checkboxRoot ${rootClassName ?? ''}`.trim()} {...rootRest}>
+      <span className={`checkboxControl ${controlClassName ?? ''}`.trim()} {...controlRest}>
+        <span className={`checkboxIndicator ${indicatorClassName ?? ''}`.trim()} {...indicatorRest}>
           <Checkmark />
         </span>
       </span>
-      <span className={`checkboxLabel ${labelClassName ?? ""}`.trim()} {...labelRest}>
+      <span className={`checkboxLabel ${labelClassName ?? ''}`.trim()} {...labelRest}>
         {label}
       </span>
       <input {...api.getHiddenInputProps()} />

@@ -1,18 +1,16 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID } from 'node:crypto';
+
 import type {
   ProcessHandle,
   ProcessObserver,
   ProcessRegistration,
-} from "@steipete/summarize-core/processes";
+} from '@steipete/summarize-core/processes';
 
-type ProcessStatus = "running" | "exited" | "error";
+type ProcessStatus = 'running' | 'exited' | 'error';
 
-type OutputLine = {
-  stream: "stdout" | "stderr";
-  line: string;
-};
+interface OutputLine { stream: 'stdout' | 'stderr'; line: string }
 
-type ProcessRecord = {
+interface ProcessRecord {
   id: string;
   command: string;
   args: string[];
@@ -35,9 +33,9 @@ type ProcessRecord = {
   stderr: string[];
   merged: OutputLine[];
   truncated: boolean;
-};
+}
 
-type ProcessListItem = {
+interface ProcessListItem {
   id: string;
   label: string | null;
   kind: string | null;
@@ -57,27 +55,18 @@ type ProcessListItem = {
   progressDetail: string | null;
   statusText: string | null;
   lastLine: string | null;
-};
+}
 
-type ProcessLogResult = {
-  ok: true;
-  id: string;
-  lines: OutputLine[];
-  truncated: boolean;
-};
+interface ProcessLogResult { ok: true; id: string; lines: OutputLine[]; truncated: boolean }
 
-type ProcessListResult = {
-  ok: true;
-  nowMs: number;
-  processes: ProcessListItem[];
-};
+interface ProcessListResult { ok: true; nowMs: number; processes: ProcessListItem[] }
 
-type RegistryOptions = {
+interface RegistryOptions {
   maxRecords?: number;
   maxLines?: number;
   maxLineLength?: number;
   retentionMs?: number;
-};
+}
 
 const DEFAULT_MAX_RECORDS = 200;
 const DEFAULT_MAX_LINES = 400;
@@ -100,9 +89,7 @@ export class ProcessRegistry {
   }
 
   createObserver(): ProcessObserver {
-    return {
-      register: (info) => this.register(info),
-    };
+    return { register: (info) => this.register(info) };
   }
 
   list(opts?: { includeCompleted?: boolean; limit?: number }): ProcessListResult {
@@ -114,75 +101,75 @@ export class ProcessRegistry {
     for (let i = this.order.length - 1; i >= 0; i -= 1) {
       const id = this.order[i];
       const record = this.records.get(id);
-      if (!record) continue;
-      if (!includeCompleted && record.status !== "running") continue;
+      if (!record) {continue;}
+      if (!includeCompleted && record.status !== 'running') {continue;}
       items.push({
-        id: record.id,
-        label: record.label,
-        kind: record.kind,
-        command: record.command,
         args: record.args,
-        runId: record.runId,
-        source: record.source,
-        pid: record.pid,
-        status: record.status,
-        exitCode: record.exitCode,
-        signal: record.signal,
-        error: record.error,
-        startedAt: record.startedAt,
-        endedAt: record.endedAt,
+        command: record.command,
         elapsedMs: Math.max(0, (record.endedAt ?? now) - record.startedAt),
-        progressPercent: record.progressPercent,
-        progressDetail: record.progressDetail,
-        statusText: record.statusText,
+        endedAt: record.endedAt,
+        error: record.error,
+        exitCode: record.exitCode,
+        id: record.id,
+        kind: record.kind,
+        label: record.label,
         lastLine: record.lastLine,
+        pid: record.pid,
+        progressDetail: record.progressDetail,
+        progressPercent: record.progressPercent,
+        runId: record.runId,
+        signal: record.signal,
+        source: record.source,
+        startedAt: record.startedAt,
+        status: record.status,
+        statusText: record.statusText,
       });
-      if (items.length >= limit) break;
+      if (items.length >= limit) {break;}
     }
-    return { ok: true, nowMs: now, processes: items };
+    return { nowMs: now, ok: true, processes: items };
   }
 
   getLogs(
     id: string,
-    opts?: { tail?: number; stream?: "stdout" | "stderr" | "merged" },
+    opts?: { tail?: number; stream?: 'stdout' | 'stderr' | 'merged' },
   ): ProcessLogResult | null {
     const record = this.records.get(id);
-    if (!record) return null;
+    if (!record) {return null;}
     const tail = clampNumber(opts?.tail ?? 200, 20, this.maxLines);
-    const stream = opts?.stream ?? "merged";
+    const stream = opts?.stream ?? 'merged';
     const lines =
-      stream === "stdout"
-        ? record.stdout.slice(-tail).map((line) => ({ stream: "stdout" as const, line }))
-        : stream === "stderr"
-          ? record.stderr.slice(-tail).map((line) => ({ stream: "stderr" as const, line }))
-          : record.merged.slice(-tail);
-    return { ok: true, id: record.id, lines, truncated: record.truncated };
+      stream === 'stdout'
+        ? record.stdout.slice(-tail).map((line) => ({ line, stream: 'stdout' as const }))
+        : (stream === 'stderr'
+          ? record.stderr.slice(-tail).map((line) => ({ stream: 'stderr' as const, line }))
+          : record.merged.slice(-tail));
+    return { id: record.id, lines, ok: true, truncated: record.truncated };
   }
 
   private register(info: ProcessRegistration): ProcessHandle {
     const id = randomUUID();
     const record: ProcessRecord = {
-      id,
-      command: info.command,
       args: info.args ?? [],
-      label: info.label ?? null,
-      kind: info.kind ?? null,
-      runId: info.runId ?? null,
-      source: info.source ?? null,
-      pid: null,
-      status: "running",
-      startedAt: Date.now(),
+      command: info.command,
       endedAt: null,
-      exitCode: null,
-      signal: null,
       error: null,
-      progressPercent: null,
-      progressDetail: null,
-      statusText: null,
+      exitCode: null,
+      id,
+      kind: info.kind ?? null,
+      label: info.label ?? null,
       lastLine: null,
-      stdout: [],
-      stderr: [],
       merged: [],
+      pid: null,
+      progressDetail: null,
+      progressPercent: null,
+      runId: info.runId ?? null,
+      signal: null,
+      source: info.source ?? null,
+      startedAt: Date.now(),
+      status: 'running',
+      statusText: null,
+      stderr: [],
+      stdout: [],
       truncated: false,
     };
     this.records.set(id, record);
@@ -194,23 +181,19 @@ export class ProcessRegistry {
       signal: string | null;
       error?: string | null;
     }) => {
-      if (record.status !== "running") return;
+      if (record.status !== 'running') {return;}
       record.exitCode = result.exitCode ?? null;
       record.signal = result.signal ?? null;
       record.error = result.error ?? null;
       record.endedAt = Date.now();
       const hasFailure =
         Boolean(result.error) ||
-        (typeof result.exitCode === "number" && result.exitCode !== 0) ||
+        (typeof result.exitCode === 'number' && result.exitCode !== 0) ||
         result.signal != null;
-      record.status = hasFailure ? "error" : "exited";
+      record.status = hasFailure ? 'error' : 'exited';
     };
 
     return {
-      id,
-      setPid: (pid) => {
-        record.pid = pid ?? null;
-      },
       appendOutput: (stream, line) => {
         const cleaned = normalizeLine(line, this.maxLineLength);
         if (!cleaned) return;
@@ -221,7 +204,7 @@ export class ProcessRegistry {
           record.merged.shift();
           record.truncated = true;
         }
-        const target = stream === "stdout" ? record.stdout : record.stderr;
+        const target = stream === 'stdout' ? record.stdout : record.stderr;
         target.push(cleaned);
         if (target.length > this.maxLines) {
           target.shift();
@@ -232,18 +215,22 @@ export class ProcessRegistry {
           record.progressPercent = pct;
         }
       },
+      finish: (result) => {
+        finishOnce(result);
+      },
+      id,
+      setPid: (pid) => {
+        record.pid = pid ?? null;
+      },
       setProgress: (progress, detail) => {
         record.progressPercent =
-          typeof progress === "number" && Number.isFinite(progress)
+          typeof progress === 'number' && Number.isFinite(progress)
             ? Math.max(0, Math.min(100, Math.round(progress)))
             : null;
         record.progressDetail = detail ?? null;
       },
       setStatus: (text) => {
         record.statusText = text?.trim() ? text.trim() : null;
-      },
-      finish: (result) => {
-        finishOnce(result);
       },
     };
   }
@@ -252,15 +239,15 @@ export class ProcessRegistry {
     const now = Date.now();
     for (const id of this.order) {
       const record = this.records.get(id);
-      if (!record) continue;
-      if (record.status === "running") continue;
+      if (!record) {continue;}
+      if (record.status === 'running') {continue;}
       if (record.endedAt && now - record.endedAt > this.retentionMs) {
         this.records.delete(id);
       }
     }
     while (this.order.length > this.maxRecords) {
       const id = this.order.shift();
-      if (id) this.records.delete(id);
+      if (id) {this.records.delete(id);}
     }
   }
 }
@@ -275,27 +262,27 @@ export function buildProcessListResult(
 export function buildProcessLogsResult(
   registry: ProcessRegistry,
   id: string,
-  opts?: { tail?: number; stream?: "stdout" | "stderr" | "merged" },
+  opts?: { tail?: number; stream?: 'stdout' | 'stderr' | 'merged' },
 ): ProcessLogResult | null {
   return registry.getLogs(id, opts);
 }
 
 function normalizeLine(line: string, maxLength: number): string {
   const trimmed = line.trim();
-  if (!trimmed) return "";
-  if (trimmed.length <= maxLength) return trimmed;
+  if (!trimmed) {return '';}
+  if (trimmed.length <= maxLength) {return trimmed;}
   return `${trimmed.slice(0, maxLength)}…`;
 }
 
 function parsePercent(line: string): number | null {
-  const match = line.match(/(\d{1,3})(?:\.\d+)?%/);
-  if (!match) return null;
+  const match = /(\d{1,3})(?:\.\d+)?%/.exec(line);
+  if (!match) {return null;}
   const value = Number(match[1]);
-  if (!Number.isFinite(value)) return null;
+  if (!Number.isFinite(value)) {return null;}
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
 function clampNumber(value: number, min: number, max: number): number {
-  if (!Number.isFinite(value)) return min;
+  if (!Number.isFinite(value)) {return min;}
   return Math.max(min, Math.min(max, Math.round(value)));
 }

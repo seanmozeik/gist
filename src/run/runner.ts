@@ -1,31 +1,33 @@
-import { execFile } from "node:child_process";
-import { CommanderError, type Command } from "commander";
-import type { ExecFileFn } from "../markitdown.js";
+import { execFile } from 'node:child_process';
+
+import { CommanderError, type Command } from 'commander';
+
+import type { ExecFileFn } from '../markitdown.js';
 import {
   handleDaemonCliRequest,
   handleHelpRequest,
   handleRefreshFreeRequest,
-} from "./cli-preflight.js";
-import { attachRichHelp, buildProgram } from "./help.js";
-import { createRunnerPlan } from "./runner-plan.js";
+} from './cli-preflight.js';
+import { attachRichHelp, buildProgram } from './help.js';
+import { createRunnerPlan } from './runner-plan.js';
 import {
   applyWidthOverride,
   handleCacheUtilityFlags,
   handleVersionFlag,
   prepareRunEnvironment,
   resolvePromptOverride,
-} from "./runner-setup.js";
-import { handleSlidesCliRequest } from "./slides-cli.js";
-import { handleTranscriberCliRequest } from "./transcriber-cli.js";
+} from './runner-setup.js';
+import { handleSlidesCliRequest } from './slides-cli.js';
+import { handleTranscriberCliRequest } from './transcriber-cli.js';
 
-type RunEnv = {
+interface RunEnv {
   env: Record<string, string | undefined>;
   fetch: typeof fetch;
   execFile?: ExecFileFn;
   stdin?: NodeJS.ReadableStream;
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
-};
+}
 
 export async function runCli(
   argv: string[],
@@ -38,50 +40,44 @@ export async function runCli(
 
   if (
     await handleImmediateCliRequests({
-      normalizedArgv,
       envForRun,
       fetchImpl: fetch,
-      stdout,
+      normalizedArgv,
       stderr,
+      stdout,
     })
   ) {
     return;
   }
   const execFileImpl = execFileOverride ?? execFile;
-  const program = buildCliProgram({ normalizedArgv, envForRun, stdout, stderr });
-  if (!program) return;
+  const program = buildCliProgram({ envForRun, normalizedArgv, stderr, stdout });
+  if (!program) {return;}
 
-  if (handleVersionFlag({ versionRequested: Boolean(program.opts().version), stdout })) {
+  if (handleVersionFlag({ stdout, versionRequested: Boolean(program.opts().version) })) {
     return;
   }
 
-  applyWidthOverride({ width: program.opts().width, env });
+  applyWidthOverride({ env, width: program.opts().width });
 
-  let promptOverride = await resolvePromptOverride({
+  const promptOverride = await resolvePromptOverride({
     prompt: program.opts().prompt,
     promptFile: program.opts().promptFile,
   });
 
-  if (
-    await handleCacheUtilityFlags({
-      normalizedArgv,
-      envForRun,
-      stdout,
-    })
-  ) {
+  if (await handleCacheUtilityFlags({ envForRun, normalizedArgv, stdout })) {
     return;
   }
   const plan = await createRunnerPlan({
-    normalizedArgv,
-    program,
     env,
     envForRun,
-    fetchImpl: fetch,
     execFileImpl,
+    fetchImpl: fetch,
+    normalizedArgv,
+    program,
+    promptOverride,
+    stderr,
     stdin,
     stdout,
-    stderr,
-    promptOverride,
   });
 
   try {
@@ -99,19 +95,19 @@ async function handleImmediateCliRequests(options: {
   stderr: NodeJS.WritableStream;
 }) {
   const { normalizedArgv, envForRun, fetchImpl, stdout, stderr } = options;
-  if (handleHelpRequest({ normalizedArgv, envForRun, stdout, stderr })) {
+  if (handleHelpRequest({ envForRun, normalizedArgv, stderr, stdout })) {
     return true;
   }
-  if (await handleRefreshFreeRequest({ normalizedArgv, envForRun, fetchImpl, stdout, stderr })) {
+  if (await handleRefreshFreeRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
     return true;
   }
-  if (await handleDaemonCliRequest({ normalizedArgv, envForRun, fetchImpl, stdout, stderr })) {
+  if (await handleDaemonCliRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
     return true;
   }
-  if (await handleSlidesCliRequest({ normalizedArgv, envForRun, fetchImpl, stdout, stderr })) {
+  if (await handleSlidesCliRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
     return true;
   }
-  if (await handleTranscriberCliRequest({ normalizedArgv, envForRun, stdout, stderr })) {
+  if (await handleTranscriberCliRequest({ envForRun, normalizedArgv, stderr, stdout })) {
     return true;
   }
   return false;
@@ -126,21 +122,21 @@ function buildCliProgram(options: {
   const { normalizedArgv, envForRun, stdout, stderr } = options;
   const program = buildProgram();
   program.configureOutput({
-    writeOut(str) {
-      stdout.write(str);
-    },
     writeErr(str) {
       stderr.write(str);
+    },
+    writeOut(str) {
+      stdout.write(str);
     },
   });
   program.exitOverride();
   attachRichHelp(program, envForRun, stdout);
 
   try {
-    program.parse(normalizedArgv, { from: "user" });
+    program.parse(normalizedArgv, { from: 'user' });
     return program;
   } catch (error) {
-    if (error instanceof CommanderError && error.code === "commander.helpDisplayed") {
+    if (error instanceof CommanderError && error.code === 'commander.helpDisplayed') {
       return null;
     }
     throw error;

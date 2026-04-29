@@ -1,11 +1,12 @@
-import { Readability } from "@mozilla/readability";
-import { defineContentScript } from "wxt/utils/define-content-script";
-import { META_SITE_EXCLUDE_MATCHES } from "../lib/content-script-matches";
-import { resolveMediaDurationSecondsFromData } from "../lib/media-duration";
-import { type SeekResponse, seekToSecondsInDocument } from "../lib/seek";
+import { Readability } from '@mozilla/readability';
+import { defineContentScript } from 'wxt/utils/define-content-script';
 
-type ExtractRequest = { type: "extract"; maxChars: number };
-type SeekRequest = { type: "seek"; seconds: number };
+import { META_SITE_EXCLUDE_MATCHES } from '../lib/content-script-matches';
+import { resolveMediaDurationSecondsFromData } from '../lib/media-duration';
+import { type SeekResponse, seekToSecondsInDocument } from '../lib/seek';
+
+interface ExtractRequest { type: 'extract'; maxChars: number }
+interface SeekRequest { type: 'seek'; seconds: number }
 type ExtractResponse =
   | {
       ok: true;
@@ -14,26 +15,22 @@ type ExtractResponse =
       text: string;
       truncated: boolean;
       mediaDurationSeconds?: number | null;
-      media?: {
-        hasVideo: boolean;
-        hasAudio: boolean;
-        hasCaptions: boolean;
-      };
+      media?: { hasVideo: boolean; hasAudio: boolean; hasCaptions: boolean };
     }
   | { ok: false; error: string };
 
 function clampText(text: string, maxChars: number): { text: string; truncated: boolean } {
-  if (text.length <= maxChars) return { text, truncated: false };
+  if (text.length <= maxChars) {return { text, truncated: false };}
   const sliced = text.slice(0, Math.max(0, maxChars - 24));
   return { text: `${sliced}\n\n[TRUNCATED]`, truncated: true };
 }
 
 function resolveMediaDurationSeconds(): number | null {
-  const metaDuration = document.querySelector('meta[itemprop="duration"]')?.getAttribute("content");
-  const uiDuration = document.querySelector(".ytp-time-duration")?.textContent?.trim();
-  const media = document.querySelector("video");
+  const metaDuration = document.querySelector('meta[itemprop="duration"]')?.getAttribute('content');
+  const uiDuration = document.querySelector('.ytp-time-duration')?.textContent?.trim();
+  const media = document.querySelector('video');
   const videoDuration =
-    media && typeof (media as HTMLVideoElement).duration === "number"
+    media && typeof (media as HTMLVideoElement).duration === 'number'
       ? (media as HTMLVideoElement).duration
       : null;
   return resolveMediaDurationSecondsFromData({ metaDuration, uiDuration, videoDuration });
@@ -65,13 +62,13 @@ function hasMetaTag(selectors: string[]): boolean {
 }
 
 function hasEmbeddedFrame(patterns: RegExp[]): boolean {
-  const frames = Array.from(document.querySelectorAll("iframe[src]")) as HTMLIFrameElement[];
+  const frames = [...document.querySelectorAll('iframe[src]')] as HTMLIFrameElement[];
   return frames.some((frame) => patterns.some((pattern) => pattern.test(frame.src)));
 }
 
 function detectMediaInfo(): { hasVideo: boolean; hasAudio: boolean; hasCaptions: boolean } {
-  const hasVideoTag = Boolean(document.querySelector("video"));
-  const hasAudioTag = Boolean(document.querySelector("audio"));
+  const hasVideoTag = Boolean(document.querySelector('video'));
+  const hasAudioTag = Boolean(document.querySelector('audio'));
   const hasCaptions = Boolean(
     document.querySelector('track[kind="captions"], track[kind="subtitles"]'),
   );
@@ -96,7 +93,7 @@ function detectMediaInfo(): { hasVideo: boolean; hasAudio: boolean; hasCaptions:
   const hasAudioEmbed = hasEmbeddedFrame(AUDIO_IFRAME_PATTERNS);
   const hasVideo = hasVideoTag || hasOgVideo || hasVideoEmbed;
   const hasAudio = hasAudioTag || hasOgAudio || hasAudioEmbed;
-  return { hasVideo, hasAudio, hasCaptions };
+  return { hasAudio, hasCaptions, hasVideo };
 }
 
 function extract(maxChars: number): ExtractResponse {
@@ -108,33 +105,25 @@ function extract(maxChars: number): ExtractResponse {
     const cloned = document.cloneNode(true) as Document;
     const reader = new Readability(cloned, { keepClasses: false });
     const parsed = reader.parse();
-    const raw = parsed?.textContent?.trim() || document.body?.innerText?.trim() || "";
+    const raw = parsed?.textContent?.trim() || document.body?.textContent?.trim() || '';
     if (!raw) {
       if (mediaDurationSeconds || media.hasVideo || media.hasAudio || media.hasCaptions) {
-        return {
-          ok: true,
-          url,
-          title,
-          text: "",
-          truncated: false,
-          mediaDurationSeconds,
-          media,
-        };
+        return { media, mediaDurationSeconds, ok: true, text: '', title, truncated: false, url };
       }
-      return { ok: false, error: "No readable text found." };
+      return { error: 'No readable text found.', ok: false };
     }
     const clamped = clampText(raw, maxChars);
     return {
-      ok: true,
-      url,
-      title: parsed?.title?.trim() || title,
-      text: clamped.text,
-      truncated: clamped.truncated,
-      mediaDurationSeconds,
       media,
+      mediaDurationSeconds,
+      ok: true,
+      text: clamped.text,
+      title: parsed?.title?.trim() || title,
+      truncated: clamped.truncated,
+      url,
     };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Extraction failed" };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : 'Extraction failed' };
   }
 }
 
@@ -143,11 +132,9 @@ function seekToSeconds(seconds: number): SeekResponse {
 }
 
 export default defineContentScript({
-  matches: ["<all_urls>"],
   excludeMatches: META_SITE_EXCLUDE_MATCHES,
-  runAt: "document_idle",
   main() {
-    const flag = "__summarize_extract_installed__";
+    const flag = '__summarize_extract_installed__';
     if ((globalThis as unknown as Record<string, unknown>)[flag]) return;
     (globalThis as unknown as Record<string, unknown>)[flag] = true;
 
@@ -157,11 +144,11 @@ export default defineContentScript({
         _sender,
         sendResponse: (response: ExtractResponse | SeekResponse) => void,
       ) => {
-        if (message?.type === "extract") {
+        if (message?.type === 'extract') {
           sendResponse(extract(message.maxChars));
           return true;
         }
-        if (message?.type === "seek") {
+        if (message?.type === 'seek') {
           sendResponse(seekToSeconds(message.seconds));
           return true;
         }
@@ -169,4 +156,6 @@ export default defineContentScript({
       },
     );
   },
+  matches: ['<all_urls>'],
+  runAt: 'document_idle',
 });

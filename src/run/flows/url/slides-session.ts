@@ -1,27 +1,27 @@
-import { buildSlidesCacheKey } from "../../../cache.js";
-import type { ExtractedLinkContent } from "../../../content/index.js";
+import { buildSlidesCacheKey } from '../../../cache.js';
+import type { ExtractedLinkContent } from '../../../content/index.js';
 import {
   extractSlidesForSource,
   resolveSlideSource,
   type SlideExtractionResult,
   validateSlidesCache,
-} from "../../../slides/index.js";
-import { writeVerbose } from "../../logging.js";
-import { createSlidesTerminalOutput, type SlidesTerminalOutput } from "./slides-output.js";
-import { composeUrlFlowHooks, type UrlFlowContext } from "./types.js";
+} from '../../../slides/index.js';
+import { writeVerbose } from '../../logging.js';
+import { createSlidesTerminalOutput, type SlidesTerminalOutput } from './slides-output.js';
+import { composeUrlFlowHooks, type UrlFlowContext } from './types.js';
 
-type ProgressStatusLike = {
+interface ProgressStatusLike {
   clearSlides: () => void;
   setSlides: (text: string, percent?: number | null) => void;
-};
+}
 
-export type UrlSlidesSession = {
+export interface UrlSlidesSession {
   getSlidesExtracted: () => SlideExtractionResult | null;
   runSlidesExtraction: () => Promise<SlideExtractionResult | null>;
   slidesOutput: SlidesTerminalOutput | null;
   slidesTimelinePromise: Promise<SlideExtractionResult | null> | null;
   setExtracted: (value: ExtractedLinkContent) => void;
-};
+}
 
 export function createUrlSlidesSession({
   ctx,
@@ -36,7 +36,7 @@ export function createUrlSlidesSession({
   ctx: UrlFlowContext;
   url: string;
   extracted: ExtractedLinkContent;
-  cacheStore: UrlFlowContext["cache"]["store"] | null;
+  cacheStore: UrlFlowContext['cache']['store'] | null;
   progressStatus: ProgressStatusLike;
   renderStatus: (label: string, detail?: string) => string;
   renderStatusFromText: (text: string) => string;
@@ -55,7 +55,7 @@ export function createUrlSlidesSession({
     : null;
 
   const resolveTimeline = (value: SlideExtractionResult | null) => {
-    if (slidesTimelineResolved) return;
+    if (slidesTimelineResolved) {return;}
     slidesTimelineResolved = true;
     resolveSlidesTimeline?.(value);
   };
@@ -63,92 +63,92 @@ export function createUrlSlidesSession({
   const slidesOutputEnabled =
     Boolean(flags.slides) && flags.slidesOutput !== false && !flags.json && !flags.extractMode;
   const slidesOutput = createSlidesTerminalOutput({
-    io,
-    flags: { plain: flags.plain, lengthArg: flags.lengthArg, slidesDebug: flags.slidesDebug },
-    extracted,
-    slides: null,
-    enabled: slidesOutputEnabled,
-    outputMode: "delta",
     clearProgressForStdout: hooks.clearProgressForStdout,
-    restoreProgressAfterStdout: hooks.restoreProgressAfterStdout ?? null,
+    enabled: slidesOutputEnabled,
+    extracted,
+    flags: { lengthArg: flags.lengthArg, plain: flags.plain, slidesDebug: flags.slidesDebug },
+    io,
     onProgressText: flags.progressEnabled
-      ? (text) => progressStatus.setSlides(renderStatusFromText(text))
+      ? (text) =>{  progressStatus.setSlides(renderStatusFromText(text)); }
       : null,
+    outputMode: 'delta',
+    restoreProgressAfterStdout: hooks.restoreProgressAfterStdout ?? null,
+    slides: null,
   });
 
   const sessionHooks = slidesOutput
     ? composeUrlFlowHooks(hooks, {
-        onSlidesExtracted: (value) => {
-          hooks.onSlidesExtracted?.(value);
-          slidesOutput.onSlidesExtracted(value);
+        onSlideChunk: (chunk) => {
+          hooks.onSlideChunk?.(chunk);
+          slidesOutput.onSlideChunk(chunk);
         },
         onSlidesDone: (result) => {
           hooks.onSlidesDone?.(result);
           progressStatus.clearSlides();
           slidesOutput.onSlidesDone(result);
         },
-        onSlideChunk: (chunk) => {
-          hooks.onSlideChunk?.(chunk);
-          slidesOutput.onSlideChunk(chunk);
+        onSlidesExtracted: (value) => {
+          hooks.onSlidesExtracted?.(value);
+          slidesOutput.onSlidesExtracted(value);
         },
       })
     : hooks;
 
   const markSlidesDone = (result: { ok: boolean; error?: string | null }) => {
-    if (slidesDone) return;
+    if (slidesDone) {return;}
     slidesDone = true;
     progressStatus.clearSlides();
     sessionHooks.onSlidesDone?.(result);
   };
 
   const runSlidesExtraction = async (): Promise<SlideExtractionResult | null> => {
-    if (!flags.slides) return null;
+    if (!flags.slides) {return null;}
     if (slidesExtracted) {
-      if (!slidesDone) markSlidesDone({ ok: true });
+      if (!slidesDone) {markSlidesDone({ ok: true });}
       return slidesExtracted;
     }
     let errorMessage: string | null = null;
     try {
-      const source = resolveSlideSource({ url, extracted });
+      const source = resolveSlideSource({ extracted, url });
       if (!source) {
-        throw new Error("Slides are only supported for YouTube or direct video URLs.");
+        throw new Error('Slides are only supported for YouTube or direct video URLs.');
       }
       const slidesCacheKey =
-        cacheStore && cacheState.mode === "default"
-          ? buildSlidesCacheKey({ url: source.url, settings: flags.slides })
+        cacheStore && cacheState.mode === 'default'
+          ? buildSlidesCacheKey({ settings: flags.slides, url: source.url })
           : null;
       if (slidesCacheKey && cacheStore) {
-        const cached = cacheStore.getJson<SlideExtractionResult>("slides", slidesCacheKey);
+        const cached = cacheStore.getJson<SlideExtractionResult>('slides', slidesCacheKey);
         const validated = cached
-          ? await validateSlidesCache({ cached, source, settings: flags.slides })
+          ? await validateSlidesCache({ cached, settings: flags.slides, source })
           : null;
         if (validated) {
           writeVerbose(
             io.stderr,
             flags.verbose,
-            "cache hit slides",
+            'cache hit slides',
             flags.verboseColor,
             io.envForRun,
           );
           slidesExtracted = validated;
           resolveTimeline(validated);
           sessionHooks.onSlidesExtracted?.(slidesExtracted);
-          sessionHooks.onSlidesProgress?.("Slides: cached 100%");
+          sessionHooks.onSlidesProgress?.('Slides: cached 100%');
           return slidesExtracted;
         }
         writeVerbose(
           io.stderr,
           flags.verbose,
-          "cache miss slides",
+          'cache miss slides',
           flags.verboseColor,
           io.envForRun,
         );
       }
       if (flags.progressEnabled) {
-        progressStatus.setSlides(renderStatus("Extracting slides"));
+        progressStatus.setSlides(renderStatus('Extracting slides'));
       }
       const activeSlidesProgress = sessionHooks.onSlidesProgress;
-      activeSlidesProgress?.("Slides: extracting");
+      activeSlidesProgress?.('Slides: extracting');
       const onSlidesLog = (message: string) => {
         writeVerbose(
           io.stderr,
@@ -159,25 +159,25 @@ export function createUrlSlidesSession({
         );
       };
       slidesExtracted = await extractSlidesForSource({
-        source,
-        settings: flags.slides,
-        noCache: cacheState.mode === "bypass",
-        mediaCache: ctx.mediaCache,
         env: io.env,
-        timeoutMs: flags.timeoutMs,
-        ytDlpPath: model.apiStatus.ytDlpPath,
-        ytDlpCookiesFromBrowser: model.apiStatus.ytDlpCookiesFromBrowser,
         ffmpegPath: null,
-        tesseractPath: null,
         hooks: {
           onSlideChunk: (chunk) => sessionHooks.onSlideChunk?.(chunk),
+          onSlidesLog,
+          onSlidesProgress: activeSlidesProgress ?? undefined,
           onSlidesTimeline: (timeline) => {
             resolveTimeline(timeline);
             sessionHooks.onSlidesExtracted?.(timeline);
           },
-          onSlidesProgress: activeSlidesProgress ?? undefined,
-          onSlidesLog,
         },
+        mediaCache: ctx.mediaCache,
+        noCache: cacheState.mode === 'bypass',
+        settings: flags.slides,
+        source,
+        tesseractPath: null,
+        timeoutMs: flags.timeoutMs,
+        ytDlpCookiesFromBrowser: model.apiStatus.ytDlpCookiesFromBrowser,
+        ytDlpPath: model.apiStatus.ytDlpPath,
       });
       if (slidesExtracted) {
         sessionHooks.onSlidesExtracted?.(slidesExtracted);
@@ -185,11 +185,11 @@ export function createUrlSlidesSession({
           `Slides: done (${slidesExtracted.slides.length.toString()} slides) 100%`,
         );
         if (slidesCacheKey && cacheStore) {
-          cacheStore.setJson("slides", slidesCacheKey, slidesExtracted, cacheState.ttlMs);
+          cacheStore.setJson('slides', slidesCacheKey, slidesExtracted, cacheState.ttlMs);
           writeVerbose(
             io.stderr,
             flags.verbose,
-            "cache write slides",
+            'cache write slides',
             flags.verboseColor,
             io.envForRun,
           );
@@ -207,7 +207,7 @@ export function createUrlSlidesSession({
         resolveTimeline(slidesExtracted ?? null);
       }
       if (!slidesDone) {
-        markSlidesDone(errorMessage ? { ok: false, error: errorMessage } : { ok: true });
+        markSlidesDone(errorMessage ? { error: errorMessage, ok: false } : { ok: true });
       }
     }
   };
@@ -215,10 +215,10 @@ export function createUrlSlidesSession({
   return {
     getSlidesExtracted: () => slidesExtracted,
     runSlidesExtraction,
-    slidesOutput,
-    slidesTimelinePromise,
     setExtracted: (value) => {
       extracted = value;
     },
+    slidesOutput,
+    slidesTimelinePromise,
   };
 }

@@ -1,7 +1,7 @@
 ---
-summary: "Output language flag and config options."
+summary: 'Output language flag and config options.'
 read_when:
-  - "When changing language handling."
+  - 'When changing language handling.'
 ---
 
 # Output language
@@ -33,17 +33,13 @@ Supported inputs (best-effort):
 Preferred:
 
 ```json
-{
-  "output": { "language": "auto" }
-}
+{ "output": { "language": "auto" } }
 ```
 
 Legacy (still supported):
 
 ```json
-{
-  "language": "en"
-}
+{ "language": "en" }
 ```
 
 Unknown values are passed through to the model (sanitized).

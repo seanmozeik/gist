@@ -1,99 +1,99 @@
-type Rgb = { r: number; g: number; b: number };
+interface Rgb { r: number; g: number; b: number }
 
-export const CLI_THEME_NAMES = ["aurora", "ember", "moss", "mono"] as const;
+export const CLI_THEME_NAMES = ['aurora', 'ember', 'moss', 'mono'] as const;
 export type CliThemeName = (typeof CLI_THEME_NAMES)[number];
 
 export type ThemeRole =
-  | "heading"
-  | "accent"
-  | "accentStrong"
-  | "muted"
-  | "dim"
-  | "success"
-  | "warning"
-  | "error"
-  | "label"
-  | "value"
-  | "code";
+  | 'heading'
+  | 'accent'
+  | 'accentStrong'
+  | 'muted'
+  | 'dim'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'label'
+  | 'value'
+  | 'code';
 
-type ThemePalette = {
+interface ThemePalette {
   name: CliThemeName;
   roles: Record<ThemeRole, string>;
-  spinner: "cyan" | "magenta" | "yellow" | "green" | "gray" | "blue";
-};
+  spinner: 'cyan' | 'magenta' | 'yellow' | 'green' | 'gray' | 'blue';
+}
 
 const THEMES: Record<CliThemeName, ThemePalette> = {
   aurora: {
-    name: "aurora",
+    name: 'aurora',
     roles: {
-      heading: "#8be9fd",
-      accent: "#38bdf8",
-      accentStrong: "#7dd3fc",
-      label: "#a5b4fc",
-      value: "#e2e8f0",
-      muted: "#94a3b8",
-      dim: "#64748b",
-      success: "#34d399",
-      warning: "#fbbf24",
-      error: "#fb7185",
-      code: "#c4b5fd",
+      accent: '#38bdf8',
+      accentStrong: '#7dd3fc',
+      code: '#c4b5fd',
+      dim: '#64748b',
+      error: '#fb7185',
+      heading: '#8be9fd',
+      label: '#a5b4fc',
+      muted: '#94a3b8',
+      success: '#34d399',
+      value: '#e2e8f0',
+      warning: '#fbbf24',
     },
-    spinner: "cyan",
+    spinner: 'cyan',
   },
   ember: {
-    name: "ember",
+    name: 'ember',
     roles: {
-      heading: "#fdba74",
-      accent: "#f97316",
-      accentStrong: "#fb923c",
-      label: "#fed7aa",
-      value: "#fff7ed",
-      muted: "#cbd5e1",
-      dim: "#94a3b8",
-      success: "#84cc16",
-      warning: "#f59e0b",
-      error: "#f43f5e",
-      code: "#f472b6",
+      accent: '#f97316',
+      accentStrong: '#fb923c',
+      code: '#f472b6',
+      dim: '#94a3b8',
+      error: '#f43f5e',
+      heading: '#fdba74',
+      label: '#fed7aa',
+      muted: '#cbd5e1',
+      success: '#84cc16',
+      value: '#fff7ed',
+      warning: '#f59e0b',
     },
-    spinner: "yellow",
-  },
-  moss: {
-    name: "moss",
-    roles: {
-      heading: "#86efac",
-      accent: "#22c55e",
-      accentStrong: "#4ade80",
-      label: "#a7f3d0",
-      value: "#ecfdf5",
-      muted: "#94a3b8",
-      dim: "#64748b",
-      success: "#16a34a",
-      warning: "#facc15",
-      error: "#fb7185",
-      code: "#5eead4",
-    },
-    spinner: "green",
+    spinner: 'yellow',
   },
   mono: {
-    name: "mono",
+    name: 'mono',
     roles: {
-      heading: "#e5e7eb",
-      accent: "#d1d5db",
-      accentStrong: "#f3f4f6",
-      label: "#cbd5e1",
-      value: "#f8fafc",
-      muted: "#9ca3af",
-      dim: "#6b7280",
-      success: "#e5e7eb",
-      warning: "#e5e7eb",
-      error: "#f87171",
-      code: "#c7d2fe",
+      accent: '#d1d5db',
+      accentStrong: '#f3f4f6',
+      code: '#c7d2fe',
+      dim: '#6b7280',
+      error: '#f87171',
+      heading: '#e5e7eb',
+      label: '#cbd5e1',
+      muted: '#9ca3af',
+      success: '#e5e7eb',
+      value: '#f8fafc',
+      warning: '#e5e7eb',
     },
-    spinner: "gray",
+    spinner: 'gray',
+  },
+  moss: {
+    name: 'moss',
+    roles: {
+      accent: '#22c55e',
+      accentStrong: '#4ade80',
+      code: '#5eead4',
+      dim: '#64748b',
+      error: '#fb7185',
+      heading: '#86efac',
+      label: '#a7f3d0',
+      muted: '#94a3b8',
+      success: '#16a34a',
+      value: '#ecfdf5',
+      warning: '#facc15',
+    },
+    spinner: 'green',
   },
 };
 
-export const DEFAULT_CLI_THEME: CliThemeName = "aurora";
+export const DEFAULT_CLI_THEME: CliThemeName = 'aurora';
 
 export function listCliThemes(): CliThemeName[] {
   return [...CLI_THEME_NAMES];
@@ -104,14 +104,14 @@ export function isCliThemeName(value: string): value is CliThemeName {
 }
 
 export function parseCliThemeName(raw: unknown, label: string): CliThemeName | null {
-  if (typeof raw === "undefined" || raw === null) return null;
-  if (typeof raw !== "string") {
-    throw new Error(`Unsupported ${label}: ${String(raw)}`);
+  if (raw === undefined || raw === null) {return null;}
+  if (typeof raw !== 'string') {
+    throw new TypeError(`Unsupported ${label}: ${String(raw)}`);
   }
   const normalized = raw.trim().toLowerCase();
-  if (!normalized) return null;
-  if (isCliThemeName(normalized)) return normalized;
-  throw new Error(`Unsupported ${label}: ${raw} (use ${CLI_THEME_NAMES.join(", ")})`);
+  if (!normalized) {return null;}
+  if (isCliThemeName(normalized)) {return normalized;}
+  throw new Error(`Unsupported ${label}: ${raw} (use ${CLI_THEME_NAMES.join(', ')})`);
 }
 
 export function resolveThemeNameFromSources({
@@ -125,56 +125,52 @@ export function resolveThemeNameFromSources({
   config?: unknown;
   fallback?: CliThemeName;
 }): CliThemeName {
-  const cliName = parseCliThemeName(cli, "--theme");
-  if (cliName) return cliName;
-  const envName = parseCliThemeName(env, "SUMMARIZE_THEME");
-  if (envName) return envName;
-  const configName = parseCliThemeName(config, "ui.theme");
-  if (configName) return configName;
+  const cliName = parseCliThemeName(cli, '--theme');
+  if (cliName) {return cliName;}
+  const envName = parseCliThemeName(env, 'SUMMARIZE_THEME');
+  if (envName) {return envName;}
+  const configName = parseCliThemeName(config, 'ui.theme');
+  if (configName) {return configName;}
   return fallback;
 }
 
 export function resolveTrueColor(env: Record<string, string | undefined>): boolean {
   const force = env.SUMMARIZE_TRUECOLOR?.trim().toLowerCase();
-  if (force === "1" || force === "true" || force === "yes") return true;
+  if (force === '1' || force === 'true' || force === 'yes') {return true;}
   const disabled = env.SUMMARIZE_NO_TRUECOLOR?.trim().toLowerCase();
-  if (disabled === "1" || disabled === "true" || disabled === "yes") return false;
+  if (disabled === '1' || disabled === 'true' || disabled === 'yes') {return false;}
 
-  const colorterm = env.COLORTERM?.toLowerCase() ?? "";
-  if (colorterm.includes("truecolor") || colorterm.includes("24bit")) return true;
+  const colorterm = env.COLORTERM?.toLowerCase() ?? '';
+  if (colorterm.includes('truecolor') || colorterm.includes('24bit')) {return true;}
 
-  const termProgram = env.TERM_PROGRAM?.toLowerCase() ?? "";
-  if (["iterm.app", "wezterm", "vscode", "apple_terminal", "hyper"].includes(termProgram)) {
+  const termProgram = env.TERM_PROGRAM?.toLowerCase() ?? '';
+  if (['iterm.app', 'wezterm', 'vscode', 'apple_terminal', 'hyper'].includes(termProgram)) {
     return true;
   }
 
-  const term = env.TERM?.toLowerCase() ?? "";
-  if (term.includes("256color") || term.includes("direct")) return true;
+  const term = env.TERM?.toLowerCase() ?? '';
+  if (term.includes('256color') || term.includes('direct')) {return true;}
 
   return true;
 }
 
 const FALLBACK_CODES: Record<ThemeRole, string> = {
-  heading: "1;36",
-  accent: "36",
-  accentStrong: "1;36",
-  label: "36",
-  value: "1",
-  muted: "90",
-  dim: "2",
-  success: "1;32",
-  warning: "1;33",
-  error: "1;31",
-  code: "35",
+  accent: '36',
+  accentStrong: '1;36',
+  code: '35',
+  dim: '2',
+  error: '1;31',
+  heading: '1;36',
+  label: '36',
+  muted: '90',
+  success: '1;32',
+  value: '1',
+  warning: '1;33',
 };
 
-type ThemeRendererOptions = {
-  themeName: CliThemeName;
-  enabled: boolean;
-  trueColor: boolean;
-};
+interface ThemeRendererOptions { themeName: CliThemeName; enabled: boolean; trueColor: boolean }
 
-export type ThemeRenderer = {
+export interface ThemeRenderer {
   name: CliThemeName;
   enabled: boolean;
   trueColor: boolean;
@@ -190,27 +186,27 @@ export type ThemeRenderer = {
   warning: (text: string) => string;
   error: (text: string) => string;
   code: (text: string) => string;
-};
+}
 
 const ansi = (code: string, input: string, enabled: boolean): string => {
-  if (!enabled) return input;
-  return `\u001b[${code}m${input}\u001b[0m`;
+  if (!enabled) {return input;}
+  return `\u001B[${code}m${input}\u001B[0m`;
 };
 
 const parseHex = (value: string): Rgb => {
-  const hex = value.replace("#", "").trim();
-  if (hex.length !== 6) return { r: 255, g: 255, b: 255 };
+  const hex = value.replace('#', '').trim();
+  if (hex.length !== 6) {return { r: 255, g: 255, b: 255 };}
   const r = Number.parseInt(hex.slice(0, 2), 16);
   const g = Number.parseInt(hex.slice(2, 4), 16);
   const b = Number.parseInt(hex.slice(4, 6), 16);
-  if ([r, g, b].some((c) => Number.isNaN(c))) return { r: 255, g: 255, b: 255 };
-  return { r, g, b };
+  if ([r, g, b].some((c) => Number.isNaN(c))) {return { r: 255, g: 255, b: 255 };}
+  return { b, g, r };
 };
 
 const ansiRgb = (rgb: Rgb, input: string, enabled: boolean, bold = false): string => {
-  if (!enabled) return input;
-  const codes = [bold ? "1" : null, `38;2;${rgb.r};${rgb.g};${rgb.b}`].filter(Boolean).join(";");
-  return `\u001b[${codes}m${input}\u001b[0m`;
+  if (!enabled) {return input;}
+  const codes = [bold ? '1' : null, `38;2;${rgb.r};${rgb.g};${rgb.b}`].filter(Boolean).join(';');
+  return `\u001B[${codes}m${input}\u001B[0m`;
 };
 
 export function createThemeRenderer({
@@ -221,7 +217,7 @@ export function createThemeRenderer({
   const palette = THEMES[themeName] ?? THEMES[DEFAULT_CLI_THEME];
 
   const colorize = (role: ThemeRole, text: string, bold = false) => {
-    if (!enabled) return text;
+    if (!enabled) {return text;}
     if (trueColor) {
       return ansiRgb(parseHex(palette.roles[role]), text, enabled, bold);
     }
@@ -229,21 +225,21 @@ export function createThemeRenderer({
   };
 
   return {
-    name: palette.name,
+    accent: (text) => colorize('accent', text),
+    accentStrong: (text) => colorize('accentStrong', text, true),
+    code: (text) => colorize('code', text),
+    dim: (text) => colorize('dim', text),
     enabled,
-    trueColor,
+    error: (text) => colorize('error', text, true),
+    heading: (text) => colorize('heading', text, true),
+    label: (text) => colorize('label', text),
+    muted: (text) => colorize('muted', text),
+    name: palette.name,
     palette,
-    heading: (text) => colorize("heading", text, true),
-    accent: (text) => colorize("accent", text),
-    accentStrong: (text) => colorize("accentStrong", text, true),
-    label: (text) => colorize("label", text),
-    value: (text) => colorize("value", text, true),
-    muted: (text) => colorize("muted", text),
-    dim: (text) => colorize("dim", text),
-    success: (text) => colorize("success", text, true),
-    warning: (text) => colorize("warning", text, true),
-    error: (text) => colorize("error", text, true),
-    code: (text) => colorize("code", text),
+    success: (text) => colorize('success', text, true),
+    trueColor,
+    value: (text) => colorize('value', text, true),
+    warning: (text) => colorize('warning', text, true),
   };
 }
 

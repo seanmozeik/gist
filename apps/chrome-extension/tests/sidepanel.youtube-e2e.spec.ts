@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { coerceSummaryWithSlides } from "../../../src/run/flows/url/slides-text.js";
+import { expect, test } from '@playwright/test';
+
+import { coerceSummaryWithSlides } from '../../../src/run/flows/url/slides-text.js';
 import {
   DAEMON_PORT,
   SLIDES_MAX,
@@ -13,7 +14,7 @@ import {
   resolveSlidesLengthArg,
   runCliSummary,
   startDaemonSummaryRun,
-} from "./helpers/daemon-fixtures";
+} from './helpers/daemon-fixtures';
 import {
   activateTabByUrl,
   assertNoErrors,
@@ -28,7 +29,7 @@ import {
   sendBgMessage,
   waitForActiveTabUrl,
   waitForPanelPort,
-} from "./helpers/extension-harness";
+} from './helpers/extension-harness';
 import {
   getPanelModel,
   getPanelPhase,
@@ -39,56 +40,56 @@ import {
   getPanelSlidesTimeline,
   getPanelSummaryMarkdown,
   getPanelTranscriptTimedText,
-} from "./helpers/panel-hooks";
+} from './helpers/panel-hooks';
 
-const allowFirefoxExtensionTests = process.env.ALLOW_FIREFOX_EXTENSION_TESTS === "1";
-const allowYouTubeE2E = process.env.ALLOW_YOUTUBE_E2E === "1";
+const allowFirefoxExtensionTests = process.env.ALLOW_FIREFOX_EXTENSION_TESTS === '1';
+const allowYouTubeE2E = process.env.ALLOW_YOUTUBE_E2E === '1';
 const youtubeEnvUrls =
-  typeof process.env.SUMMARIZE_YOUTUBE_URLS === "string"
-    ? process.env.SUMMARIZE_YOUTUBE_URLS.split(",").map((value) => value.trim())
+  typeof process.env.SUMMARIZE_YOUTUBE_URLS === 'string'
+    ? process.env.SUMMARIZE_YOUTUBE_URLS.split(',').map((value) => value.trim())
     : [];
 const youtubeSlidesEnvUrls =
-  typeof process.env.SUMMARIZE_YOUTUBE_SLIDES_URLS === "string"
-    ? process.env.SUMMARIZE_YOUTUBE_SLIDES_URLS.split(",").map((value) => value.trim())
+  typeof process.env.SUMMARIZE_YOUTUBE_SLIDES_URLS === 'string'
+    ? process.env.SUMMARIZE_YOUTUBE_SLIDES_URLS.split(',').map((value) => value.trim())
     : [];
 const defaultYouTubeUrls = [
-  "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+  'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  'https://www.youtube.com/watch?v=jNQXAC9IVRw',
 ];
 const defaultYouTubeSlidesUrls = [
-  "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+  'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  'https://www.youtube.com/watch?v=jNQXAC9IVRw',
 ];
 const youtubeTestUrls =
-  youtubeEnvUrls.filter((value) => value.length > 0).length > 0
+  youtubeEnvUrls.some((value) => value.length > 0)
     ? youtubeEnvUrls.filter((value) => value.length > 0)
     : defaultYouTubeUrls;
 const youtubeSlidesTestUrls =
-  youtubeSlidesEnvUrls.filter((value) => value.length > 0).length > 0
+  youtubeSlidesEnvUrls.some((value) => value.length > 0)
     ? youtubeSlidesEnvUrls.filter((value) => value.length > 0)
     : defaultYouTubeSlidesUrls;
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 
-test.describe("youtube e2e", () => {
-  test("youtube regular summary matches cli output", async ({
+test.describe('youtube e2e', () => {
+  test('youtube regular summary matches cli output', async ({
     browserName: _browserName,
   }, testInfo) => {
     test.setTimeout(900_000);
     if (!allowYouTubeE2E) {
-      test.skip(true, "Set ALLOW_YOUTUBE_E2E=1 to run YouTube E2E tests.");
+      test.skip(true, 'Set ALLOW_YOUTUBE_E2E=1 to run YouTube E2E tests.');
     }
-    if (testInfo.project.name === "firefox") {
-      test.skip(true, "YouTube E2E is only validated in Chromium.");
+    if (testInfo.project.name === 'firefox') {
+      test.skip(true, 'YouTube E2E is only validated in Chromium.');
     }
     const token = readDaemonToken();
     if (!token) {
       test.skip(
         true,
-        "Daemon token missing (set SUMMARIZE_DAEMON_TOKEN or ~/.summarize/daemon.json).",
+        'Daemon token missing (set SUMMARIZE_DAEMON_TOKEN or ~/.summarize/daemon.json).',
       );
     }
     if (!(await isPortInUse(DAEMON_PORT))) {
@@ -98,16 +99,16 @@ test.describe("youtube e2e", () => {
     const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
     try {
-      const length = "short";
+      const length = 'short';
       await seedSettings(harness, {
-        token,
         autoSummarize: false,
+        length,
         slidesEnabled: false,
         slidesParallel: true,
-        length,
+        token,
       });
 
-      const page = await openExtensionPage(harness, "sidepanel.html", "#title", () => {
+      const page = await openExtensionPage(harness, 'sidepanel.html', '#title', () => {
         (
           window as typeof globalThis & { __summarizeTestHooks?: Record<string, unknown> }
         ).__summarizeTestHooks = {};
@@ -117,42 +118,42 @@ test.describe("youtube e2e", () => {
       const contentPage = await harness.context.newPage();
 
       for (const url of youtubeTestUrls) {
-        const runId = await startDaemonSummaryRun({ url, token, length, slides: false });
+        const runId = await startDaemonSummaryRun({ length, slides: false, token, url });
 
-        await contentPage.goto(url, { waitUntil: "domcontentloaded" });
+        await contentPage.goto(url, { waitUntil: 'domcontentloaded' });
         await maybeBringToFront(contentPage);
-        await activateTabByUrl(harness, "https://www.youtube.com/watch");
-        await waitForActiveTabUrl(harness, "https://www.youtube.com/watch");
+        await activateTabByUrl(harness, 'https://www.youtube.com/watch');
+        await waitForActiveTabUrl(harness, 'https://www.youtube.com/watch');
         const activeTabId = await getActiveTabId(harness);
 
         await sendBgMessage(harness, {
-          type: "ui:state",
           state: buildUiState({
-            tab: { id: activeTabId, url, title: "YouTube" },
+            tab: { id: activeTabId, url, title: 'YouTube' },
             media: { hasVideo: true, hasAudio: false, hasCaptions: true },
             settings: { autoSummarize: false, slidesEnabled: false, slidesParallel: true, length },
           }),
+          type: 'ui:state',
         });
 
         await sendBgMessage(harness, {
-          type: "run:start",
-          run: { id: runId, url, title: "YouTube", model: "auto", reason: "test" },
+          run: { id: runId, model: 'auto', reason: 'test', title: 'YouTube', url },
+          type: 'run:start',
         });
 
-        await expect.poll(async () => await getPanelPhase(page), { timeout: 420_000 }).toBe("idle");
+        await expect.poll(async () =>  getPanelPhase(page), { timeout: 420_000 }).toBe('idle');
 
-        const model = (await getPanelModel(page))?.trim() || "auto";
+        const model = (await getPanelModel(page))?.trim() ?? 'auto';
         const cliSummary = runCliSummary(url, [
-          "--json",
-          "--length",
+          '--json',
+          '--length',
           length,
-          "--language",
-          "auto",
-          "--model",
+          '--language',
+          'auto',
+          '--model',
           model,
-          "--video-mode",
-          "transcript",
-          "--timestamps",
+          '--video-mode',
+          'transcript',
+          '--timestamps',
         ]);
         const panelSummary = await getPanelSummaryMarkdown(page);
         const normalizedPanel = normalizeWhitespace(panelSummary);
@@ -168,24 +169,24 @@ test.describe("youtube e2e", () => {
     }
   });
 
-  test("youtube slides summary matches cli output", async ({
+  test('youtube slides summary matches cli output', async ({
     browserName: _browserName,
   }, testInfo) => {
     test.setTimeout(1_200_000);
     if (!allowYouTubeE2E) {
-      test.skip(true, "Set ALLOW_YOUTUBE_E2E=1 to run YouTube E2E tests.");
+      test.skip(true, 'Set ALLOW_YOUTUBE_E2E=1 to run YouTube E2E tests.');
     }
-    if (testInfo.project.name === "firefox") {
-      test.skip(true, "YouTube E2E is only validated in Chromium.");
+    if (testInfo.project.name === 'firefox') {
+      test.skip(true, 'YouTube E2E is only validated in Chromium.');
     }
     if (!hasFfmpeg() || !hasYtDlp()) {
-      test.skip(true, "yt-dlp + ffmpeg are required for YouTube slide extraction.");
+      test.skip(true, 'yt-dlp + ffmpeg are required for YouTube slide extraction.');
     }
     const token = readDaemonToken();
     if (!token) {
       test.skip(
         true,
-        "Daemon token missing (set SUMMARIZE_DAEMON_TOKEN or ~/.summarize/daemon.json).",
+        'Daemon token missing (set SUMMARIZE_DAEMON_TOKEN or ~/.summarize/daemon.json).',
       );
     }
     if (!(await isPortInUse(DAEMON_PORT))) {
@@ -195,16 +196,16 @@ test.describe("youtube e2e", () => {
     const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
     try {
-      const length = "short";
+      const length = 'short';
       await seedSettings(harness, {
-        token,
         autoSummarize: false,
+        length,
         slidesEnabled: true,
         slidesParallel: true,
-        length,
+        token,
       });
 
-      const page = await openExtensionPage(harness, "sidepanel.html", "#title", () => {
+      const page = await openExtensionPage(harness, 'sidepanel.html', '#title', () => {
         (
           window as typeof globalThis & { __summarizeTestHooks?: Record<string, unknown> }
         ).__summarizeTestHooks = {};
@@ -214,46 +215,41 @@ test.describe("youtube e2e", () => {
       const contentPage = await harness.context.newPage();
 
       for (const url of youtubeSlidesTestUrls) {
-        const summaryRunId = await startDaemonSummaryRun({ url, token, length, slides: false });
+        const summaryRunId = await startDaemonSummaryRun({ length, slides: false, token, url });
         const slidesRunId = await startDaemonSummaryRun({
-          url,
-          token,
           length,
           slides: true,
           slidesMax: SLIDES_MAX,
-        });
-
-        await contentPage.goto(url, { waitUntil: "domcontentloaded" });
-        await maybeBringToFront(contentPage);
-        await activateTabByUrl(harness, "https://www.youtube.com/watch");
-        await waitForActiveTabUrl(harness, "https://www.youtube.com/watch");
-        const activeTabId = await getActiveTabId(harness);
-
-        await sendBgMessage(harness, {
-          type: "ui:state",
-          state: buildUiState({
-            tab: { id: activeTabId, url, title: "YouTube" },
-            media: { hasVideo: true, hasAudio: false, hasCaptions: true },
-            settings: { autoSummarize: false, slidesEnabled: true, slidesParallel: true, length },
-          }),
-        });
-
-        await sendBgMessage(harness, {
-          type: "run:start",
-          run: { id: summaryRunId, url, title: "YouTube", model: "auto", reason: "test" },
-        });
-        await sendBgMessage(harness, {
-          type: "slides:run",
-          ok: true,
-          runId: slidesRunId,
+          token,
           url,
         });
 
-        await expect.poll(async () => await getPanelPhase(page), { timeout: 420_000 }).toBe("idle");
+        await contentPage.goto(url, { waitUntil: 'domcontentloaded' });
+        await maybeBringToFront(contentPage);
+        await activateTabByUrl(harness, 'https://www.youtube.com/watch');
+        await waitForActiveTabUrl(harness, 'https://www.youtube.com/watch');
+        const activeTabId = await getActiveTabId(harness);
+
+        await sendBgMessage(harness, {
+          state: buildUiState({
+            tab: { id: activeTabId, url, title: 'YouTube' },
+            media: { hasVideo: true, hasAudio: false, hasCaptions: true },
+            settings: { autoSummarize: false, slidesEnabled: true, slidesParallel: true, length },
+          }),
+          type: 'ui:state',
+        });
+
+        await sendBgMessage(harness, {
+          run: { id: summaryRunId, model: 'auto', reason: 'test', title: 'YouTube', url },
+          type: 'run:start',
+        });
+        await sendBgMessage(harness, { ok: true, runId: slidesRunId, type: 'slides:run', url });
+
+        await expect.poll(async () =>  getPanelPhase(page), { timeout: 420_000 }).toBe('idle');
         await expect
-          .poll(async () => (await getPanelModel(page)) ?? "", { timeout: 120_000 })
-          .not.toBe("");
-        const model = (await getPanelModel(page)) ?? "auto";
+          .poll(async () => (await getPanelModel(page)) ?? '', { timeout: 120_000 })
+          .not.toBe('');
+        const model = (await getPanelModel(page)) ?? 'auto';
 
         await expect
           .poll(async () => (await getPanelSlidesTimeline(page)).length, { timeout: 600_000 })
@@ -261,7 +257,7 @@ test.describe("youtube e2e", () => {
         const slidesTimeline = await getPanelSlidesTimeline(page);
         const transcriptTimedText = await getPanelTranscriptTimedText(page);
         await expect
-          .poll(async () => await getPanelSlidesSummaryComplete(page), { timeout: 600_000 })
+          .poll(async () =>  getPanelSlidesSummaryComplete(page), { timeout: 600_000 })
           .toBe(true);
         await expect
           .poll(async () => (await getPanelSlidesSummaryMarkdown(page)).trim().length, {
@@ -277,66 +273,66 @@ test.describe("youtube e2e", () => {
         const firstLoadedImage = await loadedSlideImages.first().evaluate((node) => {
           const img = node as HTMLImageElement;
           return {
-            loaded: img.dataset.loaded ?? "",
             complete: img.complete,
-            naturalWidth: img.naturalWidth,
-            naturalHeight: img.naturalHeight,
             currentSrc: img.currentSrc,
+            loaded: img.dataset.loaded ?? '',
+            naturalHeight: img.naturalHeight,
+            naturalWidth: img.naturalWidth,
           };
         });
-        expect(firstLoadedImage.loaded).toBe("true");
+        expect(firstLoadedImage.loaded).toBe('true');
         expect(firstLoadedImage.complete).toBe(true);
         expect(firstLoadedImage.naturalWidth).toBeGreaterThan(1);
         expect(firstLoadedImage.naturalHeight).toBeGreaterThan(1);
         expect(firstLoadedImage.currentSrc.length).toBeGreaterThan(0);
-        const videoId = new URL(url).searchParams.get("v") ?? "youtube";
+        const videoId = new URL(url).searchParams.get('v') ?? 'youtube';
         await page.screenshot({
-          path: testInfo.outputPath(`youtube-slides-${videoId}.png`),
           fullPage: true,
+          path: testInfo.outputPath(`youtube-slides-${videoId}.png`),
         });
-        const slidesModel = (await getPanelSlidesSummaryModel(page))?.trim() || model;
+        const slidesModel = (await getPanelSlidesSummaryModel(page))?.trim() ?? model;
         const slidesSummaryMarkdown = await getPanelSlidesSummaryMarkdown(page);
         const cliSummary = runCliSummary(url, [
-          "--slides",
-          "--slides-ocr",
-          "--slides-max",
+          '--slides',
+          '--slides-ocr',
+          '--slides-max',
           String(SLIDES_MAX),
-          "--json",
-          "--length",
+          '--json',
+          '--length',
           length,
-          "--language",
-          "auto",
-          "--model",
+          '--language',
+          'auto',
+          '--model',
           slidesModel,
-          "--video-mode",
-          "transcript",
-          "--timestamps",
+          '--video-mode',
+          'transcript',
+          '--timestamps',
         ]);
         const lengthArg = resolveSlidesLengthArg(length);
         const coercedSummary = coerceSummaryWithSlides({
+          lengthArg,
           markdown: cliSummary,
           slides: slidesTimeline,
           transcriptTimedText: transcriptTimedText ?? null,
-          lengthArg,
         });
         const expectedSlidesFromPanelSummary = parseSlidesFromSummary(
           coerceSummaryWithSlides({
+            lengthArg,
             markdown: slidesSummaryMarkdown,
             slides: slidesTimeline,
             transcriptTimedText: transcriptTimedText ?? null,
-            lengthArg,
           }),
         );
-        if (process.env.SUMMARIZE_DEBUG_SLIDES === "1") {
+        if (process.env.SUMMARIZE_DEBUG_SLIDES === '1') {
           const panelSummary = await getPanelSummaryMarkdown(page);
           const slidesSummaryComplete = await getPanelSlidesSummaryComplete(page);
           const slidesSummaryModel = await getPanelSlidesSummaryModel(page);
-          console.log("[slides-debug]", {
-            url,
+          console.log('[slides-debug]', {
             panelSummaryLength: panelSummary.length,
-            slidesSummaryLength: slidesSummaryMarkdown.length,
             slidesSummaryComplete,
+            slidesSummaryLength: slidesSummaryMarkdown.length,
             slidesSummaryModel,
+            url,
           });
         }
         const expectedSlides = parseSlidesFromSummary(coercedSummary);
@@ -356,7 +352,7 @@ test.describe("youtube e2e", () => {
         });
         const panelSlides = (await getPanelSlideDescriptions(page))
           .map(([index, text]) => ({ index, text: normalizeWhitespace(text) }))
-          .sort((a, b) => a.index - b.index);
+          .toSorted((a, b) => a.index - b.index);
 
         for (const slide of panelSlides) {
           expect(slide.text.length).toBeGreaterThan(0);
@@ -371,16 +367,16 @@ test.describe("youtube e2e", () => {
         for (let i = 0; i < expectedSlides.length; i += 1) {
           const expected = expectedSlides[i];
           const actual = panelSlides[i];
-          if (!expected || !actual) continue;
-          if (!expected.text) continue;
+          if (!expected || !actual) {continue;}
+          if (!expected.text) {continue;}
           expect(actual.text.length).toBeGreaterThan(0);
           expect(overlapRatio(actual.text, expected.text)).toBeGreaterThanOrEqual(0.15);
         }
         for (let i = 0; i < expectedSlidesFromPanelSummary.length; i += 1) {
           const expected = expectedSlidesFromPanelSummary[i];
           const actual = panelSlides[i];
-          if (!expected || !actual) continue;
-          if (!expected.text) continue;
+          if (!expected || !actual) {continue;}
+          if (!expected.text) {continue;}
           expect(actual.text.length).toBeGreaterThan(0);
           expect(
             overlapRatio(actual.text, normalizeWhitespace(expected.text)),

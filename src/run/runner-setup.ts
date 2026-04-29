@@ -1,20 +1,21 @@
-import fs from "node:fs/promises";
-import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from "../cache.js";
-import { loadSummarizeConfig, mergeConfigEnv } from "../config.js";
-import { formatVersionLine } from "../version.js";
+import fs from 'node:fs/promises';
+
+import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from '../cache.js';
+import { loadSummarizeConfig, mergeConfigEnv } from '../config.js';
+import { formatVersionLine } from '../version.js';
 
 export function prepareRunEnvironment(
   argv: string[],
   inputEnv: Record<string, string | undefined>,
 ) {
-  const normalizedArgv = argv.filter((arg) => arg !== "--");
-  const noColorFlag = normalizedArgv.includes("--no-color");
+  const normalizedArgv = argv.filter((arg) => arg !== '--');
+  const noColorFlag = normalizedArgv.includes('--no-color');
   let envForRun: Record<string, string | undefined> = noColorFlag
-    ? { ...inputEnv, NO_COLOR: "1", FORCE_COLOR: "0" }
+    ? { ...inputEnv, FORCE_COLOR: '0', NO_COLOR: '1' }
     : { ...inputEnv };
   const { config: bootstrapConfig } = loadSummarizeConfig({ env: envForRun });
-  envForRun = mergeConfigEnv({ env: envForRun, config: bootstrapConfig });
-  return { normalizedArgv, envForRun };
+  envForRun = mergeConfigEnv({ config: bootstrapConfig, env: envForRun });
+  return { envForRun, normalizedArgv };
 }
 
 export function handleVersionFlag({
@@ -24,7 +25,7 @@ export function handleVersionFlag({
   versionRequested: boolean;
   stdout: NodeJS.WritableStream;
 }) {
-  if (!versionRequested) return false;
+  if (!versionRequested) {return false;}
   stdout.write(`${formatVersionLine()}\n`);
   return true;
 }
@@ -36,10 +37,10 @@ export function applyWidthOverride({
   width: unknown;
   env: Record<string, string | undefined>;
 }) {
-  const widthArg = typeof width === "string" ? Number(width) : undefined;
-  if (widthArg === undefined) return;
+  const widthArg = typeof width === 'string' ? Number(width) : undefined;
+  if (widthArg === undefined) {return;}
   if (!Number.isFinite(widthArg) || widthArg < 20) {
-    throw new Error("--width must be a number >= 20.");
+    throw new Error('--width must be a number >= 20.');
   }
   env.COLUMNS = String(Math.floor(widthArg));
 }
@@ -51,19 +52,19 @@ export async function resolvePromptOverride({
   prompt: unknown;
   promptFile: unknown;
 }): Promise<string | null> {
-  const promptArg = typeof prompt === "string" ? prompt : null;
-  const promptFileArg = typeof promptFile === "string" ? promptFile : null;
+  const promptArg = typeof prompt === 'string' ? prompt : null;
+  const promptFileArg = typeof promptFile === 'string' ? promptFile : null;
   if (promptArg && promptFileArg) {
-    throw new Error("Use either --prompt or --prompt-file (not both).");
+    throw new Error('Use either --prompt or --prompt-file (not both).');
   }
 
   if (promptFileArg) {
     let text: string;
     try {
-      text = await fs.readFile(promptFileArg, "utf8");
+      text = await fs.readFile(promptFileArg, 'utf8');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to read --prompt-file ${promptFileArg}: ${message}`);
+      throw new Error(`Failed to read --prompt-file ${promptFileArg}: ${message}`, { cause: error });
     }
     const trimmed = text.trim();
     if (!trimmed) {
@@ -72,10 +73,10 @@ export async function resolvePromptOverride({
     return trimmed;
   }
 
-  if (!promptArg) return null;
+  if (!promptArg) {return null;}
   const trimmed = promptArg.trim();
   if (!trimmed) {
-    throw new Error("Prompt must not be empty.");
+    throw new Error('Prompt must not be empty.');
   }
   return trimmed;
 }
@@ -89,53 +90,47 @@ export async function handleCacheUtilityFlags({
   envForRun: Record<string, string | undefined>;
   stdout: NodeJS.WritableStream;
 }) {
-  const clearCacheFlag = normalizedArgv.includes("--clear-cache");
+  const clearCacheFlag = normalizedArgv.includes('--clear-cache');
   if (clearCacheFlag) {
-    const extraArgs = normalizedArgv.filter((arg) => arg !== "--clear-cache");
+    const extraArgs = normalizedArgv.filter((arg) => arg !== '--clear-cache');
     if (extraArgs.length > 0) {
-      throw new Error("--clear-cache must be used alone.");
+      throw new Error('--clear-cache must be used alone.');
     }
     const { config } = loadSummarizeConfig({ env: envForRun });
-    const cachePath = resolveCachePath({
-      env: envForRun,
-      cachePath: config?.cache?.path ?? null,
-    });
+    const cachePath = resolveCachePath({ cachePath: config?.cache?.path ?? null, env: envForRun });
     if (!cachePath) {
-      throw new Error("Unable to resolve cache path (missing HOME).");
+      throw new Error('Unable to resolve cache path (missing HOME).');
     }
     clearCacheFiles(cachePath);
-    stdout.write("Cache cleared.\n");
+    stdout.write('Cache cleared.\n');
     return true;
   }
 
-  const cacheStatsFlag = normalizedArgv.includes("--cache-stats");
-  if (!cacheStatsFlag) return false;
+  const cacheStatsFlag = normalizedArgv.includes('--cache-stats');
+  if (!cacheStatsFlag) {return false;}
 
-  const extraArgs = normalizedArgv.filter((arg) => arg !== "--cache-stats");
+  const extraArgs = normalizedArgv.filter((arg) => arg !== '--cache-stats');
   if (extraArgs.length > 0) {
-    throw new Error("--cache-stats must be used alone.");
+    throw new Error('--cache-stats must be used alone.');
   }
   const { config } = loadSummarizeConfig({ env: envForRun });
-  const cachePath = resolveCachePath({
-    env: envForRun,
-    cachePath: config?.cache?.path ?? null,
-  });
+  const cachePath = resolveCachePath({ cachePath: config?.cache?.path ?? null, env: envForRun });
   if (!cachePath) {
-    throw new Error("Unable to resolve cache path (missing HOME).");
+    throw new Error('Unable to resolve cache path (missing HOME).');
   }
   const cacheMaxMb =
-    typeof config?.cache?.maxMb === "number" ? config.cache.maxMb : DEFAULT_CACHE_MAX_MB;
+    typeof config?.cache?.maxMb === 'number' ? config.cache.maxMb : DEFAULT_CACHE_MAX_MB;
   const cacheMaxBytes = Math.max(0, cacheMaxMb) * 1024 * 1024;
-  const { readCacheStats } = await import("../cache.js");
-  const { formatBytes } = await import("../tty/format.js");
+  const { readCacheStats } = await import('../cache.js');
+  const { formatBytes } = await import('../tty/format.js');
   const stats = await readCacheStats(cachePath);
   stdout.write(`Cache path: ${cachePath}\n`);
   if (!stats) {
-    stdout.write("Cache is empty.\n");
+    stdout.write('Cache is empty.\n');
     return true;
   }
   const sizeLabel = formatBytes(stats.sizeBytes);
-  const maxLabel = cacheMaxBytes > 0 ? formatBytes(cacheMaxBytes) : "disabled";
+  const maxLabel = cacheMaxBytes > 0 ? formatBytes(cacheMaxBytes) : 'disabled';
   stdout.write(`Size: ${sizeLabel} (max ${maxLabel})\n`);
   stdout.write(
     `Entries: total=${stats.totalEntries} extract=${stats.counts.extract} summary=${stats.counts.summary} transcript=${stats.counts.transcript}\n`,

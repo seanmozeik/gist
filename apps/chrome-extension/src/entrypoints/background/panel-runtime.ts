@@ -1,6 +1,6 @@
-import { logExtensionEvent } from "../../lib/extension-logs";
-import { resolvePanelState } from "./panel-state";
-import { summarizeActiveTab as runPanelSummarize } from "./panel-summarize";
+import { logExtensionEvent } from '../../lib/extension-logs';
+import { resolvePanelState } from './panel-state';
+import { summarizeActiveTab as runPanelSummarize } from './panel-summarize';
 
 export function createBackgroundPanelRuntime<
   Session extends {
@@ -9,22 +9,20 @@ export function createBackgroundPanelRuntime<
     daemonRecovery: { clearPending: () => void };
   },
 >(options: {
-  panelSessionStore: {
-    isPanelOpen: (session: Session) => boolean;
-  } & Record<string, unknown>;
-  loadSettings: typeof import("../../lib/settings").loadSettings;
-  getActiveTab: typeof import("./panel-utils").getActiveTab;
-  daemonHealth: typeof import("./daemon-client").daemonHealth;
-  daemonPing: typeof import("./daemon-client").daemonPing;
-  canSummarizeUrl: typeof import("./content-script-bridge").canSummarizeUrl;
-  urlsMatch: typeof import("./panel-utils").urlsMatch;
-  primeMediaHint: typeof import("./extract-cache").primeMediaHint;
-  extractFromTab: typeof import("./content-script-bridge").extractFromTab;
-  buildSummarizeRequestBody: typeof import("../lib/daemon-payload").buildSummarizeRequestBody;
-  friendlyFetchError: typeof import("./daemon-client").friendlyFetchError;
-  isDaemonUnreachableError: typeof import("../../lib/daemon-recovery").isDaemonUnreachableError;
+  panelSessionStore: { isPanelOpen: (session: Session) => boolean } & Record<string, unknown>;
+  loadSettings: typeof import('../../lib/settings').loadSettings;
+  getActiveTab: typeof import('./panel-utils').getActiveTab;
+  daemonHealth: typeof import('./daemon-client').daemonHealth;
+  daemonPing: typeof import('./daemon-client').daemonPing;
+  canSummarizeUrl: typeof import('./content-script-bridge').canSummarizeUrl;
+  urlsMatch: typeof import('./panel-utils').urlsMatch;
+  primeMediaHint: typeof import('./extract-cache').primeMediaHint;
+  extractFromTab: typeof import('./content-script-bridge').extractFromTab;
+  buildSummarizeRequestBody: typeof import('../lib/daemon-payload').buildSummarizeRequestBody;
+  friendlyFetchError: typeof import('./daemon-client').friendlyFetchError;
+  isDaemonUnreachableError: typeof import('../../lib/daemon-recovery').isDaemonUnreachableError;
   fetchImpl: typeof fetch;
-  resolveLogLevel: (event: string) => "verbose" | "warn" | "error";
+  resolveLogLevel: (event: string) => 'verbose' | 'warn' | 'error';
 }) {
   const {
     panelSessionStore,
@@ -44,16 +42,16 @@ export function createBackgroundPanelRuntime<
   } = options;
 
   const send = (session: Session, msg: unknown) => {
-    if (!panelSessionStore.isPanelOpen(session)) return;
+    if (!panelSessionStore.isPanelOpen(session)) {return;}
     try {
       session.port.postMessage(msg);
     } catch {
-      // ignore
+      // Ignore
     }
   };
 
   const sendStatus = (session: Session, status: string) => {
-    send(session, { type: "ui:status", status });
+    send(session, { status, type: 'ui:status' });
   };
 
   const emitState = async (
@@ -62,21 +60,21 @@ export function createBackgroundPanelRuntime<
     opts?: { checkRecovery?: boolean },
   ) => {
     const next = await resolvePanelState({
-      session,
-      status,
+      canSummarizeUrl,
       checkRecovery: opts?.checkRecovery,
-      loadSettings,
-      getActiveTab,
       daemonHealth,
       daemonPing,
+      getActiveTab,
+      loadSettings,
       panelSessionStore,
+      session,
+      status,
       urlsMatch,
-      canSummarizeUrl,
     });
-    send(session, { type: "ui:state", state: next.state });
+    send(session, { state: next.state, type: 'ui:state' });
 
     if (next.shouldRecover) {
-      void summarizeActiveTab(session, "daemon-recovered");
+      void summarizeActiveTab(session, 'daemon-recovered');
       return;
     }
 
@@ -101,27 +99,18 @@ export function createBackgroundPanelRuntime<
   const summarizeActiveTab = (
     session: Session,
     reason: string,
-    opts?: { refresh?: boolean; inputMode?: "page" | "video" },
+    opts?: { refresh?: boolean; inputMode?: 'page' | 'video' },
   ) =>
     runPanelSummarize({
-      session,
-      reason,
-      opts,
-      loadSettings,
-      emitState: (currentSession, nextStatus) => emitState(currentSession, nextStatus),
-      getActiveTab,
-      canSummarizeUrl,
-      panelSessionStore,
-      sendStatus: (status) => sendStatus(session, status),
-      send: (msg) => {
-        send(session, msg);
-      },
-      fetchImpl,
-      extractFromTab,
-      urlsMatch,
       buildSummarizeRequestBody,
+      canSummarizeUrl,
+      emitState: (currentSession, nextStatus) => emitState(currentSession, nextStatus),
+      extractFromTab,
+      fetchImpl,
       friendlyFetchError,
+      getActiveTab,
       isDaemonUnreachableError,
+      loadSettings,
       logPanel: (event, detail) => {
         void (async () => {
           const settings = await loadSettings();
@@ -133,13 +122,22 @@ export function createBackgroundPanelRuntime<
           logExtensionEvent({
             event,
             detail: detailPayload,
-            scope: "panel:bg",
+            scope: 'panel:bg',
             level: resolveLogLevel(event),
           });
-          console.debug("[summarize][panel:bg]", payload);
+          console.debug('[summarize][panel:bg]', payload);
         })();
       },
+      opts,
+      panelSessionStore,
+      reason,
+      send: (msg) => {
+        send(session, msg);
+      },
+      sendStatus: (status) => sendStatus(session, status),
+      session,
+      urlsMatch,
     });
 
-  return { send, sendStatus, emitState, summarizeActiveTab };
+  return { emitState, send, sendStatus, summarizeActiveTab };
 }

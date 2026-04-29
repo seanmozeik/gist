@@ -1,8 +1,8 @@
-import { normalizeWhitespace } from "./cleaner.js";
+import { normalizeWhitespace } from './cleaner.js';
 
 function extractBalancedJsonObject(source: string, startAt: number): string | null {
-  const start = source.indexOf("{", startAt);
-  if (start < 0) {
+  const start = source.indexOf('{', startAt);
+  if (start === -1) {
     return null;
   }
 
@@ -22,7 +22,7 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
         escaping = false;
         continue;
       }
-      if (ch === "\\") {
+      if (ch === '\\') {
         escaping = true;
         continue;
       }
@@ -39,11 +39,11 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
       continue;
     }
 
-    if (ch === "{") {
+    if (ch === '{') {
       depth += 1;
       continue;
     }
-    if (ch === "}") {
+    if (ch === '}') {
       depth -= 1;
       if (depth === 0) {
         return source.slice(start, i + 1);
@@ -55,12 +55,12 @@ function extractBalancedJsonObject(source: string, startAt: number): string | nu
 }
 
 export function extractYouTubeShortDescription(html: string): string | null {
-  const tokenIndex = html.indexOf("ytInitialPlayerResponse");
-  if (tokenIndex < 0) {
+  const tokenIndex = html.indexOf('ytInitialPlayerResponse');
+  if (tokenIndex === -1) {
     return null;
   }
-  const assignmentIndex = html.indexOf("=", tokenIndex);
-  if (assignmentIndex < 0) {
+  const assignmentIndex = html.indexOf('=', tokenIndex);
+  if (assignmentIndex === -1) {
     return null;
   }
   const objectText = extractBalancedJsonObject(html, assignmentIndex);
@@ -70,15 +70,15 @@ export function extractYouTubeShortDescription(html: string): string | null {
 
   try {
     const parsed = JSON.parse(objectText) as unknown;
-    if (!parsed || typeof parsed !== "object") {
+    if (!parsed || typeof parsed !== 'object') {
       return null;
     }
-    const videoDetails = (parsed as Record<string, unknown>).videoDetails;
-    if (!videoDetails || typeof videoDetails !== "object") {
+    const {videoDetails} = (parsed as Record<string, unknown>);
+    if (!videoDetails || typeof videoDetails !== 'object') {
       return null;
     }
     const description = (videoDetails as Record<string, unknown>).shortDescription;
-    if (typeof description !== "string") {
+    if (typeof description !== 'string') {
       return null;
     }
 

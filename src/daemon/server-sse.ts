@@ -1,5 +1,6 @@
-import http from "node:http";
-import { encodeSseEvent, type SseEvent } from "../shared/sse-events.js";
+import type http from 'node:http';
+
+import { encodeSseEvent, type SseEvent } from '../shared/sse-events.js';
 
 export function attachBufferedSseSession({
   res,
@@ -11,16 +12,16 @@ export function attachBufferedSseSession({
 }: {
   res: http.ServerResponse;
   cors: Record<string, string>;
-  buffer: Array<{ event: SseEvent }>;
+  buffer: { event: SseEvent }[];
   clients: Set<http.ServerResponse>;
   done: boolean;
   afterReplay?: (() => void) | null;
 }) {
   res.writeHead(200, {
     ...cors,
-    "content-type": "text/event-stream; charset=utf-8",
-    "cache-control": "no-cache, no-transform",
-    connection: "keep-alive",
+    'cache-control': 'no-cache, no-transform',
+    connection: 'keep-alive',
+    'content-type': 'text/event-stream; charset=utf-8',
   });
   clients.add(res);
 
@@ -40,7 +41,7 @@ export function attachBufferedSseSession({
   }, 15_000);
   keepalive.unref();
 
-  res.on("close", () => {
+  res.on('close', () => {
     clearInterval(keepalive);
     clients.delete(res);
   });

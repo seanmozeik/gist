@@ -1,120 +1,111 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   buildDaemonRequestBody,
   buildSummarizeRequestBody,
-} from "../apps/chrome-extension/src/lib/daemon-payload.js";
-import { defaultSettings } from "../apps/chrome-extension/src/lib/settings.js";
+} from '../apps/chrome-extension/src/lib/daemon-payload.js';
+import { defaultSettings } from '../apps/chrome-extension/src/lib/settings.js';
 
-describe("chrome/daemon-payload", () => {
-  it("builds a stable daemon request body", () => {
+describe('chrome/daemon-payload', () => {
+  it('builds a stable daemon request body', () => {
     const body = buildDaemonRequestBody({
       extracted: {
-        url: "https://example.com/article",
-        title: "Hello",
-        text: "Content",
+        text: 'Content',
+        title: 'Hello',
         truncated: false,
+        url: 'https://example.com/article',
       },
-      settings: { ...defaultSettings, token: "t", model: "auto", length: "xl", language: "auto" },
+      settings: { ...defaultSettings, language: 'auto', length: 'xl', model: 'auto', token: 't' },
     });
 
     expect(body).toEqual({
-      url: "https://example.com/article",
-      title: "Hello",
-      text: "Content",
-      truncated: false,
-      model: "auto",
-      length: "xl",
-      language: "auto",
       autoCliFallback: true,
-      autoCliOrder: "claude,gemini,codex,agent,openclaw,opencode",
+      autoCliOrder: 'claude,gemini,codex,agent,openclaw,opencode',
+      language: 'auto',
+      length: 'xl',
       maxCharacters: defaultSettings.maxChars,
+      model: 'auto',
+      text: 'Content',
+      title: 'Hello',
+      truncated: false,
+      url: 'https://example.com/article',
     });
   });
 
-  it("includes advanced overrides when set", () => {
+  it('includes advanced overrides when set', () => {
     const body = buildDaemonRequestBody({
       extracted: {
-        url: "https://example.com/article",
-        title: "Hello",
-        text: "Content",
+        text: 'Content',
+        title: 'Hello',
         truncated: false,
+        url: 'https://example.com/article',
       },
       settings: {
         ...defaultSettings,
-        token: "t",
-        requestMode: "url",
-        firecrawlMode: "auto",
-        markdownMode: "llm",
-        preprocessMode: "always",
-        youtubeMode: "no-auto",
-        timeout: "90s",
+        firecrawlMode: 'auto',
+        markdownMode: 'llm',
+        maxOutputTokens: '2k',
+        preprocessMode: 'always',
+        requestMode: 'url',
         retries: 2,
-        maxOutputTokens: "2k",
+        timeout: '90s',
+        token: 't',
+        youtubeMode: 'no-auto',
       },
     });
 
     expect(body).toEqual({
-      url: "https://example.com/article",
-      title: "Hello",
-      text: "Content",
-      truncated: false,
-      model: "auto",
-      length: "xl",
-      language: "auto",
-      mode: "url",
-      firecrawl: "auto",
-      markdownMode: "llm",
-      preprocess: "always",
-      youtube: "no-auto",
-      timeout: "90s",
-      retries: 2,
-      maxOutputTokens: "2k",
       autoCliFallback: true,
-      autoCliOrder: "claude,gemini,codex,agent,openclaw,opencode",
+      autoCliOrder: 'claude,gemini,codex,agent,openclaw,opencode',
+      firecrawl: 'auto',
+      language: 'auto',
+      length: 'xl',
+      markdownMode: 'llm',
       maxCharacters: defaultSettings.maxChars,
+      maxOutputTokens: '2k',
+      mode: 'url',
+      model: 'auto',
+      preprocess: 'always',
+      retries: 2,
+      text: 'Content',
+      timeout: '90s',
+      title: 'Hello',
+      truncated: false,
+      url: 'https://example.com/article',
+      youtube: 'no-auto',
     });
   });
 
-  it("forces transcript video mode when inputMode=video", () => {
+  it('forces transcript video mode when inputMode=video', () => {
     const body = buildSummarizeRequestBody({
-      extracted: {
-        url: "https://example.com/video",
-        title: "Video",
-        text: "",
-        truncated: false,
-      },
+      extracted: { text: '', title: 'Video', truncated: false, url: 'https://example.com/video' },
+      inputMode: 'video',
       settings: defaultSettings,
-      inputMode: "video",
     });
 
-    expect(body.mode).toBe("url");
-    expect(body.videoMode).toBe("transcript");
+    expect(body.mode).toBe('url');
+    expect(body.videoMode).toBe('transcript');
   });
 
-  it("forces page mode when inputMode=page", () => {
+  it('forces page mode when inputMode=page', () => {
     const body = buildSummarizeRequestBody({
       extracted: {
-        url: "https://example.com/article",
-        title: "Article",
-        text: "Hello",
+        text: 'Hello',
+        title: 'Article',
         truncated: false,
+        url: 'https://example.com/article',
       },
+      inputMode: 'page',
       settings: defaultSettings,
-      inputMode: "page",
     });
 
-    expect(body.mode).toBe("page");
+    expect(body.mode).toBe('page');
     expect(body.videoMode).toBeUndefined();
   });
 
-  it("adds timestamps when requested", () => {
+  it('adds timestamps when requested', () => {
     const body = buildSummarizeRequestBody({
-      extracted: {
-        url: "https://example.com/video",
-        title: "Video",
-        text: "",
-        truncated: false,
-      },
+      extracted: { text: '', title: 'Video', truncated: false, url: 'https://example.com/video' },
       settings: defaultSettings,
       timestamps: true,
     });
@@ -122,32 +113,28 @@ describe("chrome/daemon-payload", () => {
     expect(body.timestamps).toBe(true);
   });
 
-  it("includes auto CLI fallback settings", () => {
+  it('includes auto CLI fallback settings', () => {
     const body = buildDaemonRequestBody({
       extracted: {
-        url: "https://example.com/article",
-        title: "Hello",
-        text: "Content",
+        text: 'Content',
+        title: 'Hello',
         truncated: false,
+        url: 'https://example.com/article',
       },
-      settings: {
-        ...defaultSettings,
-        autoCliFallback: false,
-        autoCliOrder: "gemini,claude",
-      },
+      settings: { ...defaultSettings, autoCliFallback: false, autoCliOrder: 'gemini,claude' },
     });
 
     expect(body.autoCliFallback).toBe(false);
-    expect(body.autoCliOrder).toBe("gemini,claude");
+    expect(body.autoCliOrder).toBe('gemini,claude');
   });
 
-  it("requests slides when enabled", () => {
+  it('requests slides when enabled', () => {
     const body = buildSummarizeRequestBody({
       extracted: {
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        title: "Video",
-        text: "",
+        text: '',
+        title: 'Video',
         truncated: false,
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       },
       settings: defaultSettings,
       slides: { enabled: true, ocr: true },
@@ -155,6 +142,6 @@ describe("chrome/daemon-payload", () => {
 
     expect(body.slides).toBe(true);
     expect(body.slidesOcr).toBe(true);
-    expect(body.mode).not.toBe("page");
+    expect(body.mode).not.toBe('page');
   });
 });

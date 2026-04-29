@@ -1,27 +1,25 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import type { ExtractedLinkContent } from "../src/content/index.js";
-import type { UrlExtractionUi } from "../src/run/flows/url/extract.js";
-import type { UrlFlowContext } from "../src/run/flows/url/types.js";
-import { handleVideoOnlyExtractedContent } from "../src/run/flows/url/video-only.js";
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import type { ExtractedLinkContent } from '../src/content/index.js';
+import type { UrlExtractionUi } from '../src/run/flows/url/extract.js';
+import type { UrlFlowContext } from '../src/run/flows/url/types.js';
+import { handleVideoOnlyExtractedContent } from '../src/run/flows/url/video-only.js';
 
 const mocks = vi.hoisted(() => ({
-  loadRemoteAsset: vi.fn(),
   assertAssetMediaTypeSupported: vi.fn(),
+  loadRemoteAsset: vi.fn(),
   writeVerbose: vi.fn(),
 }));
 
-vi.mock("../src/content/asset.js", () => ({
-  loadRemoteAsset: mocks.loadRemoteAsset,
-}));
+vi.mock('../src/content/asset.js', () => ({ loadRemoteAsset: mocks.loadRemoteAsset }));
 
-vi.mock("../src/run/attachments.js", () => ({
+vi.mock('../src/run/attachments.js', () => ({
   assertAssetMediaTypeSupported: mocks.assertAssetMediaTypeSupported,
 }));
 
-vi.mock("../src/run/logging.js", () => ({
-  writeVerbose: mocks.writeVerbose,
-}));
+vi.mock('../src/run/logging.js', () => ({ writeVerbose: mocks.writeVerbose }));
 
 const createWritable = () =>
   new Writable({
@@ -31,78 +29,64 @@ const createWritable = () =>
   });
 
 const baseExtracted: ExtractedLinkContent = {
-  url: "https://example.com/video-only",
-  title: "Video Only",
+  content: 'placeholder',
   description: null,
-  siteName: "Example",
-  content: "placeholder",
-  truncated: false,
-  totalCharacters: 11,
-  wordCount: 1,
-  transcriptCharacters: null,
-  transcriptLines: null,
-  transcriptWordCount: null,
-  transcriptSource: null,
-  transcriptMetadata: null,
-  transcriptionProvider: null,
-  transcriptSegments: null,
-  transcriptTimedText: null,
-  mediaDurationSeconds: null,
-  video: { kind: "url", url: "https://cdn.example.com/video.mp4" },
-  isVideoOnly: true,
   diagnostics: {
-    strategy: "html",
-    firecrawl: { attempted: false, used: false, cacheMode: "bypass", cacheStatus: "unknown" },
-    markdown: { requested: false, used: false, provider: null },
+    firecrawl: { attempted: false, cacheMode: 'bypass', cacheStatus: 'unknown', used: false },
+    markdown: { provider: null, requested: false, used: false },
+    strategy: 'html',
     transcript: {
-      cacheMode: "bypass",
-      cacheStatus: "unknown",
-      textProvided: false,
-      provider: null,
       attemptedProviders: [],
+      cacheMode: 'bypass',
+      cacheStatus: 'unknown',
+      provider: null,
+      textProvided: false,
     },
   },
+  isVideoOnly: true,
+  mediaDurationSeconds: null,
+  siteName: 'Example',
+  title: 'Video Only',
+  totalCharacters: 11,
+  transcriptCharacters: null,
+  transcriptLines: null,
+  transcriptMetadata: null,
+  transcriptSegments: null,
+  transcriptSource: null,
+  transcriptTimedText: null,
+  transcriptWordCount: null,
+  transcriptionProvider: null,
+  truncated: false,
+  url: 'https://example.com/video-only',
+  video: { kind: 'url', url: 'https://cdn.example.com/video.mp4' },
+  wordCount: 1,
 };
 
 const baseUi: UrlExtractionUi = {
-  contentSizeLabel: "11B",
-  viaSourceLabel: "",
-  footerParts: ["html", "video url"],
-  finishSourceLabel: "summary",
+  contentSizeLabel: '11B',
+  finishSourceLabel: 'summary',
+  footerParts: ['html', 'video url'],
+  viaSourceLabel: '',
 };
 
 function makeCtx(overrides?: {
   progressEnabled?: boolean;
-  videoMode?: "auto" | "transcript" | "understand";
+  videoMode?: 'auto' | 'transcript' | 'understand';
   googleConfigured?: boolean;
-  requestedModelKind?: "auto" | "fixed";
-  fixedModelSpec?: UrlFlowContext["model"]["fixedModelSpec"];
-  summarizeAsset?: UrlFlowContext["hooks"]["summarizeAsset"];
-  onExtracted?: UrlFlowContext["hooks"]["onExtracted"];
-  onModelChosen?: UrlFlowContext["hooks"]["onModelChosen"];
-  writeViaFooter?: UrlFlowContext["hooks"]["writeViaFooter"];
+  requestedModelKind?: 'auto' | 'fixed';
+  fixedModelSpec?: UrlFlowContext['model']['fixedModelSpec'];
+  summarizeAsset?: UrlFlowContext['hooks']['summarizeAsset'];
+  onExtracted?: UrlFlowContext['hooks']['onExtracted'];
+  onModelChosen?: UrlFlowContext['hooks']['onModelChosen'];
+  writeViaFooter?: UrlFlowContext['hooks']['writeViaFooter'];
 }): UrlFlowContext {
   return {
-    io: {
-      stderr: createWritable(),
-      fetch: vi.fn() as unknown as typeof fetch,
-      envForRun: {},
-    },
     flags: {
-      verbose: false,
-      verboseColor: false,
       progressEnabled: overrides?.progressEnabled ?? true,
       timeoutMs: 2_000,
-      videoMode: overrides?.videoMode ?? "auto",
-    },
-    model: {
-      apiStatus: {
-        googleConfigured: overrides?.googleConfigured ?? false,
-      },
-      requestedModel: {
-        kind: overrides?.requestedModelKind ?? "auto",
-      },
-      fixedModelSpec: overrides?.fixedModelSpec ?? null,
+      verbose: false,
+      verboseColor: false,
+      videoMode: overrides?.videoMode ?? 'auto',
     },
     hooks: {
       onExtracted: overrides?.onExtracted ?? null,
@@ -110,148 +94,148 @@ function makeCtx(overrides?: {
       summarizeAsset:
         overrides?.summarizeAsset ??
         vi.fn(async ({ onModelChosen }) => {
-          onModelChosen?.("google/gemini-2.5-flash");
+          onModelChosen?.('google/gemini-2.5-flash');
         }),
       writeViaFooter: overrides?.writeViaFooter ?? vi.fn(),
+    },
+    io: { envForRun: {}, fetch: vi.fn() as unknown as typeof fetch, stderr: createWritable() },
+    model: {
+      apiStatus: { googleConfigured: overrides?.googleConfigured ?? false },
+      fixedModelSpec: overrides?.fixedModelSpec ?? null,
+      requestedModel: { kind: overrides?.requestedModelKind ?? 'auto' },
     },
   } as unknown as UrlFlowContext;
 }
 
-describe("handleVideoOnlyExtractedContent", () => {
-  it("skips local file videos", async () => {
+describe('handleVideoOnlyExtractedContent', () => {
+  it('skips local file videos', async () => {
     const fetchWithCache = vi.fn();
     const runSlidesExtraction = vi.fn();
     const spinner = { setText: vi.fn() };
 
     const result = await handleVideoOnlyExtractedContent({
+      accent: (text) => text,
       ctx: makeCtx(),
-      extracted: {
-        ...baseExtracted,
-        video: { kind: "url", url: "file:///Users/peter/video.mp4" },
-      },
+      extracted: { ...baseExtracted, video: { kind: 'url', url: 'file:///Users/peter/video.mp4' } },
       extractionUi: baseUi,
-      isYoutubeUrl: false,
       fetchWithCache,
-      runSlidesExtraction,
-      renderStatus: (label, detail = "") => `${label}${detail}`,
+      isYoutubeUrl: false,
+      renderStatus: (label, detail = '') => `${label}${detail}`,
       renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
+      runSlidesExtraction,
       spinner,
       styleDim: (text) => text,
       updateSummaryProgress: vi.fn(),
-      accent: (text) => text,
     });
 
-    expect(result).toEqual({ handled: false, extracted: expect.any(Object), extractionUi: baseUi });
+    expect(result).toEqual({ extracted: expect.any(Object), extractionUi: baseUi, handled: false });
     expect(fetchWithCache).not.toHaveBeenCalled();
     expect(runSlidesExtraction).not.toHaveBeenCalled();
     expect(spinner.setText).not.toHaveBeenCalled();
   });
 
-  it("switches video-only pages to the embedded YouTube URL", async () => {
+  it('switches video-only pages to the embedded YouTube URL', async () => {
     const nextExtracted: ExtractedLinkContent = {
       ...baseExtracted,
-      url: "https://www.youtube.com/watch?v=abc123",
-      siteName: "YouTube",
-      content: "Transcript",
-      video: null,
-      isVideoOnly: false,
-      transcriptCharacters: 10,
-      transcriptWordCount: 1,
-      transcriptSource: "youtube",
+      content: 'Transcript',
       diagnostics: {
         ...baseExtracted.diagnostics,
-        strategy: "youtube",
+        strategy: 'youtube',
         transcript: {
           ...baseExtracted.diagnostics.transcript,
+          attemptedProviders: ['youtube'],
+          provider: 'youtube',
           textProvided: true,
-          provider: "youtube",
-          attemptedProviders: ["youtube"],
         },
       },
+      isVideoOnly: false,
+      siteName: 'YouTube',
+      transcriptCharacters: 10,
+      transcriptSource: 'youtube',
+      transcriptWordCount: 1,
+      url: 'https://www.youtube.com/watch?v=abc123',
+      video: null,
     };
     const fetchWithCache = vi.fn(async () => nextExtracted);
     const runSlidesExtraction = vi.fn();
     const spinner = { setText: vi.fn() };
 
     const result = await handleVideoOnlyExtractedContent({
+      accent: (text) => text,
       ctx: makeCtx(),
       extracted: {
         ...baseExtracted,
-        video: { kind: "youtube", url: "https://www.youtube.com/watch?v=abc123" },
+        video: { kind: 'youtube', url: 'https://www.youtube.com/watch?v=abc123' },
       },
       extractionUi: baseUi,
-      isYoutubeUrl: false,
       fetchWithCache,
-      runSlidesExtraction,
-      renderStatus: (label, detail = "") => `${label}${detail}`,
+      isYoutubeUrl: false,
+      renderStatus: (label, detail = '') => `${label}${detail}`,
       renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
+      runSlidesExtraction,
       spinner,
       styleDim: (text) => text,
       updateSummaryProgress: vi.fn(),
-      accent: (text) => text,
     });
 
-    expect(fetchWithCache).toHaveBeenCalledWith("https://www.youtube.com/watch?v=abc123");
+    expect(fetchWithCache).toHaveBeenCalledWith('https://www.youtube.com/watch?v=abc123');
     expect(runSlidesExtraction).not.toHaveBeenCalled();
-    expect(spinner.setText).toHaveBeenCalledWith("Video-only page: fetching YouTube transcript…");
+    expect(spinner.setText).toHaveBeenCalledWith('Video-only page: fetching YouTube transcript…');
     expect(result).toEqual({
-      handled: false,
       extracted: nextExtracted,
       extractionUi: expect.objectContaining({
-        footerParts: expect.arrayContaining(["transcript youtube"]),
+        footerParts: expect.arrayContaining(['transcript youtube']),
       }),
+      handled: false,
     });
   });
 
-  it("stops before remote download when video understanding is unavailable", async () => {
+  it('stops before remote download when video understanding is unavailable', async () => {
     const runSlidesExtraction = vi.fn(async () => null);
     const spinner = { setText: vi.fn() };
 
     const result = await handleVideoOnlyExtractedContent({
-      ctx: makeCtx({ googleConfigured: false, videoMode: "understand" }),
+      accent: (text) => text,
+      ctx: makeCtx({ googleConfigured: false, videoMode: 'understand' }),
       extracted: baseExtracted,
       extractionUi: baseUi,
-      isYoutubeUrl: false,
       fetchWithCache: vi.fn(),
-      runSlidesExtraction,
-      renderStatus: (label, detail = "") => `${label}${detail}`,
+      isYoutubeUrl: false,
+      renderStatus: (label, detail = '') => `${label}${detail}`,
       renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
+      runSlidesExtraction,
       spinner,
       styleDim: (text) => text,
       updateSummaryProgress: vi.fn(),
-      accent: (text) => text,
     });
 
     expect(runSlidesExtraction).toHaveBeenCalledTimes(1);
     expect(mocks.loadRemoteAsset).not.toHaveBeenCalled();
-    expect(result).toEqual({ handled: false, extracted: baseExtracted, extractionUi: baseUi });
+    expect(result).toEqual({ extracted: baseExtracted, extractionUi: baseUi, handled: false });
   });
 
-  it("downloads and summarizes direct video when google video understanding is available", async () => {
+  it('downloads and summarizes direct video when google video understanding is available', async () => {
     const onExtracted = vi.fn();
     const onModelChosen = vi.fn();
     const writeViaFooter = vi.fn();
     const summarizeAsset = vi.fn(async ({ onModelChosen: reportModel }) => {
-      reportModel?.("google/gemini-2.5-pro");
+      reportModel?.('google/gemini-2.5-pro');
     });
     const updateSummaryProgress = vi.fn();
     const spinner = { setText: vi.fn() };
     const asset = {
-      sourceLabel: "https://cdn.example.com/video.mp4",
-      attachment: {
-        filename: "video.mp4",
-        mediaType: "video/mp4",
-        data: Buffer.from("video"),
-      },
+      attachment: { data: Buffer.from('video'), filename: 'video.mp4', mediaType: 'video/mp4' },
+      sourceLabel: 'https://cdn.example.com/video.mp4',
     };
 
     mocks.loadRemoteAsset.mockResolvedValueOnce(asset);
 
     const result = await handleVideoOnlyExtractedContent({
+      accent: (text) => text,
       ctx: makeCtx({
         googleConfigured: true,
-        videoMode: "auto",
-        requestedModelKind: "auto",
+        videoMode: 'auto',
+        requestedModelKind: 'auto',
         summarizeAsset,
         onExtracted,
         onModelChosen,
@@ -259,40 +243,39 @@ describe("handleVideoOnlyExtractedContent", () => {
       }),
       extracted: baseExtracted,
       extractionUi: baseUi,
-      isYoutubeUrl: false,
       fetchWithCache: vi.fn(),
+      isYoutubeUrl: false,
+      renderStatus: (label, detail = '') => `${label}${detail}`,
+      renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
       runSlidesExtraction: vi.fn(async () => ({
-        sourceUrl: baseExtracted.video?.url ?? "",
-        sourceKind: "video-url",
-        sourceId: "vid123",
-        slidesDir: "/tmp/slides",
+        sourceUrl: baseExtracted.video?.url ?? '',
+        sourceKind: 'video-url',
+        sourceId: 'vid123',
+        slidesDir: '/tmp/slides',
         sceneThreshold: 0.3,
         autoTuneThreshold: true,
-        autoTune: { enabled: false, chosenThreshold: 0.3, confidence: 0, strategy: "none" },
+        autoTune: { enabled: false, chosenThreshold: 0.3, confidence: 0, strategy: 'none' },
         maxSlides: 100,
         minSlideDuration: 2,
         ocrRequested: false,
         ocrAvailable: false,
         slides: [
-          { index: 1, timestamp: 1, imagePath: "/tmp/slide-1.png" },
-          { index: 2, timestamp: 2, imagePath: "/tmp/slide-2.png" },
+          { index: 1, timestamp: 1, imagePath: '/tmp/slide-1.png' },
+          { index: 2, timestamp: 2, imagePath: '/tmp/slide-2.png' },
         ],
         warnings: [],
       })),
-      renderStatus: (label, detail = "") => `${label}${detail}`,
-      renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
       spinner,
       styleDim: (text) => text,
       updateSummaryProgress,
-      accent: (text) => text,
     });
 
     expect(result).toEqual({ handled: true });
     expect(onExtracted).toHaveBeenCalledWith(baseExtracted);
     expect(mocks.loadRemoteAsset).toHaveBeenCalledWith({
-      url: "https://cdn.example.com/video.mp4",
       fetchImpl: expect.any(Function),
       timeoutMs: 2_000,
+      url: 'https://cdn.example.com/video.mp4',
     });
     expect(mocks.assertAssetMediaTypeSupported).toHaveBeenCalledWith({
       attachment: asset.attachment,
@@ -300,23 +283,23 @@ describe("handleVideoOnlyExtractedContent", () => {
     });
     expect(summarizeAsset).toHaveBeenCalledWith(
       expect.objectContaining({
-        sourceKind: "asset-url",
-        sourceLabel: asset.sourceLabel,
         attachment: asset.attachment,
+        sourceKind: 'asset-url',
+        sourceLabel: asset.sourceLabel,
       }),
     );
-    expect(onModelChosen).toHaveBeenCalledWith("google/gemini-2.5-pro");
+    expect(onModelChosen).toHaveBeenCalledWith('google/gemini-2.5-pro');
     expect(writeViaFooter).toHaveBeenCalledWith([
-      "html",
-      "video url",
-      "model google/gemini-2.5-pro",
-      "slides 2",
+      'html',
+      'video url',
+      'model google/gemini-2.5-pro',
+      'slides 2',
     ]);
     expect(updateSummaryProgress).toHaveBeenCalledTimes(1);
-    expect(spinner.setText).toHaveBeenCalledWith("Downloading video");
-    expect(spinner.setText).toHaveBeenCalledWith("Summarizing video");
+    expect(spinner.setText).toHaveBeenCalledWith('Downloading video');
+    expect(spinner.setText).toHaveBeenCalledWith('Summarizing video');
     expect(spinner.setText).toHaveBeenCalledWith(
-      "Summarizing video (model: google/gemini-2.5-pro)",
+      'Summarizing video (model: google/gemini-2.5-pro)',
     );
   });
 });

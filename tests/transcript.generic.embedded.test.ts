@@ -1,12 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
-import { fetchTranscript } from "../packages/core/src/content/transcript/providers/generic.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import { fetchTranscript } from '../packages/core/src/content/transcript/providers/generic.js';
 
 const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>) => ({
-  fetch: fetch,
+  fetch,
   scrapeWithFirecrawl: null,
   apifyApiToken: null,
-  youtubeTranscriptMode: "auto",
-  mediaTranscriptMode: "auto",
+  youtubeTranscriptMode: 'auto',
+  mediaTranscriptMode: 'auto',
   ytDlpPath: null,
   groqApiKey: null,
   falApiKey: null,
@@ -16,8 +17,8 @@ const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>
   ...overrides,
 });
 
-describe("generic transcript provider (embedded captions)", () => {
-  it("uses embedded caption tracks when present", async () => {
+describe('generic transcript provider (embedded captions)', () => {
+  it('uses embedded caption tracks when present', async () => {
     const html = `
       <html>
         <body>
@@ -30,20 +31,20 @@ describe("generic transcript provider (embedded captions)", () => {
 
     const fetchMock = vi.fn(
       async () =>
-        new Response(["WEBVTT", "", "00:00:00.000 --> 00:00:01.000", "Hello world."].join("\n"), {
+        new Response(['WEBVTT', '', '00:00:00.000 --> 00:00:01.000', 'Hello world.'].join('\n'), {
+          headers: { 'content-type': 'text/vtt' },
           status: 200,
-          headers: { "content-type": "text/vtt" },
         }),
     );
 
     const result = await fetchTranscript(
-      { url: "https://example.com/page", html, resourceKey: null },
+      { html, resourceKey: null, url: 'https://example.com/page' },
       buildOptions({ fetch: fetchMock }),
     );
 
     expect(fetchMock).toHaveBeenCalled();
-    expect(result.source).toBe("embedded");
-    expect(result.text).toContain("Hello world");
-    expect(result.attemptedProviders).toContain("embedded");
+    expect(result.source).toBe('embedded');
+    expect(result.text).toContain('Hello world');
+    expect(result.attemptedProviders).toContain('embedded');
   });
 });

@@ -5,5 +5,5 @@ export const TRANSCRIPTION_TIMEOUT_MS = 600_000;
 export const MAX_REMOTE_MEDIA_BYTES = 512 * 1024 * 1024;
 export const BLOCKED_HTML_HINT_PATTERN =
   /access denied|attention required|captcha|recaptcha|cloudflare|forbidden|verify you are human/i;
-export const ITUNES_SEARCH_URL = "https://itunes.apple.com/search";
-export const ITUNES_LOOKUP_URL = "https://itunes.apple.com/lookup";
+export const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
+export const ITUNES_LOOKUP_URL = 'https://itunes.apple.com/lookup';

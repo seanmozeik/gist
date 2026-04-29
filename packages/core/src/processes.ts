@@ -1,16 +1,13 @@
-import { AsyncLocalStorage } from "node:async_hooks";
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type {
   ChildProcess,
   ExecFileException,
   ExecFileOptions,
   SpawnOptions,
-} from "node:child_process";
-import { execFile, spawn } from "node:child_process";
+} from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 
-export type ProcessContext = {
-  runId?: string | null;
-  source?: string | null;
-};
+export interface ProcessContext { runId?: string | null; source?: string | null }
 
 type ExecFileCallback = (
   error: ExecFileException | null,
@@ -18,7 +15,7 @@ type ExecFileCallback = (
   stderr: string | Buffer,
 ) => void;
 
-export type ProcessRegistration = {
+export interface ProcessRegistration {
   command: string;
   args: string[];
   label?: string | null;
@@ -27,12 +24,12 @@ export type ProcessRegistration = {
   env?: Record<string, string | undefined> | null;
   runId?: string | null;
   source?: string | null;
-};
+}
 
-export type ProcessHandle = {
+export interface ProcessHandle {
   id: string;
   setPid: (pid: number | null) => void;
-  appendOutput: (stream: "stdout" | "stderr", line: string) => void;
+  appendOutput: (stream: 'stdout' | 'stderr', line: string) => void;
   setProgress: (progress: number | null, detail?: string | null) => void;
   setStatus: (text: string | null) => void;
   finish: (result: {
@@ -40,11 +37,9 @@ export type ProcessHandle = {
     signal: string | null;
     error?: string | null;
   }) => void;
-};
+}
 
-export type ProcessObserver = {
-  register: (info: ProcessRegistration) => ProcessHandle;
-};
+export interface ProcessObserver { register: (info: ProcessRegistration) => ProcessHandle }
 
 export type SpawnTrackedOptions = SpawnOptions & {
   label?: string | null;
@@ -70,7 +65,7 @@ export function runWithProcessContext<T>(ctx: ProcessContext, fn: () => T): T {
 }
 
 function registerProcess(info: ProcessRegistration): ProcessHandle | null {
-  if (!processObserver) return null;
+  if (!processObserver) {return null;}
   const ctx = getProcessContext();
   return processObserver.register({
     ...info,
@@ -82,22 +77,22 @@ function registerProcess(info: ProcessRegistration): ProcessHandle | null {
 type LineListener = (line: string) => void;
 
 function attachLineReader(stream: NodeJS.ReadableStream | null | undefined, onLine: LineListener) {
-  if (!stream) return;
-  let buffer = "";
-  stream.setEncoding("utf8");
-  stream.on("data", (chunk: string) => {
+  if (!stream) {return;}
+  let buffer = '';
+  stream.setEncoding('utf8');
+  stream.on('data', (chunk: string) => {
     buffer += chunk;
     const lines = buffer.split(/\r?\n/);
-    buffer = lines.pop() ?? "";
+    buffer = lines.pop() ?? '';
     for (const line of lines) {
-      if (line === "") continue;
+      if (line === '') {continue;}
       onLine(line);
     }
   });
-  stream.on("end", () => {
+  stream.on('end', () => {
     const line = buffer.trim();
-    if (line) onLine(line);
-    buffer = "";
+    if (line) {onLine(line);}
+    buffer = '';
   });
 }
 
@@ -107,13 +102,13 @@ export function trackChildProcess(
   options?: { captureOutput?: boolean },
 ): ProcessHandle | null {
   const handle = registerProcess(info);
-  if (!handle) return null;
+  if (!handle) {return null;}
   handle.setPid(proc.pid ?? null);
 
   const captureOutput = options?.captureOutput !== false;
   if (captureOutput) {
-    attachLineReader(proc.stdout, (line) => handle.appendOutput("stdout", line));
-    attachLineReader(proc.stderr, (line) => handle.appendOutput("stderr", line));
+    attachLineReader(proc.stdout, (line) =>{  handle.appendOutput('stdout', line); });
+    attachLineReader(proc.stderr, (line) =>{  handle.appendOutput('stderr', line); });
   }
 
   let finished = false;
@@ -122,16 +117,16 @@ export function trackChildProcess(
     signal: string | null;
     error?: string | null;
   }) => {
-    if (finished) return;
+    if (finished) {return;}
     finished = true;
     handle.finish(result);
   };
 
-  proc.on("error", (error) => {
+  proc.on('error', (error) => {
     const message = error instanceof Error ? error.message : String(error);
-    finishOnce({ exitCode: null, signal: null, error: message });
+    finishOnce({ error: message, exitCode: null, signal: null });
   });
-  proc.on("close", (code, signal) => {
+  proc.on('close', (code, signal) => {
     finishOnce({ exitCode: code ?? null, signal: signal ?? null });
   });
   return handle;
@@ -147,18 +142,18 @@ export function spawnTracked(
   const handle = trackChildProcess(
     proc,
     {
-      command,
       args,
-      label,
-      kind,
-      runId,
-      source,
+      command,
       cwd: spawnOptions.cwd ? String(spawnOptions.cwd) : null,
       env: spawnOptions.env ?? null,
+      kind,
+      label,
+      runId,
+      source,
     },
     { captureOutput },
   );
-  return { proc, handle };
+  return { handle, proc };
 }
 
 export function execFileTracked(
@@ -173,31 +168,31 @@ export function execFileTracked(
 
   if (Array.isArray(args)) {
     resolvedArgs = args;
-    if (typeof options === "function") {
+    if (typeof options === 'function') {
       resolvedCallback = options;
     } else {
       resolvedOptions = options ?? {};
       resolvedCallback = callback;
     }
-  } else if (typeof args === "function") {
+  } else if (typeof args === 'function') {
     resolvedCallback = args;
   } else {
     resolvedOptions = (args ?? {}) as ExecFileOptions;
-    if (typeof options === "function") {
+    if (typeof options === 'function') {
       resolvedCallback = options;
     }
   }
 
-  const proc = execFile(file, resolvedArgs, resolvedOptions, resolvedCallback as ExecFileCallback);
+  const proc = execFile(file, resolvedArgs, resolvedOptions, resolvedCallback!);
   trackChildProcess(
     proc,
     {
-      command: file,
       args: Array.from(resolvedArgs),
-      label: file,
-      kind: file,
+      command: file,
       cwd: resolvedOptions.cwd ? String(resolvedOptions.cwd) : null,
       env: resolvedOptions.env ?? null,
+      kind: file,
+      label: file,
     },
     { captureOutput: true },
   );

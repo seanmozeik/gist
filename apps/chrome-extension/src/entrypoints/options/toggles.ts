@@ -1,6 +1,6 @@
-import { mountCheckbox } from "../../ui/zag-checkbox";
+import { mountCheckbox } from '../../ui/zag-checkbox';
 
-type BooleanToggleArgs = {
+interface BooleanToggleArgs {
   root: HTMLElement;
   id: string;
   label: string;
@@ -8,7 +8,7 @@ type BooleanToggleArgs = {
   setValue: (checked: boolean) => void;
   scheduleAutoSave: (delay?: number) => void;
   afterChange?: () => void | Promise<void>;
-};
+}
 
 export function createBooleanToggleController({
   root,
@@ -20,9 +20,9 @@ export function createBooleanToggleController({
   afterChange,
 }: BooleanToggleArgs) {
   const renderProps = () => ({
+    checked: getValue(),
     id,
     label,
-    checked: getValue(),
     onCheckedChange: (checked: boolean) => {
       setValue(checked);
       toggle.update(renderProps());

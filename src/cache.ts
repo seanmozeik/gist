@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, rmSync, statSync } from "node:fs";
-import { dirname, isAbsolute, join, resolve as resolvePath } from "node:path";
+import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
+
 import {
   buildExtractCacheKeyValue,
   buildLanguageKey,
@@ -13,7 +14,7 @@ import {
   hashString,
   normalizeContentForHash,
   extractTaggedBlock,
-} from "./cache-keys.js";
+} from './cache-keys.js';
 export {
   buildExtractCacheKeyValue,
   buildLanguageKey,
@@ -27,61 +28,52 @@ export {
   hashString,
   normalizeContentForHash,
   extractTaggedBlock,
-} from "./cache-keys.js";
-import { cleanupSlidesPayload } from "./cache-slides-cleanup.js";
-import type { TranscriptCache, TranscriptSource } from "./content/index.js";
+} from './cache-keys.js';
+import { cleanupSlidesPayload } from './cache-slides-cleanup.js';
+import type { TranscriptCache, TranscriptSource } from './content/index.js';
 
-export type CacheKind = "extract" | "summary" | "transcript" | "chat" | "slides";
+export type CacheKind = 'extract' | 'summary' | 'transcript' | 'chat' | 'slides';
 
-export type CacheConfig = {
-  enabled?: boolean;
-  maxMb?: number;
-  ttlDays?: number;
-  path?: string;
-};
+export interface CacheConfig { enabled?: boolean; maxMb?: number; ttlDays?: number; path?: string }
 
 export const CACHE_FORMAT_VERSION = 2;
 export const DEFAULT_CACHE_MAX_MB = 512;
 export const DEFAULT_CACHE_TTL_DAYS = 30;
 
-type SqliteStatement = {
+interface SqliteStatement {
   get: (...args: unknown[]) => unknown;
   all: (...args: unknown[]) => unknown[];
   run: (...args: unknown[]) => { changes?: number } | unknown;
-};
+}
 
-type SqliteDatabase = {
+interface SqliteDatabase {
   exec: (sql: string) => void;
   prepare: (sql: string) => SqliteStatement;
   close?: () => void;
-};
+}
 
-type CacheRow = {
-  value: string;
-  expires_at: number | null;
-  size_bytes: number;
-};
+interface CacheRow { value: string; expires_at: number | null; size_bytes: number }
 
-const TRANSCRIPT_SOURCES: readonly TranscriptSource[] = [
-  "youtubei",
-  "captionTracks",
-  "yt-dlp",
-  "podcastTranscript",
-  "whisper",
-  "apify",
-  "html",
-  "unavailable",
-  "unknown",
-];
+const TRANSCRIPT_SOURCES: readonly TranscriptSource[] = new Set([
+  'youtubei',
+  'captionTracks',
+  'yt-dlp',
+  'podcastTranscript',
+  'whisper',
+  'apify',
+  'html',
+  'unavailable',
+  'unknown',
+]);
 
 function normalizeTranscriptSource(value: unknown): TranscriptSource | null {
-  if (typeof value !== "string") return null;
-  return TRANSCRIPT_SOURCES.includes(value as TranscriptSource)
+  if (typeof value !== 'string') return null;
+  return TRANSCRIPT_SOURCES.has(value as TranscriptSource)
     ? (value as TranscriptSource)
     : null;
 }
 
-export type CacheStore = {
+export interface CacheStore {
   getText: (kind: CacheKind, key: string) => string | null;
   getJson: <T>(kind: CacheKind, key: string) => T | null;
   setText: (kind: CacheKind, key: string, value: string, ttlMs: number | null) => void;
@@ -89,42 +81,42 @@ export type CacheStore = {
   clear: () => void;
   close: () => void;
   transcriptCache: TranscriptCache;
-};
+}
 
-export type CacheState = {
-  mode: "default" | "bypass";
+export interface CacheState {
+  mode: 'default' | 'bypass';
   store: CacheStore | null;
   ttlMs: number;
   maxBytes: number;
   path: string | null;
-};
+}
 
-export type CacheStats = {
+export interface CacheStats {
   path: string;
   sizeBytes: number;
   totalEntries: number;
   counts: Record<CacheKind, number>;
-};
+}
 
-const isBun = typeof (globalThis as { Bun?: unknown }).Bun !== "undefined";
+const isBun = (globalThis as { Bun?: unknown }).Bun !== undefined;
 let warningFilterInstalled = false;
 
 const installSqliteWarningFilter = () => {
-  if (warningFilterInstalled) return;
+  if (warningFilterInstalled) {return;}
   warningFilterInstalled = true;
   const original = process.emitWarning.bind(process);
   process.emitWarning = ((warning: unknown, ...args: unknown[]) => {
     const message =
-      typeof warning === "string"
+      typeof warning === 'string'
         ? warning
-        : warning && typeof (warning as { message?: unknown }).message === "string"
+        : (warning && typeof (warning as { message?: unknown }).message === 'string'
           ? String((warning as { message?: unknown }).message)
-          : "";
+          : '');
     const type =
-      typeof args[0] === "string" ? args[0] : (args[0] as { type?: unknown } | undefined)?.type;
+      typeof args[0] === 'string' ? args[0] : (args[0] as { type?: unknown } | undefined)?.type;
     const name = (warning as { name?: unknown } | undefined)?.name;
-    const normalizedType = typeof type === "string" ? type : typeof name === "string" ? name : "";
-    if (normalizedType === "ExperimentalWarning" && message.toLowerCase().includes("sqlite")) {
+    const normalizedType = typeof type === 'string' ? type : (typeof name === 'string' ? name : '');
+    if (normalizedType === 'ExperimentalWarning' && message.toLowerCase().includes('sqlite')) {
       return;
     }
     return original(warning as never, ...(args as [never]));
@@ -133,11 +125,11 @@ const installSqliteWarningFilter = () => {
 
 async function openSqlite(path: string): Promise<SqliteDatabase> {
   if (isBun) {
-    const mod = (await import("bun:sqlite")) as { Database: new (path: string) => SqliteDatabase };
+    const mod = (await import('bun:sqlite')) as { Database: new (path: string) => SqliteDatabase };
     return new mod.Database(path);
   }
   installSqliteWarningFilter();
-  const mod = (await import("node:sqlite")) as unknown as {
+  const mod = (await import('node:sqlite')) as unknown as {
     DatabaseSync: new (path: string) => SqliteDatabase;
   };
   return new mod.DatabaseSync(path);
@@ -148,8 +140,8 @@ function ensureDir(path: string) {
 }
 
 function resolveHomeDir(env: Record<string, string | undefined>): string | null {
-  const home = env.HOME?.trim() || env.USERPROFILE?.trim();
-  return home || null;
+  const home = env.HOME?.trim() ?? env.USERPROFILE?.trim();
+  return home ?? null;
 }
 
 export function resolveCachePath({
@@ -162,15 +154,15 @@ export function resolveCachePath({
   const home = resolveHomeDir(env);
   const raw = cachePath?.trim();
   if (raw && raw.length > 0) {
-    if (raw.startsWith("~")) {
-      if (!home) return null;
-      const expanded = raw === "~" ? home : join(home, raw.slice(2));
+    if (raw.startsWith('~')) {
+      if (!home) {return null;}
+      const expanded = raw === '~' ? home : join(home, raw.slice(2));
       return resolvePath(expanded);
     }
-    return isAbsolute(raw) ? raw : home ? resolvePath(join(home, raw)) : null;
+    return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : null);
   }
-  if (!home) return null;
-  return join(home, ".summarize", "cache.sqlite");
+  if (!home) {return null;}
+  return join(home, '.summarize', 'cache.sqlite');
 }
 
 export async function createCacheStore({
@@ -184,10 +176,10 @@ export async function createCacheStore({
 }): Promise<CacheStore> {
   ensureDir(dirname(path));
   const db = await openSqlite(path);
-  db.exec("PRAGMA journal_mode=WAL");
-  db.exec("PRAGMA synchronous=NORMAL");
-  db.exec("PRAGMA busy_timeout=5000");
-  db.exec("PRAGMA auto_vacuum=INCREMENTAL");
+  db.exec('PRAGMA journal_mode=WAL');
+  db.exec('PRAGMA synchronous=NORMAL');
+  db.exec('PRAGMA busy_timeout=5000');
+  db.exec('PRAGMA auto_vacuum=INCREMENTAL');
   db.exec(`
     CREATE TABLE IF NOT EXISTS cache_entries (
       kind TEXT NOT NULL,
@@ -200,18 +192,18 @@ export async function createCacheStore({
       PRIMARY KEY (kind, key)
     )
   `);
-  db.exec("CREATE INDEX IF NOT EXISTS idx_cache_accessed ON cache_entries(last_accessed_at)");
-  db.exec("CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache_entries(expires_at)");
+  db.exec('CREATE INDEX IF NOT EXISTS idx_cache_accessed ON cache_entries(last_accessed_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache_entries(expires_at)');
 
   const stmtGet = db.prepare(
-    "SELECT value, expires_at, size_bytes FROM cache_entries WHERE kind = ? AND key = ?",
+    'SELECT value, expires_at, size_bytes FROM cache_entries WHERE kind = ? AND key = ?',
   );
   const stmtTouch = db.prepare(
-    "UPDATE cache_entries SET last_accessed_at = ? WHERE kind = ? AND key = ?",
+    'UPDATE cache_entries SET last_accessed_at = ? WHERE kind = ? AND key = ?',
   );
-  const stmtDelete = db.prepare("DELETE FROM cache_entries WHERE kind = ? AND key = ?");
+  const stmtDelete = db.prepare('DELETE FROM cache_entries WHERE kind = ? AND key = ?');
   const stmtDeleteExpired = db.prepare(
-    "DELETE FROM cache_entries WHERE expires_at IS NOT NULL AND expires_at <= ?",
+    'DELETE FROM cache_entries WHERE expires_at IS NOT NULL AND expires_at <= ?',
   );
   const stmtUpsert = db.prepare(`
     INSERT INTO cache_entries (
@@ -225,46 +217,46 @@ export async function createCacheStore({
       expires_at = excluded.expires_at
   `);
   const stmtTotalSize = db.prepare(
-    "SELECT COALESCE(SUM(size_bytes), 0) AS total FROM cache_entries",
+    'SELECT COALESCE(SUM(size_bytes), 0) AS total FROM cache_entries',
   );
   const stmtOldest = db.prepare(
-    "SELECT kind, key, size_bytes FROM cache_entries ORDER BY last_accessed_at ASC LIMIT ?",
+    'SELECT kind, key, size_bytes FROM cache_entries ORDER BY last_accessed_at ASC LIMIT ?',
   );
-  const stmtClear = db.prepare("DELETE FROM cache_entries");
+  const stmtClear = db.prepare('DELETE FROM cache_entries');
 
   const sweepExpired = (now: number) => {
     stmtDeleteExpired.run(now);
   };
 
   const enforceSize = () => {
-    if (!Number.isFinite(maxBytes) || maxBytes <= 0) return;
+    if (!Number.isFinite(maxBytes) || maxBytes <= 0) {return;}
     const row = stmtTotalSize.get() as { total?: number | null } | undefined;
-    let total = typeof row?.total === "number" ? row.total : 0;
-    if (total <= maxBytes) return;
+    let total = typeof row?.total === 'number' ? row.total : 0;
+    if (total <= maxBytes) {return;}
     const batchSize = 50;
     while (total > maxBytes) {
-      const rows = stmtOldest.all(batchSize) as Array<{
+      const rows = stmtOldest.all(batchSize) as {
         kind: string;
         key: string;
         size_bytes: number;
-      }>;
-      if (rows.length === 0) break;
+      }[];
+      if (rows.length === 0) {break;}
       for (const row of rows) {
-        if (total <= maxBytes) break;
+        if (total <= maxBytes) {break;}
         stmtDelete.run(row.kind, row.key);
         total -= row.size_bytes ?? 0;
       }
-      if (total <= maxBytes) break;
+      if (total <= maxBytes) {break;}
     }
-    db.exec("PRAGMA incremental_vacuum");
+    db.exec('PRAGMA incremental_vacuum');
   };
 
   const readEntry = (kind: CacheKind, key: string, now: number): CacheRow | null => {
     const row = stmtGet.get(kind, key) as CacheRow | undefined;
-    if (!row) return null;
+    if (!row) {return null;}
     const expiresAt = row.expires_at;
-    if (typeof expiresAt === "number" && expiresAt <= now) {
-      if (kind === "slides") {
+    if (typeof expiresAt === 'number' && expiresAt <= now) {
+      if (kind === 'slides') {
         cleanupSlidesPayload(row.value);
       }
       stmtDelete.run(kind, key);
@@ -277,15 +269,15 @@ export async function createCacheStore({
   const getText = (kind: CacheKind, key: string): string | null => {
     const now = Date.now();
     const row = readEntry(kind, key, now);
-    if (!row) return null;
+    if (!row) {return null;}
     const expiresAt = row.expires_at;
-    if (typeof expiresAt === "number" && expiresAt <= now) return null;
+    if (typeof expiresAt === 'number' && expiresAt <= now) {return null;}
     return row.value;
   };
 
   const getJson = <T>(kind: CacheKind, key: string): T | null => {
     const text = getText(kind, key);
-    if (!text) return null;
+    if (!text) {return null;}
     try {
       return JSON.parse(text) as T;
     } catch {
@@ -296,8 +288,8 @@ export async function createCacheStore({
   const setText = (kind: CacheKind, key: string, value: string, ttlMs: number | null) => {
     const now = Date.now();
     sweepExpired(now);
-    const expiresAt = typeof ttlMs === "number" ? now + ttlMs : null;
-    const sizeBytes = Buffer.byteLength(value, "utf8");
+    const expiresAt = typeof ttlMs === 'number' ? now + ttlMs : null;
+    const sizeBytes = Buffer.byteLength(value, 'utf8');
     stmtUpsert.run(kind, key, value, sizeBytes, now, now, expiresAt);
     enforceSize();
   };
@@ -308,39 +300,36 @@ export async function createCacheStore({
 
   const clear = () => {
     stmtClear.run();
-    db.exec("PRAGMA incremental_vacuum");
+    db.exec('PRAGMA incremental_vacuum');
   };
 
   const close = () => {
     try {
-      db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+      db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
     } catch {
-      // ignore
+      // Ignore
     }
     db.close?.();
   };
 
   const normalizedTranscriptNamespace =
-    typeof transcriptNamespace === "string" && transcriptNamespace.trim().length > 0
+    typeof transcriptNamespace === 'string' && transcriptNamespace.trim().length > 0
       ? transcriptNamespace.trim()
       : null;
   const getTranscriptKey = (url: string): string =>
-    buildTranscriptCacheKey({
-      url,
-      namespace: normalizedTranscriptNamespace,
-    });
+    buildTranscriptCacheKey({ namespace: normalizedTranscriptNamespace, url });
 
   const transcriptCache: TranscriptCache = {
     get: async ({ url, fileMtime }) => {
       const now = Date.now();
       const key = buildTranscriptCacheKey({
-        url,
-        namespace: normalizedTranscriptNamespace,
         fileMtime,
+        namespace: normalizedTranscriptNamespace,
+        url,
       });
-      const row = readEntry("transcript", key, now);
-      if (!row) return null;
-      const expired = typeof row.expires_at === "number" && row.expires_at <= now;
+      const row = readEntry('transcript', key, now);
+      if (!row) {return null;}
+      const expired = typeof row.expires_at === 'number' && row.expires_at <= now;
       let payload: {
         content?: string | null;
         source?: TranscriptSource | string | null;
@@ -357,31 +346,31 @@ export async function createCacheStore({
       }
       return {
         content: payload?.content ?? null,
-        source: normalizeTranscriptSource(payload?.source) ?? null,
         expired,
         metadata: (payload?.metadata as Record<string, unknown> | null | undefined) ?? null,
+        source: normalizeTranscriptSource(payload?.source) ?? null,
       };
     },
     set: async ({ url, content, source, ttlMs, metadata, service, resourceKey }) => {
       const key = getTranscriptKey(url);
       setJson(
-        "transcript",
+        'transcript',
         key,
         {
           content,
-          source,
-          metadata: metadata ?? null,
-          service,
-          resourceKey,
-          namespace: normalizedTranscriptNamespace,
           formatVersion: CACHE_FORMAT_VERSION,
+          metadata: metadata ?? null,
+          namespace: normalizedTranscriptNamespace,
+          resourceKey,
+          service,
+          source,
         },
         ttlMs,
       );
     },
   };
 
-  return { getText, getJson, setText, setJson, clear, close, transcriptCache };
+  return { clear, close, getJson, getText, setJson, setText, transcriptCache };
 }
 
 export function clearCacheFiles(path: string) {
@@ -397,11 +386,7 @@ export function buildExtractCacheKey({
   url: string;
   options: Record<string, unknown>;
 }): string {
-  return buildExtractCacheKeyValue({
-    url,
-    options,
-    formatVersion: CACHE_FORMAT_VERSION,
-  });
+  return buildExtractCacheKeyValue({ formatVersion: CACHE_FORMAT_VERSION, options, url });
 }
 
 export function buildSummaryCacheKey({
@@ -419,11 +404,11 @@ export function buildSummaryCacheKey({
 }): string {
   return buildSummaryCacheKeyValue({
     contentHash,
-    promptHash,
-    model,
-    lengthKey,
-    languageKey,
     formatVersion: CACHE_FORMAT_VERSION,
+    languageKey,
+    lengthKey,
+    model,
+    promptHash,
   });
 }
 
@@ -441,11 +426,7 @@ export function buildSlidesCacheKey({
     minDurationSeconds: number;
   };
 }): string {
-  return buildSlidesCacheKeyValue({
-    url,
-    settings,
-    formatVersion: CACHE_FORMAT_VERSION,
-  });
+  return buildSlidesCacheKeyValue({ formatVersion: CACHE_FORMAT_VERSION, settings, url });
 }
 
 export function buildTranscriptCacheKey({
@@ -460,45 +441,40 @@ export function buildTranscriptCacheKey({
   fileMtime?: number | null;
 }): string {
   return buildTranscriptCacheKeyValue({
-    url,
-    namespace,
     fileMtime,
     formatVersion: formatVersion ?? CACHE_FORMAT_VERSION,
+    namespace,
+    url,
   });
 }
 
 export async function readCacheStats(path: string): Promise<CacheStats | null> {
-  if (!existsSync(path)) return null;
+  if (!existsSync(path)) {return null;}
   const db = await openSqlite(path);
   try {
-    db.exec("PRAGMA query_only = ON");
+    db.exec('PRAGMA query_only = ON');
   } catch {
-    // ignore
+    // Ignore
   }
   const counts: Record<CacheKind, number> = {
+    chat: 0,
     extract: 0,
+    slides: 0,
     summary: 0,
     transcript: 0,
-    chat: 0,
-    slides: 0,
   };
-  const rows = db.prepare("SELECT kind, COUNT(*) AS count FROM cache_entries GROUP BY kind").all();
-  for (const row of rows as Array<{ kind?: string; count?: number }>) {
-    if (row?.kind && typeof row.count === "number" && row.kind in counts) {
+  const rows = db.prepare('SELECT kind, COUNT(*) AS count FROM cache_entries GROUP BY kind').all();
+  for (const row of rows as { kind?: string; count?: number }[]) {
+    if (row?.kind && typeof row.count === 'number' && row.kind in counts) {
       counts[row.kind as CacheKind] = row.count;
     }
   }
-  const totalRow = db.prepare("SELECT COUNT(*) AS count FROM cache_entries").get() as
+  const totalRow = db.prepare('SELECT COUNT(*) AS count FROM cache_entries').get() as
     | { count?: number }
     | undefined;
-  const totalEntries = typeof totalRow?.count === "number" ? totalRow.count : 0;
+  const totalEntries = typeof totalRow?.count === 'number' ? totalRow.count : 0;
   db.close?.();
-  return {
-    path,
-    sizeBytes: getSqliteFileSizeBytes(path),
-    totalEntries,
-    counts,
-  };
+  return { counts, path, sizeBytes: getSqliteFileSizeBytes(path), totalEntries };
 }
 
 export function getSqliteFileSizeBytes(path: string): number {
@@ -506,17 +482,17 @@ export function getSqliteFileSizeBytes(path: string): number {
   try {
     total += statSync(path).size;
   } catch {
-    // ignore
+    // Ignore
   }
   try {
     total += statSync(`${path}-wal`).size;
   } catch {
-    // ignore
+    // Ignore
   }
   try {
     total += statSync(`${path}-shm`).size;
   } catch {
-    // ignore
+    // Ignore
   }
   return total;
 }

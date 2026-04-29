@@ -1,27 +1,29 @@
-import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
-import { createServer } from "node:net";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { runDaemonServer } from "../src/daemon/server.js";
+import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import { runDaemonServer } from '../src/daemon/server.js';
 
 const findFreePort = async (): Promise<number> =>
-  await new Promise((resolve, reject) => {
+   new Promise((resolve, reject) => {
     const server = createServer();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
+    server.on('error', reject);
+    server.listen(0, '127.0.0.1', () => {
       const address = server.address();
-      if (!address || typeof address === "string") {
-        server.close(() => reject(new Error("Failed to resolve port")));
+      if (!address || typeof address === 'string') {
+        server.close(() =>{  reject(new Error('Failed to resolve port')); });
         return;
       }
       const { port } = address;
-      server.close((err) => (err ? reject(err) : resolve(port)));
+      server.close((err) =>{ err ? reject(err) : resolve(port); });
     });
   });
 
 const createFakeCodex = (dir: string): string => {
-  const scriptPath = join(dir, "fake-codex.js");
+  const scriptPath = join(dir, 'fake-codex.js');
   const script = `#!/usr/bin/env node
 const fs = require('fs');
 const args = process.argv.slice(2);
@@ -35,27 +37,27 @@ if (outputPath) {
 }
 console.log(JSON.stringify({ usage: { input_tokens: 1, output_tokens: 1 } }));
 `;
-  writeFileSync(scriptPath, script, "utf8");
+  writeFileSync(scriptPath, script, 'utf8');
   chmodSync(scriptPath, 0o755);
   return scriptPath;
 };
 
-describe("daemon redirect e2e", () => {
-  it("summarizes with the final redirect URL in the prompt", async () => {
-    const home = mkdtempSync(join(tmpdir(), "summarize-daemon-redirects-"));
+describe('daemon redirect e2e', () => {
+  it('summarizes with the final redirect URL in the prompt', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-redirects-'));
     const port = await findFreePort();
-    const token = "test-token-1234567890";
+    const token = 'test-token-1234567890';
     const codexPath = createFakeCodex(home);
 
     const fetchImpl = async () => {
-      const html = "<!doctype html><html><head><title>Ok</title></head><body>Hello</body></html>";
+      const html = '<!doctype html><html><head><title>Ok</title></head><body>Hello</body></html>';
       const response = new Response(html, {
+        headers: { 'content-type': 'text/html' },
         status: 200,
-        headers: { "content-type": "text/html" },
       });
-      Object.defineProperty(response, "url", {
-        value: "https://summarize.sh/",
+      Object.defineProperty(response, 'url', {
         configurable: true,
+        value: 'https://summarize.sh/',
       });
       return response;
     };
@@ -72,13 +74,13 @@ describe("daemon redirect e2e", () => {
       rejectChunk = reject;
     });
     const settleChunk = (fn: () => void) => {
-      if (settled) return;
+      if (settled) {return;}
       settled = true;
       fn();
     };
     const timeoutId = setTimeout(() => {
       settleChunk(() => {
-        rejectChunk?.(new Error("Timed out waiting for daemon chunk event"));
+        rejectChunk?.(new Error('Timed out waiting for daemon chunk event'));
       });
     }, 20_000);
 
@@ -87,18 +89,12 @@ describe("daemon redirect e2e", () => {
       resolveReady = resolve;
     });
     const serverPromise = runDaemonServer({
-      env: {
-        HOME: home,
-        SUMMARIZE_MODEL: "cli/codex",
-        SUMMARIZE_CLI_CODEX: codexPath,
-      },
+      config: { installedAt: new Date().toISOString(), port, token, version: 1 },
+      env: { HOME: home, SUMMARIZE_CLI_CODEX: codexPath, SUMMARIZE_MODEL: 'cli/codex' },
       fetchImpl: fetchImpl as typeof fetch,
-      config: { token, port, version: 1, installedAt: new Date().toISOString() },
-      port,
-      signal: abortController.signal,
       onListening: () => resolveReady?.(),
       onSessionEvent: (event, sessionId) => {
-        if (event.event === "error") {
+        if (event.event === 'error') {
           pendingErrors.set(sessionId, event.data.message);
           if (activeSessionId && sessionId === activeSessionId) {
             clearTimeout(timeoutId);
@@ -106,32 +102,31 @@ describe("daemon redirect e2e", () => {
           }
           return;
         }
-        if (event.event !== "chunk") return;
+        if (event.event !== 'chunk') return;
         pendingChunks.set(sessionId, event.data.text);
         if (activeSessionId && sessionId === activeSessionId) {
           clearTimeout(timeoutId);
           settleChunk(() => resolveChunk?.(event.data.text));
         }
       },
+      port,
+      signal: abortController.signal,
     });
 
     await ready;
 
     try {
       const runRes = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-        },
         body: JSON.stringify({
-          url: "https://t.co/abc",
+          url: 'https://t.co/abc',
           title: null,
-          model: "cli/codex",
-          length: "short",
-          language: "auto",
-          mode: "url",
+          model: 'cli/codex',
+          length: 'short',
+          language: 'auto',
+          mode: 'url',
         }),
+        headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        method: 'POST',
       });
       const runJson = (await runRes.json()) as { ok: boolean; id?: string };
       expect(runRes.ok).toBe(true);
@@ -152,8 +147,8 @@ describe("daemon redirect e2e", () => {
       }
 
       const summary = await chunkPromise;
-      expect(summary).toContain("https://summarize.sh/");
-      expect(summary).not.toContain("https://t.co/abc");
+      expect(summary).toContain('https://summarize.sh/');
+      expect(summary).not.toContain('https://t.co/abc');
     } finally {
       clearTimeout(timeoutId);
       abortController.abort();

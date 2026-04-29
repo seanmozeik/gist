@@ -1,4 +1,4 @@
-type ChatStreamRuntimeOpts = {
+interface ChatStreamRuntimeOpts {
   chatEnabled: () => boolean;
   isChatStreaming: () => boolean;
   setChatStreaming: (value: boolean) => void;
@@ -17,7 +17,7 @@ type ChatStreamRuntimeOpts = {
   setStatus: (value: string) => void;
   showInlineError: (message: string) => void;
   executeAgentLoop: () => Promise<void>;
-};
+}
 
 export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
   function finishStreamingMessage() {
@@ -29,7 +29,7 @@ export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
 
   function startChatMessage(text: string) {
     const input = text.trim();
-    if (!input || !opts.chatEnabled()) return;
+    if (!input || !opts.chatEnabled()) {return;}
 
     opts.clearErrors();
     opts.resetAbort();
@@ -42,8 +42,8 @@ export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
     void (async () => {
       try {
         await opts.executeAgentLoop();
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         opts.setStatus(`Error: ${message}`);
         opts.showInlineError(message);
       } finally {
@@ -53,19 +53,19 @@ export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
   }
 
   function maybeSendQueuedChat() {
-    if (opts.isChatStreaming() || !opts.chatEnabled()) return;
+    if (opts.isChatStreaming() || !opts.chatEnabled()) {return;}
     if (opts.getQueuedChatCount() === 0) {
       opts.renderChatQueue();
       return;
     }
     const next = opts.dequeueQueuedMessage();
     opts.renderChatQueue();
-    if (next) startChatMessage(next.text);
+    if (next) {startChatMessage(next.text);}
   }
 
   function retryChat() {
-    if (!opts.chatEnabled() || opts.isChatStreaming()) return;
-    if (!opts.hasUserMessages()) return;
+    if (!opts.chatEnabled() || opts.isChatStreaming()) {return;}
+    if (!opts.hasUserMessages()) {return;}
 
     opts.clearErrors();
     opts.resetAbort();
@@ -77,8 +77,8 @@ export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
     void (async () => {
       try {
         await opts.executeAgentLoop();
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         opts.setStatus(`Error: ${message}`);
         opts.showInlineError(message);
       } finally {
@@ -87,10 +87,5 @@ export function createChatStreamRuntime(opts: ChatStreamRuntimeOpts) {
     })();
   }
 
-  return {
-    finishStreamingMessage,
-    maybeSendQueuedChat,
-    retryChat,
-    startChatMessage,
-  };
+  return { finishStreamingMessage, maybeSendQueuedChat, retryChat, startChatMessage };
 }

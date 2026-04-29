@@ -1,8 +1,10 @@
-import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
-import { runCli } from "../../src/run.js";
+import { Writable } from 'node:stream';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === "1";
+import { describe, expect, it } from 'vitest';
+
+import { runCli } from '../../src/run.js';
+
+const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
 const ZAI_KEY = process.env.Z_AI_API_KEY ?? process.env.ZAI_API_KEY ?? null;
 
 function shouldSoftSkipLiveError(message: string): boolean {
@@ -12,14 +14,14 @@ function shouldSoftSkipLiveError(message: string): boolean {
 }
 
 const collectStdout = () => {
-  let text = "";
+  let text = '';
   const stdout = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stdout, getText: () => text };
+  return { getText: () => text, stdout };
 };
 
 const silentStderr = new Writable({
@@ -28,42 +30,42 @@ const silentStderr = new Writable({
   },
 });
 
-(LIVE ? describe : describe.skip)("live Z.AI", () => {
+(LIVE ? describe : describe.skip)('live Z.AI', () => {
   const timeoutMs = 120_000;
 
   it(
-    "zai/glm-4.7 returns text",
+    'zai/glm-4.7 returns text',
     async () => {
       if (!ZAI_KEY) {
-        it.skip("requires Z_AI_API_KEY (or ZAI_API_KEY)", () => {});
+        it.skip('requires Z_AI_API_KEY (or ZAI_API_KEY)', () => {});
         return;
       }
       try {
         const out = collectStdout();
         await runCli(
           [
-            "--model",
-            "zai/glm-4.7",
-            "--stream",
-            "off",
-            "--plain",
-            "--length",
-            "short",
-            "--timeout",
-            "2m",
-            "https://example.com",
+            '--model',
+            'zai/glm-4.7',
+            '--stream',
+            'off',
+            '--plain',
+            '--length',
+            'short',
+            '--timeout',
+            '2m',
+            'https://example.com',
           ],
           {
             env: { ...process.env, Z_AI_API_KEY: ZAI_KEY },
             fetch: globalThis.fetch.bind(globalThis),
-            stdout: out.stdout,
             stderr: silentStderr,
+            stdout: out.stdout,
           },
         );
         expect(out.getText().trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) return;
+        if (shouldSoftSkipLiveError(message)) {return;}
         throw error;
       }
     },

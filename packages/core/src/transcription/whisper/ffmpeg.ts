@@ -1,50 +1,51 @@
-import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { spawnTracked } from "../../processes.js";
+import { randomUUID } from 'node:crypto';
+import { promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { spawnTracked } from '../../processes.js';
 
 export async function isFfmpegAvailable(): Promise<boolean> {
   return new Promise((resolve) => {
-    const { proc } = spawnTracked("ffmpeg", ["-version"], {
-      stdio: ["ignore", "ignore", "ignore"],
-      label: "ffmpeg",
-      kind: "ffmpeg",
+    const { proc } = spawnTracked('ffmpeg', ['-version'], {
       captureOutput: false,
+      kind: 'ffmpeg',
+      label: 'ffmpeg',
+      stdio: ['ignore', 'ignore', 'ignore'],
     });
-    proc.on("error", () => resolve(false));
-    proc.on("close", (code) => resolve(code === 0));
+    proc.on('error', () =>{  resolve(false); });
+    proc.on('close', (code) =>{  resolve(code === 0); });
   });
 }
 
 export async function probeMediaDurationSecondsWithFfprobe(
   filePath: string,
 ): Promise<number | null> {
-  // ffprobe is part of the ffmpeg suite. We keep this optional (best-effort) so environments
-  // without ffmpeg still work; it only powers nicer progress output.
+  // Ffprobe is part of the ffmpeg suite. We keep this optional (best-effort) so environments
+  // Without ffmpeg still work; it only powers nicer progress output.
   return new Promise((resolve) => {
     const args = [
-      "-v",
-      "error",
-      "-show_entries",
-      "format=duration",
-      "-of",
-      "default=noprint_wrappers=1:nokey=1",
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'default=noprint_wrappers=1:nokey=1',
       filePath,
     ];
-    const { proc } = spawnTracked("ffprobe", args, {
-      stdio: ["ignore", "pipe", "ignore"],
-      label: "ffprobe",
-      kind: "ffprobe",
+    const { proc } = spawnTracked('ffprobe', args, {
+      kind: 'ffprobe',
+      label: 'ffprobe',
+      stdio: ['ignore', 'pipe', 'ignore'],
     });
-    let stdout = "";
-    proc.stdout?.setEncoding("utf8");
-    proc.stdout?.on("data", (chunk: string) => {
-      if (stdout.length > 2048) return;
+    let stdout = '';
+    proc.stdout?.setEncoding('utf8');
+    proc.stdout?.on('data', (chunk: string) => {
+      if (stdout.length > 2048) {return;}
       stdout += chunk;
     });
-    proc.on("error", () => resolve(null));
-    proc.on("close", (code) => {
+    proc.on('error', () =>{  resolve(null); });
+    proc.on('close', (code) => {
       if (code !== 0) {
         resolve(null);
         return;
@@ -67,45 +68,45 @@ export async function runFfmpegSegment({
 }): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const args = [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-i",
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
       inputPath,
-      "-vn",
-      "-ac",
-      "1",
-      "-ar",
-      "16000",
-      "-b:a",
-      "32k",
-      "-f",
-      "segment",
-      "-segment_time",
+      '-vn',
+      '-ac',
+      '1',
+      '-ar',
+      '16000',
+      '-b:a',
+      '32k',
+      '-f',
+      'segment',
+      '-segment_time',
       String(segmentSeconds),
-      "-reset_timestamps",
-      "1",
+      '-reset_timestamps',
+      '1',
       outputPattern,
     ];
-    const { proc } = spawnTracked("ffmpeg", args, {
-      stdio: ["ignore", "ignore", "pipe"],
-      label: "ffmpeg",
-      kind: "ffmpeg",
+    const { proc } = spawnTracked('ffmpeg', args, {
+      kind: 'ffmpeg',
+      label: 'ffmpeg',
+      stdio: ['ignore', 'ignore', 'pipe'],
     });
-    let stderr = "";
-    proc.stderr?.setEncoding("utf8");
-    proc.stderr?.on("data", (chunk: string) => {
-      if (stderr.length > 8192) return;
+    let stderr = '';
+    proc.stderr?.setEncoding('utf8');
+    proc.stderr?.on('data', (chunk: string) => {
+      if (stderr.length > 8192) {return;}
       stderr += chunk;
     });
-    proc.on("error", (error) => reject(error));
-    proc.on("close", (code) => {
+    proc.on('error', (error) =>{  reject(error); });
+    proc.on('close', (code) => {
       if (code === 0) {
         resolve();
         return;
       }
       const detail = stderr.trim();
-      reject(new Error(`ffmpeg failed (${code ?? "unknown"}): ${detail || "unknown error"}`));
+      reject(new Error(`ffmpeg failed (${code ?? 'unknown'}): ${detail || 'unknown error'}`));
     });
   });
 }
@@ -118,24 +119,24 @@ export async function runFfmpegTranscodeToMp3({
   outputPath: string;
 }): Promise<void> {
   await runFfmpegTranscode({
-    inputPath,
-    outputPath,
-    mode: "strict",
     args: [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-i",
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
       inputPath,
-      "-vn",
-      "-ac",
-      "1",
-      "-ar",
-      "16000",
-      "-b:a",
-      "64k",
+      '-vn',
+      '-ac',
+      '1',
+      '-ar',
+      '16000',
+      '-b:a',
+      '64k',
       outputPath,
     ],
+    inputPath,
+    mode: 'strict',
+    outputPath,
   });
 }
 
@@ -147,24 +148,24 @@ export async function runFfmpegTranscodeToWav({
   outputPath: string;
 }): Promise<void> {
   await runFfmpegTranscode({
-    inputPath,
-    outputPath,
-    mode: "strict",
     args: [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-i",
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
       inputPath,
-      "-vn",
-      "-ac",
-      "1",
-      "-ar",
-      "16000",
-      "-sample_fmt",
-      "s16",
+      '-vn',
+      '-ac',
+      '1',
+      '-ar',
+      '16000',
+      '-sample_fmt',
+      's16',
       outputPath,
     ],
+    inputPath,
+    mode: 'strict',
+    outputPath,
   });
 }
 
@@ -176,32 +177,32 @@ export async function runFfmpegTranscodeToMp3Lenient({
   outputPath: string;
 }): Promise<void> {
   await runFfmpegTranscode({
-    inputPath,
-    outputPath,
-    mode: "lenient",
     args: [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-err_detect",
-      "ignore_err",
-      "-fflags",
-      "+genpts",
-      "-i",
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-err_detect',
+      'ignore_err',
+      '-fflags',
+      '+genpts',
+      '-i',
       inputPath,
-      "-vn",
-      "-sn",
-      "-dn",
-      "-map",
-      "0:a:0?",
-      "-ac",
-      "1",
-      "-ar",
-      "16000",
-      "-b:a",
-      "64k",
+      '-vn',
+      '-sn',
+      '-dn',
+      '-map',
+      '0:a:0?',
+      '-ac',
+      '1',
+      '-ar',
+      '16000',
+      '-b:a',
+      '64k',
       outputPath,
     ],
+    inputPath,
+    mode: 'lenient',
+    outputPath,
   });
 }
 
@@ -212,7 +213,7 @@ export async function transcodeBytesToMp3(bytes: Uint8Array): Promise<Uint8Array
     await fs.writeFile(inputPath, bytes);
     try {
       await runFfmpegTranscodeToMp3({ inputPath, outputPath });
-    } catch (_error) {
+    } catch {
       await runFfmpegTranscodeToMp3Lenient({ inputPath, outputPath });
     }
     return new Uint8Array(await fs.readFile(outputPath));
@@ -230,23 +231,23 @@ async function runFfmpegTranscode({
 }: {
   inputPath: string;
   outputPath: string;
-  mode: "strict" | "lenient";
+  mode: 'strict' | 'lenient';
   args: string[];
 }): Promise<void> {
   await new Promise<void>((resolve, reject) => {
-    const { proc } = spawnTracked("ffmpeg", args, {
-      stdio: ["ignore", "ignore", "pipe"],
-      label: "ffmpeg",
-      kind: "ffmpeg",
+    const { proc } = spawnTracked('ffmpeg', args, {
+      kind: 'ffmpeg',
+      label: 'ffmpeg',
+      stdio: ['ignore', 'ignore', 'pipe'],
     });
-    let stderr = "";
-    proc.stderr?.setEncoding("utf8");
-    proc.stderr?.on("data", (chunk: string) => {
-      if (stderr.length > 8192) return;
+    let stderr = '';
+    proc.stderr?.setEncoding('utf8');
+    proc.stderr?.on('data', (chunk: string) => {
+      if (stderr.length > 8192) {return;}
       stderr += chunk;
     });
-    proc.on("error", (error) => reject(error));
-    proc.on("close", (code) => {
+    proc.on('error', (error) =>{  reject(error); });
+    proc.on('close', (code) => {
       if (code === 0) {
         resolve();
         return;
@@ -254,8 +255,8 @@ async function runFfmpegTranscode({
       const detail = stderr.trim();
       reject(
         new Error(
-          `ffmpeg ${mode} transcode failed (${code ?? "unknown"}) for ${inputPath} -> ${outputPath}: ${
-            detail || "unknown error"
+          `ffmpeg ${mode} transcode failed (${code ?? 'unknown'}) for ${inputPath} -> ${outputPath}: ${
+            detail || 'unknown error'
           }`,
         ),
       );

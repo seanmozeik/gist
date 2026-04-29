@@ -1,27 +1,21 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  refreshFree: vi.fn(async () => {}),
-  handleDaemonRequest: vi.fn(async () => false),
   attachRichHelp: vi.fn(),
-  buildDaemonHelp: vi.fn(() => "DAEMON_HELP"),
-  buildRefreshFreeHelp: vi.fn(() => "REFRESH_FREE_HELP"),
-  buildProgram: vi.fn(() => ({
-    configureOutput: vi.fn(),
-    outputHelp: vi.fn(),
-  })),
+  buildDaemonHelp: vi.fn(() => 'DAEMON_HELP'),
+  buildProgram: vi.fn(() => ({ configureOutput: vi.fn(), outputHelp: vi.fn() })),
+  buildRefreshFreeHelp: vi.fn(() => 'REFRESH_FREE_HELP'),
+  handleDaemonRequest: vi.fn(async () => false),
+  refreshFree: vi.fn(async () => {}),
 }));
 
-vi.mock("../src/refresh-free.js", () => ({
-  refreshFree: mocks.refreshFree,
-}));
+vi.mock('../src/refresh-free.js', () => ({ refreshFree: mocks.refreshFree }));
 
-vi.mock("../src/daemon/cli.js", () => ({
-  handleDaemonRequest: mocks.handleDaemonRequest,
-}));
+vi.mock('../src/daemon/cli.js', () => ({ handleDaemonRequest: mocks.handleDaemonRequest }));
 
-vi.mock("../src/run/help.js", () => ({
+vi.mock('../src/run/help.js', () => ({
   attachRichHelp: mocks.attachRichHelp,
   buildDaemonHelp: mocks.buildDaemonHelp,
   buildProgram: mocks.buildProgram,
@@ -32,64 +26,64 @@ import {
   handleDaemonCliRequest,
   handleHelpRequest,
   handleRefreshFreeRequest,
-} from "../src/run/cli-preflight.js";
+} from '../src/run/cli-preflight.js';
 
 function collectStream() {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
-describe("run/cli-preflight", () => {
-  it("handleHelpRequest: returns false when not help", () => {
+describe('run/cli-preflight', () => {
+  it('handleHelpRequest: returns false when not help', () => {
     const stdout = collectStream();
     const stderr = collectStream();
     expect(
       handleHelpRequest({
-        normalizedArgv: ["summarize", "--help"],
         envForRun: {},
-        stdout: stdout.stream,
+        normalizedArgv: ['summarize', '--help'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).toBe(false);
   });
 
-  it("handleHelpRequest: prints refresh-free help", () => {
+  it('handleHelpRequest: prints refresh-free help', () => {
     const stdout = collectStream();
     const stderr = collectStream();
     expect(
       handleHelpRequest({
-        normalizedArgv: ["help", "refresh-free"],
         envForRun: {},
-        stdout: stdout.stream,
+        normalizedArgv: ['help', 'refresh-free'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).toBe(true);
-    expect(stdout.getText()).toContain("REFRESH_FREE_HELP");
-    expect(stderr.getText()).toBe("");
+    expect(stdout.getText()).toContain('REFRESH_FREE_HELP');
+    expect(stderr.getText()).toBe('');
   });
 
-  it("handleHelpRequest: prints daemon help", () => {
+  it('handleHelpRequest: prints daemon help', () => {
     const stdout = collectStream();
     const stderr = collectStream();
     expect(
       handleHelpRequest({
-        normalizedArgv: ["help", "daemon"],
         envForRun: {},
-        stdout: stdout.stream,
+        normalizedArgv: ['help', 'daemon'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).toBe(true);
-    expect(stdout.getText()).toContain("DAEMON_HELP");
-    expect(stderr.getText()).toBe("");
+    expect(stdout.getText()).toContain('DAEMON_HELP');
+    expect(stderr.getText()).toBe('');
   });
 
-  it("handleHelpRequest: falls back to commander help", () => {
+  it('handleHelpRequest: falls back to commander help', () => {
     mocks.attachRichHelp.mockClear();
     mocks.buildProgram.mockClear();
 
@@ -97,10 +91,10 @@ describe("run/cli-preflight", () => {
     const stderr = collectStream();
     expect(
       handleHelpRequest({
-        normalizedArgv: ["help"],
-        envForRun: { FOO: "bar" },
-        stdout: stdout.stream,
+        envForRun: { FOO: 'bar' },
+        normalizedArgv: ['help'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).toBe(true);
 
@@ -108,102 +102,102 @@ describe("run/cli-preflight", () => {
     expect(mocks.attachRichHelp).toHaveBeenCalledTimes(1);
   });
 
-  it("handleRefreshFreeRequest: returns false when not refresh-free", async () => {
+  it('handleRefreshFreeRequest: returns false when not refresh-free', async () => {
     const stdout = collectStream();
     const stderr = collectStream();
     await expect(
       handleRefreshFreeRequest({
-        normalizedArgv: ["help"],
         envForRun: {},
         fetchImpl: fetch,
-        stdout: stdout.stream,
+        normalizedArgv: ['help'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).resolves.toBe(false);
   });
 
-  it("handleRefreshFreeRequest: prints help", async () => {
+  it('handleRefreshFreeRequest: prints help', async () => {
     const stdout = collectStream();
     const stderr = collectStream();
     await expect(
       handleRefreshFreeRequest({
-        normalizedArgv: ["refresh-free", "--help"],
         envForRun: {},
         fetchImpl: fetch,
-        stdout: stdout.stream,
+        normalizedArgv: ['refresh-free', '--help'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).resolves.toBe(true);
-    expect(stdout.getText()).toContain("REFRESH_FREE_HELP");
-    expect(stderr.getText()).toBe("");
+    expect(stdout.getText()).toContain('REFRESH_FREE_HELP');
+    expect(stderr.getText()).toBe('');
   });
 
-  it("handleRefreshFreeRequest: validates numeric args", async () => {
+  it('handleRefreshFreeRequest: validates numeric args', async () => {
     const stdout = collectStream();
     const stderr = collectStream();
     await expect(
       handleRefreshFreeRequest({
-        normalizedArgv: ["refresh-free", "--runs=-1"],
         envForRun: {},
         fetchImpl: fetch,
-        stdout: stdout.stream,
+        normalizedArgv: ['refresh-free', '--runs=-1'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
-    ).rejects.toThrow("--runs must be >= 0");
+    ).rejects.toThrow('--runs must be >= 0');
   });
 
-  it("handleRefreshFreeRequest: calls refreshFree with parsed options", async () => {
+  it('handleRefreshFreeRequest: calls refreshFree with parsed options', async () => {
     mocks.refreshFree.mockClear();
 
     const stdout = collectStream();
     const stderr = collectStream();
     await expect(
       handleRefreshFreeRequest({
-        normalizedArgv: [
-          "refresh-free",
-          "--runs=3",
-          "--smart",
-          "2",
-          "--min-params",
-          "27b",
-          "--max-age-days=90",
-          "--set-default",
-          "--verbose",
-        ],
-        envForRun: { OPENROUTER_API_KEY: "x" },
+        envForRun: { OPENROUTER_API_KEY: 'x' },
         fetchImpl: fetch,
-        stdout: stdout.stream,
+        normalizedArgv: [
+          'refresh-free',
+          '--runs=3',
+          '--smart',
+          '2',
+          '--min-params',
+          '27b',
+          '--max-age-days=90',
+          '--set-default',
+          '--verbose',
+        ],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).resolves.toBe(true);
 
     expect(mocks.refreshFree).toHaveBeenCalledTimes(1);
     expect(mocks.refreshFree.mock.calls[0]?.[0]).toMatchObject({
-      verbose: true,
       options: {
-        runs: 3,
-        smart: 2,
-        minParamB: 27,
-        maxAgeDays: 90,
-        setDefault: true,
-        maxCandidates: 10,
         concurrency: 4,
+        maxAgeDays: 90,
+        maxCandidates: 10,
+        minParamB: 27,
+        runs: 3,
+        setDefault: true,
+        smart: 2,
         timeoutMs: 10_000,
       },
+      verbose: true,
     });
   });
 
-  it("handleDaemonCliRequest: forwards to daemon handler", async () => {
+  it('handleDaemonCliRequest: forwards to daemon handler', async () => {
     mocks.handleDaemonRequest.mockResolvedValueOnce(true);
     const stdout = collectStream();
     const stderr = collectStream();
     await expect(
       handleDaemonCliRequest({
-        normalizedArgv: ["daemon", "status"],
         envForRun: {},
         fetchImpl: fetch,
-        stdout: stdout.stream,
+        normalizedArgv: ['daemon', 'status'],
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).resolves.toBe(true);
   });

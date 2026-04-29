@@ -1,8 +1,8 @@
 ---
-summary: "Map of model auto-selection, provider capabilities, and LLM execution paths."
+summary: 'Map of model auto-selection, provider capabilities, and LLM execution paths.'
 read_when:
-  - "When changing auto model order or CLI fallback behavior."
-  - "When adding provider capabilities or changing document/streaming support."
+  - 'When changing auto model order or CLI fallback behavior.'
+  - 'When adding provider capabilities or changing document/streaming support.'
 ---
 
 # Model / Provider Resolution

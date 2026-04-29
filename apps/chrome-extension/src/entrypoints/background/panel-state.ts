@@ -1,14 +1,14 @@
-import type { UiState as PanelUiState } from "../../lib/panel-contracts";
+import type { UiState as PanelUiState } from '../../lib/panel-contracts';
 
 export type { PanelUiState };
 
-type CachedExtractLike = {
+interface CachedExtractLike {
   media: { hasVideo: boolean; hasAudio: boolean; hasCaptions: boolean } | null;
   wordCount: number | null;
   mediaDurationSeconds: number | null;
-};
+}
 
-type SessionLike = {
+interface SessionLike {
   windowId: number;
   runController: AbortController | null;
   agentController: AbortController | null;
@@ -28,9 +28,9 @@ type SessionLike = {
       options: { keepReady: boolean },
     ) => { ok: boolean; authed: boolean; error?: string };
   };
-};
+}
 
-type SettingsLike = {
+interface SettingsLike {
   token: string;
   autoSummarize: boolean;
   hoverSummaries: boolean;
@@ -39,12 +39,12 @@ type SettingsLike = {
   slidesEnabled: boolean;
   slidesParallel: boolean;
   slidesOcrEnabled: boolean;
-  slidesLayout: "strip" | "gallery";
+  slidesLayout: 'strip' | 'gallery';
   fontSize: number;
   lineHeight: number;
   model: string;
   length: string;
-};
+}
 
 export async function resolvePanelState({
   session,
@@ -75,11 +75,7 @@ export async function resolvePanelState({
   state: PanelUiState;
   shouldRecover: boolean;
   shouldClearPending: boolean;
-  shouldPrimeMedia: {
-    tabId: number;
-    url: string;
-    title: string | null;
-  } | null;
+  shouldPrimeMedia: { tabId: number; url: string; title: string | null } | null;
 }> {
   const settings = await loadSettings();
   const tab = await getActiveTab(session.windowId);
@@ -94,56 +90,46 @@ export async function resolvePanelState({
   const isIdle = !session.runController && !session.inflightUrl;
   const cached = tab?.id ? panelSessionStore.getCachedExtract(tab.id, tab.url ?? null) : null;
   const shouldRecover = checkRecovery
-    ? session.daemonRecovery.maybeRecover({
-        isReady: daemonReady,
-        currentUrlMatches,
-        isIdle,
-      })
+    ? session.daemonRecovery.maybeRecover({ currentUrlMatches, isIdle, isReady: daemonReady })
     : (session.daemonRecovery.updateStatus(daemonReady), false);
   const daemon = session.daemonStatus.resolve(
-    { ok: health.ok, authed: authed.ok, error: health.error ?? authed.error },
-    {
-      keepReady: Boolean(session.runController || session.agentController || session.inflightUrl),
-    },
+    { authed: authed.ok, error: health.error ?? authed.error, ok: health.ok },
+    { keepReady: Boolean(session.runController || session.agentController || session.inflightUrl) },
   );
 
   return {
-    state: {
-      panelOpen: panelSessionStore.isPanelOpen(session),
-      daemon,
-      tab: { id: tab?.id ?? null, url: tab?.url ?? null, title: tab?.title ?? null },
-      media: cached?.media ?? null,
-      stats: {
-        pageWords: typeof cached?.wordCount === "number" ? cached.wordCount : null,
-        videoDurationSeconds:
-          typeof cached?.mediaDurationSeconds === "number" ? cached.mediaDurationSeconds : null,
-      },
-      settings: {
-        autoSummarize: settings.autoSummarize,
-        hoverSummaries: settings.hoverSummaries,
-        chatEnabled: settings.chatEnabled,
-        automationEnabled: settings.automationEnabled,
-        slidesEnabled: settings.slidesEnabled,
-        slidesParallel: settings.slidesParallel,
-        slidesOcrEnabled: settings.slidesOcrEnabled,
-        slidesLayout: settings.slidesLayout,
-        fontSize: settings.fontSize,
-        lineHeight: settings.lineHeight,
-        model: settings.model,
-        length: settings.length,
-        tokenPresent: Boolean(settings.token.trim()),
-      },
-      status,
-    },
-    shouldRecover,
     shouldClearPending: Boolean(pendingUrl && tab?.url && !currentUrlMatches),
     shouldPrimeMedia:
       tab?.id && tab.url && canSummarizeUrl(tab.url)
-        ? {
-            tabId: tab.id,
-            url: tab.url,
-            title: tab.title ?? null,
-          }
+        ? { tabId: tab.id, url: tab.url, title: tab.title ?? null }
         : null,
+    shouldRecover,
+    state: {
+      daemon,
+      media: cached?.media ?? null,
+      panelOpen: panelSessionStore.isPanelOpen(session),
+      settings: {
+        autoSummarize: settings.autoSummarize,
+        automationEnabled: settings.automationEnabled,
+        chatEnabled: settings.chatEnabled,
+        fontSize: settings.fontSize,
+        hoverSummaries: settings.hoverSummaries,
+        length: settings.length,
+        lineHeight: settings.lineHeight,
+        model: settings.model,
+        slidesEnabled: settings.slidesEnabled,
+        slidesLayout: settings.slidesLayout,
+        slidesOcrEnabled: settings.slidesOcrEnabled,
+        slidesParallel: settings.slidesParallel,
+        tokenPresent: Boolean(settings.token.trim()),
+      },
+      stats: {
+        pageWords: typeof cached?.wordCount === 'number' ? cached.wordCount : null,
+        videoDurationSeconds:
+          typeof cached?.mediaDurationSeconds === 'number' ? cached.mediaDurationSeconds : null,
+      },
+      status,
+      tab: { id: tab?.id ?? null, title: tab?.title ?? null, url: tab?.url ?? null },
+    },
   };
 }

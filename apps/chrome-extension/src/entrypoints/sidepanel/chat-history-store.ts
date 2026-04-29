@@ -1,7 +1,8 @@
-import type { Message } from "@mariozechner/pi-ai";
-import { compactChatHistory, type ChatHistoryLimits } from "./chat-state";
-import { normalizePanelUrl } from "./session-policy";
-import type { ChatMessage } from "./types";
+import type { Message } from '@mariozechner/pi-ai';
+
+import { compactChatHistory, type ChatHistoryLimits } from './chat-state';
+import { normalizePanelUrl } from './session-policy';
+import type { ChatMessage } from './types';
 
 function getChatHistoryKey(tabId: number, url?: string | null) {
   if (url) {
@@ -9,7 +10,7 @@ function getChatHistoryKey(tabId: number, url?: string | null) {
       const normalized = normalizePanelUrl(url);
       return `chat:tab:${tabId}:${normalized}`;
     } catch {
-      // fall through
+      // Fall through
     }
   }
   return `chat:tab:${tabId}`;
@@ -17,61 +18,61 @@ function getChatHistoryKey(tabId: number, url?: string | null) {
 
 export function buildEmptyUsage() {
   return {
-    input: 0,
-    output: 0,
     cacheRead: 0,
     cacheWrite: 0,
+    cost: { cacheRead: 0, cacheWrite: 0, input: 0, output: 0, total: 0 },
+    input: 0,
+    output: 0,
     totalTokens: 0,
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
   };
 }
 
 export function normalizeStoredMessage(raw: Record<string, unknown>): ChatMessage | null {
-  const role = raw.role;
-  const timestamp = typeof raw.timestamp === "number" ? raw.timestamp : Date.now();
-  const id = typeof raw.id === "string" ? raw.id : crypto.randomUUID();
+  const {role} = raw;
+  const timestamp = typeof raw.timestamp === 'number' ? raw.timestamp : Date.now();
+  const id = typeof raw.id === 'string' ? raw.id : crypto.randomUUID();
 
-  if (role === "user") {
-    const content = raw.content;
-    if (typeof content !== "string" && !Array.isArray(content)) return null;
-    return { ...(raw as Message), role: "user", content, timestamp, id };
+  if (role === 'user') {
+    const {content} = raw;
+    if (typeof content !== 'string' && !Array.isArray(content)) {return null;}
+    return { ...(raw as Message), content, id, role: 'user', timestamp };
   }
 
-  if (role === "assistant") {
+  if (role === 'assistant') {
     const content = Array.isArray(raw.content)
       ? raw.content
-      : typeof raw.content === "string"
-        ? [{ type: "text", text: raw.content }]
-        : [];
+      : (typeof raw.content === 'string'
+        ? [{ type: 'text', text: raw.content }]
+        : []);
     return {
       ...(raw as Message),
-      role: "assistant",
+      api: typeof raw.api === 'string' ? raw.api : 'openai-completions',
       content,
-      api: typeof raw.api === "string" ? raw.api : "openai-completions",
-      provider: typeof raw.provider === "string" ? raw.provider : "openai",
-      model: typeof raw.model === "string" ? raw.model : "unknown",
-      usage: typeof raw.usage === "object" && raw.usage ? raw.usage : buildEmptyUsage(),
-      stopReason: typeof raw.stopReason === "string" ? raw.stopReason : "stop",
-      timestamp,
       id,
+      model: typeof raw.model === 'string' ? raw.model : 'unknown',
+      provider: typeof raw.provider === 'string' ? raw.provider : 'openai',
+      role: 'assistant',
+      stopReason: typeof raw.stopReason === 'string' ? raw.stopReason : 'stop',
+      timestamp,
+      usage: typeof raw.usage === 'object' && raw.usage ? raw.usage : buildEmptyUsage(),
     };
   }
 
-  if (role === "toolResult") {
+  if (role === 'toolResult') {
     const content = Array.isArray(raw.content)
       ? raw.content
-      : typeof raw.content === "string"
-        ? [{ type: "text", text: raw.content }]
-        : [];
+      : (typeof raw.content === 'string'
+        ? [{ type: 'text', text: raw.content }]
+        : []);
     return {
       ...(raw as Message),
-      role: "toolResult",
       content,
-      toolCallId: typeof raw.toolCallId === "string" ? raw.toolCallId : crypto.randomUUID(),
-      toolName: typeof raw.toolName === "string" ? raw.toolName : "tool",
-      isError: Boolean(raw.isError),
-      timestamp,
       id,
+      isError: Boolean(raw.isError),
+      role: 'toolResult',
+      timestamp,
+      toolCallId: typeof raw.toolCallId === 'string' ? raw.toolCallId : crypto.randomUUID(),
+      toolName: typeof raw.toolName === 'string' ? raw.toolName : 'tool',
     };
   }
 
@@ -88,33 +89,33 @@ export function createChatHistoryStore({
   const cache = new Map<string, ChatMessage[]>();
 
   async function clear(tabId: number | null, url?: string | null) {
-    if (!tabId) return;
+    if (!tabId) {return;}
     const key = getChatHistoryKey(tabId, url);
     cache.delete(key);
     const store = getStorage();
-    if (!store) return;
+    if (!store) {return;}
     try {
       await store.remove(key);
     } catch {
-      // ignore
+      // Ignore
     }
   }
 
   async function load(tabId: number, url?: string | null): Promise<ChatMessage[] | null> {
     const key = getChatHistoryKey(tabId, url);
     const cached = cache.get(key);
-    if (cached) return cached;
+    if (cached) {return cached;}
     const store = getStorage();
-    if (!store) return null;
+    if (!store) {return null;}
     try {
       const res = await store.get(key);
       const raw = res?.[key];
-      if (!Array.isArray(raw)) return null;
+      if (!Array.isArray(raw)) {return null;}
       const parsed = raw
-        .filter((msg) => msg && typeof msg === "object")
+        .filter((msg) => msg && typeof msg === 'object')
         .map((msg) => normalizeStoredMessage(msg as Record<string, unknown>))
         .filter((msg): msg is ChatMessage => Boolean(msg));
-      if (!parsed.length) return null;
+      if (!parsed.length) {return null;}
       cache.set(key, parsed);
       return parsed;
     } catch {
@@ -128,23 +129,19 @@ export function createChatHistoryStore({
     chatEnabled: boolean,
     url?: string | null,
   ) {
-    if (!chatEnabled || !tabId) return messages;
+    if (!chatEnabled || !tabId) {return messages;}
     const key = getChatHistoryKey(tabId, url);
     const compacted = compactChatHistory(messages, chatLimits);
     cache.set(key, compacted);
     const store = getStorage();
-    if (!store) return compacted;
+    if (!store) {return compacted;}
     try {
       await store.set({ [key]: compacted });
     } catch {
-      // ignore
+      // Ignore
     }
     return compacted;
   }
 
-  return {
-    clear,
-    load,
-    persist,
-  };
+  return { clear, load, persist };
 }

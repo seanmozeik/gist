@@ -1,7 +1,7 @@
 ---
-summary: "Embedded media detection + transcript-first pipeline."
+summary: 'Embedded media detection + transcript-first pipeline.'
 read_when:
-  - "When changing media detection, embedded captions, or video-mode behavior."
+  - 'When changing media detection, embedded captions, or video-mode behavior.'
 ---
 
 # Media detection + transcript-first

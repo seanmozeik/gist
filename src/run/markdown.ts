@@ -2,13 +2,13 @@ import {
   collapseExtraBlankLines,
   inlineReferenceStyleLinks,
   materializeInlineMarkdownLinks,
-} from "./markdown-transforms.js";
+} from './markdown-transforms.js';
 
 export function prepareMarkdownLineForTerminal(line: string): string {
-  return line.replace(/(?<!!)\[([^\]]+)\]\((\S+?)\)/g, (_full, label, url) => {
-    const safeLabel = String(label ?? "").trim();
-    const safeUrl = String(url ?? "").trim();
-    if (!safeLabel || !safeUrl) return _full;
+  return line.replaceAll(/(?<!!)\[([^\]]+)\]\((\S+?)\)/g, (_full, label, url) => {
+    const safeLabel = String(label ?? '').trim();
+    const safeUrl = String(url ?? '').trim();
+    if (!safeLabel || !safeUrl) {return _full;}
     return `${safeLabel}: ${safeUrl}`;
   });
 }

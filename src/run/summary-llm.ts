@@ -1,9 +1,9 @@
-import { generateTextWithModelId } from "../llm/generate-text.js";
-import { resolveGoogleModelForUsage } from "../llm/google-models.js";
-import type { LlmProvider } from "../llm/model-id.js";
-import type { parseGatewayStyleModelId } from "../llm/model-id.js";
-import type { ModelRequestOptions } from "../llm/model-options.js";
-import type { Prompt } from "../llm/prompt.js";
+import { generateTextWithModelId } from '../llm/generate-text.js';
+import { resolveGoogleModelForUsage } from '../llm/google-models.js';
+import type { LlmProvider } from '../llm/model-id.js';
+import type { parseGatewayStyleModelId } from '../llm/model-id.js';
+import type { ModelRequestOptions } from '../llm/model-options.js';
+import type { Prompt } from '../llm/prompt.js';
 
 export async function resolveModelIdForLlmCall({
   parsedModel,
@@ -12,32 +12,30 @@ export async function resolveModelIdForLlmCall({
   timeoutMs,
 }: {
   parsedModel: ReturnType<typeof parseGatewayStyleModelId>;
-  apiKeys: {
-    googleApiKey: string | null;
-  };
+  apiKeys: { googleApiKey: string | null };
   fetchImpl: typeof fetch;
   timeoutMs: number;
 }): Promise<{ modelId: string; note: string | null; forceStreamOff: boolean }> {
-  if (parsedModel.provider !== "google") {
-    return { modelId: parsedModel.canonical, note: null, forceStreamOff: false };
+  if (parsedModel.provider !== 'google') {
+    return { forceStreamOff: false, modelId: parsedModel.canonical, note: null };
   }
 
   const key = apiKeys.googleApiKey;
   if (!key) {
-    return { modelId: parsedModel.canonical, note: null, forceStreamOff: false };
+    return { forceStreamOff: false, modelId: parsedModel.canonical, note: null };
   }
 
   const resolved = await resolveGoogleModelForUsage({
-    requestedModelId: parsedModel.model,
     apiKey: key,
     fetchImpl,
+    requestedModelId: parsedModel.model,
     timeoutMs,
   });
 
   return {
+    forceStreamOff: false,
     modelId: `google/${resolved.resolvedModelId}`,
     note: resolved.note,
-    forceStreamOff: false,
   };
 }
 
@@ -90,31 +88,31 @@ export async function summarizeWithModelId({
   text: string;
   provider: LlmProvider;
   canonicalModelId: string;
-  usage: Awaited<ReturnType<typeof generateTextWithModelId>>["usage"];
+  usage: Awaited<ReturnType<typeof generateTextWithModelId>>['usage'];
 }> {
   const result = await generateTextWithModelId({
-    modelId,
-    apiKeys,
-    forceOpenRouter,
-    openaiBaseUrlOverride,
     anthropicBaseUrlOverride,
+    apiKeys,
+    fetchImpl,
+    forceChatCompletions,
+    forceOpenRouter,
     googleBaseUrlOverride,
+    maxOutputTokens,
+    modelId,
+    onRetry,
+    openaiBaseUrlOverride,
+    prompt,
+    requestOptions,
+    retries,
+    temperature: 0,
+    timeoutMs,
     xaiBaseUrlOverride,
     zaiBaseUrlOverride,
-    forceChatCompletions,
-    requestOptions,
-    prompt,
-    temperature: 0,
-    maxOutputTokens,
-    timeoutMs,
-    fetchImpl,
-    retries,
-    onRetry,
   });
   return {
-    text: result.text,
-    provider: result.provider,
     canonicalModelId: result.canonicalModelId,
+    provider: result.provider,
+    text: result.text,
     usage: result.usage,
   };
 }

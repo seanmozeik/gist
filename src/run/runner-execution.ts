@@ -1,18 +1,19 @@
-import { pathToFileURL } from "node:url";
-import { loadLocalAsset, type InputTarget } from "../content/asset.js";
-import { isDirectVideoInput } from "../content/index.js";
-import type { RunMetricsReport } from "../costs.js";
-import type { ExecFileFn } from "../markitdown.js";
-import { startSpinner } from "../tty/spinner.js";
-import type { AssetAttachment } from "./attachments.js";
-import { MAX_PDF_EXTRACT_BYTES } from "./constants.js";
-import { extractAssetContent } from "./flows/asset/extract.js";
-import type { AssetExtractContext } from "./flows/asset/extract.js";
-import { handleFileInput, isPdfExtension, withUrlAsset } from "./flows/asset/input.js";
-import { outputExtractedAsset } from "./flows/asset/output.js";
-import type { SummarizeAssetArgs } from "./flows/asset/summary.js";
-import { runUrlFlow } from "./flows/url/flow.js";
-import { createTempFileFromStdin } from "./stdin-temp-file.js";
+import { pathToFileURL } from 'node:url';
+
+import { loadLocalAsset, type InputTarget } from '../content/asset.js';
+import { isDirectVideoInput } from '../content/index.js';
+import type { RunMetricsReport } from '../costs.js';
+import type { ExecFileFn } from '../markitdown.js';
+import { startSpinner } from '../tty/spinner.js';
+import type { AssetAttachment } from './attachments.js';
+import { MAX_PDF_EXTRACT_BYTES } from './constants.js';
+import { extractAssetContent } from './flows/asset/extract.js';
+import type { AssetExtractContext } from './flows/asset/extract.js';
+import { handleFileInput, isPdfExtension, withUrlAsset } from './flows/asset/input.js';
+import { outputExtractedAsset } from './flows/asset/output.js';
+import type { SummarizeAssetArgs } from './flows/asset/summary.js';
+import { runUrlFlow } from './flows/url/flow.js';
+import { createTempFileFromStdin } from './stdin-temp-file.js';
 
 export async function executeRunnerInput(options: {
   inputTarget: InputTarget;
@@ -36,8 +37,8 @@ export async function executeRunnerInput(options: {
     };
     flags: {
       timeoutMs: number;
-      preprocessMode: "off" | "auto" | "always";
-      format: "text" | "markdown";
+      preprocessMode: 'off' | 'auto' | 'always';
+      format: 'text' | 'markdown';
       plain: boolean;
       json: boolean;
       metricsEnabled: boolean;
@@ -84,63 +85,63 @@ export async function executeRunnerInput(options: {
     runUrlFlowContext,
   } = options;
   const slidesDirectInputUrl =
-    slidesEnabled && inputTarget.kind === "file" && isDirectVideoInput(inputTarget.filePath)
+    slidesEnabled && inputTarget.kind === 'file' && isDirectVideoInput(inputTarget.filePath)
       ? pathToFileURL(inputTarget.filePath).href
-      : slidesEnabled && url && isDirectVideoInput(url)
+      : (slidesEnabled && url && isDirectVideoInput(url)
         ? url
-        : null;
+        : null);
 
-  if (inputTarget.kind === "stdin") {
+  if (inputTarget.kind === 'stdin') {
     const stdinTempFile = await createTempFileFromStdin({ stream: stdin });
     try {
-      const stdinInputTarget = { kind: "file" as const, filePath: stdinTempFile.filePath };
+      const stdinInputTarget = { filePath: stdinTempFile.filePath, kind: 'file' as const };
       if (await handleFileInput(handleFileInputContext as never, stdinInputTarget)) {
         return;
       }
-      throw new Error("Failed to process stdin input");
+      throw new Error('Failed to process stdin input');
     } finally {
       await stdinTempFile.cleanup();
     }
   }
 
   // Handle --extract for local PDF files (markitdown path, no LLM needed)
-  if (extractMode && inputTarget.kind === "file" && isPdfExtension(inputTarget.filePath)) {
+  if (extractMode && inputTarget.kind === 'file' && isPdfExtension(inputTarget.filePath)) {
     const spinner = startSpinner({
-      text: renderSpinnerStatus("Loading file"),
+      color: undefined,
       enabled: progressEnabled,
       stream: outputExtractedAssetContext.io.stderr,
-      color: undefined,
+      text: renderSpinnerStatus('Loading file'),
     });
     try {
       const loaded = await loadLocalAsset({
         filePath: inputTarget.filePath,
         maxBytes: MAX_PDF_EXTRACT_BYTES,
       });
-      if (progressEnabled) spinner.setText(renderSpinnerStatus("Extracting text"));
+      if (progressEnabled) {spinner.setText(renderSpinnerStatus('Extracting text'));}
       const extracted = await extractAssetContent({
-        ctx: extractAssetContext,
         attachment: loaded.attachment,
+        ctx: extractAssetContext,
       });
       spinner.stopAndClear();
       await outputExtractedAsset({
         ...outputExtractedAssetContext,
-        url: inputTarget.filePath,
-        sourceLabel: loaded.sourceLabel,
         attachment: loaded.attachment,
         extracted,
+        sourceLabel: loaded.sourceLabel,
+        url: inputTarget.filePath,
       });
-    } catch (err) {
+    } catch (error) {
       spinner.stopAndClear();
-      throw err;
+      throw error;
     }
     return;
   }
 
-  if (slidesDirectInputUrl && inputTarget.kind === "file") {
+  if (slidesDirectInputUrl && inputTarget.kind === 'file') {
     await runUrlFlow({
       ctx: runUrlFlowContext as never,
-      url: slidesDirectInputUrl,
       isYoutubeUrl: false,
+      url: slidesDirectInputUrl,
     });
     return;
   }
@@ -164,30 +165,30 @@ export async function executeRunnerInput(options: {
         spinner: { setText: (text: string) => void };
       }) => {
         if (extractMode) {
-          if (progressEnabled) spinner.setText(renderSpinnerStatus("Extracting text"));
+          if (progressEnabled) {spinner.setText(renderSpinnerStatus('Extracting text'));}
           const extracted = await extractAssetContent({
-            ctx: extractAssetContext,
             attachment: loaded.attachment,
+            ctx: extractAssetContext,
           });
           await outputExtractedAsset({
             ...outputExtractedAssetContext,
-            url,
-            sourceLabel: loaded.sourceLabel,
             attachment: loaded.attachment,
             extracted,
+            sourceLabel: loaded.sourceLabel,
+            url,
           });
           return;
         }
 
-        if (progressEnabled) spinner.setText(renderSpinnerStatus("Summarizing"));
+        if (progressEnabled) {spinner.setText(renderSpinnerStatus('Summarizing'));}
         await summarizeAsset({
-          sourceKind: "asset-url",
-          sourceLabel: loaded.sourceLabel,
           attachment: loaded.attachment,
           onModelChosen: (modelId) => {
             if (!progressEnabled) return;
-            spinner.setText(renderSpinnerStatusWithModel("Summarizing", modelId));
+            spinner.setText(renderSpinnerStatusWithModel('Summarizing', modelId));
           },
+          sourceKind: 'asset-url',
+          sourceLabel: loaded.sourceLabel,
         });
       },
     ))
@@ -195,14 +196,14 @@ export async function executeRunnerInput(options: {
     return;
   }
 
-  if (slidesDirectInputUrl && inputTarget.kind === "url") {
-    await runUrlFlow({ ctx: runUrlFlowContext as never, url: slidesDirectInputUrl, isYoutubeUrl });
+  if (slidesDirectInputUrl && inputTarget.kind === 'url') {
+    await runUrlFlow({ ctx: runUrlFlowContext as never, isYoutubeUrl, url: slidesDirectInputUrl });
     return;
   }
 
   if (!url) {
-    throw new Error("Only HTTP and HTTPS URLs can be summarized");
+    throw new Error('Only HTTP and HTTPS URLs can be summarized');
   }
 
-  await runUrlFlow({ ctx: runUrlFlowContext as never, url, isYoutubeUrl });
+  await runUrlFlow({ ctx: runUrlFlowContext as never, isYoutubeUrl, url });
 }

@@ -18,23 +18,20 @@ export async function fetchWithTimeout(
   const clampedTimeoutMs = Math.max(0, normalizedTimeoutMs);
 
   const timer = setTimeout(() => {
-    if (typeof DOMException === "function") {
-      controller.abort(new DOMException("Request timed out", "AbortError"));
+    if (typeof DOMException === 'function') {
+      controller.abort(new DOMException('Request timed out', 'AbortError'));
       return;
     }
     controller.abort();
   }, clampedTimeoutMs);
 
   try {
-    const finalInit: RequestInit = {
-      ...init,
-      signal: controller.signal,
-    };
+    const finalInit: RequestInit = { ...init, signal: controller.signal };
     return await fetchImpl(input, finalInit);
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
+    if (error instanceof Error && error.name === 'AbortError') {
       const timeoutError = new Error(`Fetch aborted after ${clampedTimeoutMs}ms`);
-      timeoutError.name = "FetchTimeoutError";
+      timeoutError.name = 'FetchTimeoutError';
       throw timeoutError;
     }
     throw error;

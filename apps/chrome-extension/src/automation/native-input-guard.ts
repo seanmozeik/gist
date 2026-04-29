@@ -1,8 +1,8 @@
-export type NativeInputArmMessage = {
-  type: "automation:native-input-arm";
+export interface NativeInputArmMessage {
+  type: 'automation:native-input-arm';
   tabId: number;
   enabled: boolean;
-};
+}
 
 export function updateNativeInputArmedTabs(args: {
   armedTabs: Set<number>;
@@ -11,9 +11,9 @@ export function updateNativeInputArmedTabs(args: {
   enabled?: boolean;
 }): boolean {
   const { armedTabs, senderHasTab, tabId, enabled } = args;
-  if (senderHasTab || typeof tabId !== "number") return false;
-  if (enabled) armedTabs.add(tabId);
-  else armedTabs.delete(tabId);
+  if (senderHasTab || typeof tabId !== 'number') {return false;}
+  if (enabled) {armedTabs.add(tabId);}
+  else {armedTabs.delete(tabId);}
   return true;
 }
 
@@ -22,8 +22,8 @@ export function getNativeInputGuardError(args: {
   senderTabId?: number;
 }): string | null {
   const { armedTabs, senderTabId } = args;
-  if (typeof senderTabId !== "number") return "Missing sender tab";
-  if (!armedTabs.has(senderTabId)) return "Native input not armed for this tab";
+  if (typeof senderTabId !== 'number') {return 'Missing sender tab';}
+  if (!armedTabs.has(senderTabId)) {return 'Native input not armed for this tab';}
   return null;
 }
 
@@ -34,11 +34,11 @@ export async function withNativeInputArmedTab<T>(args: {
   run: () => Promise<T>;
 }): Promise<T> {
   const { enabled, tabId, sendMessage, run } = args;
-  if (!enabled) return run();
-  await sendMessage({ type: "automation:native-input-arm", tabId, enabled: true });
+  if (!enabled) {return run();}
+  await sendMessage({ enabled: true, tabId, type: 'automation:native-input-arm' });
   try {
     return await run();
   } finally {
-    void sendMessage({ type: "automation:native-input-arm", tabId, enabled: false });
+    void sendMessage({ enabled: false, tabId, type: 'automation:native-input-arm' });
   }
 }

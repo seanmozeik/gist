@@ -1,41 +1,40 @@
-import { execFileSync } from "node:child_process";
-import { describe, expect, it } from "vitest";
-import { createLinkPreviewClient } from "../src/content/index.js";
-import { readTweetWithPreferredClient } from "../src/run/bird.js";
-import { resolveExecutableInPath } from "../src/run/env.js";
+import { execFileSync } from 'node:child_process';
+
+import { describe, expect, it } from 'vitest';
+
+import { createLinkPreviewClient } from '../src/content/index.js';
+import { readTweetWithPreferredClient } from '../src/run/bird.js';
+import { resolveExecutableInPath } from '../src/run/env.js';
 
 const ENV = process.env as Record<string, string | undefined>;
-const XURL_PATH = resolveExecutableInPath("xurl", ENV);
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === "1" && Boolean(XURL_PATH);
+const XURL_PATH = resolveExecutableInPath('xurl', ENV);
+const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(XURL_PATH);
 let cachedIdentity: { userId: string; username: string } | null | undefined;
 let cachedTimelineAvailable: boolean | undefined;
 
-type MeResponse = { data?: { id?: string; username?: string } };
-type TimelineTweet = {
-  id?: string;
-  attachments?: { media_keys?: string[] };
-};
-type TimelineResponse = {
+interface MeResponse { data?: { id?: string; username?: string } }
+interface TimelineTweet { id?: string; attachments?: { media_keys?: string[] } }
+interface TimelineResponse {
   data?: TimelineTweet[];
   includes?: { media?: Array<{ media_key?: string; type?: string }> };
-};
+}
 
 function readExecErrorDetail(error: unknown): string {
-  if (!(error instanceof Error)) return String(error);
+  if (!(error instanceof Error)) {return String(error);}
   const execError = error as Error & { stdout?: string | Buffer; stderr?: string | Buffer };
   const stdout =
-    typeof execError.stdout === "string"
+    typeof execError.stdout === 'string'
       ? execError.stdout
-      : Buffer.isBuffer(execError.stdout)
-        ? execError.stdout.toString("utf8")
-        : "";
+      : (Buffer.isBuffer(execError.stdout)
+        ? execError.stdout.toString('utf8')
+        : '');
   const stderr =
-    typeof execError.stderr === "string"
+    typeof execError.stderr === 'string'
       ? execError.stderr
-      : Buffer.isBuffer(execError.stderr)
-        ? execError.stderr.toString("utf8")
-        : "";
-  return [stdout.trim(), stderr.trim(), error.message].filter(Boolean).join("\n");
+      : (Buffer.isBuffer(execError.stderr)
+        ? execError.stderr.toString('utf8')
+        : '');
+  return [stdout.trim(), stderr.trim(), error.message].filter(Boolean).join('\n');
 }
 
 function isUsageCapExceededError(error: unknown): boolean {
@@ -44,28 +43,28 @@ function isUsageCapExceededError(error: unknown): boolean {
 
 function readJson<T>(endpoint: string): T {
   try {
-    const stdout = execFileSync("xurl", [endpoint], {
+    const stdout = execFileSync('xurl', [endpoint], {
+      encoding: 'utf8',
       env: ENV,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
     return JSON.parse(stdout) as T;
   } catch (error) {
-    throw new Error(readExecErrorDetail(error));
+    throw new Error(readExecErrorDetail(error), { cause: error });
   }
 }
 
 function resolveLiveIdentity(): { userId: string; username: string } {
   if (cachedIdentity !== undefined) {
-    if (!cachedIdentity) throw new Error("xurl live test could not resolve /2/users/me");
+    if (!cachedIdentity) {throw new Error('xurl live test could not resolve /2/users/me');}
     return cachedIdentity;
   }
-  const me = readJson<MeResponse>("/2/users/me");
+  const me = readJson<MeResponse>('/2/users/me');
   const userId = me.data?.id;
   const username = me.data?.username;
   if (!userId || !username) {
     cachedIdentity = null;
-    throw new Error("xurl live test could not resolve /2/users/me");
+    throw new Error('xurl live test could not resolve /2/users/me');
   }
   cachedIdentity = { userId, username };
   return cachedIdentity;
@@ -81,7 +80,7 @@ function hasAuthenticatedXurl(): boolean {
 }
 
 function hasTimelineXurl(): boolean {
-  if (cachedTimelineAvailable !== undefined) return cachedTimelineAvailable;
+  if (cachedTimelineAvailable !== undefined) {return cachedTimelineAvailable;}
   try {
     resolveRecentTweets();
     cachedTimelineAvailable = true;
@@ -107,21 +106,21 @@ function resolveRecentTweets(): {
   const tweets = timeline.data ?? [];
   const mediaByKey = new Map<string, string>();
   for (const media of timeline.includes?.media ?? []) {
-    if (typeof media.media_key === "string" && typeof media.type === "string") {
+    if (typeof media.media_key === 'string' && typeof media.type === 'string') {
       mediaByKey.set(media.media_key, media.type);
     }
   }
-  return { username, tweets, mediaByKey };
+  return { mediaByKey, tweets, username };
 }
 
 function resolveLiveTweetUrl(): string {
   const { username, tweets } = resolveRecentTweets();
   const tweetId =
     tweets.find(
-      (tweet) => typeof tweet.id === "string" && (tweet.attachments?.media_keys?.length ?? 0) === 0,
-    )?.id ?? tweets.find((tweet) => typeof tweet.id === "string" && tweet.id)?.id;
+      (tweet) => typeof tweet.id === 'string' && (tweet.attachments?.media_keys?.length ?? 0) === 0,
+    )?.id ?? tweets.find((tweet) => typeof tweet.id === 'string' && tweet.id)?.id;
   if (!tweetId) {
-    throw new Error("xurl live test could not find a recent tweet");
+    throw new Error('xurl live test could not find a recent tweet');
   }
   return `https://x.com/${username}/status/${tweetId}`;
 }
@@ -131,64 +130,64 @@ function resolveLiveMediaTweetUrl(): string | null {
   const tweet = tweets.find((entry) =>
     (entry.attachments?.media_keys ?? []).some((key) => {
       const type = mediaByKey.get(key);
-      return type === "video" || type === "animated_gif";
+      return type === 'video' || type === 'animated_gif';
     }),
   );
   const tweetId = tweet?.id;
-  return typeof tweetId === "string" ? `https://x.com/${username}/status/${tweetId}` : null;
+  return typeof tweetId === 'string' ? `https://x.com/${username}/status/${tweetId}` : null;
 }
 
 const createClient = () =>
   createLinkPreviewClient({
     readTweetWithBird: ({ url, timeoutMs }) =>
-      readTweetWithPreferredClient({ url, timeoutMs, env: ENV }),
+      readTweetWithPreferredClient({ env: ENV, timeoutMs, url }),
   });
 
-describe("live xurl tweet reader", () => {
+describe('live xurl tweet reader', () => {
   const run = LIVE && hasAuthenticatedXurl() && hasTimelineXurl() ? it : it.skip;
 
   run(
-    "prefers xurl for tweet extraction when it is installed and authenticated",
+    'prefers xurl for tweet extraction when it is installed and authenticated',
     async () => {
       const tweetUrl = resolveLiveTweetUrl();
       const result = await readTweetWithPreferredClient({
-        url: tweetUrl,
-        timeoutMs: 120_000,
         env: ENV,
+        timeoutMs: 120_000,
+        url: tweetUrl,
       });
 
-      expect(result.client).toBe("xurl");
+      expect(result.client).toBe('xurl');
       expect(result.text.trim().length).toBeGreaterThan(10);
     },
     180_000,
   );
 
   run(
-    "uses xurl inside link preview extraction for regular tweets",
+    'uses xurl inside link preview extraction for regular tweets',
     async () => {
       const tweetUrl = resolveLiveTweetUrl();
       const client = createClient();
-      const result = await client.fetchLinkContent(tweetUrl, { format: "text" });
+      const result = await client.fetchLinkContent(tweetUrl, { format: 'text' });
 
-      expect(result.diagnostics.strategy).toBe("xurl");
+      expect(result.diagnostics.strategy).toBe('xurl');
       expect(result.content.trim().length).toBeGreaterThan(10);
     },
     180_000,
   );
 
   run(
-    "resolves media urls from xurl for recent video tweets when available",
+    'resolves media urls from xurl for recent video tweets when available',
     async () => {
       const mediaTweetUrl = resolveLiveMediaTweetUrl();
-      if (!mediaTweetUrl) return;
+      if (!mediaTweetUrl) {return;}
 
       const result = await readTweetWithPreferredClient({
-        url: mediaTweetUrl,
-        timeoutMs: 120_000,
         env: ENV,
+        timeoutMs: 120_000,
+        url: mediaTweetUrl,
       });
 
-      expect(result.client).toBe("xurl");
+      expect(result.client).toBe('xurl');
       expect(result.media?.preferredUrl ?? result.media?.urls?.[0]).toMatch(
         /^https:\/\/video\.twimg\.com\//,
       );

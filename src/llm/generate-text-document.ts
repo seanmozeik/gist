@@ -1,35 +1,31 @@
-import { createUnsupportedFunctionalityError } from "./errors.js";
+import { createUnsupportedFunctionalityError } from './errors.js';
 import {
   isGoogleEmptySummaryError,
   resolveGoogleEmptyResponseFallbackModelId,
-} from "./generate-text-shared.js";
-import type { LlmProvider } from "./model-id.js";
-import type { ModelRequestOptions } from "./model-options.js";
-import type { Prompt } from "./prompt.js";
+} from './generate-text-shared.js';
+import type { LlmProvider } from './model-id.js';
+import type { ModelRequestOptions } from './model-options.js';
+import type { Prompt } from './prompt.js';
 import {
   resolveOpenAiCompatibleClientConfigForProvider,
   supportsDocumentAttachments,
-} from "./provider-capabilities.js";
+} from './provider-capabilities.js';
 import {
   completeAnthropicDocument,
   normalizeAnthropicModelAccessError,
-} from "./providers/anthropic.js";
-import { completeGoogleDocument } from "./providers/google.js";
-import { completeOpenAiDocument } from "./providers/openai.js";
-import type { LlmTokenUsage } from "./types.js";
+} from './providers/anthropic.js';
+import { completeGoogleDocument } from './providers/google.js';
+import { completeOpenAiDocument } from './providers/openai.js';
+import type { LlmTokenUsage } from './types.js';
 
-type ParsedModel = {
-  provider: LlmProvider;
-  model: string;
-  canonical: string;
-};
+interface ParsedModel { provider: LlmProvider; model: string; canonical: string }
 
-type DocumentResult = {
+interface DocumentResult {
   text: string;
   canonicalModelId: string;
-  provider: ParsedModel["provider"];
+  provider: ParsedModel['provider'];
   usage: LlmTokenUsage | null;
-};
+}
 
 export async function maybeGenerateDocumentText(options: {
   parsed: ParsedModel;
@@ -70,10 +66,10 @@ export async function maybeGenerateDocumentText(options: {
   } = options;
   const attachments = prompt.attachments ?? [];
   const documentAttachment =
-    attachments.find((attachment) => attachment.kind === "document") ?? null;
-  if (!documentAttachment) return null;
+    attachments.find((attachment) => attachment.kind === 'document') ?? null;
+  if (!documentAttachment) {return null;}
   if (attachments.length !== 1) {
-    throw new Error("Internal error: document attachments cannot be combined with other inputs.");
+    throw new Error('Internal error: document attachments cannot be combined with other inputs.');
   }
   if (!supportsDocumentAttachments(parsed.provider)) {
     throw createUnsupportedFunctionalityError(
@@ -81,92 +77,92 @@ export async function maybeGenerateDocumentText(options: {
     );
   }
 
-  if (parsed.provider === "anthropic") {
+  if (parsed.provider === 'anthropic') {
     const apiKey = apiKeys.anthropicApiKey;
-    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY for anthropic/... model");
+    if (!apiKey) {throw new Error('Missing ANTHROPIC_API_KEY for anthropic/... model');}
     try {
       const result = await completeAnthropicDocument({
-        modelId: parsed.model,
-        apiKey,
-        promptText: prompt.userText,
-        document: documentAttachment,
-        system: prompt.system,
-        maxOutputTokens,
-        timeoutMs,
-        fetchImpl,
         anthropicBaseUrlOverride,
+        apiKey,
+        document: documentAttachment,
+        fetchImpl,
+        maxOutputTokens,
+        modelId: parsed.model,
+        promptText: prompt.userText,
+        system: prompt.system,
+        timeoutMs,
       });
       return {
-        text: result.text,
         canonicalModelId: parsed.canonical,
         provider: parsed.provider,
+        text: result.text,
         usage: result.usage,
       };
     } catch (error) {
       const normalized = normalizeAnthropicModelAccessError(error, parsed.model);
-      if (normalized) throw normalized;
+      if (normalized) {throw normalized;}
       throw error;
     }
   }
 
-  if (parsed.provider === "openai") {
+  if (parsed.provider === 'openai') {
     const openaiConfig = resolveOpenAiCompatibleClientConfigForProvider({
-      provider: "openai",
-      openaiApiKey: apiKeys.openaiApiKey,
-      openrouterApiKey: apiKeys.openrouterApiKey,
-      forceOpenRouter,
-      openaiBaseUrlOverride,
       forceChatCompletions,
+      forceOpenRouter,
+      openaiApiKey: apiKeys.openaiApiKey,
+      openaiBaseUrlOverride,
+      openrouterApiKey: apiKeys.openrouterApiKey,
+      provider: 'openai',
       requestOptions,
     });
     const result = await completeOpenAiDocument({
+      document: documentAttachment,
+      fetchImpl,
+      maxOutputTokens,
       modelId: parsed.model,
       openaiConfig,
       promptText: prompt.userText,
-      document: documentAttachment,
-      maxOutputTokens,
       temperature,
       timeoutMs,
-      fetchImpl,
     });
     return {
-      text: result.text,
       canonicalModelId: parsed.canonical,
       provider: parsed.provider,
+      text: result.text,
       usage: result.usage,
     };
   }
 
-  if (parsed.provider === "google") {
+  if (parsed.provider === 'google') {
     const apiKey = apiKeys.googleApiKey;
     if (!apiKey) {
       throw new Error(
-        "Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model",
+        'Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model',
       );
     }
     try {
       const result = await completeGoogleDocument({
-        modelId: parsed.model,
         apiKey,
-        promptText: prompt.userText,
         document: documentAttachment,
-        maxOutputTokens,
-        temperature,
-        timeoutMs,
         fetchImpl,
         googleBaseUrlOverride,
+        maxOutputTokens,
+        modelId: parsed.model,
+        promptText: prompt.userText,
+        temperature,
+        timeoutMs,
       });
       return {
-        text: result.text,
         canonicalModelId: parsed.canonical,
         provider: parsed.provider,
+        text: result.text,
         usage: result.usage,
       };
     } catch (error) {
       const fallbackModelId =
         isGoogleEmptySummaryError(error) &&
         resolveGoogleEmptyResponseFallbackModelId(parsed.canonical);
-      if (!fallbackModelId) throw error;
+      if (!fallbackModelId) {throw error;}
       return retryWithModelId(fallbackModelId);
     }
   }

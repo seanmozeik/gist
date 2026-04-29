@@ -1,4 +1,4 @@
-export type StreamOutputMode = "line" | "delta";
+export type StreamOutputMode = 'line' | 'delta';
 
 export function createStreamOutputGate({
   stdout,
@@ -17,9 +17,9 @@ export function createStreamOutputGate({
   let plainFlushedLen = 0;
 
   const ensureCleared = () => {
-    if (cleared) return;
+    if (cleared) {return;}
     clearProgressForStdout();
-    if (richTty) stdout.write("\n");
+    if (richTty) {stdout.write('\n');}
     cleared = true;
   };
 
@@ -31,13 +31,13 @@ export function createStreamOutputGate({
 
   const handleChunk = (streamed: string, prevStreamed: string) => {
     if (plainFlushedLen === 0) {
-      const match = streamed.match(/^\n+/);
-      if (match) plainFlushedLen = match[0].length;
+      const match = /^\n+/.exec(streamed);
+      if (match) {plainFlushedLen = match[0].length;}
     }
 
-    if (outputMode === "line") {
-      const lastNl = streamed.lastIndexOf("\n");
-      if (lastNl >= 0 && lastNl + 1 > plainFlushedLen) {
+    if (outputMode === 'line') {
+      const lastNl = streamed.lastIndexOf('\n');
+      if (lastNl !== -1 && lastNl + 1 > plainFlushedLen) {
         ensureCleared();
         flush(streamed.slice(plainFlushedLen, lastNl + 1));
         plainFlushedLen = lastNl + 1;
@@ -60,21 +60,21 @@ export function createStreamOutputGate({
   };
 
   const finalize = (finalText: string) => {
-    const remaining = plainFlushedLen < finalText.length ? finalText.slice(plainFlushedLen) : "";
+    const remaining = plainFlushedLen < finalText.length ? finalText.slice(plainFlushedLen) : '';
     if (remaining) {
       clearProgressForStdout();
       stdout.write(remaining);
       restoreProgressAfterStdout?.();
     }
     const endedWithNewline = remaining
-      ? remaining.endsWith("\n")
-      : plainFlushedLen > 0 && finalText[plainFlushedLen - 1] === "\n";
+      ? remaining.endsWith('\n')
+      : plainFlushedLen > 0 && finalText[plainFlushedLen - 1] === '\n';
     if (!endedWithNewline) {
       clearProgressForStdout();
-      stdout.write("\n");
+      stdout.write('\n');
       restoreProgressAfterStdout?.();
     }
   };
 
-  return { handleChunk, finalize, getFlushedLen: () => plainFlushedLen };
+  return { finalize, getFlushedLen: () => plainFlushedLen, handleChunk };
 }

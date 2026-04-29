@@ -1,33 +1,28 @@
-import type { Context } from "@mariozechner/pi-ai";
-import { completeSimple } from "@mariozechner/pi-ai";
-import type { Attachment } from "../attachments.js";
-import type { LlmTokenUsage } from "../types.js";
-import { normalizeGoogleUsage, normalizeTokenUsage } from "../usage.js";
-import { resolveGoogleModel } from "./models.js";
-import { bytesToBase64, resolveBaseUrlOverride } from "./shared.js";
+import type { Context } from '@mariozechner/pi-ai';
+import { completeSimple } from '@mariozechner/pi-ai';
 
-type GoogleAssistantLike = {
-  stopReason?: string;
-  errorMessage?: string;
-};
+import type { Attachment } from '../attachments.js';
+import type { LlmTokenUsage } from '../types.js';
+import { normalizeGoogleUsage, normalizeTokenUsage } from '../usage.js';
+import { resolveGoogleModel } from './models.js';
+import { bytesToBase64, resolveBaseUrlOverride } from './shared.js';
 
-type GoogleContentBlockLike = {
-  type: string;
-  text?: string;
-};
+interface GoogleAssistantLike { stopReason?: string; errorMessage?: string }
+
+interface GoogleContentBlockLike { type: string; text?: string }
 
 function extractGoogleErrorMessage(value: unknown): string | null {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const trimmed = value.trim();
-    if (!trimmed) return null;
+    if (!trimmed) {return null;}
     try {
       const parsed = JSON.parse(trimmed) as unknown;
       const nested = extractGoogleErrorMessage(parsed);
-      if (nested) return nested;
+      if (nested) {return nested;}
     } catch {}
     return trimmed;
   }
-  if (!value || typeof value !== "object") return null;
+  if (!value || typeof value !== 'object') {return null;}
   const record = value as Record<string, unknown>;
   return (
     extractGoogleErrorMessage(record.error) ??
@@ -40,8 +35,8 @@ export function normalizeGoogleAssistantError(
   response: GoogleAssistantLike | null | undefined,
   modelId: string,
 ): Error | null {
-  const raw = typeof response?.errorMessage === "string" ? response.errorMessage : "";
-  if (!raw.trim() && response?.stopReason !== "error") return null;
+  const raw = typeof response?.errorMessage === 'string' ? response.errorMessage : '';
+  if (!raw.trim() && response?.stopReason !== 'error') {return null;}
   const message = extractGoogleErrorMessage(raw) ?? `Google request failed for model "${modelId}".`;
   if (/not found|not supported|Call ListModels/i.test(message)) {
     return new Error(`Google API rejected model "${modelId}": ${message}`);
@@ -51,9 +46,9 @@ export function normalizeGoogleAssistantError(
 
 function extractGoogleResponseText(content: GoogleContentBlockLike[]): string {
   return content
-    .filter((block) => block.type === "text")
-    .map((block) => block.text ?? "")
-    .join("")
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text ?? '')
+    .join('')
     .trim();
 }
 
@@ -74,17 +69,17 @@ export async function completeGoogleText({
   signal: AbortSignal;
   googleBaseUrlOverride?: string | null;
 }): Promise<{ text: string; usage: LlmTokenUsage | null }> {
-  const model = resolveGoogleModel({ modelId, context, googleBaseUrlOverride });
+  const model = resolveGoogleModel({ context, googleBaseUrlOverride, modelId });
   const result = await completeSimple(model, context, {
-    ...(typeof temperature === "number" ? { temperature } : {}),
-    ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+    ...(typeof temperature === 'number' ? { temperature } : {}),
+    ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
     apiKey,
     signal,
   });
   const normalizedError = normalizeGoogleAssistantError(result, modelId);
-  if (normalizedError) throw normalizedError;
+  if (normalizedError) {throw normalizedError;}
   const text = extractGoogleResponseText(result.content as GoogleContentBlockLike[]);
-  if (!text) throw new Error(`LLM returned an empty summary (model google/${modelId}).`);
+  if (!text) {throw new Error(`LLM returned an empty summary (model google/${modelId}).`);}
   return { text, usage: normalizeTokenUsage(result.usage) };
 }
 
@@ -109,40 +104,35 @@ export async function completeGoogleDocument({
   fetchImpl: typeof fetch;
   googleBaseUrlOverride?: string | null;
 }): Promise<{ text: string; usage: LlmTokenUsage | null }> {
-  if (document.kind !== "document") {
-    throw new Error("Internal error: expected a document attachment for Google.");
+  if (document.kind !== 'document') {
+    throw new Error('Internal error: expected a document attachment for Google.');
   }
   const baseUrl =
     resolveBaseUrlOverride(googleBaseUrlOverride) ??
-    "https://generativelanguage.googleapis.com/v1beta";
-  const url = new URL(`${baseUrl.replace(/\/$/, "")}/models/${modelId}:generateContent`);
-  url.searchParams.set("key", apiKey);
+    'https://generativelanguage.googleapis.com/v1beta';
+  const url = new URL(`${baseUrl.replace(/\/$/, '')}/models/${modelId}:generateContent`);
+  url.searchParams.set('key', apiKey);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
   const payload = {
     contents: [
       {
         parts: [
-          {
-            inline_data: {
-              mime_type: document.mediaType,
-              data: bytesToBase64(document.bytes),
-            },
-          },
+          { inline_data: { data: bytesToBase64(document.bytes), mime_type: document.mediaType } },
           { text: promptText },
         ],
       },
     ],
-    ...(typeof maxOutputTokens === "number" ? { maxOutputTokens } : {}),
-    ...(typeof temperature === "number" ? { temperature } : {}),
+    ...(typeof maxOutputTokens === 'number' ? { maxOutputTokens } : {}),
+    ...(typeof temperature === 'number' ? { temperature } : {}),
   };
 
   try {
     const response = await fetchImpl(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
+      headers: { 'content-type': 'application/json' },
+      method: 'POST',
       signal: controller.signal,
     });
 
@@ -155,13 +145,13 @@ export async function completeGoogleDocument({
     }
 
     const data = JSON.parse(bodyText) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      candidates?: { content?: { parts?: Array<{ text?: string }> } }[];
       usageMetadata?: unknown;
     };
     const text = (data.candidates ?? [])
       .flatMap((candidate) => candidate.content?.parts ?? [])
-      .map((part) => (typeof part.text === "string" ? part.text : ""))
-      .join("")
+      .map((part) => (typeof part.text === 'string' ? part.text : ''))
+      .join('')
       .trim();
     if (!text) {
       throw new Error(`LLM returned an empty summary (model google/${modelId}).`);

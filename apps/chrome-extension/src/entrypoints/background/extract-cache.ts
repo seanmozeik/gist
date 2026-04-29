@@ -1,18 +1,19 @@
-import { shouldPreferUrlMode } from "@steipete/summarize-core/content/url";
-import type { ExtractResponse } from "./content-script-bridge";
+import { shouldPreferUrlMode } from '@steipete/summarize-core/content/url';
+
+import type { ExtractResponse } from './content-script-bridge';
 import {
   routeExtract,
   type ExtractLog,
   type ExtractorContext,
   type ExtractorResult,
-} from "./extractors/router";
-import type { SlidesPayload } from "./panel-utils";
+} from './extractors/router';
+import type { SlidesPayload } from './panel-utils';
 
-export type CachedExtract = {
+export interface CachedExtract {
   url: string;
   title: string | null;
   text: string;
-  source: "page" | "url";
+  source: 'page' | 'url';
   truncated: boolean;
   totalCharacters: number;
   wordCount: number | null;
@@ -35,21 +36,21 @@ export type CachedExtract = {
       attemptedProviders?: string[] | null;
     } | null;
   } | null;
-};
+}
 
-type CachedExtractStore = {
+interface CachedExtractStore {
   getCachedExtract(tabId: number, url: string): CachedExtract | null | undefined;
   setCachedExtract(tabId: number, value: CachedExtract): void;
   getLastMediaProbe(tabId: number): string | null | undefined;
   rememberMediaProbe(tabId: number, url: string): void;
-};
+}
 
-type LoadSettingsResult = {
+interface LoadSettingsResult {
   extendedLogging: boolean;
   maxChars: number;
   slidesEnabled: boolean;
   token: string;
-};
+}
 
 const MIN_CHAT_CHARS = 100;
 const CHAT_FULL_TRANSCRIPT_MAX_CHARS = Number.MAX_SAFE_INTEGER;
@@ -71,27 +72,27 @@ function fromPageExtract({
     media?: { hasVideo: boolean; hasAudio: boolean; hasCaptions: boolean } | null;
     mediaDurationSeconds?: number | null;
   };
-  result?: Pick<ExtractorResult, "source" | "diagnostics"> | null;
+  result?: Pick<ExtractorResult, 'source' | 'diagnostics'> | null;
   title: string | null;
 }): CachedExtract {
   return {
-    url: extracted.url,
-    title: extracted.title ?? title,
-    text: extracted.text,
-    source: result?.source ?? "page",
-    truncated: extracted.truncated,
-    totalCharacters: extracted.text.length,
-    wordCount: countWords(extracted.text),
+    diagnostics: result?.diagnostics ?? null,
     media: extracted.media ?? null,
-    transcriptSource: null,
-    transcriptionProvider: null,
-    transcriptCharacters: null,
-    transcriptWordCount: null,
-    transcriptLines: null,
-    transcriptTimedText: null,
     mediaDurationSeconds: extracted.mediaDurationSeconds ?? null,
     slides: null,
-    diagnostics: result?.diagnostics ?? null,
+    source: result?.source ?? 'page',
+    text: extracted.text,
+    title: extracted.title ?? title,
+    totalCharacters: extracted.text.length,
+    transcriptCharacters: null,
+    transcriptLines: null,
+    transcriptSource: null,
+    transcriptTimedText: null,
+    transcriptWordCount: null,
+    transcriptionProvider: null,
+    truncated: extracted.truncated,
+    url: extracted.url,
+    wordCount: countWords(extracted.text),
   };
 }
 
@@ -110,44 +111,44 @@ export async function ensureChatExtract({
   settings: LoadSettingsResult;
   panelSessionStore: CachedExtractStore;
   sendStatus: (status: string) => void;
-  extractFromTab: ExtractorContext["extractFromTab"];
+  extractFromTab: ExtractorContext['extractFromTab'];
   fetchImpl: typeof fetch;
   log?: ExtractLog;
 }): Promise<CachedExtract> {
   if (!tab.id || !tab.url) {
-    throw new Error("Cannot chat on this page");
+    throw new Error('Cannot chat on this page');
   }
 
   const preferUrl = shouldPreferUrlMode(tab.url);
   const cached = panelSessionStore.getCachedExtract(tab.id, tab.url);
-  if (cached && (!preferUrl || cached.source === "url")) return cached;
+  if (cached && (!preferUrl || cached.source === 'url')) {return cached;}
   const routeLog = log ?? (() => {});
 
   if (preferUrl) {
     await routeExtract({
-      tabId: tab.id,
-      url: tab.url,
-      title: tab.title?.trim() ?? null,
+      extractFromTab,
+      fetchImpl,
+      includeDiagnostics: settings.extendedLogging,
+      log: routeLog,
       maxChars: settings.maxChars,
       minTextChars: 1,
+      tabId: tab.id,
+      title: tab.title?.trim() ?? null,
       token: settings.token,
-      includeDiagnostics: settings.extendedLogging,
-      fetchImpl,
-      extractFromTab,
-      log: routeLog,
+      url: tab.url,
     });
   } else {
     const routed = await routeExtract({
-      tabId: tab.id,
-      url: tab.url,
-      title: tab.title?.trim() ?? null,
+      extractFromTab,
+      fetchImpl,
+      includeDiagnostics: settings.extendedLogging,
+      log: routeLog,
       maxChars: CHAT_FULL_TRANSCRIPT_MAX_CHARS,
       minTextChars: MIN_CHAT_CHARS,
+      tabId: tab.id,
+      title: tab.title?.trim() ?? null,
       token: settings.token,
-      includeDiagnostics: settings.extendedLogging,
-      fetchImpl,
-      extractFromTab,
-      log: routeLog,
+      url: tab.url,
     });
     if (routed) {
       const next = fromPageExtract({
@@ -163,10 +164,10 @@ export async function ensureChatExtract({
   const wantsSlides = settings.slidesEnabled && shouldPreferUrlMode(tab.url);
   sendStatus(
     wantsSlides
-      ? "Extracting video + thumbnails…"
-      : preferUrl
-        ? "Extracting video transcript…"
-        : "Extracting URL content…",
+      ? 'Extracting video + thumbnails…'
+      : (preferUrl
+        ? 'Extracting video transcript…'
+        : 'Extracting URL content…'),
   );
   const extractTimeoutMs = wantsSlides ? 6 * 60_000 : 3 * 60_000;
   const extractController = new AbortController();
@@ -191,34 +192,34 @@ export async function ensureChatExtract({
       transcriptionProvider?: string | null;
       transcriptTimedText?: string | null;
       mediaDurationSeconds?: number | null;
-      diagnostics?: CachedExtract["diagnostics"];
+      diagnostics?: CachedExtract['diagnostics'];
     };
     slides?: SlidesPayload | null;
     error?: string;
   };
   try {
-    res = await fetchImpl("http://127.0.0.1:8787/v1/summarize", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${settings.token.trim()}`,
-        "content-type": "application/json",
-      },
+    res = await fetchImpl('http://127.0.0.1:8787/v1/summarize', {
       body: JSON.stringify({
         url: tab.url,
-        mode: "url",
+        mode: 'url',
         extractOnly: true,
         timestamps: true,
         ...(wantsSlides ? { slides: true } : {}),
         maxCharacters: null,
       }),
+      headers: {
+        Authorization: `Bearer ${settings.token.trim()}`,
+        'content-type': 'application/json',
+      },
+      method: 'POST',
       signal: extractController.signal,
     });
     json = (await res.json()) as typeof json;
-  } catch (err) {
+  } catch (error) {
     if (extractController.signal.aborted) {
-      throw new Error("Video extraction timed out. The daemon may be stuck.");
+      throw new Error('Video extraction timed out. The daemon may be stuck.');
     }
-    throw err;
+    throw error;
   } finally {
     clearTimeout(extractTimeout);
   }
@@ -227,29 +228,29 @@ export async function ensureChatExtract({
   }
 
   const next: CachedExtract = {
-    url: json.extracted.url,
-    title: json.extracted.title,
-    text: json.extracted.content,
-    source: "url",
-    truncated: json.extracted.truncated,
-    totalCharacters: json.extracted.totalCharacters,
-    wordCount: json.extracted.wordCount,
+    diagnostics: json.extracted.diagnostics ?? null,
     media: null,
-    transcriptSource: json.extracted.transcriptSource ?? null,
-    transcriptionProvider: json.extracted.transcriptionProvider ?? null,
-    transcriptCharacters: json.extracted.transcriptCharacters ?? null,
-    transcriptWordCount: json.extracted.transcriptWordCount ?? null,
-    transcriptLines: json.extracted.transcriptLines ?? null,
-    transcriptTimedText: json.extracted.transcriptTimedText ?? null,
     mediaDurationSeconds: json.extracted.mediaDurationSeconds ?? null,
     slides: json.slides ?? null,
-    diagnostics: json.extracted.diagnostics ?? null,
+    source: 'url',
+    text: json.extracted.content,
+    title: json.extracted.title,
+    totalCharacters: json.extracted.totalCharacters,
+    transcriptCharacters: json.extracted.transcriptCharacters ?? null,
+    transcriptLines: json.extracted.transcriptLines ?? null,
+    transcriptSource: json.extracted.transcriptSource ?? null,
+    transcriptTimedText: json.extracted.transcriptTimedText ?? null,
+    transcriptWordCount: json.extracted.transcriptWordCount ?? null,
+    transcriptionProvider: json.extracted.transcriptionProvider ?? null,
+    truncated: json.extracted.truncated,
+    url: json.extracted.url,
+    wordCount: json.extracted.wordCount,
   };
   if (!next.mediaDurationSeconds) {
     const fallback = await extractFromTab(tab.id, CHAT_FULL_TRANSCRIPT_MAX_CHARS);
     if (fallback.ok) {
       const duration = fallback.data.mediaDurationSeconds;
-      if (typeof duration === "number" && Number.isFinite(duration) && duration > 0) {
+      if (typeof duration === 'number' && Number.isFinite(duration) && duration > 0) {
         next.mediaDurationSeconds = duration;
       }
       if (!next.media) {
@@ -281,7 +282,7 @@ export async function primeMediaHint({
   emitState: (session: unknown, status: string) => void;
 }): Promise<void> {
   const lastProbeUrl = panelSessionStore.getLastMediaProbe(tabId);
-  if (lastProbeUrl && urlsMatch(lastProbeUrl, url)) return;
+  if (lastProbeUrl && urlsMatch(lastProbeUrl, url)) {return;}
   const existing = panelSessionStore.getCachedExtract(tabId, url);
   if (existing?.media) {
     panelSessionStore.rememberMediaProbe(tabId, url);
@@ -290,14 +291,8 @@ export async function primeMediaHint({
 
   panelSessionStore.rememberMediaProbe(tabId, url);
   const attempt = await extractFromTab(tabId, 1200);
-  if (!attempt.ok || !attempt.data.media) return;
+  if (!attempt.ok || !attempt.data.media) {return;}
 
-  panelSessionStore.setCachedExtract(
-    tabId,
-    fromPageExtract({
-      extracted: attempt.data,
-      title,
-    }),
-  );
-  emitState(session, "");
+  panelSessionStore.setCachedExtract(tabId, fromPageExtract({ extracted: attempt.data, title }));
+  emitState(session, '');
 }

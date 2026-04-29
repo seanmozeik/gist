@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { buildSlidesPayload, routePlaceholderSlideImages } from "./helpers/daemon-fixtures";
+import { expect, test } from '@playwright/test';
+
+import { buildSlidesPayload, routePlaceholderSlideImages } from './helpers/daemon-fixtures';
 import {
   assertNoErrors,
   buildUiState,
@@ -10,8 +11,8 @@ import {
   seedSettings,
   sendBgMessage,
   waitForPanelPort,
-} from "./helpers/extension-harness";
-import { allowFirefoxExtensionTests } from "./helpers/extension-test-config";
+} from './helpers/extension-harness';
+import { allowFirefoxExtensionTests } from './helpers/extension-test-config';
 import {
   applySlidesPayload,
   getPanelSlideDescriptions,
@@ -22,27 +23,27 @@ import {
   waitForSlidesRuntimeHooks,
   waitForSettingsHydratedHook,
   waitForTranscriptTimedTextHook,
-} from "./helpers/panel-hooks";
+} from './helpers/panel-hooks';
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 
-test("sidepanel replaces placeholder slides with the final smaller payload", async ({
+test('sidepanel replaces placeholder slides with the final smaller payload', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: true,
       slidesOcrEnabled: true,
+      slidesParallel: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
     await waitForSlidesRuntimeHooks(page);
@@ -50,13 +51,8 @@ test("sidepanel replaces placeholder slides with the final smaller payload", asy
     await routePlaceholderSlideImages(page);
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: {
-          id: 1,
-          url: "https://www.youtube.com/watch?v=helia123",
-          title: "Helia Video",
-        },
+        tab: { id: 1, url: 'https://www.youtube.com/watch?v=helia123', title: 'Helia Video' },
         media: { hasVideo: true, hasAudio: true, hasCaptions: true },
         settings: {
           autoSummarize: false,
@@ -66,17 +62,18 @@ test("sidepanel replaces placeholder slides with the final smaller payload", asy
           tokenPresent: true,
         },
       }),
+      type: 'ui:state',
     });
 
     await applySlidesPayload(page, {
-      sourceUrl: "https://www.youtube.com/watch?v=helia123",
-      sourceId: "youtube-helia123",
-      sourceKind: "youtube",
       ocrAvailable: false,
       slides: [
-        { index: 1, timestamp: 2, imageUrl: "", ocrText: null },
-        { index: 2, timestamp: 63, imageUrl: "", ocrText: null },
+        { index: 1, timestamp: 2, imageUrl: '', ocrText: null },
+        { index: 2, timestamp: 63, imageUrl: '', ocrText: null },
       ],
+      sourceId: 'youtube-helia123',
+      sourceKind: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=helia123',
     });
 
     await expect.poll(async () => (await getPanelSlidesTimeline(page)).length).toBe(2);
@@ -84,16 +81,16 @@ test("sidepanel replaces placeholder slides with the final smaller payload", asy
     await applySlidesPayload(
       page,
       buildSlidesPayload({
-        sourceUrl: "https://www.youtube.com/watch?v=helia123",
-        sourceId: "youtube-helia123",
         count: 1,
-        textPrefix: "Final",
+        sourceId: 'youtube-helia123',
+        sourceUrl: 'https://www.youtube.com/watch?v=helia123',
+        textPrefix: 'Final',
       }),
     );
 
     await expect.poll(async () => (await getPanelSlidesTimeline(page)).length).toBe(1);
     await expect(
-      page.locator("img.slideStrip__thumbImage, img.slideInline__thumbImage"),
+      page.locator('img.slideStrip__thumbImage, img.slideInline__thumbImage'),
     ).toHaveCount(1);
     await expect(
       page.locator(
@@ -101,7 +98,7 @@ test("sidepanel replaces placeholder slides with the final smaller payload", asy
       ),
     ).toHaveCount(1);
     const slides = await getPanelSlideDescriptions(page);
-    expect(slides[0]?.[1] ?? "").toContain("Final slide 1");
+    expect(slides[0]?.[1] ?? '').toContain('Final slide 1');
 
     assertNoErrors(harness);
   } finally {
@@ -109,33 +106,28 @@ test("sidepanel replaces placeholder slides with the final smaller payload", asy
   }
 });
 
-test("sidepanel shows transcript-first gallery cards and hides the big summary block in slide mode", async ({
+test('sidepanel shows transcript-first gallery cards and hides the big summary block in slide mode', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: true,
+      slidesLayout: 'strip',
       slidesOcrEnabled: true,
-      slidesLayout: "strip",
+      slidesParallel: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
     await waitForSlidesRuntimeHooks(page);
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: {
-          id: 1,
-          url: "https://www.youtube.com/watch?v=heliafast",
-          title: "Helia Video",
-        },
+        tab: { id: 1, url: 'https://www.youtube.com/watch?v=heliafast', title: 'Helia Video' },
         media: { hasVideo: true, hasAudio: true, hasCaptions: true },
         stats: { pageWords: 120, videoDurationSeconds: 120 },
         settings: {
@@ -143,29 +135,30 @@ test("sidepanel shows transcript-first gallery cards and hides the big summary b
           slidesEnabled: true,
           slidesParallel: true,
           slidesOcrEnabled: true,
-          slidesLayout: "strip",
+          slidesLayout: 'strip',
           tokenPresent: true,
         },
       }),
+      type: 'ui:state',
     });
 
     await applySlidesPayload(page, {
-      sourceUrl: "https://www.youtube.com/watch?v=heliafast",
-      sourceId: "youtube-heliafast",
-      sourceKind: "youtube",
       ocrAvailable: false,
       slides: [
-        { index: 1, timestamp: 2, imageUrl: "", ocrText: "Helia returns to command." },
-        { index: 2, timestamp: 60, imageUrl: "", ocrText: null },
+        { index: 1, timestamp: 2, imageUrl: '', ocrText: 'Helia returns to command.' },
+        { index: 2, timestamp: 60, imageUrl: '', ocrText: null },
       ],
+      sourceId: 'youtube-heliafast',
+      sourceKind: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=heliafast',
     });
 
     await expect
       .poll(
-        async () => (await getPanelSlideDescriptions(page)).map(([, text]) => text).join("\n"),
+        async () => (await getPanelSlideDescriptions(page)).map(([, text]) => text).join('\n'),
         { timeout: 10_000 },
       )
-      .toContain("Helia returns to command.");
+      .toContain('Helia returns to command.');
     await page.evaluate(() => {
       const hooks = (
         window as typeof globalThis & {
@@ -174,22 +167,20 @@ test("sidepanel shows transcript-first gallery cards and hides the big summary b
       ).__summarizeTestHooks;
       hooks?.forceRenderSlides?.();
     });
-    await expect(page.locator(".slideGallery")).toHaveCount(1);
-    await expect(page.locator(".slideStrip")).toHaveCount(0);
+    await expect(page.locator('.slideGallery')).toHaveCount(1);
+    await expect(page.locator('.slideStrip')).toHaveCount(0);
 
     await page.evaluate((markdown) => {
       const hooks = (
         window as typeof globalThis & {
-          __summarizeTestHooks?: {
-            applySummaryMarkdown?: (value: string) => void;
-          };
+          __summarizeTestHooks?: { applySummaryMarkdown?: (value: string) => void };
         }
       ).__summarizeTestHooks;
       hooks?.applySummaryMarkdown?.(markdown);
-    }, "Overall summary that should stay hidden in slide mode.");
+    }, 'Overall summary that should stay hidden in slide mode.');
 
-    await expect(page.locator("#render")).not.toContainText(
-      "Overall summary that should stay hidden in slide mode.",
+    await expect(page.locator('#render')).not.toContainText(
+      'Overall summary that should stay hidden in slide mode.',
     );
     await expect(
       page.locator(
@@ -203,68 +194,63 @@ test("sidepanel shows transcript-first gallery cards and hides the big summary b
   }
 });
 
-test("sidepanel scrolls YouTube slides and shows text for each slide", async ({
+test('sidepanel scrolls YouTube slides and shows text for each slide', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesLayout: "gallery",
+      slidesLayout: 'gallery',
       slidesOcrEnabled: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
 
     const placeholderPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=",
-      "base64",
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',
+      'base64',
     );
-    await page.route("http://127.0.0.1:8787/v1/slides/**", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/slides/**', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: {
-          "content-type": "image/png",
-          "x-summarize-slide-ready": "1",
-        },
         body: placeholderPng,
+        headers: { 'content-type': 'image/png', 'x-summarize-slide-ready': '1' },
+        status: 200,
       });
     });
 
-    const sourceUrl = "https://www.youtube.com/watch?v=scrollTest123";
+    const sourceUrl = 'https://www.youtube.com/watch?v=scrollTest123';
     const uiState = buildUiState({
-      tab: { id: 1, url: sourceUrl, title: "Scroll Test" },
-      media: { hasVideo: true, hasAudio: true, hasCaptions: false },
-      stats: { pageWords: 120, videoDurationSeconds: 600 },
+      media: { hasAudio: true, hasCaptions: false, hasVideo: true },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
+        slidesLayout: 'gallery',
         slidesOcrEnabled: true,
-        slidesLayout: "gallery",
         tokenPresent: true,
       },
-      status: "",
+      stats: { pageWords: 120, videoDurationSeconds: 600 },
+      status: '',
+      tab: { id: 1, title: 'Scroll Test', url: sourceUrl },
     });
-    await sendBgMessage(harness, { type: "ui:state", state: uiState });
+    await sendBgMessage(harness, { state: uiState, type: 'ui:state' });
 
     await waitForApplySlidesHook(page);
 
     const slidesPayload = buildSlidesPayload({
-      sourceUrl,
-      sourceId: "yt-scroll",
       count: 12,
-      textPrefix: "YouTube",
+      sourceId: 'yt-scroll',
+      sourceUrl,
+      textPrefix: 'YouTube',
     });
     await page.evaluate((payload) => {
       const hooks = (
         window as typeof globalThis & {
-          __summarizeTestHooks?: {
-            applySlidesPayload?: (payload: unknown) => void;
-          };
+          __summarizeTestHooks?: { applySlidesPayload?: (payload: unknown) => void };
         }
       ).__summarizeTestHooks;
       hooks?.applySlidesPayload?.(payload);
@@ -281,10 +267,10 @@ test("sidepanel scrolls YouTube slides and shows text for each slide", async ({
     });
     expect(renderedCount).toBeGreaterThan(0);
 
-    const slideItems = page.locator(".slideGallery__item");
+    const slideItems = page.locator('.slideGallery__item');
     await expect(slideItems).toHaveCount(12);
 
-    const galleryList = page.locator(".slideGallery__list");
+    const galleryList = page.locator('.slideGallery__list');
     await expect(galleryList).toBeVisible();
     await galleryList.evaluate((node) => {
       node.scrollTop = node.scrollHeight;
@@ -294,9 +280,7 @@ test("sidepanel scrolls YouTube slides and shows text for each slide", async ({
     await expect
       .poll(async () =>
         page.evaluate(() =>
-          Array.from(
-            document.querySelectorAll<HTMLImageElement>("img.slideInline__thumbImage"),
-          ).every((img) => (img.dataset.slideImageUrl ?? "").trim().length > 0),
+          [...document.querySelectorAll<HTMLImageElement>('img.slideInline__thumbImage')].every((img) => (img.dataset.slideImageUrl ?? '').trim().length > 0),
         ),
       )
       .toBe(true);
@@ -304,8 +288,8 @@ test("sidepanel scrolls YouTube slides and shows text for each slide", async ({
     await expect
       .poll(async () =>
         page.evaluate(() =>
-          Array.from(document.querySelectorAll<HTMLElement>(".slideGallery__text")).every(
-            (el) => (el.textContent ?? "").trim().length > 0,
+          [...document.querySelectorAll<HTMLElement>('.slideGallery__text')].every(
+            (el) => (el.textContent ?? '').trim().length > 0,
           ),
         ),
       )

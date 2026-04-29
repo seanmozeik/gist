@@ -39,13 +39,13 @@ phase_gates() {
   banner "Gates"
   require_clean_git
   require_lockstep_versions
-  run pnpm check
+  run bun run check
 }
 
 phase_build() {
   banner "Build"
   require_lockstep_versions
-  run pnpm build
+  run bun run build
   phase_chrome
   phase_firefox
 }
@@ -58,8 +58,8 @@ phase_verify_pack() {
   tmp_dir="$(mktemp -d)"
   core_tarball="${tmp_dir}/steipete-summarize-core-${version}.tgz"
   tarball="${tmp_dir}/steipete-summarize-${version}.tgz"
-  run pnpm -C packages/core pack --pack-destination "${tmp_dir}"
-  run pnpm pack --pack-destination "${tmp_dir}"
+  run npm pack --prefix packages/core --pack-destination "${tmp_dir}"
+  run npm pack --pack-destination "${tmp_dir}"
   if [ ! -f "${core_tarball}" ]; then
     echo "Missing ${core_tarball}"
     exit 1
@@ -82,7 +82,7 @@ phase_chrome() {
   root_dir="$(pwd)"
   output_dir="${root_dir}/apps/chrome-extension/.output"
   zip_path="${root_dir}/dist-chrome/summarize-chrome-extension-v${version}.zip"
-  run pnpm -C apps/chrome-extension build
+  (cd apps/chrome-extension && bun run build)
   run mkdir -p "${root_dir}/dist-chrome"
   if [ ! -d "${output_dir}/chrome-mv3" ]; then
     echo "Missing ${output_dir}/chrome-mv3 (wxt build failed?)"
@@ -101,7 +101,7 @@ phase_firefox() {
   root_dir="$(pwd)"
   output_dir="${root_dir}/apps/chrome-extension/.output"
   zip_path="${root_dir}/dist-firefox/summarize-firefox-extension-v${version}.zip"
-  run pnpm -C apps/chrome-extension build:firefox
+  (cd apps/chrome-extension && bun run build:firefox)
   run mkdir -p "${root_dir}/dist-firefox"
   if [ ! -d "${output_dir}/firefox-mv3" ]; then
     echo "Missing ${output_dir}/firefox-mv3 (wxt build failed?)"
@@ -117,8 +117,8 @@ phase_publish() {
   banner "Publish to npm"
   require_clean_git
   require_lockstep_versions
-  run bash -c 'cd packages/core && pnpm publish --tag latest --access public'
-  run pnpm publish --tag latest --access public
+  run bash -c 'cd packages/core && npm publish --tag latest --access public'
+  run npm publish --tag latest --access public
 }
 
 phase_smoke() {
@@ -127,7 +127,7 @@ phase_smoke() {
   run npm view @steipete/summarize-core version
   local version
   version="$(node -p 'require("./package.json").version')"
-  run bash -c "pnpm -s dlx @steipete/summarize@${version} --help >/dev/null"
+  run npx --yes @steipete/summarize@${version} --help >/dev/null
   echo "ok"
 }
 
@@ -200,11 +200,11 @@ case "$PHASE" in
     echo "Usage: scripts/release.sh [phase]"
     echo
     echo "Phases:"
-    echo "  gates     pnpm check"
-    echo "  build     pnpm build"
+    echo "  gates     bun run check"
+    echo "  build     bun run build"
     echo "  verify    pack + install tarball + --help"
-    echo "  publish   pnpm publish --tag latest --access public"
-    echo "  smoke     npm view + pnpm dlx @steipete/summarize --help"
+    echo "  publish   npm publish --tag latest --access public"
+    echo "  smoke     npm view + npx @steipete/summarize --help"
     echo "  tag       git tag vX.Y.Z + push tags"
     echo "  tap       update homebrew-tap formula + sha"
     echo "  chrome    build + zip Chrome extension"

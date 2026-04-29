@@ -1,6 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { performance } from "node:perf_hooks";
-import { countTokens } from "gpt-tokenizer";
+import { readFile } from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
+
+import { countTokens } from 'gpt-tokenizer';
 
 const args = process.argv.slice(2);
 let filePath = null;
@@ -8,11 +9,11 @@ let iterations = 5;
 
 for (let i = 0; i < args.length; i += 1) {
   const arg = args[i];
-  if (arg === "--iterations" || arg === "-n") {
+  if (arg === '--iterations' || arg === '-n') {
     const next = args[i + 1];
     const parsed = Number(next);
     if (!next || !Number.isFinite(parsed) || parsed <= 0) {
-      throw new Error(`Invalid --iterations value: ${next ?? ""}`);
+      throw new Error(`Invalid --iterations value: ${next ?? ''}`);
     }
     iterations = Math.floor(parsed);
     i += 1;
@@ -24,12 +25,12 @@ for (let i = 0; i < args.length; i += 1) {
 }
 
 if (!filePath) {
-  console.error("Usage: node scripts/bench-tokenization.mjs <file> [--iterations 5]");
+  console.error('Usage: node scripts/bench-tokenization.mjs <file> [--iterations 5]');
   process.exit(1);
 }
 
-const text = await readFile(filePath, "utf8");
-const byteLength = Buffer.byteLength(text, "utf8");
+const text = await readFile(filePath, 'utf8');
+const byteLength = Buffer.byteLength(text, 'utf8');
 
 const measure = (label, fn) => {
   const durations = [];
@@ -60,5 +61,5 @@ console.log(`file=${filePath}`);
 console.log(`chars=${text.length} bytes=${byteLength}`);
 console.log(`iterations=${iterations}`);
 
-measure("estimate chars/4", estimateTokens);
-measure("gpt-tokenizer", () => countTokens(text));
+measure('estimate chars/4', estimateTokens);
+measure('gpt-tokenizer', () => countTokens(text));

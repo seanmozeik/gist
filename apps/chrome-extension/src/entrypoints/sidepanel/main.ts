@@ -1,65 +1,66 @@
-import type { Message, ToolCall } from "@mariozechner/pi-ai";
-import { extractYouTubeVideoId } from "@steipete/summarize-core/content/url";
-import MarkdownIt from "markdown-it";
-import { executeToolCall, getAutomationToolNames } from "../../automation/tools";
-import type { BgToPanel, PanelToBg } from "../../lib/panel-contracts";
-import type { SseSlidesData } from "../../lib/runtime-contracts";
+import type { Message, ToolCall } from '@mariozechner/pi-ai';
+import { extractYouTubeVideoId } from '@steipete/summarize-core/content/url';
+import MarkdownIt from 'markdown-it';
+
+import { executeToolCall, getAutomationToolNames } from '../../automation/tools';
+import type { BgToPanel, PanelToBg } from '../../lib/panel-contracts';
+import type { SseSlidesData } from '../../lib/runtime-contracts';
 import {
   defaultSettings,
   loadSettings,
   patchSettings,
   type SlidesLayout,
-} from "../../lib/settings";
-import { splitSummaryFromSlides } from "../../lib/slides-text";
-import { generateToken } from "../../lib/token";
-import { createAppearanceControls } from "./appearance-controls";
-import { createSidepanelBgMessageRuntime } from "./bg-message-runtime";
-import { bindSidepanelUiEvents } from "./bindings";
-import { bootstrapSidepanel } from "./bootstrap-runtime";
-import { runChatAgentLoop } from "./chat-agent-loop";
-import { ChatController } from "./chat-controller";
-import { createChatHistoryRuntime } from "./chat-history-runtime";
+} from '../../lib/settings';
+import { splitSummaryFromSlides } from '../../lib/slides-text';
+import { generateToken } from '../../lib/token';
+import { createAppearanceControls } from './appearance-controls';
+import { createSidepanelBgMessageRuntime } from './bg-message-runtime';
+import { bindSidepanelUiEvents } from './bindings';
+import { bootstrapSidepanel } from './bootstrap-runtime';
+import { runChatAgentLoop } from './chat-agent-loop';
+import { ChatController } from './chat-controller';
+import { createChatHistoryRuntime } from './chat-history-runtime';
 import {
   buildEmptyUsage,
   createChatHistoryStore,
   normalizeStoredMessage,
-} from "./chat-history-store";
-import { createChatQueueRuntime } from "./chat-queue-runtime";
-import { createChatSession } from "./chat-session";
-import { type ChatHistoryLimits } from "./chat-state";
-import { createChatStreamRuntime } from "./chat-stream-runtime";
-import { createChatUiRuntime } from "./chat-ui-runtime";
-import { createSidepanelDom } from "./dom";
-import { createErrorController } from "./error-controller";
-import { createHeaderController } from "./header-controller";
-import { createSidepanelInteractionRuntime } from "./interaction-runtime";
-import { createMetricsController } from "./metrics-controller";
-import { createNavigationRuntime } from "./navigation-runtime";
-import { createPanelCacheController, type PanelCachePayload } from "./panel-cache";
-import { createPanelPortRuntime } from "./panel-port";
+} from './chat-history-store';
+import { createChatQueueRuntime } from './chat-queue-runtime';
+import { createChatSession } from './chat-session';
+import type { ChatHistoryLimits } from './chat-state';
+import { createChatStreamRuntime } from './chat-stream-runtime';
+import { createChatUiRuntime } from './chat-ui-runtime';
+import { createSidepanelDom } from './dom';
+import { createErrorController } from './error-controller';
+import { createHeaderController } from './header-controller';
+import { createSidepanelInteractionRuntime } from './interaction-runtime';
+import { createMetricsController } from './metrics-controller';
+import { createNavigationRuntime } from './navigation-runtime';
+import { createPanelCacheController, type PanelCachePayload } from './panel-cache';
+import { createPanelPortRuntime } from './panel-port';
 import {
   normalizePanelUrl,
   panelUrlsMatch,
   shouldAcceptRunForCurrentPage,
   shouldAcceptSlidesForCurrentPage,
-} from "./session-policy";
-import { createSetupControlsRuntime } from "./setup-controls-runtime";
-import { friendlyFetchError } from "./setup-runtime";
-import { hasResolvedSlidesPayload } from "./slides-pending";
-import { createSidepanelSlidesRuntime } from "./slides-runtime";
-import { shouldSeedPlannedSlidesForRun } from "./slides-seed-policy";
-import { createSlidesSessionStore } from "./slides-session-store";
-import { selectMarkdownForLayout, type SlideTextMode } from "./slides-state";
-import { createSlidesTextController } from "./slides-text-controller";
-import { createSlidesViewRuntime } from "./slides-view-runtime";
-import { createSummarizeControlRuntime } from "./summarize-control-runtime";
-import { createSummaryStreamRuntime } from "./summary-stream-runtime";
-import { createSummaryViewRuntime } from "./summary-view-runtime";
-import { registerSidepanelTestHooks } from "./test-hooks";
-import { parseTimestampHref } from "./timestamp-links";
-import type { ChatMessage, PanelPhase, PanelState, RunStart, UiState } from "./types";
-import { createTypographyController } from "./typography-controller";
-import { createUiStateRuntime } from "./ui-state-runtime";
+} from './session-policy';
+import { createSetupControlsRuntime } from './setup-controls-runtime';
+import { friendlyFetchError } from './setup-runtime';
+import { hasResolvedSlidesPayload } from './slides-pending';
+import { createSidepanelSlidesRuntime } from './slides-runtime';
+import { shouldSeedPlannedSlidesForRun } from './slides-seed-policy';
+import { createSlidesSessionStore } from './slides-session-store';
+import { selectMarkdownForLayout, type SlideTextMode } from './slides-state';
+import { createSlidesTextController } from './slides-text-controller';
+import { createSlidesViewRuntime } from './slides-view-runtime';
+import { createSummarizeControlRuntime } from './summarize-control-runtime';
+import { createSummaryStreamRuntime } from './summary-stream-runtime';
+import { createSummaryViewRuntime } from './summary-view-runtime';
+import { registerSidepanelTestHooks } from './test-hooks';
+import { parseTimestampHref } from './timestamp-links';
+import type { ChatMessage, PanelPhase, PanelState, RunStart, UiState } from './types';
+import { createTypographyController } from './typography-controller';
+import { createUiStateRuntime } from './ui-state-runtime';
 
 let currentRunTabId: number | null = null;
 const {
@@ -123,34 +124,26 @@ const {
   titleEl,
 } = createSidepanelDom();
 
-const metricsController = createMetricsController({
-  metricsEl,
-  metricsHomeEl,
-  chatMetricsSlotEl,
-});
+const metricsController = createMetricsController({ chatMetricsSlotEl, metricsEl, metricsHomeEl });
 
 const typographyController = createTypographyController({
-  sizeSmBtn,
-  sizeLgBtn,
-  lineTightBtn,
-  lineLooseBtn,
   defaultFontSize: defaultSettings.fontSize,
   defaultLineHeight: defaultSettings.lineHeight,
+  lineLooseBtn,
+  lineTightBtn,
+  sizeLgBtn,
+  sizeSmBtn,
 });
 
-const md = new MarkdownIt({
-  html: false,
-  linkify: true,
-  breaks: false,
-});
+const md = new MarkdownIt({ breaks: false, html: false, linkify: true });
 
 const slideTagPattern = /^\[slide:(\d+)\]/i;
 const slideTagPlugin = (markdown: MarkdownIt) => {
-  markdown.inline.ruler.before("emphasis", "slide_tag", (state, silent) => {
+  markdown.inline.ruler.before('emphasis', 'slide_tag', (state, silent) => {
     const match = state.src.slice(state.pos).match(slideTagPattern);
-    if (!match) return false;
+    if (!match) {return false;}
     if (!silent) {
-      const token = state.push("slide_tag", "span", 0);
+      const token = state.push('slide_tag', 'span', 0);
       token.meta = { index: Number(match[1]) };
     }
     state.pos += match[0].length;
@@ -158,7 +151,7 @@ const slideTagPlugin = (markdown: MarkdownIt) => {
   });
   markdown.renderer.rules.slide_tag = (tokens, idx) => {
     const index = tokens[idx]?.meta?.index;
-    if (!Number.isFinite(index)) return "";
+    if (!Number.isFinite(index)) {return '';}
     return `<span class="slideInline" data-slide-index="${index}"></span>`;
   };
 };
@@ -166,17 +159,17 @@ const slideTagPlugin = (markdown: MarkdownIt) => {
 md.use(slideTagPlugin);
 
 const panelState: PanelState = {
-  ui: null,
-  runId: null,
-  slidesRunId: null,
-  currentSource: null,
-  lastMeta: { inputSummary: null, model: null, modelLabel: null },
-  summaryMarkdown: null,
-  summaryFromCache: null,
-  slides: null,
-  phase: "idle",
-  error: null,
   chatStreaming: false,
+  currentSource: null,
+  error: null,
+  lastMeta: { inputSummary: null, model: null, modelLabel: null },
+  phase: 'idle',
+  runId: null,
+  slides: null,
+  slidesRunId: null,
+  summaryFromCache: null,
+  summaryMarkdown: null,
+  ui: null,
 };
 
 const panelPortRuntime = createPanelPortRuntime<BgToPanel>({
@@ -186,10 +179,10 @@ const panelPortRuntime = createPanelPortRuntime<BgToPanel>({
 });
 
 async function send(message: PanelToBg) {
-  if (message.type === "panel:summarize") {
-    lastAction = "summarize";
-  } else if (message.type === "panel:agent") {
-    lastAction = "chat";
+  if (message.type === 'panel:summarize') {
+    lastAction = 'summarize';
+  } else if (message.type === 'panel:agent') {
+    lastAction = 'chat';
   }
   await panelPortRuntime.send(message);
 }
@@ -203,23 +196,20 @@ const MAX_CHAT_MESSAGES = 1000;
 const MAX_CHAT_CHARACTERS = 160_000;
 const MAX_CHAT_QUEUE = 10;
 const chatLimits: ChatHistoryLimits = {
-  maxMessages: MAX_CHAT_MESSAGES,
   maxChars: MAX_CHAT_CHARACTERS,
+  maxMessages: MAX_CHAT_MESSAGES,
 };
 let activeTabId: number | null = null;
 let activeTabUrl: string | null = null;
 let lastPanelOpen = false;
-let lastAction: "summarize" | "chat" | null = null;
+let lastAction: 'summarize' | 'chat' | null = null;
 let automationNoticeSticky = false;
-let slidesRenderer: {
-  applyLayout: () => void;
-  clear: () => void;
-  forceRender: () => void;
-} | null = null;
+let slidesRenderer: { applyLayout: () => void; clear: () => void; forceRender: () => void } | null =
+  null;
 let slidesHydrator: {
   handlePayload: (data: SseSlidesData) => void;
   handleSummaryFromCache: (value: boolean | null) => void;
-  hydrateSnapshot: (reason: "timeout" | "resume") => Promise<void>;
+  hydrateSnapshot: (reason: 'timeout' | 'resume') => Promise<void>;
   isStreaming: () => boolean;
   start: (runId: string) => Promise<void>;
   stop: () => void;
@@ -233,60 +223,60 @@ let settingsHydrated = false;
 let pendingSettingsSnapshot: Partial<typeof defaultSettings> | null = null;
 const slidesSession = createSlidesSessionStore({
   slidesEnabled: defaultSettings.slidesEnabled,
-  slidesParallel: defaultSettings.slidesParallel,
-  slidesOcrEnabled: defaultSettings.slidesOcrEnabled,
   slidesLayout: defaultSettings.slidesLayout,
+  slidesOcrEnabled: defaultSettings.slidesOcrEnabled,
+  slidesParallel: defaultSettings.slidesParallel,
 });
 const slidesState = slidesSession.state;
 const pendingSummaryRunsByUrl = new Map<string, RunStart>();
 const pendingSlidesRunsByUrl = new Map<string, { runId: string; url: string }>();
 const slidesTextController = createSlidesTextController({
-  getSlides: () => panelState.slides?.slides ?? null,
   getLengthValue: () => appearanceControls.getLengthValue(),
+  getSlides: () => panelState.slides?.slides ?? null,
   getSlidesOcrEnabled: () => slidesState.slidesOcrEnabled,
 });
 
 const chatHistoryStore = createChatHistoryStore({ chatLimits });
 
 const chatController = new ChatController({
-  messagesEl: chatMessagesEl,
-  inputEl: chatInputEl,
-  sendBtn: chatSendBtn,
   contextEl: chatContextStatusEl,
-  markdown: md,
+  inputEl: chatInputEl,
   limits: chatLimits,
-  scrollToBottom: () => scrollToBottom(),
+  markdown: md,
+  messagesEl: chatMessagesEl,
   onNewContent: () => {
     renderInlineSlides(chatMessagesEl);
   },
+  scrollToBottom: () => scrollToBottom(),
+  sendBtn: chatSendBtn,
 });
 const chatHistoryRuntime = createChatHistoryRuntime({
   chatController,
   chatHistoryStore,
   chatLimits,
+  getActiveUrl: () => activeTabUrl,
   normalizeStoredMessage,
   requestChatHistory: (summary) => chatSession.requestChatHistory(summary),
-  getActiveUrl: () => activeTabUrl,
 });
 
-type AutomationNoticeAction = "extensions" | "options";
+type AutomationNoticeAction = 'extensions' | 'options';
 
 function hideAutomationNotice(opts?: { force?: boolean }) {
-  if (automationNoticeSticky && !opts?.force) return;
+  if (automationNoticeSticky && !opts?.force) {return;}
   automationNoticeSticky = false;
-  automationNoticeEl.classList.add("hidden");
+  automationNoticeEl.classList.add('hidden');
 }
 
 function showSlideNotice(message: string, opts?: { allowRetry?: boolean }) {
   slideNoticeMessageEl.textContent = message;
   slideNoticeRetryBtn.hidden = !opts?.allowRetry;
-  slideNoticeEl.classList.remove("hidden");
+  slideNoticeEl.classList.remove('hidden');
   headerController.updateHeaderOffset();
 }
 
 function hideSlideNotice() {
-  slideNoticeEl.classList.add("hidden");
-  slideNoticeMessageEl.textContent = "";
+  slideNoticeEl.classList.add('hidden');
+  slideNoticeMessageEl.textContent = '';
   slideNoticeRetryBtn.hidden = true;
   headerController.updateHeaderOffset();
 }
@@ -307,41 +297,41 @@ function stopSlidesSummaryStream() {
 }
 
 function resolveActiveSlidesRunId(): string | null {
-  if (panelState.slidesRunId) return panelState.slidesRunId;
-  if (!slidesState.slidesParallel && panelState.runId) return panelState.runId;
+  if (panelState.slidesRunId) {return panelState.slidesRunId;}
+  if (!slidesState.slidesParallel && panelState.runId) {return panelState.runId;}
   return null;
 }
 
 function maybeStartPendingSummaryRunForUrl(url: string | null) {
-  if (!url) return false;
+  if (!url) {return false;}
   const key = normalizePanelUrl(url);
   const pending = pendingSummaryRunsByUrl.get(key);
-  if (!pending) return false;
-  if (streamController.isStreaming()) return false;
+  if (!pending) {return false;}
+  if (streamController.isStreaming()) {return false;}
   pendingSummaryRunsByUrl.delete(key);
   attachSummaryRun(pending);
   return true;
 }
 
 function maybeStartPendingSlidesForUrl(url: string | null) {
-  if (!url) return;
+  if (!url) {return;}
   const key = normalizePanelUrl(url);
   const pending = pendingSlidesRunsByUrl.get(key);
-  if (!pending) return;
-  if (!slidesState.slidesEnabled) return;
+  if (!pending) {return;}
+  if (!slidesState.slidesEnabled) {return;}
   const effectiveInputMode = slidesSession.resolveInputMode();
-  if (effectiveInputMode !== "video") return;
-  if (slidesHydrator.isStreaming()) return;
+  if (effectiveInputMode !== 'video') {return;}
+  if (slidesHydrator.isStreaming()) {return;}
   pendingSlidesRunsByUrl.delete(key);
-  if (hasResolvedSlidesPayload(panelState.slides, slidesState.slidesSeededSourceId)) return;
+  if (hasResolvedSlidesPayload(panelState.slides, slidesState.slidesSeededSourceId)) {return;}
   startSlidesStreamForRunId(pending.runId);
   startSlidesSummaryStreamForRunId(pending.runId, pending.url);
 }
 
 function attachSummaryRun(run: RunStart) {
   stopSlidesStream();
-  setPhase("connecting");
-  lastAction = "summarize";
+  setPhase('connecting');
+  lastAction = 'summarize';
   window.clearTimeout(autoKickTimer);
   if (panelState.chatStreaming) {
     chatStreamRuntime.finishStreamingMessage();
@@ -353,20 +343,16 @@ function attachSummaryRun(run: RunStart) {
   } else {
     summaryStreamRuntime.setPreserveChatOnNextReset(true);
   }
-  metricsController.setActiveMode("summary");
+  metricsController.setActiveMode('summary');
   panelState.runId = run.id;
   panelState.slidesRunId = slidesState.slidesParallel ? null : run.id;
-  panelState.currentSource = { url: run.url, title: run.title };
+  panelState.currentSource = { title: run.title, url: run.url };
   currentRunTabId = activeTabId;
-  headerController.setBaseTitle(run.title || run.url || "Summarize");
-  headerController.setBaseSubtitle("");
+  headerController.setBaseTitle(run.title || run.url || 'Summarize');
+  headerController.setBaseSubtitle('');
   {
     const fallbackModel = panelState.ui?.settings.model ?? null;
-    panelState.lastMeta = {
-      inputSummary: null,
-      model: fallbackModel,
-      modelLabel: fallbackModel,
-    };
+    panelState.lastMeta = { inputSummary: null, model: fallbackModel, modelLabel: fallbackModel };
   }
   slidesState.pendingRunForPlannedSlides = run;
   if (!panelState.summaryMarkdown?.trim()) {
@@ -379,7 +365,7 @@ function attachSummaryRun(run: RunStart) {
 }
 
 function maybeSeedPlannedSlidesForPendingRun() {
-  if (!slidesState.pendingRunForPlannedSlides) return false;
+  if (!slidesState.pendingRunForPlannedSlides) {return false;}
   if (seedPlannedSlidesForRun(slidesState.pendingRunForPlannedSlides)) {
     slidesState.pendingRunForPlannedSlides = null;
     return true;
@@ -403,46 +389,46 @@ function showAutomationNotice({
   automationNoticeSticky = Boolean(sticky);
   automationNoticeTitleEl.textContent = title;
   automationNoticeMessageEl.textContent = message;
-  automationNoticeActionBtn.textContent = ctaLabel || "Open extension details";
+  automationNoticeActionBtn.textContent = ctaLabel || 'Open extension details';
   automationNoticeActionBtn.onclick = () => {
-    if (ctaAction === "options") {
+    if (ctaAction === 'options') {
       void chrome.runtime.openOptionsPage();
       return;
     }
     void chrome.tabs.create({ url: `chrome://extensions/?id=${chrome.runtime.id}` });
   };
-  automationNoticeEl.classList.remove("hidden");
+  automationNoticeEl.classList.remove('hidden');
 }
 
-window.addEventListener("summarize:automation-permissions", (event) => {
-  const detail = (
+window.addEventListener('summarize:automation-permissions', (event) => {
+  const {detail} = (
     event as CustomEvent<{
       title?: string;
       message?: string;
       ctaLabel?: string;
       ctaAction?: AutomationNoticeAction;
     }>
-  ).detail;
-  if (!detail?.message) return;
+  );
+  if (!detail?.message) {return;}
   showAutomationNotice({
-    title: detail.title ?? "Automation permission required",
-    message: detail.message,
-    ctaLabel: detail.ctaLabel,
     ctaAction: detail.ctaAction,
+    ctaLabel: detail.ctaLabel,
+    message: detail.message,
     sticky: true,
+    title: detail.title ?? 'Automation permission required',
   });
 });
 
 async function hideReplOverlayForActiveTab() {
-  if (!activeTabId) return;
+  if (!activeTabId) {return;}
   try {
     await chrome.tabs.sendMessage(activeTabId, {
-      type: "automation:repl-overlay",
-      action: "hide",
+      action: 'hide',
       message: null,
+      type: 'automation:repl-overlay',
     });
   } catch {
-    // ignore
+    // Ignore
   }
 }
 
@@ -456,15 +442,15 @@ function wrapMessage(message: Message): ChatMessage {
 
 function buildStreamingAssistantMessage(): ChatMessage {
   return {
-    id: crypto.randomUUID(),
-    role: "assistant",
+    api: 'openai-completions',
     content: [],
-    api: "openai-completions",
-    provider: "openai",
-    model: "streaming",
-    usage: buildEmptyUsage(),
-    stopReason: "stop",
+    id: crypto.randomUUID(),
+    model: 'streaming',
+    provider: 'openai',
+    role: 'assistant',
+    stopReason: 'stop',
     timestamp: Date.now(),
+    usage: buildEmptyUsage(),
   };
 }
 
@@ -474,37 +460,37 @@ const chatSession = createChatSession({
   setStatus: (text) => headerController.setStatus(text),
 });
 
-chatMessagesEl.addEventListener("click", (event) => {
+chatMessagesEl.addEventListener('click', (event) => {
   const target = event.target as HTMLElement | null;
-  if (!target) return;
-  const link = target.closest("a.chatTimestamp") as HTMLAnchorElement | null;
-  if (!link) return;
-  const href = link.getAttribute("href") ?? "";
-  if (!href.startsWith("timestamp:")) return;
+  if (!target) {return;}
+  const link = target.closest('a.chatTimestamp') as HTMLAnchorElement | null;
+  if (!link) {return;}
+  const href = link.getAttribute('href') ?? '';
+  if (!href.startsWith('timestamp:')) {return;}
   const seconds = parseTimestampHref(href);
-  if (seconds == null) return;
+  if (seconds == null) {return;}
   event.preventDefault();
   event.stopPropagation();
-  void send({ type: "panel:seek", seconds });
+  void send({ seconds, type: 'panel:seek' });
 });
 
-renderEl.addEventListener("click", (event) => {
+renderEl.addEventListener('click', (event) => {
   const target = event.target as HTMLElement | null;
-  if (!target) return;
-  const link = target.closest("a.chatTimestamp") as HTMLAnchorElement | null;
-  if (!link) return;
-  const href = link.getAttribute("href") ?? "";
-  if (!href.startsWith("timestamp:")) return;
+  if (!target) {return;}
+  const link = target.closest('a.chatTimestamp') as HTMLAnchorElement | null;
+  if (!link) {return;}
+  const href = link.getAttribute('href') ?? '';
+  if (!href.startsWith('timestamp:')) {return;}
   const seconds = parseTimestampHref(href);
-  if (seconds == null) return;
+  if (seconds == null) {return;}
   event.preventDefault();
   event.stopPropagation();
-  void send({ type: "panel:seek", seconds });
+  void send({ seconds, type: 'panel:seek' });
 });
 
 let summarizeControlRuntime: ReturnType<typeof createSummarizeControlRuntime> | null = null;
 
-async function handleSummarizeControlChange(value: { mode: "page" | "video"; slides: boolean }) {
+async function handleSummarizeControlChange(value: { mode: 'page' | 'video'; slides: boolean }) {
   await summarizeControlRuntime?.handleSummarizeControlChange(value);
 }
 
@@ -524,46 +510,43 @@ function refreshSummarizeControl() {
   summarizeControlRuntime?.refreshSummarizeControl();
 }
 
-const isStreaming = () => panelState.phase === "connecting" || panelState.phase === "streaming";
+const isStreaming = () => panelState.phase === 'connecting' || panelState.phase === 'streaming';
 
-const optionsTabStorageKey = "summarize:options-tab";
+const optionsTabStorageKey = 'summarize:options-tab';
 
 const openOptionsTab = (tabId: string) => {
   try {
     localStorage.setItem(optionsTabStorageKey, tabId);
   } catch {
-    // ignore
+    // Ignore
   }
-  void send({ type: "panel:openOptions" });
+  void send({ type: 'panel:openOptions' });
 };
 
 const headerController = createHeaderController({
+  getState: () => ({ phase: panelState.phase, summaryFromCache: panelState.summaryFromCache }),
   headerEl,
-  titleEl,
-  subtitleEl,
   progressFillEl,
-  getState: () => ({
-    phase: panelState.phase,
-    summaryFromCache: panelState.summaryFromCache,
-  }),
+  subtitleEl,
+  titleEl,
 });
 
 headerController.updateHeaderOffset();
-window.addEventListener("resize", headerController.updateHeaderOffset);
+window.addEventListener('resize', headerController.updateHeaderOffset);
 
 const errorController = createErrorController({
-  panelEl: errorEl,
-  panelMessageEl: errorMessageEl,
-  panelRetryBtn: errorRetryBtn,
-  panelLogsBtn: errorLogsBtn,
+  inlineCloseBtn: inlineErrorCloseBtn,
   inlineEl: inlineErrorEl,
+  inlineLogsBtn: inlineErrorLogsBtn,
   inlineMessageEl: inlineErrorMessageEl,
   inlineRetryBtn: inlineErrorRetryBtn,
-  inlineLogsBtn: inlineErrorLogsBtn,
-  inlineCloseBtn: inlineErrorCloseBtn,
-  onRetry: () => retryLastAction(),
-  onOpenLogs: () => openOptionsTab("logs"),
+  onOpenLogs: () => openOptionsTab('logs'),
   onPanelVisibilityChange: () => headerController.updateHeaderOffset(),
+  onRetry: () => retryLastAction(),
+  panelEl: errorEl,
+  panelLogsBtn: errorLogsBtn,
+  panelMessageEl: errorMessageEl,
+  panelRetryBtn: errorRetryBtn,
 });
 const chatQueueRuntime = createChatQueueRuntime({
   chatQueueEl,
@@ -573,43 +556,43 @@ const chatQueueRuntime = createChatQueueRuntime({
   },
 });
 
-slideNoticeRetryBtn.addEventListener("click", () => {
+slideNoticeRetryBtn.addEventListener('click', () => {
   retrySlidesStream();
 });
 
 const setPhase = (phase: PanelPhase, opts?: { error?: string | null }) => {
   panelState.phase = phase;
-  panelState.error = phase === "error" ? (opts?.error ?? panelState.error) : null;
-  if (phase === "error") {
+  panelState.error = phase === 'error' ? (opts?.error ?? panelState.error) : null;
+  if (phase === 'error') {
     const message =
       panelState.error && panelState.error.trim().length > 0
         ? panelState.error
-        : "Something went wrong.";
+        : 'Something went wrong.';
     errorController.showPanelError(message);
     setSlidesBusy(false);
   } else {
     errorController.clearPanelError();
-    if (phase !== "streaming" && phase !== "connecting") {
+    if (phase !== 'streaming' && phase !== 'connecting') {
       setSlidesBusy(false);
     }
   }
-  if (phase === "connecting" || phase === "streaming") {
+  if (phase === 'connecting' || phase === 'streaming') {
     headerController.armProgress();
   }
-  if (phase !== "connecting" && phase !== "streaming") {
+  if (phase !== 'connecting' && phase !== 'streaming') {
     headerController.stopProgress();
   }
-  if (phase !== "connecting" && phase !== "streaming" && panelState.slides) {
+  if (phase !== 'connecting' && phase !== 'streaming' && panelState.slides) {
     rebuildSlideDescriptions();
     queueSlidesRender();
   }
 };
 
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
-  if (!raw || typeof raw !== "object") return;
-  const type = (raw as { type?: string }).type;
-  if (type === "automation:abort-agent") {
-    requestAgentAbort("Agent aborted");
+  if (!raw || typeof raw !== 'object') {return;}
+  const {type} = (raw as { type?: string });
+  if (type === 'automation:abort-agent') {
+    requestAgentAbort('Agent aborted');
     sendResponse?.({ ok: true });
     return true;
   }
@@ -617,17 +600,17 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
 
 const navigationRuntime = createNavigationRuntime({
   getCurrentSource: () => panelState.currentSource,
-  setCurrentSource: (source) => {
-    panelState.currentSource = source;
-  },
   resetForNavigation: (preserveChat) => {
     currentRunTabId = null;
-    setPhase("idle");
+    setPhase('idle');
     resetSummaryView({ preserveChat });
-    headerController.setBaseSubtitle("");
+    headerController.setBaseSubtitle('');
   },
   setBaseTitle: (title) => {
     headerController.setBaseTitle(title);
+  },
+  setCurrentSource: (source) => {
+    panelState.currentSource = source;
   },
 });
 
@@ -636,9 +619,9 @@ async function migrateChatHistory(
   toTabId: number | null,
   toUrl: string | null,
 ) {
-  if (!fromTabId || !toTabId || fromTabId === toTabId) return;
+  if (!fromTabId || !toTabId || fromTabId === toTabId) {return;}
   const messages = chatController.getMessages();
-  if (messages.length === 0) return;
+  if (messages.length === 0) {return;}
   await chatHistoryStore.persist(toTabId, messages, true, toUrl);
 }
 
@@ -646,31 +629,27 @@ const syncWithActiveTab = () => navigationRuntime.syncWithActiveTab();
 
 async function clearCurrentView() {
   if (panelState.chatStreaming) {
-    requestAgentAbort("Cleared");
+    requestAgentAbort('Cleared');
   }
   streamController.abort();
   stopSlidesStream();
   resetSummaryView({ preserveChat: false });
   await clearChatHistoryForActiveTab();
   panelCacheController.scheduleSync();
-  headerController.setStatus("");
-  setPhase("idle");
+  headerController.setStatus('');
+  setPhase('idle');
 }
 
 const summaryViewRuntime = createSummaryViewRuntime({
-  panelState,
-  renderEl,
-  renderSlidesHostEl,
-  renderMarkdownHostEl,
-  getSlidesRenderer: () =>
-    slidesRenderer ?? {
-      applyLayout: () => {},
-      clear: () => {},
-      forceRender: () => {},
-    },
-  metricsController,
-  headerController,
-  slidesTextController,
+  clearSlidesSummaryError: () => {
+    slidesSummaryController.clearError();
+  },
+  clearSlidesSummaryPending: () => {
+    slidesSummaryController.clearPending();
+  },
+  getActiveTabId: () => activeTabId,
+  getActiveTabUrl: () => activeTabUrl,
+  getCurrentRunTabId: () => currentRunTabId,
   getSlidesHydrator: () =>
     slidesHydrator ?? {
       handlePayload: () => {},
@@ -681,16 +660,34 @@ const summaryViewRuntime = createSummaryViewRuntime({
       stop: () => {},
       syncFromCache: () => {},
     },
-  stopSlidesStream,
-  refreshSummarizeControl,
-  resetChatState,
-  setSlidesTranscriptTimedText,
   getSlidesParallelValue: () => slidesState.slidesParallel,
-  getCurrentRunTabId: () => currentRunTabId,
-  getActiveTabId: () => activeTabId,
-  getActiveTabUrl: () => activeTabUrl,
+  getSlidesRenderer: () =>
+    slidesRenderer ?? { applyLayout: () => {}, clear: () => {}, forceRender: () => {} },
+  getSlidesSummaryState: () => ({
+    runId: slidesSummaryController.getRunId(),
+    markdown: slidesSummaryController.getMarkdown(),
+    complete: slidesSummaryController.getComplete(),
+    model: slidesSummaryController.getModel(),
+  }),
+  headerController,
+  metricsController,
+  panelState,
+  queueSlidesRender,
+  refreshSummarizeControl,
+  renderEl,
+  renderMarkdown,
+  renderMarkdownDisplay,
+  renderMarkdownHostEl,
+  renderSlidesHostEl,
+  requestSlidesContext,
+  resetChatState,
+  resolveActiveSlidesRunId,
   setCurrentRunTabId: (value) => {
     currentRunTabId = value;
+  },
+  setPhase,
+  setSlidesAppliedRunId: (value) => {
+    slidesState.slidesAppliedRunId = value;
   },
   setSlidesContextPending: (value) => {
     slidesState.slidesContextPending = value;
@@ -698,63 +695,45 @@ const summaryViewRuntime = createSummaryViewRuntime({
   setSlidesContextUrl: (value) => {
     slidesState.slidesContextUrl = value;
   },
-  setSlidesSeededSourceId: (value) => {
-    slidesState.slidesSeededSourceId = value;
-  },
-  setSlidesAppliedRunId: (value) => {
-    slidesState.slidesAppliedRunId = value;
-  },
   setSlidesExpanded: (value) => {
     slidesState.slidesExpanded = value;
   },
-  resolveActiveSlidesRunId,
-  getSlidesSummaryState: () => ({
-    runId: slidesSummaryController.getRunId(),
-    markdown: slidesSummaryController.getMarkdown(),
-    complete: slidesSummaryController.getComplete(),
-    model: slidesSummaryController.getModel(),
-  }),
+  setSlidesSeededSourceId: (value) => {
+    slidesState.slidesSeededSourceId = value;
+  },
   setSlidesSummaryState: (payload) => {
     slidesSummaryController.setSnapshot(payload);
   },
-  clearSlidesSummaryPending: () => {
-    slidesSummaryController.clearPending();
-  },
-  clearSlidesSummaryError: () => {
-    slidesSummaryController.clearError();
-  },
-  updateSlidesTextState,
-  requestSlidesContext,
+  setSlidesTranscriptTimedText,
+  slidesTextController,
+  stopSlidesStream,
   updateSlideSummaryFromMarkdown,
-  renderMarkdown,
-  renderMarkdownDisplay,
-  queueSlidesRender,
-  setPhase,
+  updateSlidesTextState,
 });
 const { applyPanelCache, buildPanelCachePayload, resetSummaryView } = summaryViewRuntime;
 
 const panelCacheController = createPanelCacheController({
   getSnapshot: buildPanelCachePayload,
   sendCache: (payload) => {
-    void send({ type: "panel:cache", cache: payload });
+    void send({ cache: payload, type: 'panel:cache' });
   },
   sendRequest: (request) => {
-    void send({ type: "panel:get-cache", ...request });
+    void send({ type: 'panel:get-cache', ...request });
   },
 });
 
-window.addEventListener("error", (event) => {
+window.addEventListener('error', (event) => {
   const message =
     event.error instanceof Error ? event.error.stack || event.error.message : event.message;
   headerController.setStatus(`Error: ${message}`);
-  setPhase("error", { error: message });
+  setPhase('error', { error: message });
 });
 
-window.addEventListener("unhandledrejection", (event) => {
-  const reason = (event as PromiseRejectionEvent).reason;
+window.addEventListener('unhandledrejection', (event) => {
+  const {reason} = (event as PromiseRejectionEvent);
   const message = reason instanceof Error ? reason.stack || reason.message : String(reason);
   headerController.setStatus(`Error: ${message}`);
-  setPhase("error", { error: message });
+  setPhase('error', { error: message });
 });
 
 let slidesViewRuntime: ReturnType<typeof createSlidesViewRuntime> | null = null;
@@ -778,14 +757,14 @@ function setSlidesBusy(next: boolean) {
 
 function updateSlideSummaryFromMarkdown(
   markdown: string,
-  opts?: { preserveIfEmpty?: boolean; source?: "summary" | "slides" },
+  opts?: { preserveIfEmpty?: boolean; source?: 'summary' | 'slides' },
 ) {
   slidesViewRuntime?.updateSlideSummaryFromMarkdown(markdown, opts);
 }
 
 function seekToSlideTimestamp(seconds: number | null | undefined) {
-  if (seconds == null || !Number.isFinite(seconds)) return;
-  void send({ type: "panel:seek", seconds: Math.floor(seconds) });
+  if (seconds == null || !Number.isFinite(seconds)) {return;}
+  void send({ seconds: Math.floor(seconds), type: 'panel:seek' });
 }
 function updateSlidesTextState() {
   slidesViewRuntime?.updateSlidesTextState();
@@ -796,17 +775,12 @@ function rebuildSlideDescriptions() {
 }
 
 slidesViewRuntime = createSlidesViewRuntime({
-  renderMarkdownHostEl,
-  renderSlidesHostEl,
   chatMessagesEl,
-  md,
-  headerSetStatus: (text) => headerController.setStatus(text),
-  headerSetProgressOverride: (busy) => headerController.setProgressOverride(busy),
-  slidesTextController,
-  panelCacheController,
-  send,
-  refreshSummarizeControl,
-  hideSlideNotice,
+  getSlidesAppliedRunId: () => slidesState.slidesAppliedRunId,
+  getSlidesBusy: () => slidesState.slidesBusy,
+  getSlidesContextPending: () => slidesState.slidesContextPending,
+  getSlidesContextUrl: () => slidesState.slidesContextUrl,
+  getSlidesSeededSourceId: () => slidesState.slidesSeededSourceId,
   getState: () => ({
     activeTabUrl,
     autoSummarize: autoValue,
@@ -819,85 +793,52 @@ slidesViewRuntime = createSlidesViewRuntime({
     slidesExpanded: slidesState.slidesExpanded,
     mediaAvailable: slidesState.mediaAvailable,
   }),
-  setSlidesBusyValue: (value) => {
-    slidesState.slidesBusy = value;
-  },
-  getSlidesBusy: () => slidesState.slidesBusy,
-  setSlidesContextPending: (value) => {
-    slidesState.slidesContextPending = value;
-  },
-  getSlidesContextPending: () => slidesState.slidesContextPending,
-  setSlidesContextUrl: (value) => {
-    slidesState.slidesContextUrl = value;
-  },
-  getSlidesContextUrl: () => slidesState.slidesContextUrl,
-  setSlidesSeededSourceId: (value) => {
-    slidesState.slidesSeededSourceId = value;
-  },
-  getSlidesSeededSourceId: () => slidesState.slidesSeededSourceId,
+  headerSetProgressOverride: (busy) => headerController.setProgressOverride(busy),
+  headerSetStatus: (text) => headerController.setStatus(text),
+  hideSlideNotice,
+  md,
+  nextSlidesContextRequestId: () => slidesSession.nextSlidesContextRequestId(),
+  panelCacheController,
+  refreshSummarizeControl,
+  renderMarkdownHostEl,
+  renderSlidesHostEl,
+  resolveActiveSlidesRunId,
+  send,
   setSlidesAppliedRunId: (value) => {
     slidesState.slidesAppliedRunId = value;
   },
-  getSlidesAppliedRunId: () => slidesState.slidesAppliedRunId,
-  resolveActiveSlidesRunId,
-  nextSlidesContextRequestId: () => slidesSession.nextSlidesContextRequestId(),
+  setSlidesBusyValue: (value) => {
+    slidesState.slidesBusy = value;
+  },
+  setSlidesContextPending: (value) => {
+    slidesState.slidesContextPending = value;
+  },
+  setSlidesContextUrl: (value) => {
+    slidesState.slidesContextUrl = value;
+  },
   setSlidesExpanded: (value) => {
     slidesState.slidesExpanded = value;
   },
+  setSlidesSeededSourceId: (value) => {
+    slidesState.slidesSeededSourceId = value;
+  },
+  slidesTextController,
 });
 
-slidesRenderer = slidesViewRuntime.slidesRenderer;
+({ slidesRenderer } = slidesViewRuntime);
 
 function applySlidesPayload(data: SseSlidesData) {
   slidesViewRuntime.applySlidesPayload(data, setSlidesTranscriptTimedText);
 }
 
 registerSidepanelTestHooks({
-  applySlidesPayload,
-  getRunId: () => panelState.runId,
-  getSummaryMarkdown: () => panelState.summaryMarkdown ?? "",
-  getSlideDescriptions: () => slidesTextController.getDescriptionEntries(),
-  getSlideSummaryEntries: () => slidesTextController.getSummaryEntries(),
-  getSlideTitleEntries: () => Array.from(slidesTextController.getTitles().entries()),
-  getPhase: () => panelState.phase,
-  getModel: () => panelState.lastMeta.model ?? null,
-  getSlidesTimeline: () =>
-    panelState.slides?.slides.map((slide) => ({
-      index: slide.index,
-      timestamp: Number.isFinite(slide.timestamp) ? slide.timestamp : null,
-    })) ?? [],
-  getTranscriptTimedText: () => slidesTextController.getTranscriptTimedText(),
-  getSlidesSummaryMarkdown: () => slidesSummaryController.getMarkdown(),
-  getSlidesSummaryComplete: () => slidesSummaryController.getComplete(),
-  getSlidesSummaryModel: () => slidesSummaryController.getModel(),
-  getChatEnabled: () => chatEnabledValue,
-  getSettingsHydrated: () => settingsHydrated,
-  setTranscriptTimedText: (value) => {
-    setSlidesTranscriptTimedText(value);
-    updateSlidesTextState();
-  },
-  setSummarizeMode: async (payload) => {
-    await handleSummarizeControlChange(payload);
-  },
-  getSummarizeMode: () => ({
-    mode: slidesSession.resolveInputMode(),
-    slides: slidesState.slidesEnabled,
-    mediaAvailable: slidesState.mediaAvailable,
-  }),
-  getSlidesState: () => ({
-    slidesCount: panelState.slides?.slides.length ?? 0,
-    layout: slidesState.slidesLayout,
-    hasSlides: Boolean(panelState.slides),
-  }),
-  renderSlidesNow: () => {
-    queueSlidesRender();
-  },
-  applyUiState: (state) => {
-    panelState.ui = state;
-    updateControls(state);
-  },
   applyBgMessage: (message) => {
     handleBgMessage(message);
+  },
+  applySlidesPayload,
+  applySummaryMarkdown: (markdown) => {
+    renderMarkdown(markdown);
+    setPhase('idle');
   },
   applySummarySnapshot: (payload) => {
     resetSummaryView({ preserveChat: false, clearRunId: false, stopSlides: false });
@@ -905,26 +846,64 @@ registerSidepanelTestHooks({
     panelState.slidesRunId = slidesState.slidesParallel ? null : payload.run.id;
     panelState.currentSource = { url: payload.run.url, title: payload.run.title };
     currentRunTabId = activeTabId;
-    headerController.setBaseTitle(payload.run.title || payload.run.url || "Summarize");
-    headerController.setBaseSubtitle("");
+    headerController.setBaseTitle(payload.run.title || payload.run.url || 'Summarize');
+    headerController.setBaseSubtitle('');
     renderMarkdown(payload.markdown);
-    setPhase("idle");
+    setPhase('idle');
   },
-  applySummaryMarkdown: (markdown) => {
-    renderMarkdown(markdown);
-    setPhase("idle");
+  applyUiState: (state) => {
+    panelState.ui = state;
+    updateControls(state);
   },
   forceRenderSlides: () => {
     slidesState.slidesEnabled = true;
-    slidesState.inputMode = "video";
-    slidesState.inputModeOverride = "video";
+    slidesState.inputMode = 'video';
+    slidesState.inputModeOverride = 'video';
     return slidesRenderer?.forceRender();
+  },
+  getChatEnabled: () => chatEnabledValue,
+  getInlineErrorMessage: () => inlineErrorMessageEl.textContent ?? '',
+  getModel: () => panelState.lastMeta.model ?? null,
+  getPhase: () => panelState.phase,
+  getRunId: () => panelState.runId,
+  getSettingsHydrated: () => settingsHydrated,
+  getSlideDescriptions: () => slidesTextController.getDescriptionEntries(),
+  getSlideSummaryEntries: () => slidesTextController.getSummaryEntries(),
+  getSlideTitleEntries: () => Array.from(slidesTextController.getTitles().entries()),
+  getSlidesState: () => ({
+    slidesCount: panelState.slides?.slides.length ?? 0,
+    layout: slidesState.slidesLayout,
+    hasSlides: Boolean(panelState.slides),
+  }),
+  getSlidesSummaryComplete: () => slidesSummaryController.getComplete(),
+  getSlidesSummaryMarkdown: () => slidesSummaryController.getMarkdown(),
+  getSlidesSummaryModel: () => slidesSummaryController.getModel(),
+  getSlidesTimeline: () =>
+    panelState.slides?.slides.map((slide) => ({
+      index: slide.index,
+      timestamp: Number.isFinite(slide.timestamp) ? slide.timestamp : null,
+    })) ?? [],
+  getSummarizeMode: () => ({
+    mode: slidesSession.resolveInputMode(),
+    slides: slidesState.slidesEnabled,
+    mediaAvailable: slidesState.mediaAvailable,
+  }),
+  getSummaryMarkdown: () => panelState.summaryMarkdown ?? '',
+  getTranscriptTimedText: () => slidesTextController.getTranscriptTimedText(),
+  isInlineErrorVisible: () => !inlineErrorEl.classList.contains('hidden'),
+  renderSlidesNow: () => {
+    queueSlidesRender();
+  },
+  setSummarizeMode: async (payload) => {
+    await handleSummarizeControlChange(payload);
+  },
+  setTranscriptTimedText: (value) => {
+    setSlidesTranscriptTimedText(value);
+    updateSlidesTextState();
   },
   showInlineError: (message) => {
     errorController.showInlineError(message);
   },
-  isInlineErrorVisible: () => !inlineErrorEl.classList.contains("hidden"),
-  getInlineErrorMessage: () => inlineErrorMessageEl.textContent ?? "",
 });
 
 async function requestSlidesContext() {
@@ -966,45 +945,44 @@ function scrollToBottom(force = false) {
 const LINE_HEIGHT_STEP = 0.1;
 
 const appearanceControls = createAppearanceControls({
-  autoToggleRoot,
-  pickersRoot,
-  lengthRoot,
-  patchSettings,
-  sendSetAuto: (checked) => {
-    autoValue = checked;
-    void send({ type: "panel:setAuto", value: checked });
-  },
-  sendSetLength: (value) => {
-    void send({ type: "panel:setLength", value });
-  },
   applyTypography: (fontFamily, fontSize, lineHeight) => {
     typographyController.apply(fontFamily, fontSize, lineHeight);
     typographyController.setCurrentFontSize(fontSize);
     typographyController.setCurrentLineHeight(lineHeight);
   },
+  autoToggleRoot,
+  lengthRoot,
+  patchSettings,
+  pickersRoot,
+  sendSetAuto: (checked) => {
+    autoValue = checked;
+    void send({ type: 'panel:setAuto', value: checked });
+  },
+  sendSetLength: (value) => {
+    void send({ type: 'panel:setLength', value });
+  },
 });
 
 chatUiRuntime = createChatUiRuntime({
-  mainEl,
-  chatJumpBtn,
-  chatInputEl,
-  chatDockEl,
   chatContainerEl,
   chatDockContainerEl: chatDockEl,
-  renderEl,
-  getChatEnabled: () => chatEnabledValue,
-  getActiveTabId: () => activeTabId,
-  getSummaryMarkdown: () => panelState.summaryMarkdown,
+  chatDockEl,
+  chatInputEl,
+  chatJumpBtn,
+  clearHistory: (tabId) => chatHistoryRuntime.clear(tabId),
   clearMetrics: () => {
-    metricsController.clearForMode("chat");
+    metricsController.clearForMode('chat');
   },
   clearQueuedMessages: () => {
     chatQueueRuntime.clearQueuedMessages();
   },
-  clearHistory: (tabId) => chatHistoryRuntime.clear(tabId),
+  getActiveTabId: () => activeTabId,
+  getChatEnabled: () => chatEnabledValue,
+  getSummaryMarkdown: () => panelState.summaryMarkdown,
   loadHistory: (tabId) => chatHistoryRuntime.load(tabId),
+  mainEl,
   persistHistory: (tabId, chatEnabled) => chatHistoryRuntime.persist(tabId, chatEnabled),
-  restoreHistory: (tabId, summaryMarkdown) => chatHistoryRuntime.restore(tabId, summaryMarkdown),
+  renderEl,
   resetChatController: () => {
     panelState.chatStreaming = false;
     chatController.reset();
@@ -1012,6 +990,7 @@ chatUiRuntime = createChatUiRuntime({
   resetChatSession: () => {
     chatSession.reset();
   },
+  restoreHistory: (tabId, summaryMarkdown) => chatHistoryRuntime.restore(tabId, summaryMarkdown),
 });
 
 const setupControlsRuntime = createSetupControlsRuntime({
@@ -1022,7 +1001,7 @@ const setupControlsRuntime = createSetupControlsRuntime({
   drawerToggleBtn,
   friendlyFetchError,
   generateToken,
-  getStatusResetText: () => panelState.ui?.status ?? "",
+  getStatusResetText: () => panelState.ui?.status ?? '',
   headerSetStatus: (text) => {
     headerController.setStatus(text);
   },
@@ -1137,15 +1116,15 @@ const summaryStreamRuntime = createSummaryStreamRuntime({
   rebuildSlideDescriptions,
   refreshSummaryMetrics: (summary) => {
     metricsController.setForMode(
-      "summary",
+      'summary',
       summary,
       panelState.lastMeta.inputSummary,
       panelState.currentSource?.url ?? null,
     );
-    metricsController.setActiveMode("summary");
+    metricsController.setActiveMode('summary');
   },
   rememberUrl: (url) => {
-    void send({ type: "panel:rememberUrl", url });
+    void send({ type: 'panel:rememberUrl', url });
   },
   renderMarkdown,
   resetSummaryView,
@@ -1158,111 +1137,109 @@ const summaryStreamRuntime = createSummaryStreamRuntime({
       slidesState.pendingRunForPlannedSlides = null;
     }
   },
-  setSlidesBusy,
   setPhase,
+  setSlidesBusy,
   shouldRebuildSlideDescriptions: () => !slidesTextController.hasSummaryTitles(),
   syncWithActiveTab,
 });
 const { streamController } = summaryStreamRuntime;
 
 const uiStateRuntime = createUiStateRuntime({
-  panelState,
-  chatController,
   appearanceControls,
-  typographyController,
-  navigationRuntime,
-  panelCacheController,
-  headerController,
+  applyChatEnabled,
+  applyPanelCache,
+  chatController,
+  clearChatHistoryForActiveTab,
   clearInlineError: () => {
     errorController.clearInlineError();
   },
-  requestAgentAbort,
-  clearChatHistoryForActiveTab,
-  resetChatState,
-  migrateChatHistory,
-  maybeStartPendingSummaryRunForUrl,
-  maybeStartPendingSlidesForUrl,
-  resolveActiveSlidesRunId,
-  applyPanelCache,
-  resetSummaryView,
+  getActiveTabId: () => activeTabId,
+  getActiveTabUrl: () => activeTabUrl,
+  getAutoValue: () => autoValue,
+  getAutomationEnabledValue: () => automationEnabledValue,
+  getChatEnabledValue: () => chatEnabledValue,
+  getCurrentRunTabId: () => currentRunTabId,
+  getInputMode: () => slidesState.inputMode,
+  getInputModeOverride: () => slidesState.inputModeOverride,
+  getLastPanelOpen: () => lastPanelOpen,
+  getMediaAvailable: () => slidesState.mediaAvailable,
+  getSlidesBusy: () => slidesState.slidesBusy,
+  getSlidesEnabledValue: () => slidesState.slidesEnabled,
+  getSlidesLayoutValue: () => slidesState.slidesLayout,
+  getSlidesOcrEnabledValue: () => slidesState.slidesOcrEnabled,
+  getSlidesParallelValue: () => slidesState.slidesParallel,
+  headerController,
   hideAutomationNotice,
   hideSlideNotice,
-  maybeApplyPendingSlidesSummary,
-  applyChatEnabled,
-  restoreChatHistory,
-  rebuildSlideDescriptions,
-  renderInlineSlides,
-  setSlidesLayout: (value) => {
-    setSlidesLayout(value as SlidesLayout);
-  },
-  maybeSeedPlannedSlidesForPendingRun,
-  refreshSummarizeControl,
-  maybeShowSetup,
-  setPhase,
-  renderMarkdownDisplay,
-  readCurrentModelValue,
-  setModelValue,
-  updateModelRowUI,
   isRefreshFreeRunning,
-  setModelRefreshDisabled: (value) => {
-    modelRefreshBtn.disabled = value;
-  },
+  isStreaming,
+  maybeApplyPendingSlidesSummary,
+  maybeSeedPlannedSlidesForPendingRun,
+  maybeShowSetup,
+  maybeStartPendingSlidesForUrl,
+  maybeStartPendingSummaryRunForUrl,
+  migrateChatHistory,
+  navigationRuntime,
+  onSlidesOcrChanged: updateSlidesTextState,
+  panelCacheController,
+  panelState,
+  readCurrentModelValue,
+  rebuildSlideDescriptions,
+  refreshSummarizeControl,
+  renderInlineSlides,
+  renderMarkdownDisplay,
   renderMarkdownHostEl,
-  getActiveTabId: () => activeTabId,
+  requestAgentAbort,
+  resetChatState,
+  resetSummaryView,
+  resolveActiveSlidesRunId,
+  restoreChatHistory,
   setActiveTabId: (value) => {
     activeTabId = value;
   },
-  getActiveTabUrl: () => activeTabUrl,
   setActiveTabUrl: (value) => {
     activeTabUrl = value;
   },
-  getCurrentRunTabId: () => currentRunTabId,
-  setCurrentRunTabId: (value) => {
-    currentRunTabId = value;
-  },
-  getLastPanelOpen: () => lastPanelOpen,
-  setLastPanelOpen: (value) => {
-    lastPanelOpen = value;
-  },
-  getAutoValue: () => autoValue,
   setAutoValue: (value) => {
     autoValue = value;
   },
-  getChatEnabledValue: () => chatEnabledValue,
-  setChatEnabledValue: (value) => {
-    chatEnabledValue = value;
-  },
-  getAutomationEnabledValue: () => automationEnabledValue,
   setAutomationEnabledValue: (value) => {
     automationEnabledValue = value;
   },
-  getSlidesEnabledValue: () => slidesState.slidesEnabled,
-  setSlidesEnabledValue: (value) => {
-    slidesState.slidesEnabled = value;
+  setChatEnabledValue: (value) => {
+    chatEnabledValue = value;
   },
-  getSlidesParallelValue: () => slidesState.slidesParallel,
-  setSlidesParallelValue: (value) => {
-    slidesState.slidesParallel = value;
+  setCurrentRunTabId: (value) => {
+    currentRunTabId = value;
   },
-  getSlidesOcrEnabledValue: () => slidesState.slidesOcrEnabled,
-  setSlidesOcrEnabledValue: (value) => {
-    slidesState.slidesOcrEnabled = value;
-  },
-  getInputMode: () => slidesState.inputMode,
   setInputMode: (value) => {
     slidesState.inputMode = value;
   },
-  getInputModeOverride: () => slidesState.inputModeOverride,
   setInputModeOverride: (value) => {
     slidesState.inputModeOverride = value;
   },
-  getMediaAvailable: () => slidesState.mediaAvailable,
+  setLastPanelOpen: (value) => {
+    lastPanelOpen = value;
+  },
   setMediaAvailable: (value) => {
     slidesState.mediaAvailable = value;
   },
-  getSlidesLayoutValue: () => slidesState.slidesLayout,
-  setSummarizeVideoLabel: (value) => {
-    slidesState.summarizeVideoLabel = value;
+  setModelRefreshDisabled: (value) => {
+    modelRefreshBtn.disabled = value;
+  },
+  setModelValue,
+  setPhase,
+  setSlidesEnabledValue: (value) => {
+    slidesState.slidesEnabled = value;
+  },
+  setSlidesLayout: (value) => {
+    setSlidesLayout(value as SlidesLayout);
+  },
+  setSlidesOcrEnabledValue: (value) => {
+    slidesState.slidesOcrEnabled = value;
+  },
+  setSlidesParallelValue: (value) => {
+    slidesState.slidesParallel = value;
   },
   setSummarizePageWords: (value) => {
     slidesState.summarizePageWords = value;
@@ -1270,9 +1247,11 @@ const uiStateRuntime = createUiStateRuntime({
   setSummarizeVideoDurationSeconds: (value) => {
     slidesState.summarizeVideoDurationSeconds = value;
   },
-  isStreaming,
-  getSlidesBusy: () => slidesState.slidesBusy,
-  onSlidesOcrChanged: updateSlidesTextState,
+  setSummarizeVideoLabel: (value) => {
+    slidesState.summarizeVideoLabel = value;
+  },
+  typographyController,
+  updateModelRowUI,
 });
 
 function updateControls(state: UiState) {
@@ -1280,61 +1259,61 @@ function updateControls(state: UiState) {
 }
 
 const bgMessageRuntime = createSidepanelBgMessageRuntime({
-  panelState,
-  applyUiState: updateControls,
-  setStatus: (text) => {
-    headerController.setStatus(text);
+  applyPanelCache: (cache, opts) => {
+    applyPanelCache(cache as PanelCachePayload, opts);
   },
-  isStreaming,
-  setPhase,
+  applyUiState: updateControls,
+  attachSummaryRun,
+  consumeUiCache: (cacheMessage) => panelCacheController.consumeResponse(cacheMessage),
   finishStreamingMessage: () => {
     chatStreamRuntime.finishStreamingMessage();
   },
-  setSlidesBusy,
-  showSlideNotice,
+  getActiveTabId: () => activeTabId,
   getActiveTabUrl: () => activeTabUrl,
-  rememberPendingSlidesRun: (value) => {
-    pendingSlidesRunsByUrl.set(normalizePanelUrl(value.url), value);
-  },
-  startSlidesStreamForRunId,
-  startSlidesSummaryStreamForRunId: (runId, url) => {
-    startSlidesSummaryStreamForRunId(runId, url ?? null);
-  },
   getSlidesContextRequestId: () => slidesState.slidesContextRequestId,
-  setSlidesContextPending: (value) => {
-    slidesState.slidesContextPending = value;
-  },
-  setSlidesTranscriptTimedText,
-  updateSlidesTextState,
   getSlidesSummaryState: () => ({
     complete: slidesSummaryController.getComplete(),
     markdown: slidesSummaryController.getMarkdown(),
   }),
-  updateSlideSummaryFromMarkdown,
-  renderInlineSlidesFallback: () => {
-    renderInlineSlides(renderMarkdownHostEl, { fallback: true });
-  },
-  schedulePanelCacheSync: () => {
-    panelCacheController.scheduleSync();
-  },
-  consumeUiCache: (cacheMessage) => panelCacheController.consumeResponse(cacheMessage),
-  getActiveTabId: () => activeTabId,
-  applyPanelCache: (cache, opts) => {
-    applyPanelCache(cache as PanelCachePayload, opts);
-  },
-  rememberPendingSummaryRun: (run) => {
-    pendingSummaryRunsByUrl.set(normalizePanelUrl(run.url), run);
-  },
-  attachSummaryRun,
-  handleChatHistory: (chatHistory) => {
-    chatSession.handleChatHistoryResponse(chatHistory as never);
-  },
   handleAgentChunk: (chunk) => {
     chatSession.handleAgentChunk(chunk as never);
   },
   handleAgentResponse: (response) => {
     chatSession.handleAgentResponse(response as never);
   },
+  handleChatHistory: (chatHistory) => {
+    chatSession.handleChatHistoryResponse(chatHistory as never);
+  },
+  isStreaming,
+  panelState,
+  rememberPendingSlidesRun: (value) => {
+    pendingSlidesRunsByUrl.set(normalizePanelUrl(value.url), value);
+  },
+  rememberPendingSummaryRun: (run) => {
+    pendingSummaryRunsByUrl.set(normalizePanelUrl(run.url), run);
+  },
+  renderInlineSlidesFallback: () => {
+    renderInlineSlides(renderMarkdownHostEl, { fallback: true });
+  },
+  schedulePanelCacheSync: () => {
+    panelCacheController.scheduleSync();
+  },
+  setPhase,
+  setSlidesBusy,
+  setSlidesContextPending: (value) => {
+    slidesState.slidesContextPending = value;
+  },
+  setSlidesTranscriptTimedText,
+  setStatus: (text) => {
+    headerController.setStatus(text);
+  },
+  showSlideNotice,
+  startSlidesStreamForRunId,
+  startSlidesSummaryStreamForRunId: (runId, url) => {
+    startSlidesSummaryStreamForRunId(runId, url ?? null);
+  },
+  updateSlideSummaryFromMarkdown,
+  updateSlidesTextState,
 });
 
 function handleBgMessage(msg: BgToPanel) {
@@ -1342,71 +1321,69 @@ function handleBgMessage(msg: BgToPanel) {
 }
 
 function scheduleAutoKick() {
-  if (!autoValue) return;
+  if (!autoValue) {return;}
   window.clearTimeout(autoKickTimer);
   autoKickTimer = window.setTimeout(() => {
-    if (!autoValue) return;
-    if (panelState.phase !== "idle") return;
-    if (panelState.summaryMarkdown) return;
+    if (!autoValue) {return;}
+    if (panelState.phase !== 'idle') {return;}
+    if (panelState.summaryMarkdown) {return;}
     sendSummarize();
   }, 350);
 }
 
 const interactionRuntime = createSidepanelInteractionRuntime({
-  sendRawMessage: (message) => panelPortRuntime.send(message as PanelToBg),
-  setLastAction: (value) => {
-    lastAction = value;
+  blurCustomModel: () => {
+    modelCustomEl.blur();
+  },
+  chatEnabled: () => chatEnabledValue,
+  clearChatInput: () => {
+    chatInputEl.value = '';
+    chatInputEl.style.height = 'auto';
   },
   clearInlineError: () => {
     errorController.clearInlineError();
   },
+  enqueueChatMessage: (value) => chatQueueRuntime.enqueueChatMessage(value),
+  focusCustomModel: () => {
+    modelCustomEl.focus();
+  },
+  getChatInputScrollHeight: () => chatInputEl.scrollHeight,
   getInputModeOverride: () => slidesState.inputModeOverride,
-  retryChat: () => {
-    chatStreamRuntime.retryChat();
-  },
-  chatEnabled: () => chatEnabledValue,
+  getQueuedChatCount: () => chatQueueRuntime.getQueueLength(),
   getRawChatInput: () => chatInputEl.value,
-  clearChatInput: () => {
-    chatInputEl.value = "";
-    chatInputEl.style.height = "auto";
+  isChatStreaming: () => panelState.chatStreaming,
+  isCustomModelHidden: () => modelCustomEl.hidden,
+  maybeSendQueuedChat: () => {
+    chatStreamRuntime.maybeSendQueuedChat();
   },
+  patchSettings,
+  readCurrentModelValue,
   restoreChatInput: (value) => {
     chatInputEl.value = value;
   },
-  getChatInputScrollHeight: () => chatInputEl.scrollHeight,
+  retryChat: () => {
+    chatStreamRuntime.retryChat();
+  },
+  sendRawMessage: (message) => panelPortRuntime.send(message as PanelToBg),
   setChatInputHeight: (value) => {
     chatInputEl.style.height = value;
   },
-  isChatStreaming: () => panelState.chatStreaming,
-  getQueuedChatCount: () => chatQueueRuntime.getQueueLength(),
-  enqueueChatMessage: (value) => chatQueueRuntime.enqueueChatMessage(value),
-  maybeSendQueuedChat: () => {
-    chatStreamRuntime.maybeSendQueuedChat();
+  setLastAction: (value) => {
+    lastAction = value;
   },
   startChatMessage: (value) => {
     chatStreamRuntime.startChatMessage(value);
   },
   typographyController,
-  patchSettings,
   updateModelRowUI,
-  isCustomModelHidden: () => modelCustomEl.hidden,
-  focusCustomModel: () => {
-    modelCustomEl.focus();
-  },
-  blurCustomModel: () => {
-    modelCustomEl.blur();
-  },
-  readCurrentModelValue,
 });
 const { sendSummarize, sendChatMessage, bumpFontSize, bumpLineHeight, persistCurrentModel } =
   interactionRuntime;
 
 summarizeControlRuntime = createSummarizeControlRuntime({
-  summarizeControlRoot,
-  renderMarkdownHostEl,
-  renderSlidesHostEl,
-  slidesLayoutEl,
-  slidesTextController,
+  applySlidesRendererLayout: () => {
+    slidesRenderer?.applyLayout();
+  },
   getState: () => ({
     inputMode: slidesState.inputMode,
     inputModeOverride: slidesState.inputModeOverride,
@@ -1423,44 +1400,46 @@ summarizeControlRuntime = createSummarizeControlRuntime({
     activeTabUrl,
     currentSourceUrl: panelState.currentSource?.url ?? null,
   }),
+  hideSlideNotice,
+  loadSettings,
+  maybeApplyPendingSlidesSummary,
+  maybeStartPendingSlidesForUrl,
+  patchSettings,
+  queueSlidesRender,
+  renderInlineSlidesFallback: () => {
+    renderInlineSlides(renderMarkdownHostEl, { fallback: true });
+  },
+  renderMarkdownDisplay,
+  renderMarkdownHostEl,
+  renderSlidesHostEl,
+  resolveActiveSlidesRunId,
+  sendSummarize: (opts) => {
+    sendSummarize(opts);
+  },
   setInputMode: (value) => {
     slidesState.inputMode = value;
   },
   setInputModeOverride: (value) => {
     slidesState.inputModeOverride = value;
   },
+  setSlidesBusy,
   setSlidesEnabled: (value) => {
     slidesState.slidesEnabled = value;
   },
   setSlidesLayoutValue: (value) => {
     slidesState.slidesLayout = value;
   },
-  patchSettings,
-  loadSettings,
   showSlideNotice: (message) => {
     showSlideNotice(message);
   },
-  hideSlideNotice,
-  setSlidesBusy,
-  stopSlidesStream,
-  maybeApplyPendingSlidesSummary,
-  maybeStartPendingSlidesForUrl,
-  sendSummarize: (opts) => {
-    sendSummarize(opts);
-  },
-  resolveActiveSlidesRunId,
+  slidesLayoutEl,
+  slidesTextController,
   startSlidesStreamForRunId,
   startSlidesSummaryStreamForRunId: (runId, url) => {
     startSlidesSummaryStreamForRunId(runId, url ?? null);
   },
-  renderMarkdownDisplay,
-  renderInlineSlidesFallback: () => {
-    renderInlineSlides(renderMarkdownHostEl, { fallback: true });
-  },
-  queueSlidesRender,
-  applySlidesRendererLayout: () => {
-    slidesRenderer?.applyLayout();
-  },
+  stopSlidesStream,
+  summarizeControlRoot,
 });
 
 function seedPlannedSlidesForRun(run: RunStart) {
@@ -1481,15 +1460,15 @@ function seedPlannedSlidesForRun(run: RunStart) {
 
   const normalized = appearanceControls.getLengthValue().trim().toLowerCase();
   const chunkSeconds =
-    normalized === "short"
+    normalized === 'short'
       ? 600
-      : normalized === "medium"
+      : normalized === 'medium'
         ? 450
-        : normalized === "long"
+        : normalized === 'long'
           ? 300
-          : normalized === "xl"
+          : normalized === 'xl'
             ? 180
-            : normalized === "xxl"
+            : normalized === 'xxl'
               ? 120
               : 300;
 
@@ -1498,7 +1477,7 @@ function seedPlannedSlidesForRun(run: RunStart) {
 
   const youtubeId = extractYouTubeVideoId(run.url);
   const sourceId = youtubeId ? `youtube-${youtubeId}` : `planned-${run.id}`;
-  const sourceKind = youtubeId ? "youtube" : "direct";
+  const sourceKind = youtubeId ? 'youtube' : 'direct';
 
   if (
     panelState.slides &&
@@ -1512,16 +1491,10 @@ function seedPlannedSlidesForRun(run: RunStart) {
     const ratio = count <= 1 ? 0 : i / Math.max(1, count - 1);
     const timestamp = Math.max(0, Math.min(durationSeconds - 0.1, ratio * durationSeconds));
     const index = i + 1;
-    return { index, timestamp, imageUrl: "" };
+    return { imageUrl: '', index, timestamp };
   });
 
-  panelState.slides = {
-    sourceUrl: run.url,
-    sourceId,
-    sourceKind,
-    ocrAvailable: false,
-    slides,
-  };
+  panelState.slides = { ocrAvailable: false, slides, sourceId, sourceKind, sourceUrl: run.url };
   slidesState.slidesSeededSourceId = sourceId;
   updateSlidesTextState();
   void requestSlidesContext();
@@ -1538,7 +1511,7 @@ async function runAgentLoop() {
     createStreamingAssistantMessage: buildStreamingAssistantMessage,
     executeToolCall: async (call) => (await executeToolCall(call)) as ToolResultMessage,
     getAutomationToolNames,
-    hasDebuggerPermission: () => chrome.permissions.contains({ permissions: ["debugger"] }),
+    hasDebuggerPermission: () => chrome.permissions.contains({ permissions: ['debugger'] }),
     markAgentNavigationIntent: navigationRuntime.markAgentNavigationIntent,
     markAgentNavigationResult: navigationRuntime.markAgentNavigationResult,
     scrollToBottom,
@@ -1548,42 +1521,42 @@ async function runAgentLoop() {
 }
 
 const chatStreamRuntime = createChatStreamRuntime({
-  chatEnabled: () => chatEnabledValue,
-  isChatStreaming: () => panelState.chatStreaming,
-  setChatStreaming: (value) => {
-    panelState.chatStreaming = value;
-  },
-  hasUserMessages: () => chatController.hasUserMessages(),
   addUserMessage: (text) => {
-    chatController.addMessage(wrapMessage({ role: "user", content: text, timestamp: Date.now() }));
+    chatController.addMessage(wrapMessage({ role: 'user', content: text, timestamp: Date.now() }));
   },
-  dequeueQueuedMessage: chatQueueRuntime.dequeueQueuedMessage,
-  getQueuedChatCount: chatQueueRuntime.getQueueLength,
-  renderChatQueue: chatQueueRuntime.renderChatQueue,
-  focusInput: () => {
-    chatInputEl.focus();
-  },
+  chatEnabled: () => chatEnabledValue,
   clearErrors: () => {
     errorController.clearAll();
   },
+  dequeueQueuedMessage: chatQueueRuntime.dequeueQueuedMessage,
+  executeAgentLoop: runAgentLoop,
+  focusInput: () => {
+    chatInputEl.focus();
+  },
+  getQueuedChatCount: chatQueueRuntime.getQueueLength,
+  hasUserMessages: () => chatController.hasUserMessages(),
+  isChatStreaming: () => panelState.chatStreaming,
+  metricsSetChatMode: () => {
+    metricsController.setActiveMode('chat');
+  },
+  persistChatHistory,
+  renderChatQueue: chatQueueRuntime.renderChatQueue,
   resetAbort: () => {
     chatSession.resetAbort();
   },
-  metricsSetChatMode: () => {
-    metricsController.setActiveMode("chat");
+  scrollToBottom,
+  setChatStreaming: (value) => {
+    panelState.chatStreaming = value;
   },
   setLastActionChat: () => {
-    lastAction = "chat";
+    lastAction = 'chat';
   },
-  scrollToBottom,
-  persistChatHistory,
   setStatus: (value) => {
     headerController.setStatus(value);
   },
   showInlineError: (message) => {
     errorController.showInlineError(message);
   },
-  executeAgentLoop: runAgentLoop,
 });
 
 function retryLastAction() {
@@ -1591,123 +1564,123 @@ function retryLastAction() {
 }
 
 bindSidepanelUiEvents({
-  refreshBtn,
-  clearBtn,
-  drawerToggleBtn,
   advancedBtn,
-  advancedSettingsSummaryEl,
-  chatSendBtn,
-  chatInputEl,
-  sizeSmBtn,
-  sizeLgBtn,
-  lineTightBtn,
-  lineLooseBtn,
-  modelPresetEl,
-  modelCustomEl,
-  slidesLayoutEl,
-  modelRefreshBtn,
   advancedSettingsEl,
-  lineHeightStep: LINE_HEIGHT_STEP,
-  sendSummarize,
-  clearCurrentView,
-  toggleDrawer: () => drawerControls.toggleDrawer(),
-  openOptions: () => send({ type: "panel:openOptions" }),
-  toggleAdvancedSettings: drawerControls.toggleAdvancedSettings,
-  sendChatMessage,
+  advancedSettingsSummaryEl,
   bumpFontSize,
   bumpLineHeight,
+  chatInputEl,
+  chatSendBtn,
+  clearBtn,
+  clearCurrentView,
+  drawerToggleBtn,
+  lineHeightStep: LINE_HEIGHT_STEP,
+  lineLooseBtn,
+  lineTightBtn,
+  modelCustomEl,
+  modelPresetEl,
+  modelRefreshBtn,
+  openOptions: () => send({ type: 'panel:openOptions' }),
   persistCurrentModel,
+  refreshBtn,
+  refreshModelsIfStale: () => {
+    if (drawerControls.hasAdvancedSettingsAnimation() && advancedSettingsEl.open) return;
+    refreshModelsIfStale();
+  },
+  runRefreshFree,
+  sendChatMessage,
+  sendSummarize,
   setSlidesLayout: (next) => {
     setSlidesLayout(next);
     void (async () => {
       await patchSettings({ slidesLayout: next });
     })();
   },
-  refreshModelsIfStale: () => {
-    if (drawerControls.hasAdvancedSettingsAnimation() && advancedSettingsEl.open) return;
-    refreshModelsIfStale();
-  },
-  runRefreshFree,
+  sizeLgBtn,
+  sizeSmBtn,
+  slidesLayoutEl,
+  toggleAdvancedSettings: drawerControls.toggleAdvancedSettings,
+  toggleDrawer: () => drawerControls.toggleDrawer(),
 });
 
 bootstrapSidepanel({
-  ensurePanelPort: () => panelPortRuntime.ensure(),
-  loadSettings,
-  getPendingSettingsSnapshot: () => pendingSettingsSnapshot,
+  appearanceControls,
+  applyChatEnabled,
+  applySlidesLayout,
+  bindSettingsStorage: {
+    applyChatEnabled,
+    getPendingSettingsSnapshot: () => pendingSettingsSnapshot,
+    getSettingsHydrated: () => settingsHydrated,
+    hideAutomationNotice,
+    setAutomationEnabledValue: (value) => {
+      automationEnabledValue = value;
+    },
+    setChatEnabledValue: (value) => {
+      chatEnabledValue = value;
+    },
+    setPendingSettingsSnapshot: (value) => {
+      pendingSettingsSnapshot = value;
+    },
+  },
+  bindSidepanelLifecycle: {
+    clearInlineError: () => {
+      errorController.clearInlineError();
+    },
+    scheduleAutoKick,
+    sendClosed: () => {
+      window.clearTimeout(autoKickTimer);
+      void send({ type: 'panel:closed' });
+    },
+    sendReady: () => {
+      void send({ type: 'panel:ready' });
+    },
+    sendSummarize,
+    syncWithActiveTab,
+  },
   clearPendingSettingsSnapshot: () => {
     pendingSettingsSnapshot = null;
   },
-  setSettingsHydrated: (value) => {
-    settingsHydrated = value;
+  ensurePanelPort: () => panelPortRuntime.ensure(),
+  getPendingSettingsSnapshot: () => pendingSettingsSnapshot,
+  hideAutomationNotice: () => {
+    hideAutomationNotice();
   },
-  typographyController,
+  loadSettings,
+  renderMarkdownDisplay,
+  scheduleAutoKick,
+  sendPing: () => {
+    void send({ type: 'panel:ping' });
+  },
+  sendReady: () => {
+    void send({ type: 'panel:ready' });
+  },
   setAutoValue: (value) => {
     autoValue = value;
-  },
-  setChatEnabledValue: (value) => {
-    chatEnabledValue = value;
   },
   setAutomationEnabledValue: (value) => {
     automationEnabledValue = value;
   },
-  setSlidesLayoutValue: (value) => {
-    slidesState.slidesLayout = value as SlidesLayout;
+  setChatEnabledValue: (value) => {
+    chatEnabledValue = value;
+  },
+  setDefaultModelPresets,
+  setModelPlaceholderFromDiscovery,
+  setModelRefreshDisabled: (value) => {
+    modelRefreshBtn.disabled = value;
+  },
+  setModelValue,
+  setSettingsHydrated: (value) => {
+    settingsHydrated = value;
   },
   setSlidesLayoutInputValue: (value) => {
     slidesLayoutEl.value = value;
   },
-  hideAutomationNotice: () => {
-    hideAutomationNotice();
-  },
-  appearanceControls,
-  applyChatEnabled,
-  applySlidesLayout,
-  setDefaultModelPresets,
-  setModelValue,
-  setModelPlaceholderFromDiscovery,
-  updateModelRowUI,
-  setModelRefreshDisabled: (value) => {
-    modelRefreshBtn.disabled = value;
+  setSlidesLayoutValue: (value) => {
+    slidesState.slidesLayout = value as SlidesLayout;
   },
   toggleDrawerClosed: () => {
     drawerControls.toggleDrawer(false, { animate: false });
   },
-  renderMarkdownDisplay,
-  sendReady: () => {
-    void send({ type: "panel:ready" });
-  },
-  scheduleAutoKick,
-  sendPing: () => {
-    void send({ type: "panel:ping" });
-  },
-  bindSettingsStorage: {
-    applyChatEnabled,
-    hideAutomationNotice,
-    getSettingsHydrated: () => settingsHydrated,
-    setPendingSettingsSnapshot: (value) => {
-      pendingSettingsSnapshot = value;
-    },
-    getPendingSettingsSnapshot: () => pendingSettingsSnapshot,
-    setChatEnabledValue: (value) => {
-      chatEnabledValue = value;
-    },
-    setAutomationEnabledValue: (value) => {
-      automationEnabledValue = value;
-    },
-  },
-  bindSidepanelLifecycle: {
-    sendReady: () => {
-      void send({ type: "panel:ready" });
-    },
-    sendClosed: () => {
-      window.clearTimeout(autoKickTimer);
-      void send({ type: "panel:closed" });
-    },
-    scheduleAutoKick,
-    syncWithActiveTab,
-    clearInlineError: () => {
-      errorController.clearInlineError();
-    },
-    sendSummarize,
-  },
+  typographyController,
+  updateModelRowUI,
 });

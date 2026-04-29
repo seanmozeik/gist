@@ -1,39 +1,31 @@
-import type { PanelCachePayload } from "../../lib/panel-contracts";
+import type { PanelCachePayload } from '../../lib/panel-contracts';
 
-export type { PanelCachePayload } from "../../lib/panel-contracts";
+export type { PanelCachePayload } from '../../lib/panel-contracts';
 
-export type PanelCacheResponse = {
-  requestId: string;
-  ok: boolean;
-  cache?: PanelCachePayload;
-};
+export interface PanelCacheResponse { requestId: string; ok: boolean; cache?: PanelCachePayload }
 
-export type PanelCacheRequest = {
-  requestId: string;
-  tabId: number;
-  url: string;
-};
+export interface PanelCacheRequest { requestId: string; tabId: number; url: string }
 
-export type PanelCacheResult = {
+export interface PanelCacheResult {
   tabId: number;
   url: string;
   preserveChat: boolean;
   cache: PanelCachePayload | null;
-};
+}
 
-export type PanelCacheController = {
+export interface PanelCacheController {
   resolve: (tabId: number, url: string) => PanelCachePayload | null;
   scheduleSync: (delayMs?: number) => void;
   syncNow: () => void;
   request: (tabId: number, url: string, preserveChat: boolean) => PanelCacheRequest;
   consumeResponse: (response: PanelCacheResponse) => PanelCacheResult | null;
-};
+}
 
-export type PanelCacheControllerOptions = {
+export interface PanelCacheControllerOptions {
   getSnapshot: () => PanelCachePayload | null;
   sendCache: (payload: PanelCachePayload) => void;
   sendRequest: (request: PanelCacheRequest) => void;
-};
+}
 
 export function createPanelCacheController(
   options: PanelCacheControllerOptions,
@@ -64,7 +56,7 @@ export function createPanelCacheController(
 
   const syncNow = () => {
     const snapshot = getSnapshot();
-    if (!snapshot) return;
+    if (!snapshot) {return;}
     store(snapshot);
     sendCache(snapshot);
   };
@@ -74,7 +66,7 @@ export function createPanelCacheController(
     if (snapshot) {
       store(snapshot);
     }
-    if (syncTimer) globalThis.clearTimeout(syncTimer);
+    if (syncTimer) {globalThis.clearTimeout(syncTimer);}
     syncTimer = globalThis.setTimeout(() => {
       syncTimer = 0;
       syncNow();
@@ -83,32 +75,32 @@ export function createPanelCacheController(
 
   const request = (tabId: number, url: string, preserveChat: boolean): PanelCacheRequest => {
     const requestId = `cache-${++requestCounter}`;
-    pendingRequest = { requestId, tabId, url, preserveChat };
+    pendingRequest = { preserveChat, requestId, tabId, url };
     const payload = { requestId, tabId, url };
     sendRequest(payload);
     return payload;
   };
 
   const consumeResponse = (response: PanelCacheResponse): PanelCacheResult | null => {
-    if (!pendingRequest || response.requestId !== pendingRequest.requestId) return null;
+    if (!pendingRequest || response.requestId !== pendingRequest.requestId) {return null;}
     const pending = pendingRequest;
     pendingRequest = null;
     if (!response.ok || !response.cache) {
       return {
+        cache: null,
+        preserveChat: pending.preserveChat,
         tabId: pending.tabId,
         url: pending.url,
-        preserveChat: pending.preserveChat,
-        cache: null,
       };
     }
     store(response.cache);
     return {
+      cache: response.cache,
+      preserveChat: pending.preserveChat,
       tabId: pending.tabId,
       url: pending.url,
-      preserveChat: pending.preserveChat,
-      cache: response.cache,
     };
   };
 
-  return { resolve, scheduleSync, syncNow, request, consumeResponse };
+  return { consumeResponse, request, resolve, scheduleSync, syncNow };
 }

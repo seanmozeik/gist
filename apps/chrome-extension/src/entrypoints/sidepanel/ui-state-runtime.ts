@@ -1,48 +1,47 @@
-import { shouldPreferUrlMode } from "@steipete/summarize-core/content/url";
-import type { PanelCachePayload } from "./panel-cache";
+import { shouldPreferUrlMode } from '@steipete/summarize-core/content/url';
+
+import type { PanelCachePayload } from './panel-cache';
 import {
   resolvePanelNavigationDecision,
   shouldIgnoreTransientPanelTabState,
   shouldInvalidateCurrentSource,
-} from "./session-policy";
-import type { ChatMessage, PanelPhase, PanelState, UiState } from "./types";
+} from './session-policy';
+import type { ChatMessage, PanelPhase, PanelState, UiState } from './types';
 
-type AppearanceControlsLike = {
+interface AppearanceControlsLike {
   setAutoValue: (value: boolean) => void;
   syncLengthFromState: (value: string) => boolean;
   getFontFamily: () => string;
-};
+}
 
-type TypographyControllerLike = {
+interface TypographyControllerLike {
   getCurrentFontSize: () => number;
   getCurrentLineHeight: () => number;
   apply: (fontFamily: string, fontSize: number, lineHeight: number) => void;
   setCurrentFontSize: (value: number) => void;
   setCurrentLineHeight: (value: number) => void;
-};
+}
 
-type HeaderControllerLike = {
+interface HeaderControllerLike {
   setBaseTitle: (value: string) => void;
   setBaseSubtitle: (value: string) => void;
   setStatus: (value: string) => void;
-};
+}
 
-type NavigationRuntimeLike = {
+interface NavigationRuntimeLike {
   isRecentAgentNavigation: (tabId: number | null, url: string | null) => boolean;
   notePreserveChatForUrl: (url: string | null) => void;
   getLastAgentNavigationUrl: () => string | null;
-};
+}
 
-type ChatControllerLike = {
-  getMessages: () => ChatMessage[];
-};
+interface ChatControllerLike { getMessages: () => ChatMessage[] }
 
-type PanelCacheControllerLike = {
+interface PanelCacheControllerLike {
   resolve: (tabId: number, url: string) => PanelCachePayload | null;
   request: (tabId: number, url: string, preserveChat: boolean) => void;
-};
+}
 
-type UiStateRuntimeOpts = {
+interface UiStateRuntimeOpts {
   panelState: PanelState;
   chatController: ChatControllerLike;
   appearanceControls: AppearanceControlsLike;
@@ -103,10 +102,10 @@ type UiStateRuntimeOpts = {
   getSlidesParallelValue: () => boolean;
   setSlidesOcrEnabledValue: (value: boolean) => void;
   getSlidesOcrEnabledValue: () => boolean;
-  getInputMode: () => "page" | "video";
-  setInputMode: (value: "page" | "video") => void;
-  getInputModeOverride: () => "page" | "video" | null;
-  setInputModeOverride: (value: "page" | "video" | null) => void;
+  getInputMode: () => 'page' | 'video';
+  setInputMode: (value: 'page' | 'video') => void;
+  getInputModeOverride: () => 'page' | 'video' | null;
+  setInputModeOverride: (value: 'page' | 'video' | null) => void;
   getMediaAvailable: () => boolean;
   setMediaAvailable: (value: boolean) => void;
   getSlidesLayoutValue: () => string;
@@ -116,16 +115,16 @@ type UiStateRuntimeOpts = {
   isStreaming: () => boolean;
   getSlidesBusy: () => boolean;
   onSlidesOcrChanged: () => void;
-};
+}
 
 function applyCachedOrReset(
   opts: Pick<
     UiStateRuntimeOpts,
-    | "panelState"
-    | "panelCacheController"
-    | "applyPanelCache"
-    | "resetSummaryView"
-    | "setCurrentRunTabId"
+    | 'panelState'
+    | 'panelCacheController'
+    | 'applyPanelCache'
+    | 'resetSummaryView'
+    | 'setCurrentRunTabId'
   >,
   tabId: number | null,
   url: string | null,
@@ -158,7 +157,7 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
 
     const activeTabId = opts.getActiveTabId();
     const activeTabUrl = opts.getActiveTabUrl();
-    const currentSource = opts.panelState.currentSource;
+    const {currentSource} = opts.panelState;
     const inputModeOverride = opts.getInputModeOverride();
     const inputMode = opts.getInputMode();
     const mediaAvailable = opts.getMediaAvailable();
@@ -166,9 +165,9 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
     const slidesLayoutValue = opts.getSlidesLayoutValue();
 
     const ignoreTransientTabState = shouldIgnoreTransientPanelTabState({
-      nextTabUrl: state.tab.url ?? null,
       activeTabUrl,
       currentSourceUrl: currentSource?.url ?? null,
+      nextTabUrl: state.tab.url ?? null,
     });
     const nextTabId = ignoreTransientTabState ? activeTabId : (state.tab.id ?? null);
     const nextTabUrl = ignoreTransientTabState ? activeTabUrl : (state.tab.url ?? null);
@@ -191,22 +190,22 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
     const navigation = resolvePanelNavigationDecision({
       activeTabId,
       activeTabUrl,
+      chatEnabled: chatEnabledValue,
+      hasActiveChat,
+      inputModeOverride,
       nextTabId,
       nextTabUrl,
-      hasActiveChat,
-      chatEnabled: chatEnabledValue,
-      preserveChat: nextTabId !== activeTabId ? preserveChatForTab : preserveChatForUrl,
       preferUrlMode,
-      inputModeOverride,
+      preserveChat: nextTabId !== activeTabId ? preserveChatForTab : preserveChatForUrl,
     });
     const nextMediaAvailable = hasMediaInfo
       ? mediaFromState || preferUrlMode
-      : navigation.kind !== "none"
+      : (navigation.kind !== 'none'
         ? preferUrlMode
-        : mediaAvailable || preferUrlMode;
-    const nextVideoLabel = state.media?.hasAudio && !state.media.hasVideo ? "Audio" : "Video";
+        : mediaAvailable || preferUrlMode);
+    const nextVideoLabel = state.media?.hasAudio && !state.media.hasVideo ? 'Audio' : 'Video';
 
-    if (navigation.kind === "tab") {
+    if (navigation.kind === 'tab') {
       if (navigation.preserveChat) {
         opts.navigationRuntime.notePreserveChatForUrl(
           nextTabUrl ?? opts.navigationRuntime.getLastAgentNavigationUrl(),
@@ -216,7 +215,7 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
       opts.setActiveTabId(nextTabId);
       opts.setActiveTabUrl(nextTabUrl);
       if (opts.panelState.chatStreaming && navigation.shouldAbortChatStream) {
-        opts.requestAgentAbort("Tab changed");
+        opts.requestAgentAbort('Tab changed');
       }
       if (navigation.shouldClearChat) {
         void opts.clearChatHistoryForActiveTab();
@@ -233,7 +232,7 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
       if (!opts.maybeStartPendingSummaryRunForUrl(nextTabUrl)) {
         applyCachedOrReset(opts, nextTabId, nextTabUrl, navigation.preserveChat);
       }
-    } else if (navigation.kind === "url") {
+    } else if (navigation.kind === 'url') {
       opts.setActiveTabUrl(nextTabUrl);
       if (navigation.preserveChat) {
         opts.navigationRuntime.notePreserveChatForUrl(nextTabUrl);
@@ -261,7 +260,7 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
       opts.onSlidesOcrChanged();
     }
     const fallbackModel =
-      typeof state.settings.model === "string" ? state.settings.model.trim() : "";
+      typeof state.settings.model === 'string' ? state.settings.model.trim() : '';
     if (
       fallbackModel &&
       (!opts.panelState.lastMeta.model || !opts.panelState.lastMeta.model.trim())
@@ -273,17 +272,17 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
       };
     }
     if (opts.getSlidesEnabledValue() && nextMediaAvailable) {
-      opts.setInputMode("video");
-      opts.setInputModeOverride("video");
+      opts.setInputMode('video');
+      opts.setInputModeOverride('video');
     }
     if (state.settings.slidesLayout && state.settings.slidesLayout !== slidesLayoutValue) {
       opts.setSlidesLayout(state.settings.slidesLayout);
     }
-    if (opts.getAutomationEnabledValue()) opts.hideAutomationNotice();
-    if (!opts.getSlidesEnabledValue()) opts.hideSlideNotice();
+    if (opts.getAutomationEnabledValue()) {opts.hideAutomationNotice();}
+    if (!opts.getSlidesEnabledValue()) {opts.hideSlideNotice();}
     if (
       opts.getSlidesEnabledValue() &&
-      (opts.getInputModeOverride() ?? opts.getInputMode()) === "video"
+      (opts.getInputModeOverride() ?? opts.getInputMode()) === 'video'
     ) {
       opts.maybeApplyPendingSlidesSummary();
       opts.maybeStartPendingSummaryRunForUrl(nextTabUrl ?? null);
@@ -323,8 +322,8 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
     if (opts.panelState.currentSource) {
       if (
         shouldInvalidateCurrentSource({
-          stateTabUrl: nextTabUrl,
           currentSourceUrl: opts.panelState.currentSource.url,
+          stateTabUrl: nextTabUrl,
         })
       ) {
         const preserveChat = opts.navigationRuntime.isRecentAgentNavigation(
@@ -338,25 +337,22 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
         opts.setCurrentRunTabId(null);
         opts.resetSummaryView({ preserveChat });
       } else if (nextTabTitle && nextTabTitle !== opts.panelState.currentSource.title) {
-        opts.panelState.currentSource = {
-          ...opts.panelState.currentSource,
-          title: nextTabTitle,
-        };
+        opts.panelState.currentSource = { ...opts.panelState.currentSource, title: nextTabTitle };
         opts.headerController.setBaseTitle(nextTabTitle);
       }
     }
     if (!opts.panelState.currentSource) {
       if (!ignoreTransientTabState) {
         opts.panelState.lastMeta = { inputSummary: null, model: null, modelLabel: null };
-        opts.headerController.setBaseTitle(nextTabTitle || nextTabUrl || "Summarize");
-        opts.headerController.setBaseSubtitle("");
+        opts.headerController.setBaseTitle(nextTabTitle || nextTabUrl || 'Summarize');
+        opts.headerController.setBaseSubtitle('');
       }
     }
     if (!opts.isStreaming()) {
       opts.headerController.setStatus(state.status);
     }
     if (!nextMediaAvailable && hasMediaInfo) {
-      opts.setInputMode("page");
+      opts.setInputMode('page');
       opts.setInputModeOverride(null);
     }
     opts.setMediaAvailable(nextMediaAvailable);
@@ -366,10 +362,10 @@ export function createUiStateRuntime(opts: UiStateRuntimeOpts) {
     opts.maybeSeedPlannedSlidesForPendingRun();
     opts.refreshSummarizeControl();
     const showingSetup = opts.maybeShowSetup(state);
-    if (showingSetup && opts.panelState.phase !== "setup") {
-      opts.setPhase("setup");
-    } else if (!showingSetup && opts.panelState.phase === "setup") {
-      opts.setPhase("idle");
+    if (showingSetup && opts.panelState.phase !== 'setup') {
+      opts.setPhase('setup');
+    } else if (!showingSetup && opts.panelState.phase === 'setup') {
+      opts.setPhase('idle');
     }
     if (!opts.panelState.summaryMarkdown?.trim()) {
       opts.renderMarkdownDisplay();

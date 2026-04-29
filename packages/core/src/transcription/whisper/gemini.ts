@@ -1,57 +1,49 @@
-import { promises as fs } from "node:fs";
-import { MAX_ERROR_DETAIL_CHARS, TRANSCRIPTION_TIMEOUT_MS } from "./constants.js";
-import { resolveGeminiTranscriptionModel } from "./provider-setup.js";
-import { ensureWhisperFilenameExtension, toArrayBuffer, wrapError } from "./utils.js";
+import { promises as fs } from 'node:fs';
+
+import { MAX_ERROR_DETAIL_CHARS, TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
+import { resolveGeminiTranscriptionModel } from './provider-setup.js';
+import { ensureWhisperFilenameExtension, toArrayBuffer, wrapError } from './utils.js';
 
 type Env = Record<string, string | undefined>;
 
 const GEMINI_INLINE_UPLOAD_BYTES = 20 * 1024 * 1024;
-const DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com";
+const DEFAULT_GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com';
 const TRANSCRIPTION_PROMPT =
-  "Transcribe this audio or video into plain text. Return only the transcript text, preserving the spoken language. No timestamps, speaker labels, summaries, or markdown.";
+  'Transcribe this audio or video into plain text. Return only the transcript text, preserving the spoken language. No timestamps, speaker labels, summaries, or markdown.';
 
-type GeminiFileResource = {
+interface GeminiFileResource {
   name?: string;
   uri?: string;
   state?: string;
   mimeType?: string;
   mime_type?: string;
-};
+}
 
 export async function transcribeWithGemini(
   bytes: Uint8Array,
   mediaType: string,
   filename: string | null,
   apiKey: string,
-  options?: {
-    env?: Env;
-    model?: string | null;
-  },
+  options?: { env?: Env; model?: string | null },
 ): Promise<string | null> {
   if (bytes.byteLength <= GEMINI_INLINE_UPLOAD_BYTES) {
-    return await generateInlineTranscript({
-      bytes,
-      mediaType,
+    return  generateInlineTranscript({
       apiKey,
+      bytes,
       env: options?.env,
+      mediaType,
       model: options?.model ?? null,
     });
   }
 
-  const upload = await uploadGeminiBytes({
-    bytes,
-    mediaType,
-    filename,
-    apiKey,
-    env: options?.env,
-  });
+  const upload = await uploadGeminiBytes({ apiKey, bytes, env: options?.env, filename, mediaType });
   try {
     return await generateFileTranscript({
-      file: upload,
       apiKey,
       env: options?.env,
-      model: options?.model ?? null,
+      file: upload,
       mediaType,
+      model: options?.model ?? null,
     });
   } finally {
     await deleteGeminiFile(upload, apiKey, options?.env).catch(() => {});
@@ -76,30 +68,12 @@ export async function transcribeFileWithGemini({
   const stat = await fs.stat(filePath);
   if (stat.size <= GEMINI_INLINE_UPLOAD_BYTES) {
     const bytes = new Uint8Array(await fs.readFile(filePath));
-    return await generateInlineTranscript({
-      bytes,
-      mediaType,
-      apiKey,
-      env,
-      model,
-    });
+    return  generateInlineTranscript({ apiKey, bytes, env, mediaType, model });
   }
 
-  const upload = await uploadGeminiFile({
-    filePath,
-    mediaType,
-    filename,
-    apiKey,
-    env,
-  });
+  const upload = await uploadGeminiFile({ apiKey, env, filePath, filename, mediaType });
   try {
-    return await generateFileTranscript({
-      file: upload,
-      apiKey,
-      env,
-      model,
-      mediaType,
-    });
+    return await generateFileTranscript({ apiKey, env, file: upload, mediaType, model });
   } finally {
     await deleteGeminiFile(upload, apiKey, env).catch(() => {});
   }
@@ -119,11 +93,8 @@ async function generateInlineTranscript({
   model?: string | null;
 }): Promise<string | null> {
   const response = await geminiJsonRequest({
-    path: `v1beta/models/${resolveModelId(model, env)}:generateContent`,
     apiKey,
-    env,
     body: {
-      generationConfig: { temperature: 0 },
       contents: [
         {
           parts: [
@@ -131,13 +102,16 @@ async function generateInlineTranscript({
             {
               inline_data: {
                 mime_type: mediaType,
-                data: Buffer.from(toArrayBuffer(bytes)).toString("base64"),
+                data: Buffer.from(toArrayBuffer(bytes)).toString('base64'),
               },
             },
           ],
         },
       ],
+      generationConfig: { temperature: 0 },
     },
+    env,
+    path: `v1beta/models/${resolveModelId(model, env)}:generateContent`,
   });
 
   return extractGeminiTranscript(response, resolveModelId(model, env));
@@ -157,30 +131,27 @@ async function generateFileTranscript({
   mediaType: string;
 }): Promise<string | null> {
   const ready = await waitForGeminiFileActive(file, apiKey, env);
-  const fileUri = typeof ready.uri === "string" ? ready.uri.trim() : "";
+  const fileUri = typeof ready.uri === 'string' ? ready.uri.trim() : '';
   if (!fileUri) {
-    throw new Error("Gemini Files API did not return a file uri");
+    throw new Error('Gemini Files API did not return a file uri');
   }
   const response = await geminiJsonRequest({
-    path: `v1beta/models/${resolveModelId(model, env)}:generateContent`,
     apiKey,
-    env,
     body: {
-      generationConfig: { temperature: 0 },
       contents: [
         {
           parts: [
             { text: TRANSCRIPTION_PROMPT },
             {
-              file_data: {
-                mime_type: resolveGeminiMimeType(ready, mediaType),
-                file_uri: fileUri,
-              },
+              file_data: { mime_type: resolveGeminiMimeType(ready, mediaType), file_uri: fileUri },
             },
           ],
         },
       ],
+      generationConfig: { temperature: 0 },
     },
+    env,
+    path: `v1beta/models/${resolveModelId(model, env)}:generateContent`,
   });
 
   return extractGeminiTranscript(response, resolveModelId(model, env));
@@ -200,12 +171,12 @@ async function uploadGeminiFile({
   env?: Env;
 }): Promise<GeminiFileResource> {
   const bytes = await fs.readFile(filePath);
-  return await uploadGeminiBytes({
-    bytes: new Uint8Array(bytes),
-    mediaType,
-    filename,
+  return  uploadGeminiBytes({
     apiKey,
+    bytes: new Uint8Array(bytes),
     env,
+    filename,
+    mediaType,
   });
 }
 
@@ -222,54 +193,50 @@ async function uploadGeminiBytes({
   apiKey: string;
   env?: Env;
 }): Promise<GeminiFileResource> {
-  const displayName = ensureWhisperFilenameExtension(filename?.trim() || "media", mediaType);
+  const displayName = ensureWhisperFilenameExtension(filename?.trim() ?? 'media', mediaType);
   const startUrl = new URL(`${resolveGeminiBaseUrl(env)}/upload/v1beta/files`);
   const start = await globalThis.fetch(startUrl, {
-    method: "POST",
+    body: JSON.stringify({ file: { display_name: displayName } }),
     headers: {
-      "content-type": "application/json",
-      "x-goog-api-key": apiKey,
-      "x-goog-upload-command": "start",
-      "x-goog-upload-protocol": "resumable",
-      "x-goog-upload-header-content-length": String(bytes.byteLength),
-      "x-goog-upload-header-content-type": mediaType,
+      'content-type': 'application/json',
+      'x-goog-api-key': apiKey,
+      'x-goog-upload-command': 'start',
+      'x-goog-upload-header-content-length': String(bytes.byteLength),
+      'x-goog-upload-header-content-type': mediaType,
+      'x-goog-upload-protocol': 'resumable',
     },
-    body: JSON.stringify({
-      file: {
-        display_name: displayName,
-      },
-    }),
+    method: 'POST',
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   if (!start.ok) {
     const detail = await readErrorDetail(start);
-    const suffix = detail ? `: ${detail}` : "";
+    const suffix = detail ? `: ${detail}` : '';
     throw new Error(`Gemini file upload start failed (${start.status})${suffix}`);
   }
 
-  const uploadUrl = start.headers.get("x-goog-upload-url")?.trim() || "";
+  const uploadUrl = start.headers.get('x-goog-upload-url')?.trim() ?? '';
   if (!uploadUrl) {
-    throw new Error("Gemini file upload start response did not include x-goog-upload-url");
+    throw new Error('Gemini file upload start response did not include x-goog-upload-url');
   }
 
   const upload = await globalThis.fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      "content-length": String(bytes.byteLength),
-      "x-goog-upload-command": "upload, finalize",
-      "x-goog-upload-offset": "0",
-    },
     body: new Blob([toArrayBuffer(bytes)], { type: mediaType }),
+    headers: {
+      'content-length': String(bytes.byteLength),
+      'x-goog-upload-command': 'upload, finalize',
+      'x-goog-upload-offset': '0',
+    },
+    method: 'POST',
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   if (!upload.ok) {
     const detail = await readErrorDetail(upload);
-    const suffix = detail ? `: ${detail}` : "";
+    const suffix = detail ? `: ${detail}` : '';
     throw new Error(`Gemini file upload failed (${upload.status})${suffix}`);
   }
   const payload = (await upload.json()) as { file?: GeminiFileResource };
   if (!payload.file) {
-    throw new Error("Gemini file upload returned no file metadata");
+    throw new Error('Gemini file upload returned no file metadata');
   }
   return payload.file;
 }
@@ -279,18 +246,18 @@ async function waitForGeminiFileActive(
   apiKey: string,
   env?: Env,
 ): Promise<GeminiFileResource> {
-  const name = typeof file.name === "string" ? file.name.trim() : "";
-  if (!name) return file;
+  const name = typeof file.name === 'string' ? file.name.trim() : '';
+  if (!name) {return file;}
 
   let current = file;
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
     const state = normalizeFileState(current.state);
-    if (!state || state === "ACTIVE") return current;
-    if (state === "FAILED") {
+    if (!state || state === 'ACTIVE') {return current;}
+    if (state === 'FAILED') {
       throw new Error(`Gemini file processing failed for ${name}`);
     }
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     current = await getGeminiFile(name, apiKey, env);
   }
 
@@ -298,15 +265,10 @@ async function waitForGeminiFileActive(
 }
 
 async function getGeminiFile(name: string, apiKey: string, env?: Env): Promise<GeminiFileResource> {
-  const response = await geminiJsonRequest({
-    path: `v1beta/${name}`,
-    apiKey,
-    env,
-    method: "GET",
-  });
-  if (response && typeof response === "object" && "file" in response) {
+  const response = await geminiJsonRequest({ apiKey, env, method: 'GET', path: `v1beta/${name}` });
+  if (response && typeof response === 'object' && 'file' in response) {
     const payload = response as { file?: GeminiFileResource };
-    if (payload.file) return payload.file;
+    if (payload.file) {return payload.file;}
   }
   return response as GeminiFileResource;
 }
@@ -316,12 +278,12 @@ async function deleteGeminiFile(
   apiKey: string,
   env?: Env,
 ): Promise<void> {
-  const name = typeof file.name === "string" ? file.name.trim() : "";
-  if (!name) return;
+  const name = typeof file.name === 'string' ? file.name.trim() : '';
+  if (!name) {return;}
   const url = new URL(`${resolveGeminiBaseUrl(env)}/v1beta/${name}`);
   const response = await globalThis.fetch(url, {
-    method: "DELETE",
-    headers: { "x-goog-api-key": apiKey },
+    headers: { 'x-goog-api-key': apiKey },
+    method: 'DELETE',
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   if (!response.ok && response.status !== 404) {
@@ -333,66 +295,63 @@ async function geminiJsonRequest({
   path,
   apiKey,
   env,
-  method = "POST",
+  method = 'POST',
   body,
 }: {
   path: string;
   apiKey: string;
   env?: Env;
-  method?: "GET" | "POST";
+  method?: 'GET' | 'POST';
   body?: unknown;
 }): Promise<unknown> {
-  const url = new URL(`${resolveGeminiBaseUrl(env)}/${path.replace(/^\/+/, "")}`);
+  const url = new URL(`${resolveGeminiBaseUrl(env)}/${path.replace(/^\/+/, '')}`);
   const response = await globalThis.fetch(url, {
     method,
-    headers: {
-      "content-type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
+    headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   const text = await response.text();
   if (!response.ok) {
-    const suffix = text.trim() ? `: ${truncate(text)}` : "";
+    const suffix = text.trim() ? `: ${truncate(text)}` : '';
     throw new Error(`Gemini request failed (${response.status})${suffix}`);
   }
-  if (!text.trim()) return {};
+  if (!text.trim()) {return {};}
   try {
     return JSON.parse(text) as unknown;
   } catch (error) {
-    throw wrapError("Gemini returned invalid JSON", error);
+    throw wrapError('Gemini returned invalid JSON', error);
   }
 }
 
 function extractGeminiTranscript(payload: unknown, modelId: string): string | null {
   const candidates = Array.isArray((payload as { candidates?: unknown[] })?.candidates)
-    ? ((payload as { candidates: unknown[] }).candidates as Array<Record<string, unknown>>)
+    ? ((payload as { candidates: unknown[] }).candidates as Record<string, unknown>[])
     : [];
 
   const text = candidates
     .flatMap((candidate) => {
-      const content = candidate.content;
-      if (!content || typeof content !== "object") return [];
-      const parts = (content as { parts?: unknown[] }).parts;
+      const {content} = candidate;
+      if (!content || typeof content !== 'object') {return [];}
+      const {parts} = (content as { parts?: unknown[] });
       return Array.isArray(parts) ? parts : [];
     })
     .map((part) => {
-      if (!part || typeof part !== "object") return "";
+      if (!part || typeof part !== 'object') {return '';}
       const textValue = (part as { text?: unknown }).text;
-      return typeof textValue === "string" ? textValue : "";
+      return typeof textValue === 'string' ? textValue : '';
     })
-    .join("")
+    .join('')
     .trim();
-  if (text) return text;
+  if (text) {return text;}
 
   const finishReason = candidates
     .map((candidate) => {
       const value = candidate.finishReason;
-      return typeof value === "string" ? value.trim() : "";
+      return typeof value === 'string' ? value.trim() : '';
     })
     .find(Boolean);
-  if (finishReason && finishReason !== "STOP") {
+  if (finishReason && finishReason !== 'STOP') {
     throw new Error(`Gemini transcription stopped with ${finishReason} (model ${modelId})`);
   }
   return null;
@@ -401,28 +360,28 @@ function extractGeminiTranscript(payload: unknown, modelId: string): string | nu
 function resolveGeminiBaseUrl(env?: Env): string {
   const source = env ?? process.env;
   return (
-    source.GOOGLE_BASE_URL?.trim() ||
-    source.GEMINI_BASE_URL?.trim() ||
+    (source.GOOGLE_BASE_URL?.trim() ??
+    source.GEMINI_BASE_URL?.trim()) ??
     DEFAULT_GEMINI_BASE_URL
-  ).replace(/\/+$/, "");
+  ).replace(/\/+$/, '');
 }
 
 function resolveModelId(model: string | null | undefined, env?: Env): string {
   const explicit = model?.trim();
-  if (explicit) return explicit;
+  if (explicit) {return explicit;}
   return resolveGeminiTranscriptionModel(env);
 }
 
 function normalizeFileState(state: string | undefined): string | null {
-  const normalized = state?.trim().toUpperCase() || "";
+  const normalized = state?.trim().toUpperCase() ?? '';
   return normalized.length > 0 ? normalized : null;
 }
 
 function resolveGeminiMimeType(file: GeminiFileResource, fallback: string): string {
   const fromFile =
-    (typeof file.mimeType === "string" ? file.mimeType : null) ??
-    (typeof file.mime_type === "string" ? file.mime_type : null);
-  return fromFile?.trim() || fallback;
+    (typeof file.mimeType === 'string' ? file.mimeType : null) ??
+    (typeof file.mime_type === 'string' ? file.mime_type : null);
+  return fromFile?.trim() ?? fallback;
 }
 
 function truncate(value: string): string {

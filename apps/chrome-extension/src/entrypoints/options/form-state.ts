@@ -1,9 +1,9 @@
-import { readPresetOrCustomValue, resolvePresetOrCustom } from "../../lib/combo";
-import type { Settings } from "../../lib/settings";
-import type { ColorMode, ColorScheme } from "../../lib/theme";
-import type { createModelPresetsController } from "./model-presets";
+import { readPresetOrCustomValue, resolvePresetOrCustom } from '../../lib/combo';
+import type { Settings } from '../../lib/settings';
+import type { ColorMode, ColorScheme } from '../../lib/theme';
+import type { createModelPresetsController } from './model-presets';
 
-type FormElements = {
+interface FormElements {
   tokenEl: HTMLInputElement;
   languagePresetEl: HTMLSelectElement;
   languageCustomEl: HTMLInputElement;
@@ -22,9 +22,9 @@ type FormElements = {
   maxOutputTokensEl: HTMLInputElement;
   fontFamilyEl: HTMLInputElement;
   fontSizeEl: HTMLInputElement;
-};
+}
 
-type BooleanFormState = {
+interface BooleanFormState {
   autoSummarize: boolean;
   hoverSummaries: boolean;
   chatEnabled: boolean;
@@ -34,7 +34,7 @@ type BooleanFormState = {
   summaryTimestamps: boolean;
   extendedLogging: boolean;
   autoCliFallback: boolean;
-};
+}
 
 export function buildSavedOptionsSettings({
   current,
@@ -54,48 +54,48 @@ export function buildSavedOptionsSettings({
   currentMode: ColorMode;
 }): Settings {
   return {
-    token: elements.tokenEl.value || defaults.token,
-    model: modelPresets.readCurrentValue(),
-    length: current.length,
+    autoCliFallback: booleans.autoCliFallback,
+    autoCliOrder: elements.autoCliOrderEl.value || defaults.autoCliOrder,
+    autoSummarize: booleans.autoSummarize,
+    automationEnabled: booleans.automationEnabled,
+    chatEnabled: booleans.chatEnabled,
+    colorMode: currentMode || defaults.colorMode,
+    colorScheme: currentScheme || defaults.colorScheme,
+    extendedLogging: booleans.extendedLogging,
+    firecrawlMode: elements.firecrawlModeEl.value || defaults.firecrawlMode,
+    fontFamily: elements.fontFamilyEl.value || defaults.fontFamily,
+    fontSize: Number(elements.fontSizeEl.value) || defaults.fontSize,
+    hoverPrompt: elements.hoverPromptEl.value || defaults.hoverPrompt,
+    hoverSummaries: booleans.hoverSummaries,
     language: readPresetOrCustomValue({
       presetValue: elements.languagePresetEl.value,
       customValue: elements.languageCustomEl.value,
       defaultValue: defaults.language,
     }),
-    promptOverride: elements.promptOverrideEl.value || defaults.promptOverride,
-    hoverPrompt: elements.hoverPromptEl.value || defaults.hoverPrompt,
-    autoSummarize: booleans.autoSummarize,
-    hoverSummaries: booleans.hoverSummaries,
-    chatEnabled: booleans.chatEnabled,
-    automationEnabled: booleans.automationEnabled,
-    slidesEnabled: current.slidesEnabled,
-    slidesParallel: booleans.slidesParallel,
-    slidesOcrEnabled: booleans.slidesOcrEnabled,
-    slidesLayout: current.slidesLayout,
-    summaryTimestamps: booleans.summaryTimestamps,
-    extendedLogging: booleans.extendedLogging,
-    autoCliFallback: booleans.autoCliFallback,
-    autoCliOrder: elements.autoCliOrderEl.value || defaults.autoCliOrder,
-    maxChars: Number(elements.maxCharsEl.value) || defaults.maxChars,
-    requestMode: elements.requestModeEl.value || defaults.requestMode,
-    firecrawlMode: elements.firecrawlModeEl.value || defaults.firecrawlMode,
+    length: current.length,
+    lineHeight: current.lineHeight,
     markdownMode: elements.markdownModeEl.value || defaults.markdownMode,
+    maxChars: Number(elements.maxCharsEl.value) || defaults.maxChars,
+    maxOutputTokens: elements.maxOutputTokensEl.value || defaults.maxOutputTokens,
+    model: modelPresets.readCurrentValue(),
     preprocessMode: elements.preprocessModeEl.value || defaults.preprocessMode,
-    youtubeMode: elements.youtubeModeEl.value || defaults.youtubeMode,
-    transcriber: elements.transcriberEl.value || defaults.transcriber,
-    timeout: elements.timeoutEl.value || defaults.timeout,
+    promptOverride: elements.promptOverrideEl.value || defaults.promptOverride,
+    requestMode: elements.requestModeEl.value || defaults.requestMode,
     retries: (() => {
       const raw = elements.retriesEl.value.trim();
       if (!raw) return defaults.retries;
       const parsed = Number(raw);
       return Number.isFinite(parsed) ? parsed : defaults.retries;
     })(),
-    maxOutputTokens: elements.maxOutputTokensEl.value || defaults.maxOutputTokens,
-    colorScheme: currentScheme || defaults.colorScheme,
-    colorMode: currentMode || defaults.colorMode,
-    fontFamily: elements.fontFamilyEl.value || defaults.fontFamily,
-    fontSize: Number(elements.fontSizeEl.value) || defaults.fontSize,
-    lineHeight: current.lineHeight,
+    slidesEnabled: current.slidesEnabled,
+    slidesLayout: current.slidesLayout,
+    slidesOcrEnabled: booleans.slidesOcrEnabled,
+    slidesParallel: booleans.slidesParallel,
+    summaryTimestamps: booleans.summaryTimestamps,
+    timeout: elements.timeoutEl.value || defaults.timeout,
+    token: elements.tokenEl.value || defaults.token,
+    transcriber: elements.transcriberEl.value || defaults.transcriber,
+    youtubeMode: elements.youtubeModeEl.value || defaults.youtubeMode,
   };
 }
 
@@ -112,10 +112,7 @@ export function applyLoadedOptionsSettings({
 }) {
   elements.tokenEl.value = settings.token;
   {
-    const resolved = resolvePresetOrCustom({
-      value: settings.language,
-      presets: languagePresets,
-    });
+    const resolved = resolvePresetOrCustom({ presets: languagePresets, value: settings.language });
     elements.languagePresetEl.value = resolved.presetValue;
     elements.languageCustomEl.hidden = !resolved.isCustom;
     elements.languageCustomEl.value = resolved.customValue;
@@ -131,24 +128,24 @@ export function applyLoadedOptionsSettings({
   elements.youtubeModeEl.value = settings.youtubeMode;
   elements.transcriberEl.value = settings.transcriber;
   elements.timeoutEl.value = settings.timeout;
-  elements.retriesEl.value = typeof settings.retries === "number" ? String(settings.retries) : "";
+  elements.retriesEl.value = typeof settings.retries === 'number' ? String(settings.retries) : '';
   elements.maxOutputTokensEl.value = settings.maxOutputTokens;
   elements.fontFamilyEl.value = settings.fontFamily;
   elements.fontSizeEl.value = String(settings.fontSize);
 
   return {
     booleans: {
-      autoSummarize: settings.autoSummarize,
-      hoverSummaries: settings.hoverSummaries,
-      chatEnabled: settings.chatEnabled,
-      automationEnabled: settings.automationEnabled,
-      slidesParallel: settings.slidesParallel,
-      slidesOcrEnabled: settings.slidesOcrEnabled,
-      summaryTimestamps: settings.summaryTimestamps,
-      extendedLogging: settings.extendedLogging,
       autoCliFallback: settings.autoCliFallback,
+      autoSummarize: settings.autoSummarize,
+      automationEnabled: settings.automationEnabled,
+      chatEnabled: settings.chatEnabled,
+      extendedLogging: settings.extendedLogging,
+      hoverSummaries: settings.hoverSummaries,
+      slidesOcrEnabled: settings.slidesOcrEnabled,
+      slidesParallel: settings.slidesParallel,
+      summaryTimestamps: settings.summaryTimestamps,
     },
-    colorScheme: settings.colorScheme,
     colorMode: settings.colorMode,
+    colorScheme: settings.colorScheme,
   };
 }

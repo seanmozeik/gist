@@ -1,24 +1,24 @@
-import { defaultSettings, loadSettings, saveSettings } from "../../lib/settings";
-import { applyTheme, type ColorMode, type ColorScheme } from "../../lib/theme";
-import { bindOptionsInputs } from "./bindings";
-import { createBooleanSettingsRuntime } from "./boolean-settings";
-import { languagePresets, optionsTabStorageKey } from "./constants";
-import { createDaemonStatusChecker } from "./daemon-status";
-import { getOptionsElements } from "./elements";
-import { applyLoadedOptionsSettings, buildSavedOptionsSettings } from "./form-state";
-import { createLogsViewer } from "./logs-viewer";
-import { createModelPresetsController } from "./model-presets";
-import { createOptionsSaveRuntime } from "./persistence";
-import { mountOptionsPickers } from "./pickers";
-import { createProcessesViewer } from "./processes-viewer";
-import { createSkillsController } from "./skills-controller";
+import { defaultSettings, loadSettings, saveSettings } from '../../lib/settings';
+import { applyTheme, type ColorMode, type ColorScheme } from '../../lib/theme';
+import { bindOptionsInputs } from './bindings';
+import { createBooleanSettingsRuntime } from './boolean-settings';
+import { languagePresets, optionsTabStorageKey } from './constants';
+import { createDaemonStatusChecker } from './daemon-status';
+import { getOptionsElements } from './elements';
+import { applyLoadedOptionsSettings, buildSavedOptionsSettings } from './form-state';
+import { createLogsViewer } from './logs-viewer';
+import { createModelPresetsController } from './model-presets';
+import { createOptionsSaveRuntime } from './persistence';
+import { mountOptionsPickers } from './pickers';
+import { createProcessesViewer } from './processes-viewer';
+import { createSkillsController } from './skills-controller';
 import {
   applyBuildInfo,
   copyTokenToClipboard,
   createAutomationPermissionsController,
   createStatusController,
-} from "./support";
-import { createOptionsTabs } from "./tab-controller";
+} from './support';
+import { createOptionsTabs } from './tab-controller';
 
 declare const __SUMMARIZE_GIT_HASH__: string;
 declare const __SUMMARIZE_VERSION__: string;
@@ -98,44 +98,41 @@ let isInitializing = true;
 
 const logsViewer = createLogsViewer({
   elements: {
-    sourceEl: logsSourceEl,
-    tailEl: logsTailEl,
-    refreshBtn: logsRefreshBtn,
     autoEl: logsAutoEl,
-    outputEl: logsOutputEl,
-    rawEl: logsRawEl,
-    tableEl: logsTableEl,
-    parsedEl: logsParsedEl,
-    metaEl: logsMetaEl,
     levelInputs: logsLevelInputs,
+    metaEl: logsMetaEl,
+    outputEl: logsOutputEl,
+    parsedEl: logsParsedEl,
+    rawEl: logsRawEl,
+    refreshBtn: logsRefreshBtn,
+    sourceEl: logsSourceEl,
+    tableEl: logsTableEl,
+    tailEl: logsTailEl,
   },
   getToken: () => tokenEl.value.trim(),
-  isActive: () => resolveActiveTab() === "logs",
+  isActive: () => resolveActiveTab() === 'logs',
 });
 
 const processesViewer = createProcessesViewer({
   elements: {
-    refreshBtn: processesRefreshBtn,
     autoEl: processesAutoEl,
-    showCompletedEl: processesShowCompletedEl,
     limitEl: processesLimitEl,
-    streamEl: processesStreamEl,
-    tailEl: processesTailEl,
-    metaEl: processesMetaEl,
-    tableEl: processesTableEl,
-    logsTitleEl: processesLogsTitleEl,
     logsCopyBtn: processesLogsCopyBtn,
     logsOutputEl: processesLogsOutputEl,
+    logsTitleEl: processesLogsTitleEl,
+    metaEl: processesMetaEl,
+    refreshBtn: processesRefreshBtn,
+    showCompletedEl: processesShowCompletedEl,
+    streamEl: processesStreamEl,
+    tableEl: processesTableEl,
+    tailEl: processesTailEl,
   },
   getToken: () => tokenEl.value.trim(),
-  isActive: () => resolveActiveTab() === "processes",
+  isActive: () => resolveActiveTab() === 'processes',
 });
 
 const { resolveActiveTab } = createOptionsTabs({
-  root: tabsRoot,
   buttons: tabButtons,
-  panels: tabPanels,
-  storageKey: optionsTabStorageKey,
   onLogsActiveChange: (active) => {
     if (active) {
       logsViewer.handleTabActivated();
@@ -150,35 +147,37 @@ const { resolveActiveTab } = createOptionsTabs({
       processesViewer.handleTabDeactivated();
     }
   },
+  panels: tabPanels,
+  root: tabsRoot,
+  storageKey: optionsTabStorageKey,
 });
 
 const { setStatus, flashStatus } = createStatusController(statusEl);
 let booleanSettings: ReturnType<typeof createBooleanSettingsRuntime> | null = null;
 const settingsElements = {
-  tokenEl,
-  languagePresetEl,
-  languageCustomEl,
-  promptOverrideEl,
-  hoverPromptEl,
   autoCliOrderEl,
-  maxCharsEl,
-  requestModeEl,
   firecrawlModeEl,
-  markdownModeEl,
-  preprocessModeEl,
-  youtubeModeEl,
-  transcriberEl,
-  timeoutEl,
-  retriesEl,
-  maxOutputTokensEl,
   fontFamilyEl,
   fontSizeEl,
+  hoverPromptEl,
+  languageCustomEl,
+  languagePresetEl,
+  markdownModeEl,
+  maxCharsEl,
+  maxOutputTokensEl,
+  preprocessModeEl,
+  promptOverrideEl,
+  requestModeEl,
+  retriesEl,
+  timeoutEl,
+  tokenEl,
+  transcriberEl,
+  youtubeModeEl,
 };
 
 const { saveNow, scheduleAutoSave } = createOptionsSaveRuntime({
-  isInitializing: () => isInitializing,
-  setStatus,
   flashStatus,
+  isInitializing: () => isInitializing,
   persist: async () => {
     const current = await loadSettings();
     await saveSettings(
@@ -203,87 +202,88 @@ const { saveNow, scheduleAutoSave } = createOptionsSaveRuntime({
       }),
     );
   },
+  setStatus,
 });
 
 booleanSettings = createBooleanSettingsRuntime({
   defaults: defaultSettings,
-  roots: {
-    autoToggleRoot,
-    chatToggleRoot,
-    automationToggleRoot,
-    hoverSummariesToggleRoot,
-    summaryTimestampsToggleRoot,
-    slidesParallelToggleRoot,
-    slidesOcrToggleRoot,
-    extendedLoggingToggleRoot,
-    autoCliFallbackToggleRoot,
-  },
-  scheduleAutoSave,
   onAutomationChanged: () => {
     void automationPermissions.updateUi();
   },
+  roots: {
+    autoCliFallbackToggleRoot,
+    autoToggleRoot,
+    automationToggleRoot,
+    chatToggleRoot,
+    extendedLoggingToggleRoot,
+    hoverSummariesToggleRoot,
+    slidesOcrToggleRoot,
+    slidesParallelToggleRoot,
+    summaryTimestampsToggleRoot,
+  },
+  scheduleAutoSave,
 });
 
 const skillsController = createSkillsController({
   elements: {
-    searchEl: skillsSearchEl,
-    listEl: skillsListEl,
-    emptyEl: skillsEmptyEl,
     conflictsEl: skillsConflictsEl,
+    emptyEl: skillsEmptyEl,
     exportBtn: skillsExportBtn,
     importBtn: skillsImportBtn,
+    listEl: skillsListEl,
+    searchEl: skillsSearchEl,
   },
-  setStatus,
   flashStatus,
+  setStatus,
 });
 
 const resolveExtensionVersion = () => {
   const injected =
-    typeof __SUMMARIZE_VERSION__ === "string" && __SUMMARIZE_VERSION__ ? __SUMMARIZE_VERSION__ : "";
-  return injected || chrome?.runtime?.getManifest?.().version || "";
+    typeof __SUMMARIZE_VERSION__ === 'string' && __SUMMARIZE_VERSION__ ? __SUMMARIZE_VERSION__ : '';
+  return injected || chrome?.runtime?.getManifest?.().version || '';
 };
 
 const { checkDaemonStatus } = createDaemonStatusChecker({
-  statusEl: daemonStatusEl,
   getExtensionVersion: resolveExtensionVersion,
+  statusEl: daemonStatusEl,
 });
 
 const modelPresets = createModelPresetsController({
-  presetEl: modelPresetEl,
   customEl: modelCustomEl,
   defaultValue: defaultSettings.model,
+  presetEl: modelPresetEl,
 });
 
 let currentScheme: ColorScheme = defaultSettings.colorScheme;
 let currentMode: ColorMode = defaultSettings.colorMode;
 
 const pickerHandlers = {
-  onSchemeChange: (value: ColorScheme) => {
-    currentScheme = value;
+  onModeChange: (value: ColorMode) => {
+    currentMode = value;
     applyTheme({ scheme: currentScheme, mode: currentMode });
     scheduleAutoSave(200);
   },
-  onModeChange: (value: ColorMode) => {
-    currentMode = value;
+  onSchemeChange: (value: ColorScheme) => {
+    currentScheme = value;
     applyTheme({ scheme: currentScheme, mode: currentMode });
     scheduleAutoSave(200);
   },
 };
 
 const pickers = mountOptionsPickers(pickersRoot, {
-  scheme: currentScheme,
   mode: currentMode,
+  scheme: currentScheme,
   ...pickerHandlers,
 });
 
 const automationPermissions = createAutomationPermissionsController({
   automationPermissionsBtn,
-  userScriptsNoticeEl,
-  getAutomationEnabled: () => booleanSettings.getState().automationEnabled,
   flashStatus,
+  getAutomationEnabled: () => booleanSettings.getState().automationEnabled,
+  userScriptsNoticeEl,
 });
 
-automationPermissionsBtn.addEventListener("click", () => {
+automationPermissionsBtn.addEventListener('click', () => {
   void automationPermissions.requestPermissions();
 });
 skillsController.bind();
@@ -294,80 +294,80 @@ async function load() {
   await modelPresets.refreshPresets(s.token);
   modelPresets.setValue(s.model);
   const loadedState = applyLoadedOptionsSettings({
-    settings: s,
     defaults: defaultSettings,
-    languagePresets,
     elements: settingsElements,
+    languagePresets,
+    settings: s,
   });
   booleanSettings.setState(loadedState.booleans);
   booleanSettings.render();
   currentScheme = loadedState.colorScheme;
   currentMode = loadedState.colorMode;
-  pickers.update({ scheme: currentScheme, mode: currentMode, ...pickerHandlers });
-  applyTheme({ scheme: s.colorScheme, mode: s.colorMode });
+  pickers.update({ mode: currentMode, scheme: currentScheme, ...pickerHandlers });
+  applyTheme({ mode: s.colorMode, scheme: s.colorScheme });
   await skillsController.load();
   await automationPermissions.updateUi();
-  if (resolveActiveTab() === "logs") {
+  if (resolveActiveTab() === 'logs') {
     logsViewer.handleTokenChanged();
   }
-  if (resolveActiveTab() === "processes") {
+  if (resolveActiveTab() === 'processes') {
     processesViewer.handleTokenChanged();
   }
   isInitializing = false;
 }
 
-const copyToken = () => copyTokenToClipboard({ tokenEl, flashStatus });
+const copyToken = () => copyTokenToClipboard({ flashStatus, tokenEl });
 
 const refreshModelsIfStale = () => {
   modelPresets.refreshIfStale(tokenEl.value);
 };
 
 bindOptionsInputs({
+  checkDaemonStatus,
+  copyToken,
+  defaultHoverPrompt: defaultSettings.hoverPrompt,
   elements: {
-    formEl,
-    tokenEl,
-    tokenCopyBtn,
-    modelPresetEl,
-    modelCustomEl,
-    languagePresetEl,
-    languageCustomEl,
-    promptOverrideEl,
-    hoverPromptEl,
-    hoverPromptResetBtn,
-    maxCharsEl,
-    requestModeEl,
-    firecrawlModeEl,
-    markdownModeEl,
-    preprocessModeEl,
-    youtubeModeEl,
-    transcriberEl,
-    timeoutEl,
-    retriesEl,
-    maxOutputTokensEl,
     autoCliOrderEl,
+    firecrawlModeEl,
     fontFamilyEl,
     fontSizeEl,
-    logsSourceEl,
-    logsTailEl,
-    logsParsedEl,
+    formEl,
+    hoverPromptEl,
+    hoverPromptResetBtn,
+    languageCustomEl,
+    languagePresetEl,
     logsAutoEl,
     logsLevelInputs,
+    logsParsedEl,
+    logsSourceEl,
+    logsTailEl,
+    markdownModeEl,
+    maxCharsEl,
+    maxOutputTokensEl,
+    modelCustomEl,
+    modelPresetEl,
+    preprocessModeEl,
+    promptOverrideEl,
+    requestModeEl,
+    retriesEl,
+    timeoutEl,
+    tokenCopyBtn,
+    tokenEl,
+    transcriberEl,
+    youtubeModeEl,
   },
-  scheduleAutoSave,
-  saveNow,
-  checkDaemonStatus,
-  modelPresets,
   logsViewer,
+  modelPresets,
   processesViewer,
-  copyToken,
   refreshModelsIfStale,
-  defaultHoverPrompt: defaultSettings.hoverPrompt,
+  saveNow,
+  scheduleAutoSave,
 });
 
 applyBuildInfo(buildInfoEl, {
+  gitHash: typeof __SUMMARIZE_GIT_HASH__ === 'string' ? __SUMMARIZE_GIT_HASH__ : '',
   injectedVersion:
-    typeof __SUMMARIZE_VERSION__ === "string" && __SUMMARIZE_VERSION__ ? __SUMMARIZE_VERSION__ : "",
-  manifestVersion: chrome?.runtime?.getManifest?.().version ?? "",
-  gitHash: typeof __SUMMARIZE_GIT_HASH__ === "string" ? __SUMMARIZE_GIT_HASH__ : "",
+    typeof __SUMMARIZE_VERSION__ === 'string' && __SUMMARIZE_VERSION__ ? __SUMMARIZE_VERSION__ : '',
+  manifestVersion: chrome?.runtime?.getManifest?.().version ?? '',
 });
 void load();

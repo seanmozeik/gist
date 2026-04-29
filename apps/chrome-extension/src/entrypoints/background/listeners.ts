@@ -4,16 +4,16 @@ type RuntimeMessageHandler = (
   sendResponse: (response?: unknown) => void,
 ) => boolean | undefined;
 
-type SessionWithNavAt = { lastNavAt: number };
+interface SessionWithNavAt { lastNavAt: number }
 
-type PanelSessionStoreLike<Session extends SessionWithNavAt> = {
+interface PanelSessionStoreLike<Session extends SessionWithNavAt> {
   registerPanelSession: (windowId: number, port: chrome.runtime.Port) => Session;
   deletePanelSession: (windowId: number) => void;
   getPanelSession: (windowId: number) => Session | null;
   getPanelSessions: () => Iterable<Session>;
   clearCachedExtractsForWindow: (windowId: number) => Promise<void>;
   clearTab: (tabId: number) => void;
-};
+}
 
 export function bindBackgroundListeners<Session extends SessionWithNavAt>(options: {
   panelSessionStore: PanelSessionStoreLike<Session>;
@@ -37,10 +37,10 @@ export function bindBackgroundListeners<Session extends SessionWithNavAt>(option
   } = options;
 
   chrome.runtime.onConnect.addListener((port) => {
-    if (!port.name.startsWith("sidepanel:")) return;
-    const windowIdRaw = port.name.split(":")[1] ?? "";
+    if (!port.name.startsWith('sidepanel:')) {return;}
+    const windowIdRaw = port.name.split(':')[1] ?? '';
     const windowId = Number.parseInt(windowIdRaw, 10);
-    if (!Number.isFinite(windowId)) return;
+    if (!Number.isFinite(windowId)) {return;}
     const session = panelSessionStore.registerPanelSession(windowId, port);
     port.onMessage.addListener((msg) => handlePanelMessage(session, msg));
     port.onDisconnect.addListener(() => {
@@ -56,10 +56,10 @@ export function bindBackgroundListeners<Session extends SessionWithNavAt>(option
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "local") return;
-    if (!changes.settings) return;
+    if (areaName !== 'local') {return;}
+    if (!changes.settings) {return;}
     for (const session of panelSessionStore.getPanelSessions()) {
-      void emitState(session, "");
+      void emitState(session, '');
     }
   });
 
@@ -67,38 +67,38 @@ export function bindBackgroundListeners<Session extends SessionWithNavAt>(option
     void (async () => {
       const tab = await chrome.tabs.get(details.tabId).catch(() => null);
       const windowId = tab?.windowId;
-      if (typeof windowId !== "number") return;
+      if (typeof windowId !== 'number') {return;}
       const session = panelSessionStore.getPanelSession(windowId);
-      if (!session) return;
+      if (!session) {return;}
       const now = Date.now();
-      if (now - session.lastNavAt < 700) return;
+      if (now - session.lastNavAt < 700) {return;}
       session.lastNavAt = now;
-      void emitState(session, "");
-      void summarizeActiveTab(session, "spa-nav");
+      void emitState(session, '');
+      void summarizeActiveTab(session, 'spa-nav');
     })();
   });
 
   chrome.tabs.onActivated.addListener((info) => {
     const session = panelSessionStore.getPanelSession(info.windowId);
-    if (!session) return;
-    void emitState(session, "");
-    void summarizeActiveTab(session, "tab-activated");
+    if (!session) {return;}
+    void emitState(session, '');
+    void summarizeActiveTab(session, 'tab-activated');
   });
 
   chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
     const windowId = tab?.windowId;
-    if (typeof windowId !== "number") return;
+    if (typeof windowId !== 'number') {return;}
     const session = panelSessionStore.getPanelSession(windowId);
-    if (!session) return;
-    if (typeof changeInfo.title === "string" || typeof changeInfo.url === "string") {
-      void emitState(session, "");
+    if (!session) {return;}
+    if (typeof changeInfo.title === 'string' || typeof changeInfo.url === 'string') {
+      void emitState(session, '');
     }
-    if (typeof changeInfo.url === "string") {
-      void summarizeActiveTab(session, "tab-url-change");
+    if (typeof changeInfo.url === 'string') {
+      void summarizeActiveTab(session, 'tab-url-change');
     }
-    if (changeInfo.status === "complete") {
-      void emitState(session, "");
-      void summarizeActiveTab(session, "tab-updated");
+    if (changeInfo.status === 'complete') {
+      void emitState(session, '');
+      void summarizeActiveTab(session, 'tab-updated');
     }
   });
 

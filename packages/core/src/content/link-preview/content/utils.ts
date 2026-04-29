@@ -1,6 +1,6 @@
-import { formatTranscriptSegments } from "../../transcript/timestamps.js";
-import type { CacheMode, TranscriptDiagnostics } from "../types.js";
-import { applyContentBudget, normalizeCandidate, normalizeForPrompt } from "./cleaner.js";
+import { formatTranscriptSegments } from '../../transcript/timestamps.js';
+import type { CacheMode, TranscriptDiagnostics } from '../types.js';
+import { applyContentBudget, normalizeCandidate, normalizeForPrompt } from './cleaner.js';
 import {
   DEFAULT_CACHE_MODE,
   DEFAULT_TIMEOUT_MS,
@@ -9,7 +9,7 @@ import {
   type FinalizationArguments,
   type FirecrawlMode,
   type TranscriptResolution,
-} from "./types.js";
+} from './types.js';
 
 const WWW_PREFIX_PATTERN = /^www\./i;
 const TRANSCRIPT_LINE_SPLIT_PATTERN = /\r?\n/;
@@ -18,15 +18,15 @@ const WORD_SPLIT_PATTERN = /\s+/g;
 function resolveMediaDurationSecondsFromTranscriptMetadata(
   metadata: Record<string, unknown> | null | undefined,
 ): number | null {
-  if (!metadata) return null;
+  if (!metadata) {return null;}
   const direct = (metadata as { durationSeconds?: unknown }).durationSeconds;
-  if (typeof direct === "number" && Number.isFinite(direct) && direct > 0) {
+  if (typeof direct === 'number' && Number.isFinite(direct) && direct > 0) {
     return direct;
   }
-  const media = (metadata as { media?: unknown }).media;
-  if (typeof media === "object" && media !== null) {
+  const {media} = (metadata as { media?: unknown });
+  if (typeof media === 'object' && media !== null) {
     const nested = (media as { durationSeconds?: unknown }).durationSeconds;
-    if (typeof nested === "number" && Number.isFinite(nested) && nested > 0) {
+    if (typeof nested === 'number' && Number.isFinite(nested) && nested > 0) {
       return nested;
     }
   }
@@ -36,9 +36,9 @@ function resolveMediaDurationSecondsFromTranscriptMetadata(
 function resolveTranscriptionProviderFromTranscriptMetadata(
   metadata: Record<string, unknown> | null | undefined,
 ): string | null {
-  if (!metadata) return null;
+  if (!metadata) {return null;}
   const provider = (metadata as { transcriptionProvider?: unknown }).transcriptionProvider;
-  return typeof provider === "string" && provider.trim().length > 0 ? provider.trim() : null;
+  return typeof provider === 'string' && provider.trim().length > 0 ? provider.trim() : null;
 }
 
 export function resolveCacheMode(options?: FetchLinkContentOptions) {
@@ -47,7 +47,7 @@ export function resolveCacheMode(options?: FetchLinkContentOptions) {
 
 export function resolveMaxCharacters(options?: FetchLinkContentOptions): number | null {
   const candidate = options?.maxCharacters;
-  if (typeof candidate !== "number" || !Number.isFinite(candidate) || candidate <= 0) {
+  if (typeof candidate !== 'number' || !Number.isFinite(candidate) || candidate <= 0) {
     return null;
   }
   return Math.floor(candidate);
@@ -55,7 +55,7 @@ export function resolveMaxCharacters(options?: FetchLinkContentOptions): number 
 
 export function resolveTimeoutMs(options?: FetchLinkContentOptions): number {
   const candidate = options?.timeoutMs;
-  if (typeof candidate !== "number" || !Number.isFinite(candidate) || candidate <= 0) {
+  if (typeof candidate !== 'number' || !Number.isFinite(candidate) || candidate <= 0) {
     return DEFAULT_TIMEOUT_MS;
   }
   return Math.floor(candidate);
@@ -63,15 +63,15 @@ export function resolveTimeoutMs(options?: FetchLinkContentOptions): number {
 
 export function resolveFirecrawlMode(options?: FetchLinkContentOptions): FirecrawlMode {
   const candidate = options?.firecrawl;
-  if (candidate === "off" || candidate === "auto" || candidate === "always") {
+  if (candidate === 'off' || candidate === 'auto' || candidate === 'always') {
     return candidate;
   }
-  return "auto";
+  return 'auto';
 }
 
 export function appendNote(existing: string | null | undefined, next: string): string {
   if (!next) {
-    return existing ?? "";
+    return existing ?? '';
   }
   if (!existing || existing.length === 0) {
     return next;
@@ -81,13 +81,13 @@ export function appendNote(existing: string | null | undefined, next: string): s
 
 export function safeHostname(rawUrl: string): string | null {
   try {
-    return new URL(rawUrl).hostname.replace(WWW_PREFIX_PATTERN, "");
+    return new URL(rawUrl).hostname.replace(WWW_PREFIX_PATTERN, '');
   } catch {
     return null;
   }
 }
 
-export function pickFirstText(candidates: Array<string | null | undefined>): string | null {
+export function pickFirstText(candidates: (string | null | undefined)[]): string | null {
   for (const candidate of candidates) {
     const normalized = normalizeCandidate(candidate);
     if (normalized) {
@@ -100,7 +100,7 @@ export function pickFirstText(candidates: Array<string | null | undefined>): str
 export function selectBaseContent(
   sourceContent: string,
   transcriptText: string | null,
-  transcriptSegments?: TranscriptResolution["segments"],
+  transcriptSegments?: TranscriptResolution['segments'],
 ): string {
   const timedTranscript = transcriptSegments?.length
     ? formatTranscriptSegments(transcriptSegments)
@@ -144,15 +144,15 @@ export function ensureTranscriptDiagnostics(
   if (resolution.diagnostics) {
     return resolution.diagnostics;
   }
-  const hasText = typeof resolution.text === "string" && resolution.text.length > 0;
-  const cacheStatus = cacheMode === "bypass" ? "bypassed" : hasText ? "miss" : "unknown";
+  const hasText = typeof resolution.text === 'string' && resolution.text.length > 0;
+  const cacheStatus = cacheMode === 'bypass' ? 'bypassed' : (hasText ? 'miss' : 'unknown');
   return {
+    attemptedProviders: resolution.source ? [resolution.source] : [],
     cacheMode,
     cacheStatus,
-    textProvided: hasText,
+    notes: cacheMode === 'bypass' ? 'Cache bypass requested' : null,
     provider: resolution.source,
-    attemptedProviders: resolution.source ? [resolution.source] : [],
-    notes: cacheMode === "bypass" ? "Cache bypass requested" : null,
+    textProvided: hasText,
   };
 }
 
@@ -170,12 +170,12 @@ export function finalizeExtractedLinkContent({
 }: FinalizationArguments): ExtractedLinkContent {
   const normalized = normalizeForPrompt(baseContent);
   const { content, truncated, totalCharacters, wordCount } =
-    typeof maxCharacters === "number"
+    typeof maxCharacters === 'number'
       ? applyContentBudget(normalized, maxCharacters)
       : {
           content: normalized,
-          truncated: false,
           totalCharacters: normalized.length,
+          truncated: false,
           wordCount:
             normalized.length > 0
               ? normalized
@@ -199,25 +199,25 @@ export function finalizeExtractedLinkContent({
     : null;
 
   return {
-    url,
-    title,
-    description,
-    siteName,
     content,
-    truncated,
+    description,
+    diagnostics,
+    isVideoOnly,
+    mediaDurationSeconds,
+    siteName,
+    title,
     totalCharacters,
-    wordCount,
     transcriptCharacters,
     transcriptLines,
-    transcriptWordCount,
-    transcriptSource: transcriptResolution.source,
-    transcriptionProvider,
     transcriptMetadata: transcriptResolution.metadata ?? null,
     transcriptSegments,
+    transcriptSource: transcriptResolution.source,
     transcriptTimedText,
-    mediaDurationSeconds,
+    transcriptWordCount,
+    transcriptionProvider,
+    truncated,
+    url,
     video,
-    isVideoOnly,
-    diagnostics,
+    wordCount,
   };
 }

@@ -1,26 +1,27 @@
-import { describe, expect, it } from "vitest";
-import { resolveRunOverrides } from "../src/run/run-settings.js";
+import { describe, expect, it } from 'vitest';
 
-describe("run/run-settings overrides", () => {
-  it("parses mode overrides when valid", () => {
+import { resolveRunOverrides } from '../src/run/run-settings.js';
+
+describe('run/run-settings overrides', () => {
+  it('parses mode overrides when valid', () => {
     const overrides = resolveRunOverrides({
-      firecrawl: "always",
-      markdownMode: "llm",
-      preprocess: "auto",
-      youtube: "no-auto",
+      firecrawl: 'always',
+      markdownMode: 'llm',
+      preprocess: 'auto',
+      youtube: 'no-auto',
     });
-    expect(overrides.firecrawlMode).toBe("always");
-    expect(overrides.markdownMode).toBe("llm");
-    expect(overrides.preprocessMode).toBe("auto");
-    expect(overrides.youtubeMode).toBe("no-auto");
+    expect(overrides.firecrawlMode).toBe('always');
+    expect(overrides.markdownMode).toBe('llm');
+    expect(overrides.preprocessMode).toBe('auto');
+    expect(overrides.youtubeMode).toBe('no-auto');
   });
 
-  it("returns null for invalid modes", () => {
+  it('returns null for invalid modes', () => {
     const overrides = resolveRunOverrides({
-      firecrawl: "nope",
-      markdownMode: "markdown",
-      preprocess: "yes",
-      youtube: "v2",
+      firecrawl: 'nope',
+      markdownMode: 'markdown',
+      preprocess: 'yes',
+      youtube: 'v2',
     });
     expect(overrides.firecrawlMode).toBeNull();
     expect(overrides.markdownMode).toBeNull();
@@ -28,61 +29,57 @@ describe("run/run-settings overrides", () => {
     expect(overrides.youtubeMode).toBeNull();
   });
 
-  it("parses timeout, retries, and max output tokens", () => {
-    const overrides = resolveRunOverrides({
-      timeout: "90s",
-      retries: "3",
-      maxOutputTokens: "2k",
-    });
+  it('parses timeout, retries, and max output tokens', () => {
+    const overrides = resolveRunOverrides({ maxOutputTokens: '2k', retries: '3', timeout: '90s' });
     expect(overrides.timeoutMs).toBe(90_000);
     expect(overrides.retries).toBe(3);
     expect(overrides.maxOutputTokensArg).toBe(2000);
 
     const overridesNumeric = resolveRunOverrides({
-      timeout: 15_000,
-      retries: 2,
       maxOutputTokens: 512,
+      retries: 2,
+      timeout: 15_000,
     });
     expect(overridesNumeric.timeoutMs).toBe(15_000);
     expect(overridesNumeric.retries).toBe(2);
     expect(overridesNumeric.maxOutputTokensArg).toBe(512);
   });
 
-  it("parses timestamps override", () => {
-    const overrides = resolveRunOverrides({ timestamps: "yes" });
+  it('parses timestamps override', () => {
+    const overrides = resolveRunOverrides({ timestamps: 'yes' });
     expect(overrides.transcriptTimestamps).toBe(true);
 
-    const overridesOff = resolveRunOverrides({ timestamps: "off" });
+    const overridesOff = resolveRunOverrides({ timestamps: 'off' });
     expect(overridesOff.transcriptTimestamps).toBe(false);
   });
 
-  it("parses transcriber override", () => {
-    const overrides = resolveRunOverrides({ transcriber: "Parakeet " });
-    expect(overrides.transcriber).toBe("parakeet");
+  it('parses transcriber override', () => {
+    const overrides = resolveRunOverrides({ transcriber: 'Parakeet ' });
+    expect(overrides.transcriber).toBe('parakeet');
 
-    const auto = resolveRunOverrides({ transcriber: "auto" });
-    expect(auto.transcriber).toBe("auto");
+    const auto = resolveRunOverrides({ transcriber: 'auto' });
+    expect(auto.transcriber).toBe('auto');
 
-    const invalid = resolveRunOverrides({ transcriber: "gpt-4o" });
+    const invalid = resolveRunOverrides({ transcriber: 'gpt-4o' });
     expect(invalid.transcriber).toBeNull();
   });
 
-  it("parses auto CLI fallback overrides", () => {
+  it('parses auto CLI fallback overrides', () => {
     const overrides = resolveRunOverrides({
-      autoCliFallback: "true",
-      autoCliOrder: "claude, gemini codex openclaw",
+      autoCliFallback: 'true',
+      autoCliOrder: 'claude, gemini codex openclaw',
     });
     expect(overrides.autoCliFallbackEnabled).toBe(true);
-    expect(overrides.autoCliOrder).toEqual(["claude", "gemini", "codex", "openclaw"]);
+    expect(overrides.autoCliOrder).toEqual(['claude', 'gemini', 'codex', 'openclaw']);
 
-    const invalid = resolveRunOverrides({ autoCliOrder: "claude,bad-provider" });
+    const invalid = resolveRunOverrides({ autoCliOrder: 'claude,bad-provider' });
     expect(invalid.autoCliOrder).toBeNull();
   });
 
-  it("ignores deprecated auto CLI remember overrides", () => {
+  it('ignores deprecated auto CLI remember overrides', () => {
     const overrides = resolveRunOverrides({
-      autoCliRememberLastSuccess: "off",
-      magicCliRememberLastSuccess: "off",
+      autoCliRememberLastSuccess: 'off',
+      magicCliRememberLastSuccess: 'off',
     });
     expect(overrides.autoCliFallbackEnabled).toBeNull();
     expect(overrides.autoCliOrder).toBeNull();

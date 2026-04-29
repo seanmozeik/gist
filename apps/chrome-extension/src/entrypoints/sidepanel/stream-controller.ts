@@ -1,20 +1,20 @@
-import { parseSseEvent, type SseMetaData, type SseSlidesData } from "../../lib/runtime-contracts";
-import { parseSseStream, type SseMessage } from "../../lib/sse";
+import { parseSseEvent, type SseMetaData, type SseSlidesData } from '../../lib/runtime-contracts';
+import { parseSseStream, type SseMessage } from '../../lib/sse';
 import {
   accumulateChatChunk,
   accumulateSummarizeChunk,
   getTerminalStreamError,
   shouldSurfaceStreamingStatus,
-} from "./stream-controller-policy";
-import type { PanelPhase, RunStart } from "./types";
+} from './stream-controller-policy';
+import type { PanelPhase, RunStart } from './types';
 
-export type StreamController = {
+export interface StreamController {
   start: (run: RunStart) => Promise<void>;
   abort: () => void;
   isStreaming: () => boolean;
-};
+}
 
-export type StreamControllerOptions = {
+export interface StreamControllerOptions {
   getToken: () => Promise<string>;
   onStatus: (text: string) => void;
   onPhaseChange: (phase: PanelPhase) => void;
@@ -37,9 +37,9 @@ export type StreamControllerOptions = {
   onChunk?: ((accumulatedContent: string) => void) | null;
   onDone?: (() => void) | null;
   // Mode-specific options
-  mode?: "summarize" | "chat";
+  mode?: 'summarize' | 'chat';
   streamingStatusText?: string;
-};
+}
 
 export function createStreamController(options: StreamControllerOptions): StreamController {
   const {
@@ -60,15 +60,15 @@ export function createStreamController(options: StreamControllerOptions): Stream
     onSyncWithActiveTab,
     onChunk,
     onDone,
-    mode = "summarize",
+    mode = 'summarize',
     streamingStatusText,
     idleTimeoutMs = 120_000,
-    idleTimeoutMessage = "No response from the daemon for a while. It may have stopped. Click “Try again”.",
+    idleTimeoutMessage = 'No response from the daemon for a while. It may have stopped. Click “Try again”.',
   } = options;
   let controller: AbortController | null = null;
-  let activeAbortState: { reason: "manual" | "timeout" | null } | null = null;
-  let markdown = "";
-  let chatContent = "";
+  let activeAbortState: { reason: 'manual' | 'timeout' | null } | null = null;
+  let markdown = '';
+  let chatContent = '';
   let renderQueued = 0;
   let streamedAnyNonWhitespace = false;
   let rememberedUrl = false;
@@ -77,7 +77,7 @@ export function createStreamController(options: StreamControllerOptions): Stream
   let sawDone = false;
 
   const queueRender = () => {
-    if (renderQueued || !onRender) return;
+    if (renderQueued || !onRender) {return;}
     renderQueued = window.setTimeout(() => {
       renderQueued = 0;
       onRender(markdown);
@@ -85,7 +85,7 @@ export function createStreamController(options: StreamControllerOptions): Stream
   };
 
   const queueChunkUpdate = () => {
-    if (renderQueued || !onChunk) return;
+    if (renderQueued || !onChunk) {return;}
     renderQueued = window.setTimeout(() => {
       renderQueued = 0;
       onChunk(chatContent);
@@ -93,94 +93,91 @@ export function createStreamController(options: StreamControllerOptions): Stream
   };
 
   const clearQueuedRender = () => {
-    if (!renderQueued) return;
+    if (!renderQueued) {return;}
     window.clearTimeout(renderQueued);
     renderQueued = 0;
   };
 
   const abort = () => {
-    if (!controller) return;
-    if (activeAbortState) activeAbortState.reason = "manual";
+    if (!controller) {return;}
+    if (activeAbortState) {activeAbortState.reason = 'manual';}
     controller.abort();
     controller = null;
     activeAbortState = null;
     clearQueuedRender();
     if (streaming) {
       streaming = false;
-      onPhaseChange("idle");
+      onPhaseChange('idle');
     }
   };
 
   const start = async (run: RunStart) => {
     const token = (await getToken()).trim();
     if (!token) {
-      onStatus("Setup required (missing token)");
+      onStatus('Setup required (missing token)');
       return;
     }
 
     abort();
     const nextController = new AbortController();
     controller = nextController;
-    const abortState = { reason: null as "manual" | "timeout" | null };
+    const abortState = { reason: null as 'manual' | 'timeout' | null };
     activeAbortState = abortState;
     streaming = true;
     hadError = false;
     streamedAnyNonWhitespace = false;
     rememberedUrl = false;
     sawDone = false;
-    markdown = "";
-    chatContent = "";
-    onPhaseChange("connecting");
+    markdown = '';
+    chatContent = '';
+    onPhaseChange('connecting');
     onSummaryFromCache?.(null);
     onReset?.();
 
     onBaseTitle?.(run.title || run.url);
-    onBaseSubtitle?.("");
-    onStatus("Connecting…");
+    onBaseSubtitle?.('');
+    onStatus('Connecting…');
 
     try {
       const res = await (fetchImpl ?? fetch)(
         `http://127.0.0.1:8787/v1/summarize/${run.id}/events`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: nextController.signal,
-        },
+        { headers: { Authorization: `Bearer ${token}` }, signal: nextController.signal },
       );
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      if (!res.body) throw new Error("Missing stream body");
+      if (!res.ok) {throw new Error(`${res.status} ${res.statusText}`);}
+      if (!res.body) {throw new Error('Missing stream body');}
 
-      onStatus(streamingStatusText ?? (mode === "chat" ? "" : "Summarizing…"));
-      onPhaseChange("streaming");
+      onStatus(streamingStatusText ?? (mode === 'chat' ? '' : 'Summarizing…'));
+      onPhaseChange('streaming');
 
       const iterator = parseSseStream(res.body);
       const useIdleTimeout = Number.isFinite(idleTimeoutMs) && idleTimeoutMs > 0;
       const nextWithTimeout = async () => {
-        if (!useIdleTimeout) return iterator.next();
+        if (!useIdleTimeout) {return iterator.next();}
         let timer: ReturnType<typeof setTimeout> | null = null;
         const timeoutPromise = new Promise<IteratorResult<SseMessage>>((_, reject) => {
           timer = setTimeout(() => {
             const error = new Error(idleTimeoutMessage);
-            error.name = "IdleTimeoutError";
+            error.name = 'IdleTimeoutError';
             reject(error);
           }, idleTimeoutMs);
         });
         try {
           return await Promise.race([iterator.next(), timeoutPromise]);
         } finally {
-          if (timer) clearTimeout(timer);
+          if (timer) {clearTimeout(timer);}
         }
       };
 
       while (true) {
         const { value: msg, done } = await nextWithTimeout();
-        if (done) break;
-        if (nextController.signal.aborted) return;
+        if (done) {break;}
+        if (nextController.signal.aborted) {return;}
 
         const event = parseSseEvent(msg);
-        if (!event) continue;
+        if (!event) {continue;}
 
-        if (event.event === "chunk") {
-          if (mode === "chat") {
+        if (event.event === 'chunk') {
+          if (mode === 'chat') {
             chatContent = accumulateChatChunk(chatContent, event.data.text);
             queueChunkUpdate();
           } else {
@@ -198,54 +195,54 @@ export function createStreamController(options: StreamControllerOptions): Stream
               onRememberUrl(run.url);
             }
           }
-        } else if (event.event === "meta") {
+        } else if (event.event === 'meta') {
           onMeta(event.data);
-          if (typeof event.data.summaryFromCache === "boolean") {
+          if (typeof event.data.summaryFromCache === 'boolean') {
             onSummaryFromCache?.(event.data.summaryFromCache);
           }
-        } else if (event.event === "slides") {
+        } else if (event.event === 'slides') {
           onSlides?.(event.data);
-        } else if (event.event === "status") {
-          const raw = typeof event.data.text === "string" ? event.data.text : "";
-          if (shouldSurfaceStreamingStatus({ streamedAnyNonWhitespace, statusText: raw })) {
+        } else if (event.event === 'status') {
+          const raw = typeof event.data.text === 'string' ? event.data.text : '';
+          if (shouldSurfaceStreamingStatus({ statusText: raw, streamedAnyNonWhitespace })) {
             onStatus(raw);
           }
-        } else if (event.event === "metrics") {
+        } else if (event.event === 'metrics') {
           onMetrics?.(event.data.summary);
-        } else if (event.event === "error") {
+        } else if (event.event === 'error') {
           throw new Error(event.data.message);
-        } else if (event.event === "done") {
+        } else if (event.event === 'done') {
           sawDone = true;
           break;
         }
       }
 
-      if (nextController.signal.aborted) return;
+      if (nextController.signal.aborted) {return;}
       const terminalError = getTerminalStreamError({ sawDone, streamedAnyNonWhitespace });
       if (terminalError) {
         throw terminalError;
       }
 
-      onStatus("");
+      onStatus('');
       onDone?.();
-    } catch (err) {
-      if (err instanceof Error && err.name === "IdleTimeoutError") {
-        abortState.reason = "timeout";
+    } catch (error) {
+      if (error instanceof Error && error.name === 'IdleTimeoutError') {
+        abortState.reason = 'timeout';
         if (!nextController.signal.aborted) {
           nextController.abort();
         }
       }
-      if (nextController.signal.aborted && abortState.reason !== "timeout") return;
+      if (nextController.signal.aborted && abortState.reason !== 'timeout') return;
       hadError = true;
-      const message = onError ? onError(err) : err instanceof Error ? err.message : String(err);
+      const message = onError ? onError(error) : error instanceof Error ? error.message : String(error);
       onStatus(`Error: ${message}`);
-      onPhaseChange("error");
+      onPhaseChange('error');
       onDone?.();
     } finally {
       if (controller === nextController) {
         streaming = false;
         if (!nextController.signal.aborted && !hadError) {
-          onPhaseChange("idle");
+          onPhaseChange('idle');
         }
         activeAbortState = null;
         await onSyncWithActiveTab?.();
@@ -253,9 +250,5 @@ export function createStreamController(options: StreamControllerOptions): Stream
     }
   };
 
-  return {
-    start,
-    abort,
-    isStreaming: () => streaming,
-  };
+  return { abort, isStreaming: () => streaming, start };
 }

@@ -1,37 +1,31 @@
-import { formatCompactCount, formatElapsedMs } from "../tty/format.js";
+import { formatCompactCount, formatElapsedMs } from '../tty/format.js';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
-} from "../tty/theme.js";
+} from '../tty/theme.js';
 export {
   buildExtractFinishLabel,
   buildSummaryFinishLabel,
   type ExtractDiagnosticsForFinishLine,
-} from "./finish-line-labels.js";
-export { buildLengthPartsForFinishLine, type ExtractedForLengths } from "./finish-line-lengths.js";
-import { formatUSD, sumNumbersOrNull } from "./format.js";
+} from './finish-line-labels.js';
+export { buildLengthPartsForFinishLine, type ExtractedForLengths } from './finish-line-lengths.js';
+import { formatUSD, sumNumbersOrNull } from './format.js';
 
-export type FinishLineText = {
-  line: string;
-  details: string | null;
-};
+export interface FinishLineText { line: string; details: string | null }
 
-export type FinishLineModel = {
-  lineParts: string[];
-  detailParts: string[];
-};
+export interface FinishLineModel { lineParts: string[]; detailParts: string[] }
 
 export function formatModelLabelForDisplay(model: string): string {
   const trimmed = model.trim();
-  if (!trimmed) return trimmed;
+  if (!trimmed) {return trimmed;}
 
   // Tricky UX: OpenRouter models routed via the OpenAI-compatible API often appear as
   // `openai/<publisher>/<model>` in the "model" field, which reads like we're using OpenAI.
   // Collapse that to `<publisher>/<model>` for display.
-  const parts = trimmed.split("/").filter(Boolean);
-  if (parts.length >= 3 && parts[0] === "openai") {
-    return `${parts[1]}/${parts.slice(2).join("/")}`;
+  const parts = trimmed.split('/').filter(Boolean);
+  if (parts.length >= 3 && parts[0] === 'openai') {
+    return `${parts[1]}/${parts.slice(2).join('/')}`;
   }
 
   return trimmed;
@@ -56,12 +50,12 @@ export function writeFinishLine({
   label?: string | null;
   model: string | null;
   report: {
-    llm: Array<{
+    llm: {
       promptTokens: number | null;
       completionTokens: number | null;
       totalTokens: number | null;
       calls: number;
-    }>;
+    }[];
     services: { firecrawl: { requests: number }; apify: { requests: number } };
   };
   costUsd: number | null;
@@ -73,24 +67,24 @@ export function writeFinishLine({
   const theme =
     env && color
       ? createThemeRenderer({
-          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
           enabled: color,
+          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
           trueColor: resolveTrueColor(env),
         })
       : null;
   const { compact, detailed: detailedText } = buildFinishLineVariants({
-    elapsedMs,
+    compactExtraParts: extraParts,
+    costUsd,
+    detailedExtraParts: extraParts,
     elapsedLabel,
+    elapsedMs,
     label,
     model,
     report,
-    costUsd,
-    compactExtraParts: extraParts,
-    detailedExtraParts: extraParts,
   });
   const text = detailed ? detailedText : compact;
 
-  stderr.write("\n");
+  stderr.write('\n');
   stderr.write(`${theme ? theme.success(text.line) : text.line}\n`);
   if (detailed && text.details) {
     stderr.write(`${theme ? theme.dim(text.details) : text.details}\n`);
@@ -112,12 +106,12 @@ export function buildFinishLineText({
   label?: string | null;
   model: string | null;
   report: {
-    llm: Array<{
+    llm: {
       promptTokens: number | null;
       completionTokens: number | null;
       totalTokens: number | null;
       calls: number;
-    }>;
+    }[];
     services: { firecrawl: { requests: number }; apify: { requests: number } };
   };
   costUsd: number | null;
@@ -125,13 +119,13 @@ export function buildFinishLineText({
   extraParts?: string[] | null;
 }): FinishLineText {
   const modelData = buildFinishLineModel({
-    elapsedMs,
+    costUsd,
     elapsedLabel,
+    elapsedMs,
+    extraParts,
     label,
     model,
     report,
-    costUsd,
-    extraParts,
   });
   return formatFinishLineText(modelData, detailed);
 }
@@ -151,12 +145,12 @@ export function buildFinishLineVariants({
   label?: string | null;
   model: string | null;
   report: {
-    llm: Array<{
+    llm: {
       promptTokens: number | null;
       completionTokens: number | null;
       totalTokens: number | null;
       calls: number;
-    }>;
+    }[];
     services: { firecrawl: { requests: number }; apify: { requests: number } };
   };
   costUsd: number | null;
@@ -164,32 +158,32 @@ export function buildFinishLineVariants({
   detailedExtraParts?: string[] | null;
 }): { compact: FinishLineText; detailed: FinishLineText } {
   const compact = buildFinishLineText({
-    elapsedMs,
-    elapsedLabel,
-    label,
-    model,
-    report,
     costUsd,
     detailed: false,
-    extraParts: compactExtraParts ?? detailedExtraParts ?? null,
-  });
-  const detailed = buildFinishLineText({
-    elapsedMs,
     elapsedLabel,
+    elapsedMs,
+    extraParts: compactExtraParts ?? detailedExtraParts ?? null,
     label,
     model,
     report,
+  });
+  const detailed = buildFinishLineText({
     costUsd,
     detailed: true,
+    elapsedLabel,
+    elapsedMs,
     extraParts: detailedExtraParts ?? compactExtraParts ?? null,
+    label,
+    model,
+    report,
   });
   return { compact, detailed };
 }
 
 export function formatFinishLineText(model: FinishLineModel, detailed: boolean): FinishLineText {
-  const line = model.lineParts.join(" · ");
-  if (!detailed || model.detailParts.length === 0) return { line, details: null };
-  return { line, details: model.detailParts.join(" | ") };
+  const line = model.lineParts.join(' · ');
+  if (!detailed || model.detailParts.length === 0) {return { line, details: null };}
+  return { details: model.detailParts.join(' | '), line };
 }
 
 export function buildFinishLineModel({
@@ -206,19 +200,19 @@ export function buildFinishLineModel({
   label?: string | null;
   model: string | null;
   report: {
-    llm: Array<{
+    llm: {
       promptTokens: number | null;
       completionTokens: number | null;
       totalTokens: number | null;
       calls: number;
-    }>;
+    }[];
     services: { firecrawl: { requests: number }; apify: { requests: number } };
   };
   costUsd: number | null;
   extraParts?: string[] | null;
 }): FinishLineModel {
   const resolvedElapsedLabel =
-    typeof elapsedLabel === "string" && elapsedLabel.trim().length > 0
+    typeof elapsedLabel === 'string' && elapsedLabel.trim().length > 0
       ? elapsedLabel
       : formatElapsedMs(elapsedMs);
   const promptTokens = sumNumbersOrNull(report.llm.map((row) => row.promptTokens));
@@ -227,48 +221,48 @@ export function buildFinishLineModel({
 
   const hasAnyTokens = promptTokens !== null || completionTokens !== null || totalTokens !== null;
   const tokensPart = hasAnyTokens
-    ? `↑${promptTokens != null ? formatCompactCount(promptTokens) : "unknown"} ↓${
-        completionTokens != null ? formatCompactCount(completionTokens) : "unknown"
-      } Δ${totalTokens != null ? formatCompactCount(totalTokens) : "unknown"}`
+    ? `↑${promptTokens != null ? formatCompactCount(promptTokens) : 'unknown'} ↓${
+        completionTokens != null ? formatCompactCount(completionTokens) : 'unknown'
+      } Δ${totalTokens != null ? formatCompactCount(totalTokens) : 'unknown'}`
     : null;
 
   const compactTranscript = extraParts
-    ? (extraParts.find((part) => part.startsWith("txc=")) ?? null)
+    ? (extraParts.find((part) => part.startsWith('txc=')) ?? null)
     : null;
-  const compactTranscriptLabel = compactTranscript?.startsWith("txc=")
-    ? compactTranscript.slice("txc=".length)
+  const compactTranscriptLabel = compactTranscript?.startsWith('txc=')
+    ? compactTranscript.slice('txc='.length)
     : null;
 
   const stripWordPrefix = (input: string): string | null => {
     // Examples:
     // - "2.9k words" => null
     // - "2.9k words via firecrawl" => "via firecrawl"
-    const match = input.trim().match(/^~?\d[\d.]*[kmb]?\s+words(?:\s+via\s+(.+))?$/i);
-    if (!match) return input;
+    const match = /^~?\d[\d.]*[kmb]?\s+words(?:\s+via\s+(.+))?$/i.exec(input.trim());
+    if (!match) {return input;}
     const via = match[1]?.trim();
     return via ? `via ${via}` : null;
   };
 
   const effectiveLabel = (() => {
-    if (!label) return null;
-    if (!compactTranscriptLabel?.toLowerCase().includes("words")) return label;
+    if (!label) {return null;}
+    if (!compactTranscriptLabel?.toLowerCase().includes('words')) {return label;}
 
     const txLower = compactTranscriptLabel.toLowerCase();
-    if (txLower.includes("podcast")) return null;
-    if (txLower.includes("youtube") && /youtube|youtu\.be/i.test(label)) return null;
+    if (txLower.includes('podcast')) {return null;}
+    if (txLower.includes('youtube') && /youtube|youtu\.be/i.test(label)) {return null;}
 
     const stripped = stripWordPrefix(label);
-    if (stripped === null) return null;
-    if (stripped !== label) return stripped;
+    if (stripped === null) {return null;}
+    if (stripped !== label) {return stripped;}
     // If we still have a "… words" label here, drop it to avoid duplicated word counts.
-    if (/\bwords\b/i.test(label)) return null;
+    if (/\bwords\b/i.test(label)) {return null;}
     return label;
   })();
   const filteredExtraParts =
     compactTranscriptLabel && extraParts
       ? extraParts.filter((part) => part !== compactTranscript)
       : extraParts;
-  const summaryParts: Array<string | null> = [
+  const summaryParts: (string | null)[] = [
     resolvedElapsedLabel,
     compactTranscriptLabel,
     costUsd != null ? formatUSD(costUsd) : null,
@@ -276,23 +270,23 @@ export function buildFinishLineModel({
     model ? formatModelLabelForDisplay(model) : null,
     tokensPart,
   ];
-  const lineParts = summaryParts.filter((part): part is string => typeof part === "string");
+  const lineParts = summaryParts.filter((part): part is string => typeof part === 'string');
 
   const totalCalls = report.llm.reduce((sum, row) => sum + row.calls, 0);
   const lenParts =
     filteredExtraParts?.filter(
-      (part) => part.startsWith("input=") || part.startsWith("transcript="),
+      (part) => part.startsWith('input=') || part.startsWith('transcript='),
     ) ?? [];
   const miscParts =
     filteredExtraParts?.filter(
-      (part) => !part.startsWith("input=") && !part.startsWith("transcript="),
+      (part) => !part.startsWith('input=') && !part.startsWith('transcript='),
     ) ?? [];
 
   const line2Segments: string[] = [];
   if (lenParts.length > 0) {
-    line2Segments.push(`len ${lenParts.join(" ")}`);
+    line2Segments.push(`len ${lenParts.join(' ')}`);
   }
-  if (totalCalls > 1) line2Segments.push(`calls=${formatCompactCount(totalCalls)}`);
+  if (totalCalls > 1) {line2Segments.push(`calls=${formatCompactCount(totalCalls)}`);}
   if (report.services.firecrawl.requests > 0 || report.services.apify.requests > 0) {
     const svcParts: string[] = [];
     if (report.services.firecrawl.requests > 0) {
@@ -301,11 +295,11 @@ export function buildFinishLineModel({
     if (report.services.apify.requests > 0) {
       svcParts.push(`apify=${formatCompactCount(report.services.apify.requests)}`);
     }
-    line2Segments.push(`svc ${svcParts.join(" ")}`);
+    line2Segments.push(`svc ${svcParts.join(' ')}`);
   }
   if (miscParts.length > 0) {
     line2Segments.push(...miscParts);
   }
 
-  return { lineParts, detailParts: line2Segments };
+  return { detailParts: line2Segments, lineParts };
 }

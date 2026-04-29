@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
-import { runChatAgentLoop } from "../apps/chrome-extension/src/entrypoints/sidepanel/chat-agent-loop.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import { runChatAgentLoop } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-agent-loop.js';
 
 function createController() {
   return {
     addMessage: vi.fn(),
-    buildRequestMessages: vi.fn(() => [{ role: "user", content: "hi" }]),
+    buildRequestMessages: vi.fn(() => [{ content: 'hi', role: 'user' }]),
     finishStreamingMessage: vi.fn(),
     removeMessage: vi.fn(),
     replaceMessage: vi.fn(),
@@ -12,171 +13,159 @@ function createController() {
   };
 }
 
-describe("sidepanel chat agent loop", () => {
-  it("streams assistant content and stops when no tool calls remain", async () => {
+describe('sidepanel chat agent loop', () => {
+  it('streams assistant content and stops when no tool calls remain', async () => {
     const controller = createController();
     const chatSession = {
       isAbortRequested: vi.fn(() => false),
       requestAgent: vi.fn(async (_messages, _tools, _summary, opts) => {
-        opts?.onChunk?.("Hello");
+        opts?.onChunk?.('Hello');
         return {
+          assistant: { content: [{ type: 'text', text: 'Hello' }], role: 'assistant' },
           ok: true,
-          assistant: {
-            role: "assistant",
-            content: [{ type: "text", text: "Hello" }],
-          },
         };
       }),
     };
 
     await runChatAgentLoop({
       automationEnabled: true,
-      summaryMarkdown: "summary",
       chatController: controller as never,
       chatSession,
       createStreamingAssistantMessage: () =>
-        ({ id: "stream", role: "assistant", content: [] }) as never,
+        ({ id: 'stream', role: 'assistant', content: [] }) as never,
       executeToolCall: vi.fn(),
-      getAutomationToolNames: () => ["debugger", "navigate"],
+      getAutomationToolNames: () => ['debugger', 'navigate'],
       hasDebuggerPermission: async () => false,
       markAgentNavigationIntent: vi.fn(),
       markAgentNavigationResult: vi.fn(),
       scrollToBottom: vi.fn(),
-      wrapMessage: vi.fn((message) => ({ ...message, id: "wrapped" }) as never),
+      summaryMarkdown: 'summary',
+      wrapMessage: vi.fn((message) => ({ ...message, id: 'wrapped' }) as never),
     });
 
     expect(chatSession.requestAgent).toHaveBeenCalledWith(
-      [{ role: "user", content: "hi" }],
-      ["navigate"],
-      "summary",
+      [{ content: 'hi', role: 'user' }],
+      ['navigate'],
+      'summary',
       expect.objectContaining({ onChunk: expect.any(Function) }),
     );
-    expect(controller.updateStreamingMessage).toHaveBeenCalledWith("Hello");
+    expect(controller.updateStreamingMessage).toHaveBeenCalledWith('Hello');
     expect(controller.replaceMessage).toHaveBeenCalled();
     expect(controller.finishStreamingMessage).toHaveBeenCalled();
   });
 
-  it("executes tool calls and appends tool results", async () => {
+  it('executes tool calls and appends tool results', async () => {
     const controller = createController();
     const toolCall = {
-      type: "toolCall",
-      toolCallId: "1",
-      name: "navigate",
-      arguments: { url: "https://example.com" },
+      arguments: { url: 'https://example.com' },
+      name: 'navigate',
+      toolCallId: '1',
+      type: 'toolCall',
     };
     const requestAgent = vi
       .fn()
+      .mockResolvedValueOnce({ assistant: { content: [toolCall], role: 'assistant' }, ok: true })
       .mockResolvedValueOnce({
+        assistant: { content: [{ type: 'text', text: 'done' }], role: 'assistant' },
         ok: true,
-        assistant: { role: "assistant", content: [toolCall] },
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        assistant: { role: "assistant", content: [{ type: "text", text: "done" }] },
       });
     const executeToolCall = vi.fn(async () => ({
-      role: "toolResult",
-      toolName: "navigate",
-      isError: false,
+      content: [{ type: 'text', text: 'navigated' }],
       details: { ok: true },
-      content: [{ type: "text", text: "navigated" }],
+      isError: false,
+      role: 'toolResult',
+      toolName: 'navigate',
     }));
     const markIntent = vi.fn();
     const markResult = vi.fn();
-    const wrapMessage = vi.fn((message) => ({ ...message, id: "tool-message" }) as never);
+    const wrapMessage = vi.fn((message) => ({ ...message, id: 'tool-message' }) as never);
 
     await runChatAgentLoop({
       automationEnabled: true,
-      summaryMarkdown: null,
       chatController: controller as never,
       chatSession: { isAbortRequested: vi.fn(() => false), requestAgent },
       createStreamingAssistantMessage: () =>
-        ({ id: crypto.randomUUID(), role: "assistant", content: [] }) as never,
+        ({ id: crypto.randomUUID(), role: 'assistant', content: [] }) as never,
       executeToolCall,
-      getAutomationToolNames: () => ["navigate"],
+      getAutomationToolNames: () => ['navigate'],
       hasDebuggerPermission: async () => true,
       markAgentNavigationIntent: markIntent,
       markAgentNavigationResult: markResult,
       scrollToBottom: vi.fn(),
+      summaryMarkdown: null,
       wrapMessage,
     });
 
     expect(executeToolCall).toHaveBeenCalledWith(toolCall);
-    expect(markIntent).toHaveBeenCalledWith("https://example.com");
+    expect(markIntent).toHaveBeenCalledWith('https://example.com');
     expect(markResult).toHaveBeenCalledWith({ ok: true });
     expect(wrapMessage).toHaveBeenCalled();
     expect(controller.addMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "tool-message" }),
+      expect.objectContaining({ id: 'tool-message' }),
     );
   });
 
-  it("treats plain string assistant content as no tool calls", async () => {
+  it('treats plain string assistant content as no tool calls', async () => {
     const controller = createController();
     const chatSession = {
       isAbortRequested: vi.fn(() => false),
       requestAgent: vi.fn(async (_messages, _tools, _summary, opts) => {
-        opts?.onChunk?.("Plain reply");
-        return {
-          ok: true,
-          assistant: {
-            role: "assistant",
-            content: "Plain reply",
-          },
-        };
+        opts?.onChunk?.('Plain reply');
+        return { assistant: { content: 'Plain reply', role: 'assistant' }, ok: true };
       }),
     };
     const executeToolCall = vi.fn();
 
     await runChatAgentLoop({
       automationEnabled: true,
-      summaryMarkdown: null,
       chatController: controller as never,
       chatSession,
       createStreamingAssistantMessage: () =>
-        ({ id: "stream", role: "assistant", content: [] }) as never,
+        ({ id: 'stream', role: 'assistant', content: [] }) as never,
       executeToolCall,
-      getAutomationToolNames: () => ["navigate"],
+      getAutomationToolNames: () => ['navigate'],
       hasDebuggerPermission: async () => true,
       markAgentNavigationIntent: vi.fn(),
       markAgentNavigationResult: vi.fn(),
       scrollToBottom: vi.fn(),
-      wrapMessage: vi.fn((message) => ({ ...message, id: "wrapped" }) as never),
+      summaryMarkdown: null,
+      wrapMessage: vi.fn((message) => ({ ...message, id: 'wrapped' }) as never),
     });
 
-    expect(controller.updateStreamingMessage).toHaveBeenCalledWith("Plain reply");
+    expect(controller.updateStreamingMessage).toHaveBeenCalledWith('Plain reply');
     expect(controller.replaceMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ content: "Plain reply" }),
+      expect.objectContaining({ content: 'Plain reply' }),
     );
     expect(executeToolCall).not.toHaveBeenCalled();
   });
 
-  it("removes the placeholder message on request failure", async () => {
+  it('removes the placeholder message on request failure', async () => {
     const controller = createController();
     const chatSession = {
       isAbortRequested: vi.fn(() => false),
       requestAgent: vi.fn(async () => {
-        throw new Error("boom");
+        throw new Error('boom');
       }),
     };
 
     await expect(
       runChatAgentLoop({
         automationEnabled: false,
-        summaryMarkdown: null,
         chatController: controller as never,
         chatSession,
         createStreamingAssistantMessage: () =>
-          ({ id: "stream", role: "assistant", content: [] }) as never,
+          ({ id: 'stream', role: 'assistant', content: [] }) as never,
         executeToolCall: vi.fn(),
         getAutomationToolNames: () => [],
         hasDebuggerPermission: async () => true,
         markAgentNavigationIntent: vi.fn(),
         markAgentNavigationResult: vi.fn(),
         scrollToBottom: vi.fn(),
-        wrapMessage: vi.fn((message) => ({ ...message, id: "wrapped" }) as never),
+        summaryMarkdown: null,
+        wrapMessage: vi.fn((message) => ({ ...message, id: 'wrapped' }) as never),
       }),
-    ).rejects.toThrow("boom");
+    ).rejects.toThrow('boom');
 
-    expect(controller.removeMessage).toHaveBeenCalledWith("stream");
+    expect(controller.removeMessage).toHaveBeenCalledWith('stream');
   });
 });

@@ -1,4 +1,4 @@
-import { buildUserScriptsGuidance, getUserScriptsStatus } from "../../automation/userscripts";
+import { buildUserScriptsGuidance, getUserScriptsStatus } from '../../automation/userscripts';
 
 export function resolveBuildInfoText({
   injectedVersion,
@@ -11,9 +11,9 @@ export function resolveBuildInfoText({
 }) {
   const parts: string[] = [];
   const version = injectedVersion || manifestVersion;
-  if (version) parts.push(`v${version}`);
-  if (gitHash && gitHash !== "unknown") parts.push(gitHash);
-  return parts.join(" · ");
+  if (version) {parts.push(`v${version}`);}
+  if (gitHash && gitHash !== 'unknown') {parts.push(gitHash);}
+  return parts.join(' · ');
 }
 
 export function createStatusController(statusEl: HTMLElement) {
@@ -26,20 +26,20 @@ export function createStatusController(statusEl: HTMLElement) {
   const flashStatus = (text: string, duration = 900) => {
     window.clearTimeout(statusTimer);
     setStatus(text);
-    statusTimer = window.setTimeout(() => setStatus(""), duration);
+    statusTimer = window.setTimeout(() => setStatus(''), duration);
   };
 
-  return { setStatus, flashStatus };
+  return { flashStatus, setStatus };
 }
 
 export function applyBuildInfo(
   buildInfoEl: HTMLElement | null,
   info: { injectedVersion: string; manifestVersion: string; gitHash: string },
 ) {
-  if (!buildInfoEl) return;
+  if (!buildInfoEl) {return;}
   const text = resolveBuildInfoText(info);
   buildInfoEl.textContent = text;
-  buildInfoEl.toggleAttribute("hidden", text.length === 0);
+  buildInfoEl.toggleAttribute('hidden', text.length === 0);
 }
 
 export async function copyTokenToClipboard(options: {
@@ -49,21 +49,21 @@ export async function copyTokenToClipboard(options: {
   const { tokenEl, flashStatus } = options;
   const token = tokenEl.value.trim();
   if (!token) {
-    flashStatus("Token empty");
+    flashStatus('Token empty');
     return;
   }
   try {
     await navigator.clipboard.writeText(token);
-    flashStatus("Token copied");
+    flashStatus('Token copied');
     return;
   } catch {
-    // fallback
+    // Fallback
   }
   tokenEl.focus();
   tokenEl.select();
   tokenEl.setSelectionRange(0, token.length);
-  const ok = document.execCommand("copy");
-  flashStatus(ok ? "Token copied" : "Copy failed");
+  const ok = document.execCommand('copy');
+  flashStatus(ok ? 'Token copied' : 'Copy failed');
 }
 
 export function createAutomationPermissionsController(options: {
@@ -78,12 +78,12 @@ export function createAutomationPermissionsController(options: {
   const updateUi = async () => {
     const status = await getUserScriptsStatus();
     const hasPermission = status.permissionGranted;
-    const apiAvailable = status.apiAvailable;
+    const {apiAvailable} = status;
 
     automationPermissionsBtn.disabled = !chrome.permissions || (hasPermission && apiAvailable);
     automationPermissionsBtn.textContent = hasPermission
-      ? "Automation permissions granted"
-      : "Enable automation permissions";
+      ? 'Automation permissions granted'
+      : 'Enable automation permissions';
 
     if (!getAutomationEnabled()) {
       userScriptsNoticeEl.hidden = true;
@@ -96,24 +96,22 @@ export function createAutomationPermissionsController(options: {
     }
 
     const steps = [buildUserScriptsGuidance(status)].filter(Boolean);
-    userScriptsNoticeEl.textContent = steps.join(" ");
+    userScriptsNoticeEl.textContent = steps.join(' ');
     userScriptsNoticeEl.hidden = false;
   };
 
   const requestPermissions = async () => {
-    if (!chrome.permissions) return;
+    if (!chrome.permissions) {return;}
     try {
-      const ok = await chrome.permissions.request({
-        permissions: ["userScripts"],
-      });
+      const ok = await chrome.permissions.request({ permissions: ['userScripts'] });
       if (!ok) {
-        flashStatus("Permission request denied");
+        flashStatus('Permission request denied');
       }
     } catch {
-      // ignore
+      // Ignore
     }
     await updateUi();
   };
 
-  return { updateUi, requestPermissions };
+  return { requestPermissions, updateUi };
 }

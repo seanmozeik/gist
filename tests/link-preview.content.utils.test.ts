@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   DEFAULT_CACHE_MODE,
   DEFAULT_MAX_CONTENT_CHARACTERS,
   DEFAULT_TIMEOUT_MS,
-} from "../packages/core/src/content/link-preview/content/types.js";
+} from '../packages/core/src/content/link-preview/content/types.js';
 import {
   appendNote,
   ensureTranscriptDiagnostics,
@@ -16,44 +17,39 @@ import {
   safeHostname,
   selectBaseContent,
   summarizeTranscript,
-} from "../packages/core/src/content/link-preview/content/utils.js";
+} from '../packages/core/src/content/link-preview/content/utils.js';
 import type {
   ContentFetchDiagnostics,
   TranscriptDiagnostics,
-} from "../packages/core/src/content/link-preview/types.js";
+} from '../packages/core/src/content/link-preview/types.js';
 
 function makeDiagnostics(overrides?: Partial<ContentFetchDiagnostics>): ContentFetchDiagnostics {
   return {
-    strategy: "html",
     firecrawl: {
       attempted: false,
-      used: false,
-      cacheMode: "default",
-      cacheStatus: "unknown",
+      cacheMode: 'default',
+      cacheStatus: 'unknown',
       notes: null,
-    },
-    markdown: {
-      requested: false,
       used: false,
-      provider: null,
-      notes: null,
     },
+    markdown: { notes: null, provider: null, requested: false, used: false },
+    strategy: 'html',
     transcript: {
-      cacheMode: "default",
-      cacheStatus: "unknown",
-      textProvided: false,
-      provider: null,
       attemptedProviders: [],
+      cacheMode: 'default',
+      cacheStatus: 'unknown',
       notes: null,
+      provider: null,
+      textProvided: false,
     },
     ...overrides,
   };
 }
 
-describe("link-preview content utils", () => {
-  it("resolves cache/max/timeouts with sane defaults", () => {
+describe('link-preview content utils', () => {
+  it('resolves cache/max/timeouts with sane defaults', () => {
     expect(resolveCacheMode()).toBe(DEFAULT_CACHE_MODE);
-    expect(resolveCacheMode({ cacheMode: "bypass" })).toBe("bypass");
+    expect(resolveCacheMode({ cacheMode: 'bypass' })).toBe('bypass');
 
     expect(resolveMaxCharacters()).toBeNull();
     expect(resolveMaxCharacters({ maxCharacters: -1 })).toBeNull();
@@ -73,108 +69,108 @@ describe("link-preview content utils", () => {
     expect(resolveTimeoutMs({ timeoutMs: 123.9 })).toBe(123);
   });
 
-  it("resolves firecrawl mode with fallback", () => {
-    expect(resolveFirecrawlMode()).toBe("auto");
-    expect(resolveFirecrawlMode({ firecrawl: "off" })).toBe("off");
-    expect(resolveFirecrawlMode({ firecrawl: "auto" })).toBe("auto");
-    expect(resolveFirecrawlMode({ firecrawl: "always" })).toBe("always");
-    expect(resolveFirecrawlMode({ firecrawl: "nope" as never })).toBe("auto");
+  it('resolves firecrawl mode with fallback', () => {
+    expect(resolveFirecrawlMode()).toBe('auto');
+    expect(resolveFirecrawlMode({ firecrawl: 'off' })).toBe('off');
+    expect(resolveFirecrawlMode({ firecrawl: 'auto' })).toBe('auto');
+    expect(resolveFirecrawlMode({ firecrawl: 'always' })).toBe('always');
+    expect(resolveFirecrawlMode({ firecrawl: 'nope' as never })).toBe('auto');
   });
 
-  it("handles basic string helpers", () => {
-    expect(appendNote(null, "")).toBe("");
-    expect(appendNote(null, "a")).toBe("a");
-    expect(appendNote("", "a")).toBe("a");
-    expect(appendNote("a", "b")).toBe("a; b");
+  it('handles basic string helpers', () => {
+    expect(appendNote(null, '')).toBe('');
+    expect(appendNote(null, 'a')).toBe('a');
+    expect(appendNote('', 'a')).toBe('a');
+    expect(appendNote('a', 'b')).toBe('a; b');
 
-    expect(safeHostname("https://www.example.com/path")).toBe("example.com");
-    expect(safeHostname("not-a-url")).toBeNull();
+    expect(safeHostname('https://www.example.com/path')).toBe('example.com');
+    expect(safeHostname('not-a-url')).toBeNull();
 
-    expect(pickFirstText([null, "   ", "\n", " ok ", "later"])).toBe("ok");
-    expect(pickFirstText([null, undefined, ""])).toBeNull();
+    expect(pickFirstText([null, '   ', '\n', ' ok ', 'later'])).toBe('ok');
+    expect(pickFirstText([null, undefined, ''])).toBeNull();
   });
 
-  it("selects transcript content only when present", () => {
-    expect(selectBaseContent("SOURCE", null)).toBe("SOURCE");
-    expect(selectBaseContent("SOURCE", "   \n")).toBe("SOURCE");
-    expect(selectBaseContent("SOURCE", "  hello \n world ")).toContain("Transcript:\n");
+  it('selects transcript content only when present', () => {
+    expect(selectBaseContent('SOURCE', null)).toBe('SOURCE');
+    expect(selectBaseContent('SOURCE', '   \n')).toBe('SOURCE');
+    expect(selectBaseContent('SOURCE', '  hello \n world ')).toContain('Transcript:\n');
   });
 
-  it("prefers timed transcript content when segments are available", () => {
-    const content = selectBaseContent("SOURCE", "plain transcript", [
-      { startMs: 1000, endMs: 2000, text: "Hello" },
+  it('prefers timed transcript content when segments are available', () => {
+    const content = selectBaseContent('SOURCE', 'plain transcript', [
+      { endMs: 2000, startMs: 1000, text: 'Hello' },
     ]);
-    expect(content).toContain("Transcript:\n");
-    expect(content).toContain("[0:01] Hello");
+    expect(content).toContain('Transcript:\n');
+    expect(content).toContain('[0:01] Hello');
   });
 
-  it("summarizes transcript basics", () => {
+  it('summarizes transcript basics', () => {
     expect(summarizeTranscript(null)).toEqual({
       transcriptCharacters: null,
       transcriptLines: null,
       transcriptWordCount: null,
     });
-    expect(summarizeTranscript("")).toEqual({
+    expect(summarizeTranscript('')).toEqual({
       transcriptCharacters: null,
       transcriptLines: null,
       transcriptWordCount: null,
     });
-    expect(summarizeTranscript("a\n\nb")).toEqual({
+    expect(summarizeTranscript('a\n\nb')).toEqual({
       transcriptCharacters: 4,
       transcriptLines: 2,
       transcriptWordCount: 2,
     });
   });
 
-  it("ensures transcript diagnostics when missing", () => {
+  it('ensures transcript diagnostics when missing', () => {
     const existing: TranscriptDiagnostics = {
-      cacheMode: "default",
-      cacheStatus: "hit",
-      textProvided: true,
-      provider: "html",
-      attemptedProviders: ["html"],
+      attemptedProviders: ['html'],
+      cacheMode: 'default',
+      cacheStatus: 'hit',
       notes: null,
+      provider: 'html',
+      textProvided: true,
     };
     expect(
-      ensureTranscriptDiagnostics({ text: "ok", source: "html", diagnostics: existing }, "default"),
+      ensureTranscriptDiagnostics({ diagnostics: existing, source: 'html', text: 'ok' }, 'default'),
     ).toBe(existing);
 
-    expect(ensureTranscriptDiagnostics({ text: "ok", source: "html" }, "default")).toMatchObject({
-      cacheMode: "default",
-      cacheStatus: "miss",
-      textProvided: true,
-      provider: "html",
-      attemptedProviders: ["html"],
+    expect(ensureTranscriptDiagnostics({ source: 'html', text: 'ok' }, 'default')).toMatchObject({
+      attemptedProviders: ['html'],
+      cacheMode: 'default',
+      cacheStatus: 'miss',
       notes: null,
+      provider: 'html',
+      textProvided: true,
     });
 
-    expect(ensureTranscriptDiagnostics({ text: null, source: null }, "default")).toMatchObject({
-      cacheStatus: "unknown",
+    expect(ensureTranscriptDiagnostics({ source: null, text: null }, 'default')).toMatchObject({
       attemptedProviders: [],
+      cacheStatus: 'unknown',
     });
 
     expect(
-      ensureTranscriptDiagnostics({ text: "ok", source: "captionTracks" }, "bypass"),
+      ensureTranscriptDiagnostics({ source: 'captionTracks', text: 'ok' }, 'bypass'),
     ).toMatchObject({
-      cacheMode: "bypass",
-      cacheStatus: "bypassed",
-      notes: "Cache bypass requested",
-      attemptedProviders: ["captionTracks"],
+      attemptedProviders: ['captionTracks'],
+      cacheMode: 'bypass',
+      cacheStatus: 'bypassed',
+      notes: 'Cache bypass requested',
     });
   });
 
-  it("finalizes extracted content with/without budget", () => {
+  it('finalizes extracted content with/without budget', () => {
     const diagnostics = makeDiagnostics();
 
     const withBudget = finalizeExtractedLinkContent({
-      url: "https://example.com",
-      baseContent: "A".repeat(100),
-      maxCharacters: 20,
-      title: "t",
+      baseContent: 'A'.repeat(100),
       description: null,
-      siteName: null,
-      transcriptResolution: { text: "x", source: "html" },
       diagnostics,
+      maxCharacters: 20,
+      siteName: null,
+      title: 't',
+      transcriptResolution: { source: 'html', text: 'x' },
+      url: 'https://example.com',
     });
     expect(withBudget.content.length).toBeLessThanOrEqual(20);
     expect(withBudget.totalCharacters).toBeGreaterThan(20);
@@ -185,14 +181,14 @@ describe("link-preview content utils", () => {
     expect(withBudget.mediaDurationSeconds).toBeNull();
 
     const noBudget = finalizeExtractedLinkContent({
-      url: "https://example.com",
-      baseContent: "one two  three",
-      maxCharacters: null,
-      title: null,
+      baseContent: 'one two  three',
       description: null,
-      siteName: null,
-      transcriptResolution: { text: "", source: "unknown" },
       diagnostics,
+      maxCharacters: null,
+      siteName: null,
+      title: null,
+      transcriptResolution: { source: 'unknown', text: '' },
+      url: 'https://example.com',
     });
     expect(noBudget.truncated).toBe(false);
     expect(noBudget.wordCount).toBe(3);
@@ -202,43 +198,43 @@ describe("link-preview content utils", () => {
     expect(noBudget.mediaDurationSeconds).toBeNull();
   });
 
-  it("pulls media duration from transcript metadata", () => {
+  it('pulls media duration from transcript metadata', () => {
     const diagnostics = makeDiagnostics();
     const result = finalizeExtractedLinkContent({
-      url: "https://example.com",
-      baseContent: "Transcript:\nhello",
-      maxCharacters: null,
-      title: null,
+      baseContent: 'Transcript:\nhello',
       description: null,
-      siteName: null,
-      transcriptResolution: {
-        text: "hello",
-        source: "whisper",
-        metadata: { durationSeconds: 123 },
-      },
       diagnostics,
+      maxCharacters: null,
+      siteName: null,
+      title: null,
+      transcriptResolution: {
+        metadata: { durationSeconds: 123 },
+        source: 'whisper',
+        text: 'hello',
+      },
+      url: 'https://example.com',
     });
     expect(result.mediaDurationSeconds).toBe(123);
   });
 
-  it("adds timed transcript text when segments are available", () => {
+  it('adds timed transcript text when segments are available', () => {
     const diagnostics = makeDiagnostics();
     const result = finalizeExtractedLinkContent({
-      url: "https://example.com",
-      baseContent: "Transcript:\nhello",
-      maxCharacters: null,
-      title: null,
+      baseContent: 'Transcript:\nhello',
       description: null,
-      siteName: null,
-      transcriptResolution: {
-        text: "hello",
-        source: "html",
-        segments: [{ startMs: 0, endMs: 1000, text: "hello" }],
-      },
       diagnostics,
+      maxCharacters: null,
+      siteName: null,
+      title: null,
+      transcriptResolution: {
+        segments: [{ startMs: 0, endMs: 1000, text: 'hello' }],
+        source: 'html',
+        text: 'hello',
+      },
+      url: 'https://example.com',
     });
 
-    expect(result.transcriptSegments).toEqual([{ startMs: 0, endMs: 1000, text: "hello" }]);
-    expect(result.transcriptTimedText).toBe("[0:00] hello");
+    expect(result.transcriptSegments).toEqual([{ endMs: 1000, startMs: 0, text: 'hello' }]);
+    expect(result.transcriptTimedText).toBe('[0:00] hello');
   });
 });

@@ -1,128 +1,118 @@
-import type { MediaCache, TranscriptCache } from "../cache/types.js";
-import type { TranscriptionConfig } from "../transcript/transcription-config.js";
-import type { CacheMode, TranscriptSource } from "./types.js";
+import type { MediaCache, TranscriptCache } from '../cache/types.js';
+import type { TranscriptionConfig } from '../transcript/transcription-config.js';
+import type { CacheMode, TranscriptSource } from './types.js';
 
 // Enum-like constants for progress kinds (keeps call sites typo-resistant without TS `enum` runtime quirks).
 export const ProgressKind = {
-  FetchHtmlStart: "fetch-html-start",
-  FetchHtmlProgress: "fetch-html-progress",
-  FetchHtmlDone: "fetch-html-done",
+  BirdDone: 'bird-done',
+  BirdStart: 'bird-start',
+  FetchHtmlDone: 'fetch-html-done',
 
-  TranscriptMediaDownloadStart: "transcript-media-download-start",
-  TranscriptMediaDownloadProgress: "transcript-media-download-progress",
-  TranscriptMediaDownloadDone: "transcript-media-download-done",
+  FetchHtmlProgress: 'fetch-html-progress',
+  FetchHtmlStart: 'fetch-html-start',
+  FirecrawlDone: 'firecrawl-done',
 
-  TranscriptWhisperStart: "transcript-whisper-start",
-  TranscriptWhisperProgress: "transcript-whisper-progress",
+  FirecrawlStart: 'firecrawl-start',
+  NitterDone: 'nitter-done',
 
-  TranscriptStart: "transcript-start",
-  TranscriptDone: "transcript-done",
+  NitterStart: 'nitter-start',
+  TranscriptDone: 'transcript-done',
 
-  FirecrawlStart: "firecrawl-start",
-  FirecrawlDone: "firecrawl-done",
+  TranscriptMediaDownloadDone: 'transcript-media-download-done',
+  TranscriptMediaDownloadProgress: 'transcript-media-download-progress',
 
-  NitterStart: "nitter-start",
-  NitterDone: "nitter-done",
+  TranscriptMediaDownloadStart: 'transcript-media-download-start',
+  TranscriptStart: 'transcript-start',
 
-  BirdStart: "bird-start",
-  BirdDone: "bird-done",
+  TranscriptWhisperProgress: 'transcript-whisper-progress',
+  TranscriptWhisperStart: 'transcript-whisper-start',
 } as const;
 
-export type CloudTranscriptionProviderHint = "groq" | "assemblyai" | "gemini" | "openai" | "fal";
+export type CloudTranscriptionProviderHint = 'groq' | 'assemblyai' | 'gemini' | 'openai' | 'fal';
 
 export type TranscriptionProviderHint =
-  | "cpp"
-  | "onnx"
-  | "unknown"
+  | 'cpp'
+  | 'onnx'
+  | 'unknown'
   | CloudTranscriptionProviderHint
   | `${CloudTranscriptionProviderHint}->${string}`;
 
 /** Public progress events emitted by link preview fetchers. */
 export type LinkPreviewProgressEvent =
-  | { kind: "fetch-html-start"; url: string }
+  | { kind: 'fetch-html-start'; url: string }
+  | { kind: 'fetch-html-progress'; url: string; downloadedBytes: number; totalBytes: number | null }
+  | { kind: 'fetch-html-done'; url: string; downloadedBytes: number; totalBytes: number | null }
   | {
-      kind: "fetch-html-progress";
+      kind: 'transcript-media-download-start';
       url: string;
-      downloadedBytes: number;
-      totalBytes: number | null;
-    }
-  | {
-      kind: "fetch-html-done";
-      url: string;
-      downloadedBytes: number;
-      totalBytes: number | null;
-    }
-  | {
-      kind: "transcript-media-download-start";
-      url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       mediaUrl: string | null;
-      mediaKind?: "video" | "audio" | null;
+      mediaKind?: 'video' | 'audio' | null;
       totalBytes: number | null;
     }
   | {
-      kind: "transcript-media-download-progress";
+      kind: 'transcript-media-download-progress';
       url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       downloadedBytes: number;
       totalBytes: number | null;
-      mediaKind?: "video" | "audio" | null;
+      mediaKind?: 'video' | 'audio' | null;
     }
   | {
-      kind: "transcript-media-download-done";
+      kind: 'transcript-media-download-done';
       url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       downloadedBytes: number;
       totalBytes: number | null;
-      mediaKind?: "video" | "audio" | null;
+      mediaKind?: 'video' | 'audio' | null;
     }
   | {
-      kind: "transcript-whisper-start";
+      kind: 'transcript-whisper-start';
       url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       providerHint: TranscriptionProviderHint;
       modelId: string | null;
       totalDurationSeconds: number | null;
       parts: number | null;
     }
   | {
-      kind: "transcript-whisper-progress";
+      kind: 'transcript-whisper-progress';
       url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       processedDurationSeconds: number | null;
       totalDurationSeconds: number | null;
       partIndex: number | null;
       parts: number | null;
     }
   | {
-      kind: "transcript-start";
+      kind: 'transcript-start';
       url: string;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       hint: string | null;
     }
   | {
-      kind: "transcript-done";
+      kind: 'transcript-done';
       url: string;
       ok: boolean;
-      service: "youtube" | "podcast" | "generic";
+      service: 'youtube' | 'podcast' | 'generic';
       source: TranscriptSource | null;
       hint: string | null;
     }
-  | { kind: "firecrawl-start"; url: string; reason: string }
+  | { kind: 'firecrawl-start'; url: string; reason: string }
   | {
-      kind: "firecrawl-done";
+      kind: 'firecrawl-done';
       url: string;
       ok: boolean;
       markdownBytes: number | null;
       htmlBytes: number | null;
     }
-  | { kind: "nitter-start"; url: string }
-  | { kind: "nitter-done"; url: string; ok: boolean; textBytes: number | null }
-  | { kind: "bird-start"; url: string; client?: "xurl" | "bird" | null }
+  | { kind: 'nitter-start'; url: string }
+  | { kind: 'nitter-done'; url: string; ok: boolean; textBytes: number | null }
+  | { kind: 'bird-start'; url: string; client?: 'xurl' | 'bird' | null }
   | {
-      kind: "bird-done";
+      kind: 'bird-done';
       url: string;
-      client?: "xurl" | "bird" | null;
+      client?: 'xurl' | 'bird' | null;
       ok: boolean;
       textBytes: number | null;
     };
@@ -146,32 +136,32 @@ export type ConvertHtmlToMarkdown = (args: {
   timeoutMs: number;
 }) => Promise<string>;
 
-export type BirdTweetMedia = {
-  kind: "video" | "audio";
+export interface BirdTweetMedia {
+  kind: 'video' | 'audio';
   urls: string[];
   preferredUrl: string | null;
-  source: "extended_entities" | "card" | "entities" | "xurl";
-};
+  source: 'extended_entities' | 'card' | 'entities' | 'xurl';
+}
 
-export type BirdTweetPayload = {
+export interface BirdTweetPayload {
   id?: string;
   text: string;
   author?: { username?: string; name?: string };
   createdAt?: string;
   media?: BirdTweetMedia | null;
-  client?: "xurl" | "bird";
-};
+  client?: 'xurl' | 'bird';
+}
 
 export type ReadTweetWithBird = (args: {
   url: string;
   timeoutMs: number;
 }) => Promise<BirdTweetPayload | null>;
 
-export type TwitterCookieSource = {
+export interface TwitterCookieSource {
   cookiesFromBrowser: string | null;
   source?: string | null;
   warnings?: string[];
-};
+}
 
 export type ResolveTwitterCookies = (args: { url: string }) => Promise<TwitterCookieSource>;
 

@@ -1,15 +1,16 @@
-import type MarkdownIt from "markdown-it";
+import type MarkdownIt from 'markdown-it';
+
 import {
   buildChatRequestMessages,
   type ChatHistoryLimits,
   computeChatContextUsage,
   hasUserChatMessage,
-} from "./chat-state";
-import type { ChatMessage } from "./types";
+} from './chat-state';
+import type { ChatMessage } from './types';
 
-type RenderOptions = { prepend?: boolean; scroll?: boolean };
+interface RenderOptions { prepend?: boolean; scroll?: boolean }
 
-export type ChatControllerOptions = {
+export interface ChatControllerOptions {
   messagesEl: HTMLDivElement;
   inputEl: HTMLTextAreaElement;
   sendBtn: HTMLButtonElement;
@@ -18,7 +19,7 @@ export type ChatControllerOptions = {
   limits: ChatHistoryLimits;
   scrollToBottom?: () => void;
   onNewContent?: () => void;
-};
+}
 
 export class ChatController {
   private messages: ChatMessage[] = [];
@@ -60,8 +61,8 @@ export class ChatController {
 
   reset() {
     this.messages = [];
-    this.messagesEl.innerHTML = "";
-    this.inputEl.value = "";
+    this.messagesEl.innerHTML = '';
+    this.inputEl.value = '';
     this.sendBtn.disabled = false;
     this.updateVisibility();
     this.updateContextStatus();
@@ -69,7 +70,7 @@ export class ChatController {
 
   setMessages(messages: ChatMessage[], opts?: RenderOptions) {
     this.messages = messages;
-    this.messagesEl.innerHTML = "";
+    this.messagesEl.innerHTML = '';
     for (const message of messages) {
       this.renderMessage(message, { scroll: false });
     }
@@ -112,7 +113,7 @@ export class ChatController {
 
   removeMessage(id: string) {
     const index = this.messages.findIndex((item) => item.id === id);
-    if (index === -1) return;
+    if (index === -1) {return;}
     this.messages.splice(index, 1);
     const existing = this.messagesEl.querySelector(`[data-id="${id}"]`);
     existing?.remove();
@@ -121,19 +122,19 @@ export class ChatController {
   }
 
   updateStreamingMessage(content: string) {
-    const lastMsg = this.messages[this.messages.length - 1];
-    if (lastMsg?.role === "assistant") {
-      lastMsg.content = [{ type: "text", text: content }];
+    const lastMsg = this.messages.at(-1);
+    if (lastMsg?.role === 'assistant') {
+      lastMsg.content = [{ text: content, type: 'text' }];
       const msgEl = this.messagesEl.querySelector(`[data-id="${lastMsg.id}"]`);
       if (msgEl) {
         if (content.trim()) {
           msgEl.innerHTML = this.markdown.render(this.linkifyTimestamps(content));
-          msgEl.removeAttribute("data-placeholder");
+          delete msgEl.dataset.placeholder;
         } else {
           msgEl.innerHTML = this.typingIndicatorHtml;
-          msgEl.setAttribute("data-placeholder", "true");
+          msgEl.dataset.placeholder = 'true';
         }
-        msgEl.classList.add("streaming");
+        msgEl.classList.add('streaming');
         this.decorateAnchors(msgEl);
         this.onNewContent?.();
         this.scrollToBottom?.();
@@ -143,12 +144,12 @@ export class ChatController {
   }
 
   finishStreamingMessage() {
-    const lastMsg = this.messages[this.messages.length - 1];
-    if (lastMsg?.role === "assistant") {
+    const lastMsg = this.messages.at(-1);
+    if (lastMsg?.role === 'assistant') {
       const msgEl = this.messagesEl.querySelector(`[data-id="${lastMsg.id}"]`);
       if (msgEl) {
-        msgEl.classList.remove("streaming");
-        msgEl.removeAttribute("data-placeholder");
+        msgEl.classList.remove('streaming');
+        delete msgEl.dataset.placeholder;
       }
     }
     this.updateContextStatus();
@@ -159,7 +160,7 @@ export class ChatController {
     if (opts?.prepend) {
       this.messagesEl.prepend(msgEl);
     } else {
-      this.messagesEl.appendChild(msgEl);
+      this.messagesEl.append(msgEl);
     }
 
     if (opts?.scroll !== false) {
@@ -170,78 +171,78 @@ export class ChatController {
 
   private updateVisibility() {
     const hasMessages = this.messages.length > 0;
-    this.messagesEl.classList.toggle("isHidden", !hasMessages);
+    this.messagesEl.classList.toggle('isHidden', !hasMessages);
   }
 
   private updateContextStatus() {
     if (!this.hasUserMessages()) {
-      this.contextEl.textContent = "";
-      this.contextEl.removeAttribute("data-state");
-      this.contextEl.classList.add("isHidden");
+      this.contextEl.textContent = '';
+      delete this.contextEl.dataset.state;
+      this.contextEl.classList.add('isHidden');
       return;
     }
     const usage = computeChatContextUsage(this.messages, this.limits);
-    this.contextEl.classList.remove("isHidden");
+    this.contextEl.classList.remove('isHidden');
     this.contextEl.textContent = `Context ${usage.percent}% · ${usage.totalMessages} msgs · ${usage.totalChars.toLocaleString()} chars`;
     if (usage.percent >= 85) {
-      this.contextEl.dataset.state = "warn";
+      this.contextEl.dataset.state = 'warn';
     } else {
-      this.contextEl.removeAttribute("data-state");
+      delete this.contextEl.dataset.state;
     }
   }
 
   private linkifyTimestamps(content: string): string {
     return content.replace(this.timestampPattern, (match, time) => {
       const seconds = parseTimestampSeconds(time);
-      if (seconds == null) return match;
+      if (seconds == null) {return match;}
       return `[${time}](timestamp:${seconds})`;
     });
   }
 
   private createMessageElement(message: ChatMessage): HTMLDivElement {
-    const msgEl = document.createElement("div");
+    const msgEl = document.createElement('div');
     msgEl.className = `chatMessage ${message.role}`;
     msgEl.dataset.id = message.id;
 
-    if (message.role === "assistant") {
+    if (message.role === 'assistant') {
       const { text, toolCalls } = splitAssistantMessage(message);
       const rendered = buildAssistantMarkdown(text, toolCalls);
       if (rendered.trim()) {
         msgEl.innerHTML = this.markdown.render(this.linkifyTimestamps(rendered));
       } else {
         msgEl.innerHTML = this.typingIndicatorHtml;
-        msgEl.classList.add("streaming");
-        msgEl.setAttribute("data-placeholder", "true");
+        msgEl.classList.add('streaming');
+        msgEl.dataset.placeholder = 'true';
       }
       this.decorateAnchors(msgEl);
-    } else if (message.role === "toolResult") {
-      msgEl.classList.add("tool");
-      if (message.isError) msgEl.classList.add("error");
+    } else if (message.role === 'toolResult') {
+      msgEl.classList.add('tool');
+      if (message.isError) {msgEl.classList.add('error');}
       const output = extractText(message);
-      const header = `Tool result: ${message.toolName}${message.isError ? " (error)" : ""}`;
-      const body = output ? `\n\n\`\`\`\n${output}\n\`\`\`` : "";
+      const header = `Tool result: ${message.toolName}${message.isError ? ' (error)' : ''}`;
+      const body = output ? `\n\n\`\`\`\n${output}\n\`\`\`` : '';
       msgEl.innerHTML = this.markdown.render(`${header}${body}`);
       const attachments = extractAttachments(message);
       if (attachments.length > 0) {
-        const list = document.createElement("div");
-        list.className = "chatAttachments";
+        const list = document.createElement('div');
+        list.className = 'chatAttachments';
         for (const file of attachments) {
-          const link = document.createElement("button");
-          link.type = "button";
-          link.className = "chatAttachment";
-          link.textContent = `${file.fileName} (${file.mimeType || "file"})`;
-          link.addEventListener("click", () => {
+          const link = document.createElement('button');
+          link.type = 'button';
+          link.className = 'chatAttachment';
+          link.textContent = `${file.fileName} (${file.mimeType || 'file'})`;
+          link.addEventListener('click', () => {
             const blob = base64ToBlob(file.contentBase64, file.mimeType);
             const url = URL.createObjectURL(blob);
-            const anchor = document.createElement("a");
+            const anchor = document.createElement('a');
             anchor.href = url;
-            anchor.download = file.fileName || "download";
+            anchor.download = file.fileName || 'download';
             anchor.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
           });
-          list.appendChild(link);
+          list.append(link);
         }
-        msgEl.appendChild(list);
+        msgEl.append(list);
       }
     } else {
       msgEl.textContent = extractText(message);
@@ -251,51 +252,51 @@ export class ChatController {
   }
 
   private decorateAnchors(root: HTMLElement) {
-    for (const a of Array.from(root.querySelectorAll("a"))) {
-      const href = a.getAttribute("href") ?? "";
-      if (href.startsWith("timestamp:")) {
-        a.classList.add("chatTimestamp");
-        a.removeAttribute("target");
-        a.removeAttribute("rel");
+    for (const a of [...root.querySelectorAll('a')]) {
+      const href = a.getAttribute('href') ?? '';
+      if (href.startsWith('timestamp:')) {
+        a.classList.add('chatTimestamp');
+        a.removeAttribute('target');
+        a.removeAttribute('rel');
         continue;
       }
-      a.setAttribute("target", "_blank");
-      a.setAttribute("rel", "noopener noreferrer");
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
     }
   }
 }
 
 function extractText(message: ChatMessage): string {
-  if (message.role !== "user" && message.role !== "assistant" && message.role !== "toolResult") {
-    return "";
+  if (message.role !== 'user' && message.role !== 'assistant' && message.role !== 'toolResult') {
+    return '';
   }
   const { content } = message;
-  if (typeof content === "string") return content;
-  if (!Array.isArray(content)) return "";
+  if (typeof content === 'string') {return content;}
+  if (!Array.isArray(content)) {return '';}
   return content
-    .filter((part) => part.type === "text")
+    .filter((part) => part.type === 'text')
     .map((part) => part.text)
-    .join("");
+    .join('');
 }
 
-type ToolAttachment = { fileName: string; mimeType: string; contentBase64: string };
+interface ToolAttachment { fileName: string; mimeType: string; contentBase64: string }
 
 function extractAttachments(message: ChatMessage): ToolAttachment[] {
-  if (message.role !== "toolResult") return [];
-  const details = (message as ChatMessage & { details?: unknown }).details;
-  if (!details || typeof details !== "object") return [];
-  const files = (details as { files?: unknown }).files;
-  if (!Array.isArray(files)) return [];
+  if (message.role !== 'toolResult') {return [];}
+  const {details} = (message as ChatMessage & { details?: unknown });
+  if (!details || typeof details !== 'object') {return [];}
+  const {files} = (details as { files?: unknown });
+  if (!Array.isArray(files)) {return [];}
   return files
     .map((file) => {
-      if (!file || typeof file !== "object") return null;
+      if (!file || typeof file !== 'object') {return null;}
       const item = file as Record<string, unknown>;
-      const fileName = typeof item.fileName === "string" ? item.fileName : "";
+      const fileName = typeof item.fileName === 'string' ? item.fileName : '';
       const mimeType =
-        typeof item.mimeType === "string" ? item.mimeType : "application/octet-stream";
-      const contentBase64 = typeof item.contentBase64 === "string" ? item.contentBase64 : "";
-      if (!fileName || !contentBase64) return null;
-      return { fileName, mimeType, contentBase64 };
+        typeof item.mimeType === 'string' ? item.mimeType : 'application/octet-stream';
+      const contentBase64 = typeof item.contentBase64 === 'string' ? item.contentBase64 : '';
+      if (!fileName || !contentBase64) {return null;}
+      return { contentBase64, fileName, mimeType };
     })
     .filter((file): file is ToolAttachment => Boolean(file));
 }
@@ -304,56 +305,56 @@ function base64ToBlob(base64: string, mimeType: string): Blob {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
+    bytes[i] = binary.codePointAt(i);
   }
-  return new Blob([bytes], { type: mimeType || "application/octet-stream" });
+  return new Blob([bytes], { type: mimeType || 'application/octet-stream' });
 }
 
 function splitAssistantMessage(message: ChatMessage): {
   text: string;
-  toolCalls: Array<{ name: string; arguments: Record<string, unknown> }>;
+  toolCalls: { name: string; arguments: Record<string, unknown> }[];
 } {
   const { content } = message;
-  if (typeof content === "string") return { text: content, toolCalls: [] };
-  if (!Array.isArray(content)) return { text: "", toolCalls: [] };
+  if (typeof content === 'string') {return { text: content, toolCalls: [] };}
+  if (!Array.isArray(content)) {return { text: '', toolCalls: [] };}
   const text = content
-    .filter((part) => part.type === "text")
+    .filter((part) => part.type === 'text')
     .map((part) => part.text)
-    .join("");
+    .join('');
   const toolCalls = content
-    .filter((part) => part.type === "toolCall")
-    .map((call) => ({ name: call.name, arguments: call.arguments }));
+    .filter((part) => part.type === 'toolCall')
+    .map((call) => ({ arguments: call.arguments, name: call.name }));
   return { text, toolCalls };
 }
 
 function buildAssistantMarkdown(
   text: string,
-  toolCalls: Array<{ name: string; arguments: Record<string, unknown> }>,
+  toolCalls: { name: string; arguments: Record<string, unknown> }[],
 ): string {
-  if (!toolCalls.length) return text;
+  if (!toolCalls.length) {return text;}
   const calls = toolCalls
     .map(
       (call) =>
         `**Tool:** ${call.name}\n\n\`\`\`json\n${JSON.stringify(call.arguments, null, 2)}\n\`\`\``,
     )
-    .join("\n\n");
-  if (!text.trim()) return calls;
+    .join('\n\n');
+  if (!text.trim()) {return calls;}
   return `${text}\n\n---\n\n${calls}`;
 }
 
 function parseTimestampSeconds(value: string): number | null {
-  const parts = value.split(":").map((part) => part.trim());
-  if (parts.length < 2 || parts.length > 3) return null;
+  const parts = value.split(':').map((part) => part.trim());
+  if (parts.length < 2 || parts.length > 3) {return null;}
   const secondsPart = parts.pop();
-  if (!secondsPart) return null;
+  if (!secondsPart) {return null;}
   const seconds = Number(secondsPart);
-  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  if (!Number.isFinite(seconds) || seconds < 0) {return null;}
   const minutesPart = parts.pop();
-  if (minutesPart == null) return null;
+  if (minutesPart == null) {return null;}
   const minutes = Number(minutesPart);
-  if (!Number.isFinite(minutes) || minutes < 0) return null;
+  if (!Number.isFinite(minutes) || minutes < 0) {return null;}
   const hoursPart = parts.pop();
   const hours = hoursPart != null ? Number(hoursPart) : 0;
-  if (!Number.isFinite(hours) || hours < 0) return null;
+  if (!Number.isFinite(hours) || hours < 0) {return null;}
   return Math.floor(hours * 3600 + minutes * 60 + seconds);
 }

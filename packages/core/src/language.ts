@@ -1,9 +1,9 @@
 const NORMALIZE_PATTERN = /[^a-z0-9-]+/g;
 
 export type OutputLanguage =
-  | { kind: "auto" }
+  | { kind: 'auto' }
   | {
-      kind: "fixed";
+      kind: 'fixed';
       /**
        * BCP-47-ish language tag (e.g. "en", "de", "en-US").
        *
@@ -17,81 +17,81 @@ export type OutputLanguage =
     };
 
 const LANGUAGE_ALIASES: Record<string, { tag: string; label: string }> = {
-  en: { tag: "en", label: "English" },
-  "en-us": { tag: "en-US", label: "English" },
-  "en-gb": { tag: "en-GB", label: "English" },
-  english: { tag: "en", label: "English" },
+  ar: { label: 'Arabic', tag: 'ar' },
+  arabic: { label: 'Arabic', tag: 'ar' },
+  chinese: { label: 'Chinese', tag: 'zh' },
+  cs: { label: 'Czech', tag: 'cs' },
 
-  de: { tag: "de", label: "German" },
-  "de-de": { tag: "de-DE", label: "German" },
-  german: { tag: "de", label: "German" },
-  deutsch: { tag: "de", label: "German" },
+  czech: { label: 'Czech', tag: 'cs' },
+  da: { label: 'Danish', tag: 'da' },
+  danish: { label: 'Danish', tag: 'da' },
+  de: { label: 'German', tag: 'de' },
 
-  es: { tag: "es", label: "Spanish" },
-  "es-es": { tag: "es-ES", label: "Spanish" },
-  "es-mx": { tag: "es-MX", label: "Spanish" },
-  spanish: { tag: "es", label: "Spanish" },
-  espanol: { tag: "es", label: "Spanish" },
+  'de-de': { label: 'German', tag: 'de-DE' },
+  deutsch: { label: 'German', tag: 'de' },
+  dutch: { label: 'Dutch', tag: 'nl' },
+  en: { label: 'English', tag: 'en' },
+  'en-gb': { label: 'English', tag: 'en-GB' },
 
-  fr: { tag: "fr", label: "French" },
-  french: { tag: "fr", label: "French" },
+  'en-us': { label: 'English', tag: 'en-US' },
+  english: { label: 'English', tag: 'en' },
 
-  it: { tag: "it", label: "Italian" },
-  italian: { tag: "it", label: "Italian" },
+  es: { label: 'Spanish', tag: 'es' },
+  'es-es': { label: 'Spanish', tag: 'es-ES' },
 
-  pt: { tag: "pt", label: "Portuguese" },
-  "pt-br": { tag: "pt-BR", label: "Portuguese (Brazil)" },
-  "pt-pt": { tag: "pt-PT", label: "Portuguese (Portugal)" },
-  portuguese: { tag: "pt", label: "Portuguese" },
+  'es-mx': { label: 'Spanish', tag: 'es-MX' },
+  espanol: { label: 'Spanish', tag: 'es' },
+  fi: { label: 'Finnish', tag: 'fi' },
+  finnish: { label: 'Finnish', tag: 'fi' },
 
-  nl: { tag: "nl", label: "Dutch" },
-  dutch: { tag: "nl", label: "Dutch" },
+  fr: { label: 'French', tag: 'fr' },
+  french: { label: 'French', tag: 'fr' },
 
-  sv: { tag: "sv", label: "Swedish" },
-  swedish: { tag: "sv", label: "Swedish" },
+  german: { label: 'German', tag: 'de' },
+  hi: { label: 'Hindi', tag: 'hi' },
 
-  no: { tag: "no", label: "Norwegian" },
-  norwegian: { tag: "no", label: "Norwegian" },
+  hindi: { label: 'Hindi', tag: 'hi' },
+  it: { label: 'Italian', tag: 'it' },
 
-  da: { tag: "da", label: "Danish" },
-  danish: { tag: "da", label: "Danish" },
+  italian: { label: 'Italian', tag: 'it' },
+  ja: { label: 'Japanese', tag: 'ja' },
 
-  fi: { tag: "fi", label: "Finnish" },
-  finnish: { tag: "fi", label: "Finnish" },
+  japanese: { label: 'Japanese', tag: 'ja' },
+  ko: { label: 'Korean', tag: 'ko' },
 
-  pl: { tag: "pl", label: "Polish" },
-  polish: { tag: "pl", label: "Polish" },
+  korean: { label: 'Korean', tag: 'ko' },
+  nl: { label: 'Dutch', tag: 'nl' },
 
-  cs: { tag: "cs", label: "Czech" },
-  czech: { tag: "cs", label: "Czech" },
+  no: { label: 'Norwegian', tag: 'no' },
+  norwegian: { label: 'Norwegian', tag: 'no' },
 
-  tr: { tag: "tr", label: "Turkish" },
-  turkish: { tag: "tr", label: "Turkish" },
+  pl: { label: 'Polish', tag: 'pl' },
+  polish: { label: 'Polish', tag: 'pl' },
 
-  ru: { tag: "ru", label: "Russian" },
-  russian: { tag: "ru", label: "Russian" },
+  portuguese: { label: 'Portuguese', tag: 'pt' },
+  pt: { label: 'Portuguese', tag: 'pt' },
 
-  uk: { tag: "uk", label: "Ukrainian" },
-  ukrainian: { tag: "uk", label: "Ukrainian" },
+  'pt-br': { label: 'Portuguese (Brazil)', tag: 'pt-BR' },
+  'pt-pt': { label: 'Portuguese (Portugal)', tag: 'pt-PT' },
 
-  zh: { tag: "zh", label: "Chinese" },
-  "zh-cn": { tag: "zh-CN", label: "Chinese (Simplified)" },
-  "zh-hans": { tag: "zh-Hans", label: "Chinese (Simplified)" },
-  "zh-tw": { tag: "zh-TW", label: "Chinese (Traditional)" },
-  "zh-hant": { tag: "zh-Hant", label: "Chinese (Traditional)" },
-  chinese: { tag: "zh", label: "Chinese" },
+  ru: { label: 'Russian', tag: 'ru' },
+  russian: { label: 'Russian', tag: 'ru' },
+  spanish: { label: 'Spanish', tag: 'es' },
+  sv: { label: 'Swedish', tag: 'sv' },
+  swedish: { label: 'Swedish', tag: 'sv' },
+  tr: { label: 'Turkish', tag: 'tr' },
 
-  ja: { tag: "ja", label: "Japanese" },
-  japanese: { tag: "ja", label: "Japanese" },
+  turkish: { label: 'Turkish', tag: 'tr' },
+  uk: { label: 'Ukrainian', tag: 'uk' },
 
-  ko: { tag: "ko", label: "Korean" },
-  korean: { tag: "ko", label: "Korean" },
+  ukrainian: { label: 'Ukrainian', tag: 'uk' },
+  zh: { label: 'Chinese', tag: 'zh' },
 
-  ar: { tag: "ar", label: "Arabic" },
-  arabic: { tag: "ar", label: "Arabic" },
+  'zh-cn': { label: 'Chinese (Simplified)', tag: 'zh-CN' },
+  'zh-hans': { label: 'Chinese (Simplified)', tag: 'zh-Hans' },
 
-  hi: { tag: "hi", label: "Hindi" },
-  hindi: { tag: "hi", label: "Hindi" },
+  'zh-hant': { label: 'Chinese (Traditional)', tag: 'zh-Hant' },
+  'zh-tw': { label: 'Chinese (Traditional)', tag: 'zh-TW' },
 };
 
 const looksLikeLanguageTag = (value: string): boolean =>
@@ -100,62 +100,62 @@ const looksLikeLanguageTag = (value: string): boolean =>
 
 function normalizeLanguageTag(value: string): string {
   const parts = value
-    .replaceAll("_", "-")
-    .split("-")
+    .replaceAll('_', '-')
+    .split('-')
     .map((p) => p.trim())
     .filter(Boolean);
-  if (parts.length === 0) return value;
+  if (parts.length === 0) {return value;}
   const [headRaw, ...rest] = parts;
   const head = headRaw.toLowerCase();
   const tail = rest.map((p) =>
     p.length === 2 ? p.toUpperCase() : p.slice(0, 1).toUpperCase() + p.slice(1),
   );
-  return [head, ...tail].join("-");
+  return [head, ...tail].join('-');
 }
 
 function sanitizeFreeForm(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed) return "";
-  return trimmed.replaceAll(/\s+/g, " ").slice(0, 64);
+  if (!trimmed) {return '';}
+  return trimmed.replaceAll(/\s+/g, ' ').slice(0, 64);
 }
 
 export function parseOutputLanguage(raw: string): OutputLanguage {
   const trimmed = raw.trim();
   if (!trimmed) {
-    throw new Error("Invalid --language: must not be empty.");
+    throw new Error('Invalid --language: must not be empty.');
   }
   const compact = trimmed
     .toLowerCase()
-    .replaceAll("_", "-")
-    .replaceAll(NORMALIZE_PATTERN, "-")
-    .replaceAll(/-+/g, "-")
-    .replaceAll(/^-|-$/g, "");
-  if (compact === "auto") return { kind: "auto" };
+    .replaceAll('_', '-')
+    .replaceAll(NORMALIZE_PATTERN, '-')
+    .replaceAll(/-+/g, '-')
+    .replaceAll(/^-|-$/g, '');
+  if (compact === 'auto') {return { kind: 'auto' };}
 
   const alias = LANGUAGE_ALIASES[compact];
-  if (alias) return { kind: "fixed", tag: alias.tag, label: alias.label };
+  if (alias) {return { kind: 'fixed', tag: alias.tag, label: alias.label };}
 
   if (looksLikeLanguageTag(trimmed)) {
     const tag = normalizeLanguageTag(trimmed);
-    return { kind: "fixed", tag, label: tag };
+    return { kind: 'fixed', label: tag, tag };
   }
 
   const freeForm = sanitizeFreeForm(trimmed);
-  return { kind: "fixed", tag: freeForm, label: freeForm };
+  return { kind: 'fixed', label: freeForm, tag: freeForm };
 }
 
 export function resolveOutputLanguage(raw: string | null | undefined): OutputLanguage {
-  const value = typeof raw === "string" ? raw.trim() : "";
-  if (!value) return { kind: "auto" };
+  const value = typeof raw === 'string' ? raw.trim() : '';
+  if (!value) {return { kind: 'auto' };}
   try {
     return parseOutputLanguage(value);
   } catch {
-    return { kind: "auto" };
+    return { kind: 'auto' };
   }
 }
 
 export function formatOutputLanguageInstruction(language: OutputLanguage): string {
-  if (language.kind === "auto") {
+  if (language.kind === 'auto') {
     return "Match the dominant source language. If you can't confidently detect it, use English.";
   }
   return `Write the answer in ${language.label}.`;
@@ -163,8 +163,8 @@ export function formatOutputLanguageInstruction(language: OutputLanguage): strin
 
 export function formatOutputLanguageForJson(
   language: OutputLanguage,
-): { mode: "auto" } | { mode: "fixed"; tag: string; label: string } {
-  return language.kind === "auto"
-    ? { mode: "auto" }
-    : { mode: "fixed", tag: language.tag, label: language.label };
+): { mode: 'auto' } | { mode: 'fixed'; tag: string; label: string } {
+  return language.kind === 'auto'
+    ? { mode: 'auto' }
+    : { label: language.label, mode: 'fixed', tag: language.tag };
 }

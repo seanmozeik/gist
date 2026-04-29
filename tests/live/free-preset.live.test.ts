@@ -1,12 +1,14 @@
-import { promises as fs } from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
-import { runCli } from "../../src/run.js";
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { Writable } from 'node:stream';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === "1";
-const ANSI_SGR_RE = /\x1b\[[0-9;]*m/;
+import { describe, expect, it } from 'vitest';
+
+import { runCli } from '../../src/run.js';
+
+const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const ANSI_SGR_RE = /\x1B\[[0-9;]*m/;
 
 function shouldSoftSkipLiveError(message: string): boolean {
   return /(rate limit exceeded|free-models-per-min|free-models-per-day|no working :free models|no :free models)/i.test(
@@ -15,14 +17,14 @@ function shouldSoftSkipLiveError(message: string): boolean {
 }
 
 const collectStream = () => {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 };
 
 const silentStderr = new Writable({
@@ -31,64 +33,64 @@ const silentStderr = new Writable({
   },
 });
 
-(LIVE ? describe : describe.skip)("live free preset", () => {
+(LIVE ? describe : describe.skip)('live free preset', () => {
   const timeoutMs = 180_000;
 
   it(
-    "refresh-free + --model free returns JSON with llm!=null",
+    'refresh-free + --model free returns JSON with llm!=null',
     async () => {
-      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? "";
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
-        it.skip("requires OPENROUTER_API_KEY", () => {});
+        it.skip('requires OPENROUTER_API_KEY', () => {});
         return;
       }
 
-      const home = await fs.mkdtemp(path.join(os.tmpdir(), "summarize-live-free-"));
+      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-live-free-'));
       const env = {
         ...process.env,
+        FORCE_COLOR: process.env.FORCE_COLOR ?? '1',
         HOME: home,
         OPENROUTER_API_KEY,
-        TERM: process.env.TERM ?? "xterm-256color",
-        FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
+        TERM: process.env.TERM ?? 'xterm-256color',
       };
 
       try {
         const refreshOut = collectStream();
-        await runCli(["refresh-free", "--runs", "0", "--min-params", "0b"], {
+        await runCli(['refresh-free', '--runs', '0', '--min-params', '0b'], {
           env,
           fetch: globalThis.fetch.bind(globalThis),
-          stdout: refreshOut.stream,
           stderr: silentStderr,
+          stdout: refreshOut.stream,
         });
         expect(refreshOut.getText()).toMatch(/models\.free/i);
 
         const out = collectStream();
         await runCli(
           [
-            "--json",
-            "--metrics",
-            "off",
-            "--timeout",
-            "60s",
-            "--model",
-            "free",
-            "https://example.com",
+            '--json',
+            '--metrics',
+            'off',
+            '--timeout',
+            '60s',
+            '--model',
+            'free',
+            'https://example.com',
           ],
           {
             env,
             fetch: globalThis.fetch.bind(globalThis),
-            stdout: out.stream,
             stderr: silentStderr,
+            stdout: out.stream,
           },
         );
 
         const payload = JSON.parse(out.getText()) as { llm: unknown; summary?: string | null };
         expect(payload.llm).not.toBe(null);
-        expect(typeof payload.summary).toBe("string");
-        expect((payload.summary ?? "").trim().length).toBeGreaterThan(0);
+        expect(typeof payload.summary).toBe('string');
+        expect((payload.summary ?? '').trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) return;
+        if (shouldSoftSkipLiveError(message)) {return;}
         throw error;
       }
     },
@@ -96,30 +98,30 @@ const silentStderr = new Writable({
   );
 
   it(
-    "--model free streams when stdout is a TTY",
+    '--model free streams when stdout is a TTY',
     async () => {
-      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? "";
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
-        it.skip("requires OPENROUTER_API_KEY", () => {});
+        it.skip('requires OPENROUTER_API_KEY', () => {});
         return;
       }
 
-      const home = await fs.mkdtemp(path.join(os.tmpdir(), "summarize-live-free-stream-"));
+      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-live-free-stream-'));
       const env = {
         ...process.env,
+        FORCE_COLOR: process.env.FORCE_COLOR ?? '1',
         HOME: home,
         OPENROUTER_API_KEY,
-        TERM: process.env.TERM ?? "xterm-256color",
-        FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
+        TERM: process.env.TERM ?? 'xterm-256color',
       };
 
       try {
         const refreshOut = collectStream();
-        await runCli(["refresh-free", "--runs", "0", "--min-params", "0b"], {
+        await runCli(['refresh-free', '--runs', '0', '--min-params', '0b'], {
           env,
           fetch: globalThis.fetch.bind(globalThis),
-          stdout: refreshOut.stream,
           stderr: silentStderr,
+          stdout: refreshOut.stream,
         });
         expect(refreshOut.getText()).toMatch(/models\.free/i);
 
@@ -128,22 +130,22 @@ const silentStderr = new Writable({
         (out.stream as unknown as { columns?: number }).columns = 80;
 
         await runCli(
-          ["--timeout", "60s", "--model", "free", "--stream", "on", "https://example.com"],
+          ['--timeout', '60s', '--model', 'free', '--stream', 'on', 'https://example.com'],
           {
             env,
             fetch: globalThis.fetch.bind(globalThis),
-            stdout: out.stream,
             stderr: silentStderr,
+            stdout: out.stream,
           },
         );
 
         const text = out.getText();
         expect(text).toMatch(ANSI_SGR_RE);
-        expect(text).not.toContain("\u001b[?2026h");
-        expect(text).not.toContain("\u001b[?2026l");
+        expect(text).not.toContain('\u001B[?2026h');
+        expect(text).not.toContain('\u001B[?2026l');
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) return;
+        if (shouldSoftSkipLiveError(message)) {return;}
         throw error;
       }
     },

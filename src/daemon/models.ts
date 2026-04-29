@@ -1,21 +1,19 @@
-import { getModels } from "@mariozechner/pi-ai";
-import { isOpenRouterBaseUrl } from "@steipete/summarize-core";
-import type { SummarizeConfig } from "../config.js";
-import { resolveCliAvailability } from "../run/env.js";
-import { resolveEnvState } from "../run/run-env.js";
+import { getModels } from '@mariozechner/pi-ai';
+import { isOpenRouterBaseUrl } from '@steipete/summarize-core';
 
-export type ModelPickerOption = {
-  id: string;
-  label: string;
-};
+import type { SummarizeConfig } from '../config.js';
+import { resolveCliAvailability } from '../run/env.js';
+import { resolveEnvState } from '../run/run-env.js';
+
+export interface ModelPickerOption { id: string; label: string }
 
 function uniqById(options: ModelPickerOption[]): ModelPickerOption[] {
   const seen = new Set<string>();
   const out: ModelPickerOption[] = [];
   for (const opt of options) {
     const id = opt.id.trim();
-    if (!id) continue;
-    if (seen.has(id)) continue;
+    if (!id) {continue;}
+    if (seen.has(id)) {continue;}
     seen.add(id);
     out.push({ id, label: opt.label.trim() || id });
   }
@@ -51,12 +49,11 @@ function pushPiAiModels({
   prefix: string;
   labelPrefix: string;
 }) {
-  const models = getModels(provider)
-    .slice()
-    .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+  const models = [...getModels(provider)]
+    .toSorted((a, b) => (a.name ?? a.id).localeCompare(b.name ?? b.id));
   for (const m of models) {
     const id = `${prefix}${m.id}`;
-    const label = `${labelPrefix}${m.name || m.id}`;
+    const label = `${labelPrefix}${m.name ?? m.id}`;
     options.push({ id, label });
   }
 }
@@ -72,37 +69,37 @@ async function discoverOpenAiCompatibleModelIds({
   fetchImpl: typeof fetch;
   timeoutMs: number;
 }): Promise<string[]> {
-  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  const modelsUrl = new URL("models", base).toString();
+  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const modelsUrl = new URL('models', base).toString();
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
   try {
     const res = await fetchImpl(modelsUrl, {
-      method: "GET",
       headers: apiKey ? { authorization: `Bearer ${apiKey}` } : undefined,
+      method: 'GET',
       signal: controller.signal,
     });
-    if (!res.ok) return [];
+    if (!res.ok) {return [];}
     const json = (await res.json()) as unknown;
-    if (!json || typeof json !== "object") return [];
+    if (!json || typeof json !== 'object') {return [];}
 
     const obj = json as Record<string, unknown>;
-    const data = obj.data;
+    const {data} = obj;
     if (Array.isArray(data)) {
       const ids = data
-        .map((item) => (item && typeof item === "object" ? (item as { id?: unknown }).id : null))
-        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .map((item) => (item && typeof item === 'object' ? (item as { id?: unknown }).id : null))
+        .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
         .map((id) => id.trim());
-      return Array.from(new Set(ids)).sort((a, b) => a.localeCompare(b));
+      return [...new Set(ids)].toSorted((a, b) => a.localeCompare(b));
     }
 
-    const models = obj.models;
+    const {models} = obj;
     if (Array.isArray(models)) {
       const ids = models
-        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
         .map((id) => id.trim());
-      return Array.from(new Set(ids)).sort((a, b) => a.localeCompare(b));
+      return [...new Set(ids)].toSorted((a, b) => a.localeCompare(b));
     }
 
     return [];
@@ -142,26 +139,26 @@ export async function buildModelPickerOptions({
     cliOpencode: boolean;
   };
   openaiBaseUrl: string | null;
-  localModelsSource: { kind: "openai-compatible"; baseUrlHost: string } | null;
+  localModelsSource: { kind: 'openai-compatible'; baseUrlHost: string } | null;
 }> {
-  const envState = resolveEnvState({ env, envForRun, configForCli });
+  const envState = resolveEnvState({ configForCli, env, envForRun });
 
   const providers = {
-    xai: Boolean(envState.xaiApiKey),
-    openai: Boolean(envState.apiKey),
-    nvidia: Boolean(envState.nvidiaApiKey),
-    google: envState.googleConfigured,
     anthropic: envState.anthropicConfigured,
-    openrouter: envState.openrouterConfigured,
-    zai: Boolean(envState.zaiApiKey),
-    cliClaude: false,
-    cliGemini: false,
-    cliCodex: false,
     cliAgent: false,
+    cliClaude: false,
+    cliCodex: false,
+    cliGemini: false,
     cliOpenclaw: false,
     cliOpencode: false,
+    google: envState.googleConfigured,
+    nvidia: Boolean(envState.nvidiaApiKey),
+    openai: Boolean(envState.apiKey),
+    openrouter: envState.openrouterConfigured,
+    xai: Boolean(envState.xaiApiKey),
+    zai: Boolean(envState.zaiApiKey),
   };
-  const cliAvailability = resolveCliAvailability({ env: envForRun, config: configForCli });
+  const cliAvailability = resolveCliAvailability({ config: configForCli, env: envForRun });
   providers.cliClaude = Boolean(cliAvailability.claude);
   providers.cliGemini = Boolean(cliAvailability.gemini);
   providers.cliCodex = Boolean(cliAvailability.codex);
@@ -170,83 +167,63 @@ export async function buildModelPickerOptions({
   providers.cliOpencode = Boolean(cliAvailability.opencode);
 
   const options: ModelPickerOption[] = [
-    { id: "auto", label: "Auto" },
-    { id: "fast", label: "OpenAI GPT-5.5 Fast" },
-    { id: "codex-fast", label: "GPT Fast (Codex)" },
+    { id: 'auto', label: 'Auto' },
+    { id: 'fast', label: 'OpenAI GPT-5.5 Fast' },
+    { id: 'codex-fast', label: 'GPT Fast (Codex)' },
   ];
 
   if (providers.cliClaude) {
-    options.push({ id: "cli/claude", label: "CLI: Claude" });
+    options.push({ id: 'cli/claude', label: 'CLI: Claude' });
   }
   if (providers.cliGemini) {
-    options.push({ id: "cli/gemini", label: "CLI: Gemini" });
+    options.push({ id: 'cli/gemini', label: 'CLI: Gemini' });
   }
   if (providers.cliCodex) {
-    options.push({ id: "cli/codex", label: "CLI: Codex" });
+    options.push({ id: 'cli/codex', label: 'CLI: Codex' });
   }
   if (providers.cliAgent) {
-    options.push({ id: "cli/agent", label: "CLI: Cursor Agent" });
+    options.push({ id: 'cli/agent', label: 'CLI: Cursor Agent' });
   }
   if (providers.cliOpenclaw) {
-    options.push({ id: "cli/openclaw", label: "CLI: OpenClaw" });
+    options.push({ id: 'cli/openclaw', label: 'CLI: OpenClaw' });
   }
   if (providers.cliOpencode) {
-    options.push({ id: "cli/opencode", label: "CLI: OpenCode" });
+    options.push({ id: 'cli/opencode', label: 'CLI: OpenCode' });
   }
 
   if (providers.openrouter) {
-    options.push({ id: "free", label: "Free (OpenRouter)" });
+    options.push({ id: 'free', label: 'Free (OpenRouter)' });
     pushPiAiModels({
+      labelPrefix: 'OpenRouter: ',
       options,
-      provider: "openrouter",
-      prefix: "openrouter/",
-      labelPrefix: "OpenRouter: ",
+      prefix: 'openrouter/',
+      provider: 'openrouter',
     });
   }
 
   if (providers.openai) {
-    pushPiAiModels({
-      options,
-      provider: "openai",
-      prefix: "openai/",
-      labelPrefix: "OpenAI: ",
-    });
+    pushPiAiModels({ labelPrefix: 'OpenAI: ', options, prefix: 'openai/', provider: 'openai' });
   }
 
   if (providers.anthropic) {
     pushPiAiModels({
+      labelPrefix: 'Anthropic: ',
       options,
-      provider: "anthropic",
-      prefix: "anthropic/",
-      labelPrefix: "Anthropic: ",
+      prefix: 'anthropic/',
+      provider: 'anthropic',
     });
   }
 
   if (providers.google) {
-    pushPiAiModels({
-      options,
-      provider: "google",
-      prefix: "google/",
-      labelPrefix: "Google: ",
-    });
+    pushPiAiModels({ labelPrefix: 'Google: ', options, prefix: 'google/', provider: 'google' });
   }
 
   if (providers.xai) {
-    pushPiAiModels({
-      options,
-      provider: "xai",
-      prefix: "xai/",
-      labelPrefix: "xAI: ",
-    });
+    pushPiAiModels({ labelPrefix: 'xAI: ', options, prefix: 'xai/', provider: 'xai' });
   }
 
   if (providers.zai) {
-    pushPiAiModels({
-      options,
-      provider: "zai",
-      prefix: "zai/",
-      labelPrefix: "Z.AI: ",
-    });
+    pushPiAiModels({ labelPrefix: 'Z.AI: ', options, prefix: 'zai/', provider: 'zai' });
   }
 
   if (providers.nvidia) {
@@ -254,8 +231,8 @@ export async function buildModelPickerOptions({
     const baseUrlHost = describeBaseUrlHost(baseUrl);
     if (baseUrlHost) {
       const discovered = await discoverOpenAiCompatibleModelIds({
-        baseUrl,
         apiKey: envState.nvidiaApiKey,
+        baseUrl,
         fetchImpl,
         timeoutMs: 1200,
       });
@@ -269,7 +246,7 @@ export async function buildModelPickerOptions({
     return envState.providerBaseUrls.openai;
   })();
 
-  let localModelsSource: { kind: "openai-compatible"; baseUrlHost: string } | null = null;
+  let localModelsSource: { kind: 'openai-compatible'; baseUrlHost: string } | null = null;
 
   if (
     openaiBaseUrl &&
@@ -279,13 +256,13 @@ export async function buildModelPickerOptions({
     const baseUrlHost = describeBaseUrlHost(openaiBaseUrl);
     if (baseUrlHost) {
       const discovered = await discoverOpenAiCompatibleModelIds({
-        baseUrl: openaiBaseUrl,
         apiKey: envState.apiKey,
+        baseUrl: openaiBaseUrl,
         fetchImpl,
         timeoutMs: 900,
       });
       if (discovered.length > 0) {
-        localModelsSource = { kind: "openai-compatible", baseUrlHost };
+        localModelsSource = { baseUrlHost, kind: 'openai-compatible' };
         for (const id of discovered) {
           options.push({ id: `openai/${id}`, label: `Local (${baseUrlHost}): ${id}` });
         }
@@ -293,11 +270,5 @@ export async function buildModelPickerOptions({
     }
   }
 
-  return {
-    ok: true,
-    options: uniqById(options),
-    providers,
-    openaiBaseUrl,
-    localModelsSource,
-  };
+  return { localModelsSource, ok: true, openaiBaseUrl, options: uniqById(options), providers };
 }

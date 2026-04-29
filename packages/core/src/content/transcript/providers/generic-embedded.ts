@@ -1,55 +1,52 @@
-import { load } from "cheerio";
-import type { TranscriptSegment } from "../../link-preview/types.js";
-import { isDirectMediaUrl } from "../../url.js";
+import { load } from 'cheerio';
+
+import type { TranscriptSegment } from '../../link-preview/types.js';
+import { isDirectMediaUrl } from '../../url.js';
 import {
   jsonTranscriptToPlainText,
   jsonTranscriptToSegments,
   vttToPlainText,
   vttToSegments,
-} from "../parse.js";
+} from '../parse.js';
 
-export type EmbeddedTrack = {
-  url: string;
-  type: string | null;
-  language: string | null;
-};
+export interface EmbeddedTrack { url: string; type: string | null; language: string | null }
 
-export type EmbeddedMedia = {
-  kind: "video" | "audio";
+export interface EmbeddedMedia {
+  kind: 'video' | 'audio';
   mediaUrl: string | null;
   track: EmbeddedTrack | null;
-};
+}
 
 export function detectEmbeddedMedia(html: string, baseUrl: string): EmbeddedMedia | null {
   const $ = load(html);
   const trackCandidates: EmbeddedTrack[] = [];
   $('track[kind="captions"], track[kind="subtitles"]').each((_idx, el) => {
-    const src = $(el).attr("src")?.trim();
-    if (!src) return;
+    const src = $(el).attr('src')?.trim();
+    if (!src) {return;}
     const url = resolveAbsoluteUrl(src, baseUrl);
-    if (!url) return;
-    const type = $(el).attr("type")?.trim() ?? null;
-    const language = $(el).attr("srclang")?.trim() ?? $(el).attr("lang")?.trim() ?? null;
-    trackCandidates.push({ url, type, language });
+    if (!url) {return;}
+    const type = $(el).attr('type')?.trim() ?? null;
+    const language = $(el).attr('srclang')?.trim() ?? $(el).attr('lang')?.trim() ?? null;
+    trackCandidates.push({ language, type, url });
   });
 
   const track = selectPreferredTrack(trackCandidates);
-  const videoUrl = resolveFirstMediaUrl($, baseUrl, "video");
-  const audioUrl = resolveFirstMediaUrl($, baseUrl, "audio");
-  const ogVideo = resolveOgMediaUrl($, baseUrl, "video");
-  const ogAudio = resolveOgMediaUrl($, baseUrl, "audio");
+  const videoUrl = resolveFirstMediaUrl($, baseUrl, 'video');
+  const audioUrl = resolveFirstMediaUrl($, baseUrl, 'audio');
+  const ogVideo = resolveOgMediaUrl($, baseUrl, 'video');
+  const ogAudio = resolveOgMediaUrl($, baseUrl, 'audio');
 
   if (videoUrl || ogVideo) {
-    return { kind: "video", mediaUrl: pickMediaUrl([videoUrl, ogVideo]), track };
+    return { kind: 'video', mediaUrl: pickMediaUrl([videoUrl, ogVideo]), track };
   }
   if (audioUrl || ogAudio) {
-    return { kind: "audio", mediaUrl: pickMediaUrl([audioUrl, ogAudio]), track };
+    return { kind: 'audio', mediaUrl: pickMediaUrl([audioUrl, ogAudio]), track };
   }
 
-  const hasVideoTag = $("video").length > 0;
-  const hasAudioTag = !hasVideoTag && $("audio").length > 0;
+  const hasVideoTag = $('video').length > 0;
+  const hasAudioTag = !hasVideoTag && $('audio').length > 0;
   if (track || hasVideoTag || hasAudioTag) {
-    return { kind: hasAudioTag ? "audio" : "video", mediaUrl: null, track };
+    return { kind: hasAudioTag ? 'audio' : 'video', mediaUrl: null, track };
   }
   return null;
 }
@@ -62,42 +59,42 @@ export async function fetchCaptionTrack(
 ): Promise<{ text: string; segments: TranscriptSegment[] | null } | null> {
   try {
     const res = await fetchImpl(track.url, {
-      headers: { accept: "text/vtt,text/plain,application/json;q=0.9,*/*;q=0.8" },
+      headers: { accept: 'text/vtt,text/plain,application/json;q=0.9,*/*;q=0.8' },
     });
     if (!res.ok) {
       notes.push(`Embedded captions fetch failed (${res.status})`);
       return null;
     }
     const body = await res.text();
-    const contentType = res.headers.get("content-type")?.toLowerCase() ?? "";
-    const type = track.type?.toLowerCase() ?? "";
+    const contentType = res.headers.get('content-type')?.toLowerCase() ?? '';
+    const type = track.type?.toLowerCase() ?? '';
 
-    if (type.includes("application/json") || contentType.includes("application/json")) {
+    if (type.includes('application/json') || contentType.includes('application/json')) {
       try {
         const parsed = JSON.parse(body);
         const text = jsonTranscriptToPlainText(parsed);
-        if (!text) return null;
+        if (!text) {return null;}
         const segments = includeSegments ? jsonTranscriptToSegments(parsed) : null;
-        return { text, segments };
+        return { segments, text };
       } catch {
-        notes.push("Embedded captions JSON parse failed");
+        notes.push('Embedded captions JSON parse failed');
         return null;
       }
     }
 
     if (
-      type.includes("text/vtt") ||
-      contentType.includes("text/vtt") ||
-      track.url.toLowerCase().endsWith(".vtt")
+      type.includes('text/vtt') ||
+      contentType.includes('text/vtt') ||
+      track.url.toLowerCase().endsWith('.vtt')
     ) {
       const plain = vttToPlainText(body);
-      if (plain.length === 0) return null;
+      if (plain.length === 0) {return null;}
       const segments = includeSegments ? vttToSegments(body) : null;
-      return { text: plain, segments };
+      return { segments, text: plain };
     }
 
     const trimmed = body.trim();
-    return trimmed.length > 0 ? { text: trimmed, segments: null } : null;
+    return trimmed.length > 0 ? { segments: null, text: trimmed } : null;
   } catch (error) {
     notes.push(`Embedded captions fetch failed: ${error instanceof Error ? error.message : error}`);
     return null;
@@ -105,43 +102,43 @@ export async function fetchCaptionTrack(
 }
 
 function selectPreferredTrack(tracks: EmbeddedTrack[]): EmbeddedTrack | null {
-  if (tracks.length === 0) return null;
+  if (tracks.length === 0) {return null;}
   const normalized = tracks.map((track) => ({
     ...track,
     language: track.language?.toLowerCase() ?? null,
   }));
-  const english = normalized.find((track) => track.language?.startsWith("en"));
+  const english = normalized.find((track) => track.language?.startsWith('en'));
   return english ?? normalized[0] ?? null;
 }
 
 function resolveFirstMediaUrl(
   $: ReturnType<typeof load>,
   baseUrl: string,
-  tag: "video" | "audio",
+  tag: 'video' | 'audio',
 ): string | null {
   const direct =
-    $(`${tag}[src]`).first().attr("src") ?? $(`${tag} source[src]`).first().attr("src") ?? null;
-  if (!direct) return null;
+    $(`${tag}[src]`).first().attr('src') ?? $(`${tag} source[src]`).first().attr('src') ?? null;
+  if (!direct) {return null;}
   return resolveAbsoluteUrl(direct, baseUrl);
 }
 
 function resolveOgMediaUrl(
   $: ReturnType<typeof load>,
   baseUrl: string,
-  kind: "video" | "audio",
+  kind: 'video' | 'audio',
 ): string | null {
   const meta = $(
     `meta[property="og:${kind}"], meta[property="og:${kind}:url"], meta[property="og:${kind}:secure_url"], meta[name="og:${kind}"], meta[name="og:${kind}:url"], meta[name="og:${kind}:secure_url"]`,
   )
     .first()
-    .attr("content");
-  if (!meta) return null;
+    .attr('content');
+  if (!meta) {return null;}
   return resolveAbsoluteUrl(meta, baseUrl);
 }
 
 function resolveAbsoluteUrl(candidate: string, baseUrl: string): string | null {
   const trimmed = candidate.trim();
-  if (trimmed.length === 0) return null;
+  if (trimmed.length === 0) {return null;}
   try {
     return new URL(trimmed, baseUrl).toString();
   } catch {
@@ -149,12 +146,12 @@ function resolveAbsoluteUrl(candidate: string, baseUrl: string): string | null {
   }
 }
 
-function pickMediaUrl(candidates: Array<string | null>): string | null {
+function pickMediaUrl(candidates: (string | null)[]): string | null {
   let fallback: string | null = null;
   for (const candidate of candidates) {
-    if (!candidate) continue;
-    if (isDirectMediaUrl(candidate)) return candidate;
-    if (!fallback) fallback = candidate;
+    if (!candidate) {continue;}
+    if (isDirectMediaUrl(candidate)) {return candidate;}
+    fallback ??= candidate;
   }
   return fallback;
 }

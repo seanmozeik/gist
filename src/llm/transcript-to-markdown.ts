@@ -1,9 +1,9 @@
-import type { OutputLanguage } from "../language.js";
-import { formatOutputLanguageInstruction } from "../language.js";
-import type { LlmTokenUsage } from "./generate-text.js";
-import { generateTextWithModelId } from "./generate-text.js";
-import type { LlmProvider } from "./model-id.js";
-import type { ModelRequestOptions } from "./model-options.js";
+import type { OutputLanguage } from '../language.js';
+import { formatOutputLanguageInstruction } from '../language.js';
+import type { LlmTokenUsage } from './generate-text.js';
+import { generateTextWithModelId } from './generate-text.js';
+import type { LlmProvider } from './model-id.js';
+import type { ModelRequestOptions } from './model-options.js';
 
 const MAX_TRANSCRIPT_INPUT_CHARACTERS = 200_000;
 
@@ -18,7 +18,7 @@ function buildTranscriptToMarkdownPrompt({
   transcript: string;
   outputLanguage?: OutputLanguage | null;
 }): { system: string; prompt: string } {
-  const languageInstruction = formatOutputLanguageInstruction(outputLanguage ?? { kind: "auto" });
+  const languageInstruction = formatOutputLanguageInstruction(outputLanguage ?? { kind: 'auto' });
 
   const system = `You convert raw transcripts into clean GitHub-Flavored Markdown.
 
@@ -32,15 +32,15 @@ Rules:
 - ${languageInstruction}
 - Output ONLY Markdown (no JSON, no explanations, no code fences wrapping the output)`;
 
-  const prompt = `Title: ${title ?? "unknown"}
-Source: ${source ?? "unknown"}
+  const prompt = `Title: ${title ?? 'unknown'}
+Source: ${source ?? 'unknown'}
 
 Transcript:
 """
 ${transcript}
 """`;
 
-  return { system, prompt };
+  return { prompt, system };
 }
 
 export type ConvertTranscriptToMarkdown = (args: {
@@ -99,27 +99,27 @@ export function createTranscriptToMarkdownConverter({
         ? transcript.slice(0, MAX_TRANSCRIPT_INPUT_CHARACTERS)
         : transcript;
     const { system, prompt } = buildTranscriptToMarkdownPrompt({
-      title,
-      source,
-      transcript: trimmedTranscript,
       outputLanguage,
+      source,
+      title,
+      transcript: trimmedTranscript,
     });
 
     const result = await generateTextWithModelId({
-      modelId,
-      apiKeys: { xaiApiKey, googleApiKey, openaiApiKey, anthropicApiKey, openrouterApiKey },
-      forceOpenRouter,
-      openaiBaseUrlOverride,
       anthropicBaseUrlOverride,
-      googleBaseUrlOverride,
-      xaiBaseUrlOverride,
-      forceChatCompletions,
-      requestOptions,
-      prompt: { system, userText: prompt },
-      timeoutMs,
+      apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey, openrouterApiKey, xaiApiKey },
       fetchImpl,
-      retries,
+      forceChatCompletions,
+      forceOpenRouter,
+      googleBaseUrlOverride,
+      modelId,
       onRetry,
+      openaiBaseUrlOverride,
+      prompt: { system, userText: prompt },
+      requestOptions,
+      retries,
+      timeoutMs,
+      xaiBaseUrlOverride,
     });
     onUsage?.({
       model: result.canonicalModelId,

@@ -1,7 +1,7 @@
-export type ChatContextMetadata = {
+export interface ChatContextMetadata {
   url?: string | null;
   title?: string | null;
-  source?: "page" | "url" | string | null;
+  source?: 'page' | 'url' | string | null;
   extractionStrategy?: string | null;
   markdownProvider?: string | null;
   firecrawlUsed?: boolean | null;
@@ -17,28 +17,28 @@ export type ChatContextMetadata = {
   transcriptLines?: number | null;
   transcriptHasTimestamps?: boolean | null;
   truncated?: boolean | null;
-};
+}
 
-export type ChatContextInput = {
+export interface ChatContextInput {
   transcript: string;
   summary?: string | null;
   summaryCap: number;
   metadata?: ChatContextMetadata;
   slides?: { count: number; text: string } | null;
-};
+}
 
 function formatDuration(seconds: number): string {
   const safe = Math.max(0, Math.round(seconds));
   const h = Math.floor(safe / 3600);
   const m = Math.floor((safe % 3600) / 60);
   const s = safe % 60;
-  if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}m`;
-  if (m > 0) return `${m}m ${s.toString().padStart(2, "0")}s`;
+  if (h > 0) {return `${h}h ${m.toString().padStart(2, '0')}m`;}
+  if (m > 0) {return `${m}m ${s.toString().padStart(2, '0')}s`;}
   return `${s}s`;
 }
 
 function buildMetadataBlock(metadata?: ChatContextMetadata): string {
-  if (!metadata) return "";
+  if (!metadata) {return '';}
   const lines: string[] = [];
 
   const durationLabel =
@@ -55,15 +55,15 @@ function buildMetadataBlock(metadata?: ChatContextMetadata): string {
     lines.push(`Media duration: ${durationLabel}`);
   }
 
-  if (metadata.title) lines.push(`Page name: ${metadata.title}`);
+  if (metadata.title) {lines.push(`Page name: ${metadata.title}`);}
 
   if (metadata.source) {
     const sourceLabel =
-      metadata.source === "page"
-        ? "Visible page (Readability)"
-        : metadata.source === "url"
-          ? "URL extraction (daemon)"
-          : metadata.source;
+      metadata.source === 'page'
+        ? 'Visible page (Readability)'
+        : (metadata.source === 'url'
+          ? 'URL extraction (daemon)'
+          : metadata.source);
     lines.push(`Source: ${sourceLabel}`);
   }
 
@@ -76,14 +76,14 @@ function buildMetadataBlock(metadata?: ChatContextMetadata): string {
   }
 
   if (metadata.firecrawlUsed === true) {
-    lines.push("Firecrawl: used");
+    lines.push('Firecrawl: used');
   }
 
   if (metadata.transcriptSource || metadata.transcriptionProvider) {
     const parts: string[] = [];
-    if (metadata.transcriptSource) parts.push(metadata.transcriptSource);
-    if (metadata.transcriptionProvider) parts.push(metadata.transcriptionProvider);
-    lines.push(`Transcription method: ${parts.join(" · ")}`);
+    if (metadata.transcriptSource) {parts.push(metadata.transcriptSource);}
+    if (metadata.transcriptionProvider) {parts.push(metadata.transcriptionProvider);}
+    lines.push(`Transcription method: ${parts.join(' · ')}`);
   }
 
   if (metadata.transcriptCache) {
@@ -91,46 +91,46 @@ function buildMetadataBlock(metadata?: ChatContextMetadata): string {
   }
 
   if (metadata.attemptedTranscriptProviders?.length) {
-    lines.push(`Transcript attempts: ${metadata.attemptedTranscriptProviders.join(", ")}`);
+    lines.push(`Transcript attempts: ${metadata.attemptedTranscriptProviders.join(', ')}`);
   }
 
-  if (typeof metadata.transcriptHasTimestamps === "boolean") {
-    lines.push(`Transcript timestamps: ${metadata.transcriptHasTimestamps ? "yes" : "no"}`);
+  if (typeof metadata.transcriptHasTimestamps === 'boolean') {
+    lines.push(`Transcript timestamps: ${metadata.transcriptHasTimestamps ? 'yes' : 'no'}`);
   }
 
   const contentParts: string[] = [];
-  if (typeof metadata.wordCount === "number" && Number.isFinite(metadata.wordCount)) {
+  if (typeof metadata.wordCount === 'number' && Number.isFinite(metadata.wordCount)) {
     contentParts.push(`${metadata.wordCount.toLocaleString()} words`);
   }
-  if (typeof metadata.totalCharacters === "number" && Number.isFinite(metadata.totalCharacters)) {
+  if (typeof metadata.totalCharacters === 'number' && Number.isFinite(metadata.totalCharacters)) {
     contentParts.push(`${metadata.totalCharacters.toLocaleString()} chars`);
   }
-  if (contentParts.length) lines.push(`Content size: ${contentParts.join(" · ")}`);
+  if (contentParts.length) {lines.push(`Content size: ${contentParts.join(' · ')}`);}
 
   const transcriptParts: string[] = [];
   if (
-    typeof metadata.transcriptWordCount === "number" &&
+    typeof metadata.transcriptWordCount === 'number' &&
     Number.isFinite(metadata.transcriptWordCount)
   ) {
     transcriptParts.push(`${metadata.transcriptWordCount.toLocaleString()} words`);
   }
   if (
-    typeof metadata.transcriptCharacters === "number" &&
+    typeof metadata.transcriptCharacters === 'number' &&
     Number.isFinite(metadata.transcriptCharacters)
   ) {
     transcriptParts.push(`${metadata.transcriptCharacters.toLocaleString()} chars`);
   }
-  if (typeof metadata.transcriptLines === "number" && Number.isFinite(metadata.transcriptLines)) {
+  if (typeof metadata.transcriptLines === 'number' && Number.isFinite(metadata.transcriptLines)) {
     transcriptParts.push(`${metadata.transcriptLines.toLocaleString()} lines`);
   }
-  if (transcriptParts.length) lines.push(`Transcript size: ${transcriptParts.join(" · ")}`);
+  if (transcriptParts.length) {lines.push(`Transcript size: ${transcriptParts.join(' · ')}`);}
 
-  if (typeof metadata.truncated === "boolean") {
-    lines.push(`Truncated: ${metadata.truncated ? "yes" : "no"}`);
+  if (typeof metadata.truncated === 'boolean') {
+    lines.push(`Truncated: ${metadata.truncated ? 'yes' : 'no'}`);
   }
 
-  if (!lines.length) return "";
-  return `Metadata:\n- ${lines.join("\n- ")}\n\n`;
+  if (!lines.length) {return '';}
+  return `Metadata:\n- ${lines.join('\n- ')}\n\n`;
 }
 
 export function buildChatPageContent({
@@ -140,11 +140,11 @@ export function buildChatPageContent({
   metadata,
   slides,
 }: ChatContextInput): string {
-  const cleanSummary = typeof summary === "string" ? summary.trim() : "";
+  const cleanSummary = typeof summary === 'string' ? summary.trim() : '';
   const cleanTranscript = transcript.trim();
   const metadataBlock = buildMetadataBlock(metadata);
-  const slidesText = slides?.text?.trim() ?? "";
-  const slidesBlock = slidesText.length > 0 ? `Slides (OCR):\n${slidesText}\n\n` : "";
+  const slidesText = slides?.text?.trim() ?? '';
+  const slidesBlock = slidesText.length > 0 ? `Slides (OCR):\n${slidesText}\n\n` : '';
 
   if (!cleanSummary) {
     return `${metadataBlock}${slidesBlock}Full transcript:\n${cleanTranscript}`.trim();

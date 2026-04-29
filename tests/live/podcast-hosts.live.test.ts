@@ -1,18 +1,20 @@
-import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
-import { runCli } from "../../src/run.js";
+import { Writable } from 'node:stream';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === "1";
+import { describe, expect, it } from 'vitest';
+
+import { runCli } from '../../src/run.js';
+
+const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
 
 const collectStream = () => {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 };
 
 const silentStderr = new Writable({
@@ -21,7 +23,7 @@ const silentStderr = new Writable({
   },
 });
 
-(LIVE ? describe : describe.skip)("live podcast hosts", () => {
+(LIVE ? describe : describe.skip)('live podcast hosts', () => {
   const timeoutMs = 180_000;
 
   const expectDescriptionOrTranscript = ({
@@ -39,7 +41,7 @@ const silentStderr = new Writable({
     if (descriptionText.length <= minDescriptionChars) {
       // Some hosts (especially geo/consent gated pages) omit metadata and return thin content.
       // Treat this as a soft skip for live host tests.
-      if (contentText.length < 200) return;
+      if (contentText.length < 200) {return;}
       expect(contentText.length).toBeGreaterThanOrEqual(200);
       return;
     }
@@ -63,129 +65,129 @@ const silentStderr = new Writable({
   };
 
   it(
-    "podbean share prefers description-sized content",
+    'podbean share prefers description-sized content',
     async () => {
       const out = collectStream();
       await runCli(
         [
-          "--extract",
-          "--json",
-          "--timeout",
-          "120s",
-          "https://www.podbean.com/media/share/dir-6wa7k-29a23114",
+          '--extract',
+          '--json',
+          '--timeout',
+          '120s',
+          'https://www.podbean.com/media/share/dir-6wa7k-29a23114',
         ],
         {
-          fetch: globalThis.fetch.bind(globalThis),
-          stdout: out.stream,
-          stderr: silentStderr,
           env: process.env,
+          fetch: globalThis.fetch.bind(globalThis),
+          stderr: silentStderr,
+          stdout: out.stream,
         },
       );
 
       const payload = JSON.parse(out.getText()) as {
         extracted?: { content?: string; description?: string };
       };
-      const description = payload.extracted?.description ?? "";
-      const content = payload.extracted?.content ?? "";
+      const description = payload.extracted?.description ?? '';
+      const content = payload.extracted?.content ?? '';
       // Amazon pages can return geo/anti-bot thin payloads even via Firecrawl.
-      if (description.length === 0 && content.length < 200) return;
-      expectDescriptionOrTranscript({ description, content, minDescriptionChars: 80 });
+      if (description.length === 0 && content.length < 200) {return;}
+      expectDescriptionOrTranscript({ content, description, minDescriptionChars: 80 });
     },
     timeoutMs,
   );
 
   it(
-    "amazon music episode prefers description-sized content (requires Firecrawl)",
+    'amazon music episode prefers description-sized content (requires Firecrawl)',
     async () => {
-      const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY?.trim() ?? "";
+      const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY?.trim() ?? '';
       if (!FIRECRAWL_API_KEY) {
-        it.skip("requires FIRECRAWL_API_KEY", () => {});
+        it.skip('requires FIRECRAWL_API_KEY', () => {});
         return;
       }
 
       const out = collectStream();
       await runCli(
         [
-          "--extract",
-          "--json",
-          "--timeout",
-          "120s",
-          "https://music.amazon.de/podcasts/61e4318e-659a-46b8-9380-c268b487dc68/episodes/07a8b875-a1d2-4d00-96ea-0bd986c2c7bd/die-j%C3%A4gerin-s2f2-nur-verlierer",
+          '--extract',
+          '--json',
+          '--timeout',
+          '120s',
+          'https://music.amazon.de/podcasts/61e4318e-659a-46b8-9380-c268b487dc68/episodes/07a8b875-a1d2-4d00-96ea-0bd986c2c7bd/die-j%C3%A4gerin-s2f2-nur-verlierer',
         ],
         {
-          fetch: globalThis.fetch.bind(globalThis),
-          stdout: out.stream,
-          stderr: silentStderr,
           env: process.env,
+          fetch: globalThis.fetch.bind(globalThis),
+          stderr: silentStderr,
+          stdout: out.stream,
         },
       );
 
       const payload = JSON.parse(out.getText()) as {
         extracted?: { content?: string; description?: string };
       };
-      const description = payload.extracted?.description ?? "";
-      const content = payload.extracted?.content ?? "";
-      expectDescriptionOrTranscript({ description, content, minDescriptionChars: 80 });
+      const description = payload.extracted?.description ?? '';
+      const content = payload.extracted?.content ?? '';
+      expectDescriptionOrTranscript({ content, description, minDescriptionChars: 80 });
     },
     timeoutMs,
   );
 
   it(
-    "spreaker episode prefers description-sized content",
+    'spreaker episode prefers description-sized content',
     async () => {
       const out = collectStream();
       await runCli(
         [
-          "--extract",
-          "--json",
-          "--timeout",
-          "120s",
-          "https://www.spreaker.com/episode/christmas-eve-by-the-campfire-gratitude-reflection-the-rv-life--69193832",
+          '--extract',
+          '--json',
+          '--timeout',
+          '120s',
+          'https://www.spreaker.com/episode/christmas-eve-by-the-campfire-gratitude-reflection-the-rv-life--69193832',
         ],
         {
-          fetch: globalThis.fetch.bind(globalThis),
-          stdout: out.stream,
-          stderr: silentStderr,
           env: process.env,
+          fetch: globalThis.fetch.bind(globalThis),
+          stderr: silentStderr,
+          stdout: out.stream,
         },
       );
 
       const payload = JSON.parse(out.getText()) as {
         extracted?: { content?: string; description?: string };
       };
-      const description = payload.extracted?.description ?? "";
-      const content = payload.extracted?.content ?? "";
-      expectDescriptionOrTranscript({ description, content, minDescriptionChars: 60 });
+      const description = payload.extracted?.description ?? '';
+      const content = payload.extracted?.content ?? '';
+      expectDescriptionOrTranscript({ content, description, minDescriptionChars: 60 });
     },
     timeoutMs,
   );
 
   it(
-    "buzzsprout episode prefers description-sized content",
+    'buzzsprout episode prefers description-sized content',
     async () => {
       const out = collectStream();
       await runCli(
         [
-          "--extract",
-          "--json",
-          "--timeout",
-          "120s",
-          "https://www.buzzsprout.com/2449647/episodes/18377889-2025-in-review-lessons-learned-in-gratitude-anxiety-growth-confidence-self-worth-bravery-self-compassion-and-so-much-more",
+          '--extract',
+          '--json',
+          '--timeout',
+          '120s',
+          'https://www.buzzsprout.com/2449647/episodes/18377889-2025-in-review-lessons-learned-in-gratitude-anxiety-growth-confidence-self-worth-bravery-self-compassion-and-so-much-more',
         ],
         {
-          fetch: globalThis.fetch.bind(globalThis),
-          stdout: out.stream,
-          stderr: silentStderr,
           env: process.env,
+          fetch: globalThis.fetch.bind(globalThis),
+          stderr: silentStderr,
+          stdout: out.stream,
         },
       );
 
       const payload = JSON.parse(out.getText()) as {
         extracted?: { content?: string; description?: string };
       };
-      const description = payload.extracted?.description ?? "";
-      const content = payload.extracted?.content ?? "";
-      expectDescriptionOrTranscript({ description, content, minDescriptionChars: 80 });
+      const description = payload.extracted?.description ?? '';
+      const content = payload.extracted?.content ?? '';
+      expectDescriptionOrTranscript({ content, description, minDescriptionChars: 80 });
     },
     timeoutMs,
   );

@@ -12,6 +12,6 @@ export {
   resolveRequiredEnvForModelId,
   supportsDocumentAttachments,
   supportsStreaming,
-} from "./provider-profile.js";
+} from './provider-profile.js';
 
-export type { GatewayProvider, RequiredModelEnv } from "./provider-profile.js";
+export type { GatewayProvider, RequiredModelEnv } from './provider-profile.js';

@@ -1,7 +1,7 @@
 ---
-summary: "Transcript timestamps plan + clickable chat jumps."
+summary: 'Transcript timestamps plan + clickable chat jumps.'
 read_when:
-  - "When planning transcript timestamps or click-to-seek UX."
+  - 'When planning transcript timestamps or click-to-seek UX.'
 ---
 
 # Transcript Timestamps Plan

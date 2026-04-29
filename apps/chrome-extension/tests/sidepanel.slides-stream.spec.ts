@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { buildSlidesPayload } from "./helpers/daemon-fixtures";
+import { expect, test } from '@playwright/test';
+
+import { buildSlidesPayload } from './helpers/daemon-fixtures';
 import {
   assertNoErrors,
   buildUiState,
@@ -10,90 +11,90 @@ import {
   seedSettings,
   sendBgMessage,
   waitForPanelPort,
-} from "./helpers/extension-harness";
-import { allowFirefoxExtensionTests } from "./helpers/extension-test-config";
+} from './helpers/extension-harness';
+import { allowFirefoxExtensionTests } from './helpers/extension-test-config';
 import {
   getPanelSlideDescriptions,
   getPanelSlidesTimeline,
   getPanelSummaryMarkdown,
   waitForApplySlidesHook,
   waitForSettingsHydratedHook,
-} from "./helpers/panel-hooks";
+} from './helpers/panel-hooks';
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 
-test("sidepanel reconnects cached slide runs after tab restore", async ({
+test('sidepanel reconnects cached slide runs after tab restore', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
-      slidesParallel: true,
       slidesOcrEnabled: true,
+      slidesParallel: true,
+      token: 'test-token',
     });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
     await waitForSettingsHydratedHook(page);
 
     const sseBody = (text: string) =>
-      ["event: chunk", `data: ${JSON.stringify({ text })}`, "", "event: done", "data: {}", ""].join(
-        "\n",
+      ['event: chunk', `data: ${JSON.stringify({ text })}`, '', 'event: done', 'data: {}', ''].join(
+        '\n',
       );
-    await page.route("http://127.0.0.1:8787/v1/summarize/run-a/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/run-a/events', async (route) => {
       await route.fulfill({
+        body: sseBody('Summary A'),
+        headers: { 'content-type': 'text/event-stream' },
         status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body: sseBody("Summary A"),
       });
     });
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/events', async (route) => {
       await route.fulfill({
+        body: sseBody('Slides summary A'),
+        headers: { 'content-type': 'text/event-stream' },
         status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body: sseBody("Slides summary A"),
       });
     });
 
     const slidesPayload = {
-      sourceUrl: "https://www.youtube.com/watch?v=cache123",
-      sourceId: "cache-run",
-      sourceKind: "youtube",
       ocrAvailable: true,
       slides: [
         {
           index: 1,
           timestamp: 0,
-          imageUrl: "http://127.0.0.1:8787/v1/slides/cache-run/1?v=1",
-          ocrText: "Cached slide one.",
+          imageUrl: 'http://127.0.0.1:8787/v1/slides/cache-run/1?v=1',
+          ocrText: 'Cached slide one.',
         },
       ],
+      sourceId: 'cache-run',
+      sourceKind: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=cache123',
     };
     const slidesStreamBody = [
-      "event: slides",
+      'event: slides',
       `data: ${JSON.stringify(slidesPayload)}`,
-      "",
-      "event: done",
-      "data: {}",
-      "",
-    ].join("\n");
+      '',
+      'event: done',
+      'data: {}',
+      '',
+    ].join('\n');
     let slidesEventsRequests = 0;
-    await page.route("http://127.0.0.1:8787/v1/summarize/slides-a/slides/events", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/summarize/slides-a/slides/events', async (route) => {
       slidesEventsRequests += 1;
       if (slidesEventsRequests === 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2_000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       try {
         await route.fulfill({
-          status: 200,
-          headers: { "content-type": "text/event-stream" },
           body: slidesStreamBody,
+          headers: { 'content-type': 'text/event-stream' },
+          status: 200,
         });
       } catch {
         // First request is intentionally abandoned when the tab changes.
@@ -101,70 +102,67 @@ test("sidepanel reconnects cached slide runs after tab restore", async ({
     });
 
     const placeholderPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=",
-      "base64",
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',
+      'base64',
     );
-    await page.route("http://127.0.0.1:8787/v1/slides/**", async (route) => {
+    await page.route('http://127.0.0.1:8787/v1/slides/**', async (route) => {
       await route.fulfill({
-        status: 200,
-        headers: {
-          "content-type": "image/png",
-          "x-summarize-slide-ready": "1",
-        },
         body: placeholderPng,
+        headers: { 'content-type': 'image/png', 'x-summarize-slide-ready': '1' },
+        status: 200,
       });
     });
 
     const tabAState = buildUiState({
-      tab: { id: 1, url: "https://www.youtube.com/watch?v=cache123", title: "Cached Video" },
-      media: { hasVideo: true, hasAudio: true, hasCaptions: true },
+      media: { hasAudio: true, hasCaptions: true, hasVideo: true },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      tab: { id: 1, title: 'Cached Video', url: 'https://www.youtube.com/watch?v=cache123' },
     });
     const tabBState = buildUiState({
-      tab: { id: 2, url: "https://example.com", title: "Other Tab" },
-      media: { hasVideo: false, hasAudio: false, hasCaptions: false },
+      media: { hasAudio: false, hasCaptions: false, hasVideo: false },
       settings: {
         autoSummarize: false,
         slidesEnabled: true,
-        slidesParallel: true,
         slidesOcrEnabled: true,
+        slidesParallel: true,
         tokenPresent: true,
       },
+      tab: { id: 2, title: 'Other Tab', url: 'https://example.com' },
     });
 
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
     await sendBgMessage(harness, {
-      type: "run:start",
       run: {
-        id: "run-a",
-        url: "https://www.youtube.com/watch?v=cache123",
-        title: "Cached Video",
-        model: "auto",
-        reason: "manual",
+        id: 'run-a',
+        model: 'auto',
+        reason: 'manual',
+        title: 'Cached Video',
+        url: 'https://www.youtube.com/watch?v=cache123',
       },
+      type: 'run:start',
     });
-    await expect(page.locator("#render")).toContainText("Summary A");
+    await expect(page.locator('#render')).toContainText('Summary A');
 
     await sendBgMessage(harness, {
-      type: "slides:run",
       ok: true,
-      runId: "slides-a",
-      url: "https://www.youtube.com/watch?v=cache123",
+      runId: 'slides-a',
+      type: 'slides:run',
+      url: 'https://www.youtube.com/watch?v=cache123',
     });
     await expect.poll(async () => slidesEventsRequests).toBe(1);
 
-    await sendBgMessage(harness, { type: "ui:state", state: tabBState });
-    await expect(page.locator("#title")).toHaveText("Other Tab");
+    await sendBgMessage(harness, { state: tabBState, type: 'ui:state' });
+    await expect(page.locator('#title')).toHaveText('Other Tab');
     await expect.poll(async () => (await getPanelSlideDescriptions(page)).length).toBe(0);
 
-    await sendBgMessage(harness, { type: "ui:state", state: tabAState });
-    await expect.poll(async () => await getPanelSummaryMarkdown(page)).toContain("Summary A");
+    await sendBgMessage(harness, { state: tabAState, type: 'ui:state' });
+    await expect.poll(async () =>  getPanelSummaryMarkdown(page)).toContain('Summary A');
     await expect.poll(async () => slidesEventsRequests).toBe(2);
 
     assertNoErrors(harness);
@@ -173,51 +171,50 @@ test("sidepanel reconnects cached slide runs after tab restore", async ({
   }
 });
 
-test("sidepanel retry requests a fresh run when parallel slides have no run id", async ({
+test('sidepanel retry requests a fresh run when parallel slides have no run id', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     await seedSettings(harness, {
-      token: "test-token",
       autoSummarize: false,
       slidesEnabled: true,
       slidesParallel: true,
+      token: 'test-token',
     });
-    const url = "https://www.youtube.com/watch?v=retry12345";
-    const panel = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const url = 'https://www.youtube.com/watch?v=retry12345';
+    const panel = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(panel);
     await waitForSettingsHydratedHook(panel);
 
-    await panel.route("http://127.0.0.1:8787/v1/summarize/**/events", async (route) => {
+    await panel.route('http://127.0.0.1:8787/v1/summarize/**/events', async (route) => {
       const requestUrl = route.request().url();
-      if (requestUrl.includes("/slides/events")) {
+      if (requestUrl.includes('/slides/events')) {
         await route.fulfill({
+          body: ['event: done', 'data: {}', ''].join('\n'),
+          headers: { 'content-type': 'text/event-stream' },
           status: 200,
-          headers: { "content-type": "text/event-stream" },
-          body: ["event: done", "data: {}", ""].join("\n"),
         });
         return;
       }
       await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
         body: [
-          "event: chunk",
-          `data: ${JSON.stringify({ text: "Video summary" })}`,
-          "",
-          "event: done",
-          "data: {}",
-          "",
-        ].join("\n"),
+          'event: chunk',
+          `data: ${JSON.stringify({ text: 'Video summary' })}`,
+          '',
+          'event: done',
+          'data: {}',
+          '',
+        ].join('\n'),
+        headers: { 'content-type': 'text/event-stream' },
+        status: 200,
       });
     });
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: { id: 1, url, title: "Retry Video" },
+        tab: { id: 1, url, title: 'Retry Video' },
         media: { hasVideo: true, hasAudio: true, hasCaptions: true },
         settings: {
           autoSummarize: false,
@@ -226,26 +223,17 @@ test("sidepanel retry requests a fresh run when parallel slides have no run id",
           tokenPresent: true,
         },
       }),
+      type: 'ui:state',
     });
     await sendBgMessage(harness, {
-      type: "run:start",
-      run: {
-        id: "summary-run",
-        url,
-        title: "Retry Video",
-        model: "auto",
-        reason: "manual",
-      },
+      run: { id: 'summary-run', model: 'auto', reason: 'manual', title: 'Retry Video', url },
+      type: 'run:start',
     });
-    await expect(panel.locator("#render")).toContainText("Video summary");
+    await expect(panel.locator('#render')).toContainText('Video summary');
 
-    await sendBgMessage(harness, {
-      type: "slides:run",
-      ok: false,
-      error: "Slides request failed",
-    });
-    await expect(panel.locator("#slideNotice")).toContainText("Slides request failed");
-    await expect(panel.locator("#slideNoticeRetry")).toBeVisible();
+    await sendBgMessage(harness, { error: 'Slides request failed', ok: false, type: 'slides:run' });
+    await expect(panel.locator('#slideNotice')).toContainText('Slides request failed');
+    await expect(panel.locator('#slideNoticeRetry')).toBeVisible();
     await panel.evaluate(() => {
       const port = (
         window as typeof globalThis & {
@@ -253,7 +241,7 @@ test("sidepanel retry requests a fresh run when parallel slides have no run id",
           __capturedPanelMessages?: object[];
         }
       ).__summarizePanelPort;
-      if (!port) throw new Error("Missing panel port");
+      if (!port) {throw new Error('Missing panel port');}
       const captured: object[] = [];
       (
         window as typeof globalThis & { __capturedPanelMessages?: object[] }
@@ -262,23 +250,20 @@ test("sidepanel retry requests a fresh run when parallel slides have no run id",
         captured.push(payload);
       };
     });
-    await panel.locator("#slideNoticeRetry").click();
+    await panel.locator('#slideNoticeRetry').click();
     await expect
       .poll(async () => {
         return await panel.evaluate(() => {
           return (
             (
               window as typeof globalThis & {
-                __capturedPanelMessages?: Array<{ type?: string; refresh?: boolean }>;
+                __capturedPanelMessages?: { type?: string; refresh?: boolean }[];
               }
             ).__capturedPanelMessages ?? []
-          ).map((message) => ({
-            type: message.type ?? null,
-            refresh: message.refresh ?? null,
-          }));
+          ).map((message) => ({ refresh: message.refresh ?? null, type: message.type ?? null }));
         });
       })
-      .toContainEqual({ type: "panel:summarize", refresh: true });
+      .toContainEqual({ refresh: true, type: 'panel:summarize' });
 
     assertNoErrors(harness);
   } finally {

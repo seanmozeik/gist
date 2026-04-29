@@ -1,25 +1,29 @@
-import type { OscProgressController } from "osc-progress";
+import type { OscProgressController } from 'osc-progress';
 import {
   createOscProgressController as createOscProgressControllerImpl,
   startOscProgress as startOscProgressImpl,
   supportsOscProgress as supportsOscProgressImpl,
-} from "osc-progress";
+} from 'osc-progress';
 
 export type {
   OscProgressController,
   OscProgressOptions,
   OscProgressSupportOptions,
   OscProgressTerminator,
-} from "osc-progress";
+} from 'osc-progress';
 
 export function createOscProgressController(
-  options: import("osc-progress").OscProgressOptions,
+  options: import('osc-progress').OscProgressOptions,
 ): OscProgressController {
   const controller = createOscProgressControllerImpl(options);
   const holdMs = 2000;
   let lastPercentAt = 0;
 
   return {
+    clear: () => {
+      lastPercentAt = 0;
+      controller.clear();
+    },
     setIndeterminate: (label: string) => {
       if (lastPercentAt > 0 && Date.now() - lastPercentAt < holdMs) {
         return;
@@ -30,21 +34,17 @@ export function createOscProgressController(
       lastPercentAt = Date.now();
       controller.setPercent(label, percent);
     },
-    clear: () => {
-      lastPercentAt = 0;
-      controller.clear();
-    },
   };
 }
 
-export function startOscProgress(options: import("osc-progress").OscProgressOptions) {
+export function startOscProgress(options: import('osc-progress').OscProgressOptions) {
   return startOscProgressImpl(options);
 }
 
 export function supportsOscProgress(
   env: Record<string, string | undefined>,
   isTty: boolean,
-  options?: import("osc-progress").OscProgressSupportOptions,
+  options?: import('osc-progress').OscProgressSupportOptions,
 ) {
   return supportsOscProgressImpl(env, isTty, options);
 }

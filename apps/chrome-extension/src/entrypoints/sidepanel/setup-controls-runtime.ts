@@ -1,6 +1,6 @@
-import { createDrawerControls } from "./drawer-controls";
-import { createModelPresetsController } from "./model-presets";
-import { createSetupRuntime } from "./setup-runtime";
+import { createDrawerControls } from './drawer-controls';
+import { createModelPresetsController } from './model-presets';
+import { createSetupRuntime } from './setup-runtime';
 
 export function createSetupControlsRuntime({
   advancedSettingsBodyEl,
@@ -40,40 +40,40 @@ export function createSetupControlsRuntime({
   setupEl: HTMLDivElement;
 }) {
   const modelPresetsController = createModelPresetsController({
-    modelPresetEl,
-    modelCustomEl,
-    modelRefreshBtn,
-    modelStatusEl,
-    modelRowEl,
     defaultModel,
-    loadSettings,
     friendlyFetchError,
+    loadSettings,
+    modelCustomEl,
+    modelPresetEl,
+    modelRefreshBtn,
+    modelRowEl,
+    modelStatusEl,
   });
 
   const drawerControls = createDrawerControls({
+    advancedSettingsBodyEl,
+    advancedSettingsEl,
     drawerEl,
     drawerToggleBtn,
-    advancedSettingsEl,
-    advancedSettingsBodyEl,
     refreshModelsIfStale: modelPresetsController.refreshIfStale,
   });
 
   const ensureToken = async (): Promise<string> => {
     const settings = await loadSettings();
-    if (settings.token.trim()) return settings.token.trim();
+    if (settings.token.trim()) {return settings.token.trim();}
     const token = generateToken();
     await patchSettings({ token });
     return token;
   };
 
   const setupRuntime = createSetupRuntime({
-    setupEl,
-    loadToken: async () => (await loadSettings()).token.trim(),
     ensureToken,
-    patchSettings,
     generateToken,
-    headerSetStatus,
     getStatusResetText,
+    headerSetStatus,
+    loadToken: async () => (await loadSettings()).token.trim(),
+    patchSettings,
+    setupEl,
   });
 
   return {

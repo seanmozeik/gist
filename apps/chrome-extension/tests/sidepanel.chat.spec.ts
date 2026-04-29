@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { getSummarizeCalls, mockDaemonSummarize } from "./helpers/daemon-fixtures";
+import { expect, test } from '@playwright/test';
+
+import { getSummarizeCalls, mockDaemonSummarize } from './helpers/daemon-fixtures';
 import {
   activateTabByUrl,
   assertNoErrors,
@@ -19,33 +20,33 @@ import {
   waitForActiveTabUrl,
   waitForExtractReady,
   waitForPanelPort,
-} from "./helpers/extension-harness";
-import { allowFirefoxExtensionTests } from "./helpers/extension-test-config";
+} from './helpers/extension-harness';
+import { allowFirefoxExtensionTests } from './helpers/extension-test-config';
 
 test.skip(
-  ({ browserName }) => browserName === "firefox" && !allowFirefoxExtensionTests,
-  "Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.",
+  ({ browserName }) => browserName === 'firefox' && !allowFirefoxExtensionTests,
+  'Firefox extension tests are blocked by Playwright limitations. Set ALLOW_FIREFOX_EXTENSION_TESTS=1 to run.',
 );
 
-test("sidepanel chat queue sends next message after stream completes", async ({
+test('sidepanel chat queue sends next message after stream completes', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
-    await seedSettings(harness, { token: "test-token", autoSummarize: false, chatEnabled: true });
+    await seedSettings(harness, { autoSummarize: false, chatEnabled: true, token: 'test-token' });
     const contentPage = await harness.context.newPage();
-    await contentPage.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await contentPage.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     await contentPage.evaluate(() => {
-      document.body.innerHTML = `<article><p>${"Hello ".repeat(40)}</p><p>More text for chat.</p></article>`;
+      document.body.innerHTML = `<article><p>${'Hello '.repeat(40)}</p><p>More text for chat.</p></article>`;
     });
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await injectContentScript(harness, "content-scripts/extract.js", "https://example.com");
-    await waitForExtractReady(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await injectContentScript(harness, 'content-scripts/extract.js', 'https://example.com');
+    await waitForExtractReady(harness, 'https://example.com');
 
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
 
     let agentRequestCount = 0;
     let releaseFirst: (() => void) | null = null;
@@ -53,40 +54,36 @@ test("sidepanel chat queue sends next message after stream completes", async ({
       releaseFirst = resolve;
     });
 
-    await harness.context.route("http://127.0.0.1:8787/v1/agent", async (route) => {
+    await harness.context.route('http://127.0.0.1:8787/v1/agent', async (route) => {
       agentRequestCount += 1;
-      if (agentRequestCount === 1) await firstGate;
+      if (agentRequestCount === 1) {await firstGate;}
       const body = buildAgentStream(`Reply ${agentRequestCount}`);
-      await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body,
-      });
+      await route.fulfill({ body, headers: { 'content-type': 'text/event-stream' }, status: 200 });
     });
 
     const sendChat = async (text: string) => {
       await page.evaluate((value) => {
-        const input = document.getElementById("chatInput") as HTMLTextAreaElement | null;
-        const send = document.getElementById("chatSend") as HTMLButtonElement | null;
-        if (!input || !send) return;
+        const input = document.querySelector('#chatInput') as HTMLTextAreaElement | null;
+        const send = document.querySelector('#chatSend') as HTMLButtonElement | null;
+        if (!input || !send) {return;}
         input.value = value;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
         send.click();
       }, text);
     };
 
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await sendChat("First question");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await sendChat('First question');
     await expect.poll(() => agentRequestCount).toBe(1);
-    await sendChat("Second question");
-    await expect.poll(() => agentRequestCount, { timeout: 1_000 }).toBe(1);
+    await sendChat('Second question');
+    await expect.poll(() => agentRequestCount, { timeout: 1000 }).toBe(1);
 
     releaseFirst?.();
 
     await expect.poll(() => agentRequestCount).toBe(2);
-    await expect(page.locator("#chatMessages")).toContainText("Second question");
+    await expect(page.locator('#chatMessages')).toContainText('Second question');
 
     assertNoErrors(harness);
   } finally {
@@ -94,25 +91,25 @@ test("sidepanel chat queue sends next message after stream completes", async ({
   }
 });
 
-test("sidepanel chat queue drains messages after stream completes", async ({
+test('sidepanel chat queue drains messages after stream completes', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
-    await seedSettings(harness, { token: "test-token", autoSummarize: false, chatEnabled: true });
+    await seedSettings(harness, { autoSummarize: false, chatEnabled: true, token: 'test-token' });
     const contentPage = await harness.context.newPage();
-    await contentPage.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await contentPage.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     await contentPage.evaluate(() => {
-      document.body.innerHTML = `<article><p>${"Hello ".repeat(40)}</p><p>More text for chat.</p></article>`;
+      document.body.innerHTML = `<article><p>${'Hello '.repeat(40)}</p><p>More text for chat.</p></article>`;
     });
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await injectContentScript(harness, "content-scripts/extract.js", "https://example.com");
-    await waitForExtractReady(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await injectContentScript(harness, 'content-scripts/extract.js', 'https://example.com');
+    await waitForExtractReady(harness, 'https://example.com');
 
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
 
     let agentRequestCount = 0;
     let releaseFirst: (() => void) | null = null;
@@ -120,59 +117,55 @@ test("sidepanel chat queue drains messages after stream completes", async ({
       releaseFirst = resolve;
     });
 
-    await harness.context.route("http://127.0.0.1:8787/v1/agent", async (route) => {
+    await harness.context.route('http://127.0.0.1:8787/v1/agent', async (route) => {
       agentRequestCount += 1;
-      if (agentRequestCount === 1) await firstGate;
+      if (agentRequestCount === 1) {await firstGate;}
       const body = buildAgentStream(`Reply ${agentRequestCount}`);
-      await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body,
-      });
+      await route.fulfill({ body, headers: { 'content-type': 'text/event-stream' }, status: 200 });
     });
 
     const sendChat = async (text: string) => {
       await page.evaluate((value) => {
-        const input = document.getElementById("chatInput") as HTMLTextAreaElement | null;
-        const send = document.getElementById("chatSend") as HTMLButtonElement | null;
-        if (!input || !send) return;
+        const input = document.querySelector('#chatInput') as HTMLTextAreaElement | null;
+        const send = document.querySelector('#chatSend') as HTMLButtonElement | null;
+        if (!input || !send) {return;}
         input.value = value;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
         send.click();
       }, text);
     };
 
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await sendChat("First question");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await sendChat('First question');
     await expect.poll(() => agentRequestCount).toBe(1);
 
     const enqueueChat = async (text: string) => {
       await page.evaluate((value) => {
-        const input = document.getElementById("chatInput") as HTMLTextAreaElement | null;
-        if (!input) return;
+        const input = document.querySelector('#chatInput') as HTMLTextAreaElement | null;
+        if (!input) {return;}
         input.value = value;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(
-          new KeyboardEvent("keydown", {
-            key: "Enter",
-            code: "Enter",
+          new KeyboardEvent('keydown', {
             bubbles: true,
             cancelable: true,
+            code: 'Enter',
+            key: 'Enter',
           }),
         );
       }, text);
     };
 
-    await enqueueChat("Second question");
-    await enqueueChat("Third question");
+    await enqueueChat('Second question');
+    await enqueueChat('Third question');
 
     releaseFirst?.();
 
     await expect.poll(() => agentRequestCount).toBeGreaterThanOrEqual(3);
-    await expect(page.locator("#chatMessages")).toContainText("Second question");
-    await expect(page.locator("#chatMessages")).toContainText("Third question");
+    await expect(page.locator('#chatMessages')).toContainText('Second question');
+    await expect(page.locator('#chatMessages')).toContainText('Third question');
 
     assertNoErrors(harness);
   } finally {
@@ -180,69 +173,65 @@ test("sidepanel chat queue drains messages after stream completes", async ({
   }
 });
 
-test("sidepanel clears chat on user navigation", async ({
+test('sidepanel clears chat on user navigation', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
-    await seedSettings(harness, { token: "test-token", autoSummarize: false, chatEnabled: true });
+    await seedSettings(harness, { autoSummarize: false, chatEnabled: true, token: 'test-token' });
     const contentPage = await harness.context.newPage();
-    await contentPage.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await contentPage.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     await contentPage.evaluate(() => {
       document.body.innerHTML = `<article><p>Chat nav test.</p></article>`;
     });
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await injectContentScript(harness, "content-scripts/extract.js", "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await injectContentScript(harness, 'content-scripts/extract.js', 'https://example.com');
 
-    await harness.context.route("http://127.0.0.1:8787/v1/agent", async (route) => {
-      const body = buildAgentStream("Ack");
-      await route.fulfill({
-        status: 200,
-        headers: { "content-type": "text/event-stream" },
-        body,
-      });
+    await harness.context.route('http://127.0.0.1:8787/v1/agent', async (route) => {
+      const body = buildAgentStream('Ack');
+      await route.fulfill({ body, headers: { 'content-type': 'text/event-stream' }, status: 200 });
     });
 
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: { id: 1, url: "https://example.com", title: "Example" },
+        tab: { id: 1, url: 'https://example.com', title: 'Example' },
         settings: { chatEnabled: true, tokenPresent: true },
       }),
+      type: 'ui:state',
     });
 
     await page.evaluate((value) => {
-      const input = document.getElementById("chatInput") as HTMLTextAreaElement | null;
-      const send = document.getElementById("chatSend") as HTMLButtonElement | null;
-      if (!input || !send) return;
+      const input = document.querySelector('#chatInput') as HTMLTextAreaElement | null;
+      const send = document.querySelector('#chatSend') as HTMLButtonElement | null;
+      if (!input || !send) {return;}
       input.value = value;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       send.click();
-    }, "Hello");
+    }, 'Hello');
 
-    await expect(page.locator("#chatMessages")).toContainText("Hello");
+    await expect(page.locator('#chatMessages')).toContainText('Hello');
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: { id: 1, url: "https://example.com/next", title: "Next" },
+        tab: { id: 1, url: 'https://example.com/next', title: 'Next' },
         settings: { chatEnabled: true, tokenPresent: true },
       }),
+      type: 'ui:state',
     });
 
-    await expect(page.locator(".chatMessage")).toHaveCount(0);
-    await expect(page.locator("#chatMessages")).not.toContainText("Tool result: navigation");
+    await expect(page.locator('.chatMessage')).toHaveCount(0);
+    await expect(page.locator('#chatMessages')).not.toContainText('Tool result: navigation');
     assertNoErrors(harness);
   } finally {
     await closeExtension(harness.context, harness.userDataDir);
   }
 });
 
-test("auto summarize reruns after panel reopen", async ({
+test('auto summarize reruns after panel reopen', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
@@ -251,51 +240,51 @@ test("auto summarize reruns after panel reopen", async ({
     await mockDaemonSummarize(harness);
 
     const sseBody = [
-      "event: chunk",
+      'event: chunk',
       'data: {"text":"First chunk"}',
-      "",
-      "event: done",
-      "data: {}",
-      "",
-    ].join("\n");
+      '',
+      'event: done',
+      'data: {}',
+      '',
+    ].join('\n');
     await harness.context.route(
       /http:\/\/127\.0\.0\.1:8787\/v1\/summarize\/[^/]+\/events/,
       async (route) => {
         await route.fulfill({
-          status: 200,
-          headers: { "content-type": "text/event-stream" },
           body: sseBody,
+          headers: { 'content-type': 'text/event-stream' },
+          status: 200,
         });
       },
     );
 
-    await seedSettings(harness, { token: "test-token", autoSummarize: true });
+    await seedSettings(harness, { autoSummarize: true, token: 'test-token' });
 
     const contentPage = await harness.context.newPage();
-    await contentPage.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await contentPage.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     const activeUrl = contentPage.url();
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
 
-    const panel = await openExtensionPage(harness, "sidepanel.html", "#title");
+    const panel = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
     await mockDaemonSummarize(harness);
-    await sendPanelMessage(panel, { type: "panel:ready" });
-    await expect.poll(async () => await getSummarizeCalls(harness)).toBeGreaterThanOrEqual(1);
-    await sendPanelMessage(panel, { type: "panel:rememberUrl", url: activeUrl });
+    await sendPanelMessage(panel, { type: 'panel:ready' });
+    await expect.poll(async () =>  getSummarizeCalls(harness)).toBeGreaterThanOrEqual(1);
+    await sendPanelMessage(panel, { type: 'panel:rememberUrl', url: activeUrl });
 
     const callsBeforeClose = await getSummarizeCalls(harness);
-    await sendPanelMessage(panel, { type: "panel:closed" });
+    await sendPanelMessage(panel, { type: 'panel:closed' });
     await maybeBringToFront(contentPage);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
     await mockDaemonSummarize(harness);
-    await sendPanelMessage(panel, { type: "panel:ready" });
+    await sendPanelMessage(panel, { type: 'panel:ready' });
     await expect
-      .poll(async () => await getSummarizeCalls(harness))
+      .poll(async () =>  getSummarizeCalls(harness))
       .toBeGreaterThan(callsBeforeClose);
     assertNoErrors(harness);
   } finally {
@@ -303,7 +292,7 @@ test("auto summarize reruns after panel reopen", async ({
   }
 });
 
-test("sidepanel updates title while streaming on same URL", async ({
+test('sidepanel updates title while streaming on same URL', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
@@ -311,58 +300,58 @@ test("sidepanel updates title while streaming on same URL", async ({
   try {
     await mockDaemonSummarize(harness);
     const sseBody = [
-      "event: chunk",
+      'event: chunk',
       'data: {"text":"Hello"}',
-      "",
-      "event: done",
-      "data: {}",
-      "",
-    ].join("\n");
+      '',
+      'event: done',
+      'data: {}',
+      '',
+    ].join('\n');
     await harness.context.route(
       /http:\/\/127\.0\.0\.1:8787\/v1\/summarize\/[^/]+\/events/,
       async (route) => {
         await route.fulfill({
-          status: 200,
-          headers: { "content-type": "text/event-stream" },
           body: sseBody,
+          headers: { 'content-type': 'text/event-stream' },
+          status: 200,
         });
       },
     );
 
-    await seedSettings(harness, { token: "test-token", autoSummarize: false });
-    const page = await openExtensionPage(harness, "sidepanel.html", "#title");
+    await seedSettings(harness, { autoSummarize: false, token: 'test-token' });
+    const page = await openExtensionPage(harness, 'sidepanel.html', '#title');
     await waitForPanelPort(page);
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: { id: 1, url: "https://example.com/watch?v=1", title: "Old Title" },
+        tab: { id: 1, url: 'https://example.com/watch?v=1', title: 'Old Title' },
         settings: { autoSummarize: false, tokenPresent: true },
-        status: "",
+        status: '',
       }),
+      type: 'ui:state',
     });
 
     await sendBgMessage(harness, {
-      type: "run:start",
       run: {
-        id: "run-1",
-        url: "https://example.com/watch?v=1",
-        title: "Old Title",
-        model: "auto",
-        reason: "manual",
+        id: 'run-1',
+        model: 'auto',
+        reason: 'manual',
+        title: 'Old Title',
+        url: 'https://example.com/watch?v=1',
       },
+      type: 'run:start',
     });
-    await expect(page.locator("#title")).toHaveText("Old Title");
+    await expect(page.locator('#title')).toHaveText('Old Title');
 
     await sendBgMessage(harness, {
-      type: "ui:state",
       state: buildUiState({
-        tab: { url: "https://example.com/watch?v=1", title: "New Title" },
+        tab: { url: 'https://example.com/watch?v=1', title: 'New Title' },
         settings: { autoSummarize: false, tokenPresent: true },
-        status: "",
+        status: '',
       }),
+      type: 'ui:state',
     });
-    await expect(page.locator("#title")).toHaveText("New Title");
+    await expect(page.locator('#title')).toHaveText('New Title');
 
     await new Promise((resolve) => setTimeout(resolve, 200));
     assertNoErrors(harness);
@@ -371,63 +360,63 @@ test("sidepanel updates title while streaming on same URL", async ({
   }
 });
 
-test("hover tooltip proxies daemon calls via background (no page-origin localhost fetch)", async ({
+test('hover tooltip proxies daemon calls via background (no page-origin localhost fetch)', async ({
   browserName: _browserName,
 }, testInfo) => {
   test.setTimeout(30_000);
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
-    await seedSettings(harness, { token: "test-token", hoverSummaries: true });
+    await seedSettings(harness, { hoverSummaries: true, token: 'test-token' });
     await mockDaemonSummarize(harness);
 
     let eventsCalls = 0;
 
     const sseBody = [
-      "event: chunk",
+      'event: chunk',
       'data: {"text":"Hello hover"}',
-      "",
-      "event: done",
-      "data: {}",
-      "",
-    ].join("\n");
+      '',
+      'event: done',
+      'data: {}',
+      '',
+    ].join('\n');
     await harness.context.route(
       /http:\/\/127\.0\.0\.1:8787\/v1\/summarize\/[^/]+\/events/,
       async (route) => {
         eventsCalls += 1;
         await route.fulfill({
-          status: 200,
-          headers: { "content-type": "text/event-stream" },
           body: sseBody,
+          headers: { 'content-type': 'text/event-stream' },
+          status: 200,
         });
       },
     );
 
     const page = await harness.context.newPage();
     trackErrors(page, harness.pageErrors, harness.consoleErrors);
-    await page.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await page.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     await maybeBringToFront(page);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
 
     const background = await getBackground(harness);
     const hoverResponse = await background.evaluate(async () => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) return { ok: false, error: "missing tab" };
+      if (!tab?.id) {return { ok: false, error: 'missing tab' };}
       const [result] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        world: "ISOLATED",
         func: async () => {
           return chrome.runtime.sendMessage({
-            type: "hover:summarize",
-            requestId: "hover-1",
-            url: "https://example.com/next",
-            title: "Next",
-            token: "test-token",
+            type: 'hover:summarize',
+            requestId: 'hover-1',
+            url: 'https://example.com/next',
+            title: 'Next',
+            token: 'test-token',
           });
         },
+        target: { tabId: tab.id },
+        world: 'ISOLATED',
       });
-      return result?.result ?? { ok: false, error: "no response" };
+      return result?.result ?? { error: 'no response', ok: false };
     });
     expect(hoverResponse).toEqual(expect.objectContaining({ ok: true }));
 
@@ -440,14 +429,14 @@ test("hover tooltip proxies daemon calls via background (no page-origin localhos
   }
 });
 
-test("content script extracts visible duration metadata", async ({
+test('content script extracts visible duration metadata', async ({
   browserName: _browserName,
 }, testInfo) => {
   const harness = await launchExtension(getBrowserFromProject(testInfo.project.name));
 
   try {
     const page = await harness.context.newPage();
-    await page.goto("https://example.com", { waitUntil: "domcontentloaded" });
+    await page.goto('https://example.com', { waitUntil: 'domcontentloaded' });
     await page.setContent(`
       <html>
         <head>
@@ -463,14 +452,14 @@ test("content script extracts visible duration metadata", async ({
     `);
 
     await maybeBringToFront(page);
-    await activateTabByUrl(harness, "https://example.com");
-    await waitForActiveTabUrl(harness, "https://example.com");
-    await injectContentScript(harness, "content-scripts/extract.js", "https://example.com");
+    await activateTabByUrl(harness, 'https://example.com');
+    await waitForActiveTabUrl(harness, 'https://example.com');
+    await injectContentScript(harness, 'content-scripts/extract.js', 'https://example.com');
     const background = await getBackground(harness);
     const result = await background.evaluate(async () => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) return null;
-      return await chrome.tabs.sendMessage(tab.id, { type: "extract", maxChars: 1200 });
+      if (!tab?.id) {return null;}
+      return await chrome.tabs.sendMessage(tab.id, { maxChars: 1200, type: 'extract' });
     });
 
     expect(result).toEqual(expect.objectContaining({ mediaDurationSeconds: 321 }));

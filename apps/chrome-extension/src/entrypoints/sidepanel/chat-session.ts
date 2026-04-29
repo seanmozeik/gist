@@ -1,18 +1,18 @@
-import type { AssistantMessage, Message } from "@mariozechner/pi-ai";
+import type { AssistantMessage, Message } from '@mariozechner/pi-ai';
 
-export type AgentResponse = { ok: boolean; assistant?: AssistantMessage; error?: string };
-export type ChatHistoryResponse = { ok: boolean; messages?: Message[]; error?: string };
+export interface AgentResponse { ok: boolean; assistant?: AssistantMessage; error?: string }
+export interface ChatHistoryResponse { ok: boolean; messages?: Message[]; error?: string }
 
-type PendingAgentRequest = {
+interface PendingAgentRequest {
   resolve: (response: AgentResponse) => void;
   reject: (error: Error) => void;
   onChunk?: (text: string) => void;
-};
+}
 
-type PendingChatHistoryRequest = {
+interface PendingChatHistoryRequest {
   resolve: (response: ChatHistoryResponse) => void;
   reject: (error: Error) => void;
-};
+}
 
 export function createChatSession({
   send,
@@ -24,17 +24,13 @@ export function createChatSession({
   send: (
     message:
       | {
-          type: "panel:agent";
+          type: 'panel:agent';
           requestId: string;
           messages: Message[];
           tools: string[];
           summary?: string | null;
         }
-      | {
-          type: "panel:chat-history";
-          requestId: string;
-          summary?: string | null;
-        },
+      | { type: 'panel:chat-history'; requestId: string; summary?: string | null },
   ) => Promise<void>;
   setStatus?: ((text: string) => void) | null;
   hideReplOverlay?: (() => Promise<void>) | null;
@@ -53,22 +49,10 @@ export function createChatSession({
   };
 
   return {
-    isAbortRequested() {
-      return abortRequested;
-    },
-    reset() {
-      abortRequested = false;
-      pendingAgentRequests.clear();
-      pendingChatHistoryRequests.clear();
-    },
-    resetAbort() {
-      abortRequested = false;
-    },
-    requestAbort(reason: string) {
-      abortRequested = true;
-      abortPendingAgentRequests(reason);
-      setStatus?.(reason);
-      void hideReplOverlay?.();
+    handleAgentChunk(msg: { requestId: string; text: string }) {
+      const pending = pendingAgentRequests.get(msg.requestId);
+      if (!pending?.onChunk) return;
+      pending.onChunk(msg.text);
     },
     handleAgentResponse(msg: {
       requestId: string;
@@ -81,11 +65,6 @@ export function createChatSession({
       pendingAgentRequests.delete(msg.requestId);
       pending.resolve({ ok: msg.ok, assistant: msg.assistant, error: msg.error });
     },
-    handleAgentChunk(msg: { requestId: string; text: string }) {
-      const pending = pendingAgentRequests.get(msg.requestId);
-      if (!pending?.onChunk) return;
-      pending.onChunk(msg.text);
-    },
     handleChatHistoryResponse(msg: {
       requestId: string;
       ok: boolean;
@@ -97,6 +76,15 @@ export function createChatSession({
       pendingChatHistoryRequests.delete(msg.requestId);
       pending.resolve({ ok: msg.ok, messages: msg.messages, error: msg.error });
     },
+    isAbortRequested() {
+      return abortRequested;
+    },
+    requestAbort(reason: string) {
+      abortRequested = true;
+      abortPendingAgentRequests(reason);
+      setStatus?.(reason);
+      void hideReplOverlay?.();
+    },
     requestAgent(
       messages: Message[],
       tools: string[],
@@ -107,7 +95,7 @@ export function createChatSession({
       return new Promise<AgentResponse>((resolve, reject) => {
         const timeout = globalThis.setTimeout(() => {
           pendingAgentRequests.delete(requestId);
-          reject(new Error("Agent request timed out"));
+          reject(new Error('Agent request timed out'));
         }, agentTimeoutMs);
         pendingAgentRequests.set(requestId, {
           resolve: (result) => {
@@ -120,7 +108,7 @@ export function createChatSession({
           },
           onChunk: opts?.onChunk,
         });
-        void send({ type: "panel:agent", requestId, messages, tools, summary });
+        void send({ type: 'panel:agent', requestId, messages, tools, summary });
       });
     },
     requestChatHistory(summary?: string | null) {
@@ -128,7 +116,7 @@ export function createChatSession({
       return new Promise<ChatHistoryResponse>((resolve, reject) => {
         const timeout = globalThis.setTimeout(() => {
           pendingChatHistoryRequests.delete(requestId);
-          reject(new Error("Chat history request timed out"));
+          reject(new Error('Chat history request timed out'));
         }, historyTimeoutMs);
         pendingChatHistoryRequests.set(requestId, {
           resolve: (result) => {
@@ -140,8 +128,16 @@ export function createChatSession({
             reject(error);
           },
         });
-        void send({ type: "panel:chat-history", requestId, summary });
+        void send({ type: 'panel:chat-history', requestId, summary });
       });
+    },
+    reset() {
+      abortRequested = false;
+      pendingAgentRequests.clear();
+      pendingChatHistoryRequests.clear();
+    },
+    resetAbort() {
+      abortRequested = false;
     },
   };
 }

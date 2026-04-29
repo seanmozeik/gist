@@ -1,5 +1,5 @@
-import { parseModelConfig, parseModelsConfig } from "./config/model.js";
-import { readParsedConfigFile, resolveSummarizeConfigPath } from "./config/read.js";
+import { parseModelConfig, parseModelsConfig } from './config/model.js';
+import { readParsedConfigFile, resolveSummarizeConfigPath } from './config/read.js';
 import {
   parseApiKeysConfig,
   parseCacheConfig,
@@ -12,8 +12,8 @@ import {
   parseProviderBaseUrlConfig,
   parseSlidesConfig,
   parseUiConfig,
-} from "./config/sections.js";
-import type { SummarizeConfig } from "./config/types.js";
+} from './config/sections.js';
+import type { SummarizeConfig } from './config/types.js';
 
 export type {
   AnthropicConfig,
@@ -39,26 +39,26 @@ export type {
   VideoMode,
   XaiConfig,
   ZaiConfig,
-} from "./config/types.js";
+} from './config/types.js';
 
-export { mergeConfigEnv, resolveConfigEnv } from "./config/env.js";
+export { mergeConfigEnv, resolveConfigEnv } from './config/env.js';
 
 export function loadSummarizeConfig({ env }: { env: Record<string, string | undefined> }): {
   config: SummarizeConfig | null;
   path: string | null;
 } {
   const path = resolveSummarizeConfigPath(env);
-  if (!path) return { config: null, path: null };
+  if (!path) {return { config: null, path: null };}
   const parsed = readParsedConfigFile(path);
-  if (!parsed) return { config: null, path };
+  if (!parsed) {return { config: null, path };}
 
-  const model = parseModelConfig(parsed.model, path, "model");
+  const model = parseModelConfig(parsed.model, path, 'model');
 
   const language = (() => {
     const value = parsed.language;
-    if (typeof value === "undefined") return undefined;
-    if (typeof value !== "string") {
-      throw new Error(`Invalid config file ${path}: "language" must be a string.`);
+    if (value === undefined) {return undefined;}
+    if (typeof value !== 'string') {
+      throw new TypeError(`Invalid config file ${path}: "language" must be a string.`);
     }
     const trimmed = value.trim();
     if (!trimmed) {
@@ -68,10 +68,10 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
   })();
 
   const prompt = (() => {
-    const value = (parsed as Record<string, unknown>).prompt;
-    if (typeof value === "undefined") return undefined;
-    if (typeof value !== "string") {
-      throw new Error(`Invalid config file ${path}: "prompt" must be a string.`);
+    const value = (parsed).prompt;
+    if (value === undefined) {return undefined;}
+    if (typeof value !== 'string') {
+      throw new TypeError(`Invalid config file ${path}: "prompt" must be a string.`);
     }
     const trimmed = value.trim();
     if (!trimmed) {
@@ -91,14 +91,14 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
   const openai = parseOpenAiConfig(parsed, path);
 
   const nvidia = parseProviderBaseUrlConfig(
-    (parsed as Record<string, unknown>).nvidia,
+    (parsed).nvidia,
     path,
-    "nvidia",
+    'nvidia',
   );
-  const anthropic = parseProviderBaseUrlConfig(parsed.anthropic, path, "anthropic");
-  const google = parseProviderBaseUrlConfig(parsed.google, path, "google");
-  const xai = parseProviderBaseUrlConfig(parsed.xai, path, "xai");
-  const zai = parseProviderBaseUrlConfig((parsed as Record<string, unknown>).zai, path, "zai");
+  const anthropic = parseProviderBaseUrlConfig(parsed.anthropic, path, 'anthropic');
+  const google = parseProviderBaseUrlConfig(parsed.google, path, 'google');
+  const xai = parseProviderBaseUrlConfig(parsed.xai, path, 'xai');
+  const zai = parseProviderBaseUrlConfig((parsed).zai, path, 'zai');
 
   const configEnv = parseEnvConfig(parsed, path);
   const apiKeys = parseApiKeysConfig(parsed, path);

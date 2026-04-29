@@ -4,18 +4,19 @@
  * Phase 2.2: Local file path handling for transcript caching
  */
 
-import { statSync } from "node:fs";
-import { isAbsolute, resolve as resolvePath } from "node:path";
-import { pathToFileURL } from "node:url";
-import { createLinkPreviewClient, type ExtractedLinkContent } from "../../../content/index.js";
-import { createFirecrawlScraper } from "../../../firecrawl.js";
-import type { AssetAttachment } from "../../attachments.js";
-import { readTweetWithPreferredClient } from "../../bird.js";
-import { resolveTwitterCookies } from "../../cookies/twitter.js";
-import { hasBirdCli, hasXurlCli } from "../../env.js";
-import { writeVerbose } from "../../logging.js";
-import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from "./media-policy.js";
-import type { AssetSummaryContext, SummarizeAssetArgs } from "./summary.js";
+import { statSync } from 'node:fs';
+import { isAbsolute, resolve as resolvePath } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+import { createLinkPreviewClient, type ExtractedLinkContent } from '../../../content/index.js';
+import { createFirecrawlScraper } from '../../../firecrawl.js';
+import type { AssetAttachment } from '../../attachments.js';
+import { readTweetWithPreferredClient } from '../../bird.js';
+import { resolveTwitterCookies } from '../../cookies/twitter.js';
+import { hasBirdCli, hasXurlCli } from '../../env.js';
+import { writeVerbose } from '../../logging.js';
+import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from './media-policy.js';
+import type { AssetSummaryContext, SummarizeAssetArgs } from './summary.js';
 
 /**
  * Get file modification time for cache invalidation support.
@@ -63,27 +64,27 @@ export async function summarizeMediaFile(
 
   // Helper to check if a binary is available on PATH
   const isBinaryAvailable = async (binary: string): Promise<boolean> => {
-    const { spawn } = await import("node:child_process");
+    const { spawn } = await import('node:child_process');
     return new Promise<boolean>((resolve) => {
-      const proc = spawn(binary, ["--help"], {
-        stdio: ["ignore", "ignore", "ignore"],
+      const proc = spawn(binary, ['--help'], {
         env: ctx.env,
+        stdio: ['ignore', 'ignore', 'ignore'],
       });
-      proc.on("error", () => resolve(false));
-      proc.on("close", (code) => resolve(code === 0));
+      proc.on('error', () =>{  resolve(false); });
+      proc.on('close', (code) =>{  resolve(code === 0); });
     });
   };
 
   // Check for yt-dlp: either via env var or on PATH
-  const ytDlpPath = ctx.env.YT_DLP_PATH || ((await isBinaryAvailable("yt-dlp")) ? "yt-dlp" : null);
+  const ytDlpPath = ctx.env.YT_DLP_PATH ?? ((await isBinaryAvailable('yt-dlp')) ? 'yt-dlp' : null);
 
   // Check for whisper.cpp: either via env var or by checking if whisper-cli is on PATH
   const hasLocalWhisper = ctx.env.SUMMARIZE_WHISPER_CPP_BINARY
     ? true
-    : await isBinaryAvailable("whisper-cli");
+    : await isBinaryAvailable('whisper-cli');
 
   const hasAnyTranscriptionProvider =
-    groqKey || assemblyaiKey || geminiKey || openaiKey || falKey || hasLocalWhisper;
+    (groqKey ?? assemblyaiKey) || geminiKey || openaiKey || falKey ?? hasLocalWhisper;
 
   if (!hasAnyTranscriptionProvider) {
     throw new Error(`Media file transcription requires one of the following:
@@ -113,14 +114,14 @@ See: https://github.com/openai/whisper for setup details`);
   const isHttpUrl = (value: string): boolean => {
     try {
       const parsed = new URL(value);
-      return parsed.protocol === "http:" || parsed.protocol === "https:";
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
     } catch {
       return false;
     }
   };
 
   // For URLs, skip local file validation - yt-dlp will handle the download
-  const isUrl = args.sourceKind === "asset-url" || isHttpUrl(args.sourceLabel);
+  const isUrl = args.sourceKind === 'asset-url' || isHttpUrl(args.sourceLabel);
 
   let absolutePath: string;
   let fileMtime: number | null = null;
@@ -141,7 +142,7 @@ See: https://github.com/openai/whisper for setup details`);
       const maxSizeBytes = MAX_LOCAL_MEDIA_BYTES;
 
       if (fileSizeBytes === 0) {
-        throw new Error("Media file is empty (0 bytes). Please provide a valid audio/video file.");
+        throw new Error('Media file is empty (0 bytes). Please provide a valid audio/video file.');
       }
 
       if (fileSizeBytes > maxSizeBytes) {
@@ -153,13 +154,13 @@ See: https://github.com/openai/whisper for setup details`);
     } catch (error) {
       if (
         error instanceof Error &&
-        (error.message.includes("empty") || error.message.includes("large"))
+        (error.message.includes('empty') || error.message.includes('large'))
       ) {
         throw error; // Re-throw our validation errors
       }
       // For other statSync errors (e.g., file not found), let them bubble up
       throw new Error(
-        `Unable to access media file: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Unable to access media file: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error },
       );
     }
   }
@@ -169,32 +170,29 @@ See: https://github.com/openai/whisper for setup details`);
   // Create Firecrawl scraper if configured
   const firecrawlScraper =
     ctx.apiStatus.firecrawlConfigured && ctx.env.FIRECRAWL_API_KEY
-      ? createFirecrawlScraper({
-          apiKey: ctx.env.FIRECRAWL_API_KEY,
-          fetchImpl: ctx.trackedFetch,
-        })
+      ? createFirecrawlScraper({ apiKey: ctx.env.FIRECRAWL_API_KEY, fetchImpl: ctx.trackedFetch })
       : null;
 
   // Create reader for X tweets (for completeness, not used for media)
   const readTweetWithBirdClient =
     hasXurlCli(ctx.env) || hasBirdCli(ctx.env)
       ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
-          readTweetWithPreferredClient({ url, timeoutMs, env: ctx.env })
+          readTweetWithPreferredClient({ env: ctx.env, timeoutMs, url })
       : null;
 
   // Create link preview client for transcript resolution
   const transcriptCache =
-    cacheMode === "default" ? (ctx.cache.store?.transcriptCache ?? null) : null;
+    cacheMode === 'default' ? (ctx.cache.store?.transcriptCache ?? null) : null;
 
   const client = createLinkPreviewClient({
     env: ctx.envForRun,
     apifyApiToken: ctx.apiStatus.apifyToken,
-    ytDlpPath: ytDlpPath,
+    ytDlpPath,
     transcription: {
+      assemblyaiApiKey: assemblyaiKey ?? ctx.apiStatus.assemblyaiApiKey,
       env: ctx.envForRun,
       falApiKey: falKey,
       groqApiKey: groqKey,
-      assemblyaiApiKey: assemblyaiKey ?? ctx.apiStatus.assemblyaiApiKey,
       openaiApiKey: openaiKey,
     },
     scrapeWithFirecrawl: firecrawlScraper,
@@ -219,7 +217,7 @@ See: https://github.com/openai/whisper for setup details`);
 
   try {
     // For URLs, use directly. For local files, convert to file:// URL.
-    // yt-dlp can handle both http(s) URLs and file:// URLs.
+    // Yt-dlp can handle both http(s) URLs and file:// URLs.
     const fileUrl = isUrl ? absolutePath : pathToFileURL(absolutePath).href;
 
     // Fetch the link content (will trigger transcription for media)
@@ -227,8 +225,8 @@ See: https://github.com/openai/whisper for setup details`);
     const extracted: ExtractedLinkContent = await client.fetchLinkContent(fileUrl, {
       timeoutMs: ctx.timeoutMs,
       cacheMode,
-      youtubeTranscript: "auto", // Not used for local files, but set for completeness
-      mediaTranscript: "prefer", // Prefer transcription for media files
+      youtubeTranscript: 'auto', // Not used for local files, but set for completeness
+      mediaTranscript: 'prefer', // Prefer transcription for media files
       transcriptTimestamps: false,
       fileMtime, // Include file modification time for cache invalidation
     });
@@ -243,18 +241,18 @@ See: https://github.com/openai/whisper for setup details`);
     }
 
     // Create a text-based attachment from the transcript
-    const filename = args.sourceLabel.split("/").pop() ?? "media";
+    const filename = args.sourceLabel.split('/').pop() ?? 'media';
     const transcriptAttachment: AssetAttachment = {
-      mediaType: "text/plain",
-      filename: `${filename}.transcript.txt`,
-      kind: "file",
       bytes: new TextEncoder().encode(extracted.content),
+      filename: `${filename}.transcript.txt`,
+      kind: 'file',
+      mediaType: 'text/plain',
     };
 
     writeVerbose(
       ctx.stderr,
       ctx.verbose,
-      `transcription done media file: ${extracted.diagnostics?.transcript?.provider ?? "unknown"}`,
+      `transcription done media file: ${extracted.diagnostics?.transcript?.provider ?? 'unknown'}`,
       false,
       ctx.envForRun,
     );
@@ -263,27 +261,27 @@ See: https://github.com/openai/whisper for setup details`);
     if (ctx.extractMode) {
       ctx.clearProgressForStdout();
       ctx.stdout.write(extracted.content);
-      if (!extracted.content.endsWith("\n")) {
-        ctx.stdout.write("\n");
+      if (!extracted.content.endsWith('\n')) {
+        ctx.stdout.write('\n');
       }
       return;
     }
 
     // Call the standard asset summarization with the transcript
-    const { summarizeAsset } = await import("./summary.js");
+    const { summarizeAsset } = await import('./summary.js');
     await summarizeAsset(ctx, {
-      sourceKind: "file",
-      sourceLabel: `${args.sourceLabel} (transcript)`,
       attachment: transcriptAttachment,
       onModelChosen: args.onModelChosen,
+      sourceKind: 'file',
+      sourceLabel: `${args.sourceLabel} (transcript)`,
     });
   } catch (error) {
     // Re-throw with better context for transcription errors
-    if (error instanceof Error && error.message.includes("transcribe")) {
+    if (error instanceof Error && error.message.includes('transcribe')) {
       throw error;
     }
     throw new Error(
-      `Transcription failed: ${error instanceof Error ? error.message : String(error)}`,
+      `Transcription failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error },
     );
   }
 }

@@ -1,8 +1,8 @@
-import type { OutputLanguage } from "../language.js";
-import { formatOutputLanguageInstruction } from "../language.js";
-import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from "./format.js";
-import { pickSummaryLengthForCharacters, type SummaryLengthTarget } from "./link-summary.js";
-import { formatPresetLengthGuidance, resolveSummaryLengthSpec } from "./summary-lengths.js";
+import type { OutputLanguage } from '../language.js';
+import { formatOutputLanguageInstruction } from '../language.js';
+import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from './format.js';
+import { pickSummaryLengthForCharacters, type SummaryLengthTarget } from './link-summary.js';
+import { formatPresetLengthGuidance, resolveSummaryLengthSpec } from './summary-lengths.js';
 
 export function buildFileSummaryPrompt({
   filename,
@@ -24,32 +24,32 @@ export function buildFileSummaryPrompt({
   languageInstruction?: string | null;
 }): string {
   const shouldIgnoreSponsors = Boolean(
-    mediaType?.startsWith("audio/") || mediaType?.startsWith("video/"),
+    mediaType?.startsWith('audio/') ?? mediaType?.startsWith('video/'),
   );
-  const contentCharacters = typeof contentLength === "number" ? contentLength : null;
+  const contentCharacters = typeof contentLength === 'number' ? contentLength : null;
   const effectiveSummaryLength =
-    typeof summaryLength === "string"
+    typeof summaryLength === 'string'
       ? summaryLength
-      : contentCharacters &&
+      : (contentCharacters &&
           contentCharacters > 0 &&
           summaryLength.maxCharacters > contentCharacters
         ? { maxCharacters: contentCharacters }
-        : summaryLength;
+        : summaryLength);
   const preset =
-    typeof effectiveSummaryLength === "string"
+    typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength
       : pickSummaryLengthForCharacters(effectiveSummaryLength.maxCharacters);
   const directive = resolveSummaryLengthSpec(preset);
   const presetLengthLine =
-    typeof effectiveSummaryLength === "string" ? formatPresetLengthGuidance(preset) : "";
+    typeof effectiveSummaryLength === 'string' ? formatPresetLengthGuidance(preset) : '';
   const maxCharactersLine =
-    typeof effectiveSummaryLength === "string"
-      ? ""
+    typeof effectiveSummaryLength === 'string'
+      ? ''
       : `Target length: up to ${effectiveSummaryLength.maxCharacters.toLocaleString()} characters total (including Markdown and whitespace). Hard limit: do not exceed it.`;
   const contentLengthLine =
     contentCharacters && contentCharacters > 0
       ? `Extracted content length: ${contentCharacters.toLocaleString()} characters. Hard limit: never exceed this length. If the requested length is larger, do not pad—finish early rather than adding filler.`
-      : "";
+      : '';
 
   const headerLines = [
     filename ? `Filename: ${filename}` : null,
@@ -57,41 +57,37 @@ export function buildFileSummaryPrompt({
   ].filter(Boolean);
 
   const baseInstructions = [
-    "Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.",
-    "Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.",
-    "You summarize files for curious users.",
-    "Summarize the attached file.",
-    "Be factual and do not invent details.",
+    'Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.',
+    'Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.',
+    'You summarize files for curious users.',
+    'Summarize the attached file.',
+    'Be factual and do not invent details.',
     shouldIgnoreSponsors
-      ? "Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code."
-      : "",
+      ? 'Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code.'
+      : '',
     directive.guidance,
     directive.formatting,
-    "Format the answer in Markdown.",
-    "Use short paragraphs; use bullet lists only when they improve scanability; avoid rigid templates.",
-    "If a standout line is present, include 1-2 short exact excerpts (max 25 words each) formatted as Markdown italics using single asterisks only. Do not use quotation marks of any kind (straight or curly). Remove any quotation marks from excerpts. If you cannot format an italic excerpt, omit it. Never include ad/sponsor/boilerplate excerpts and do not mention them.",
-    "Do not use emojis.",
+    'Format the answer in Markdown.',
+    'Use short paragraphs; use bullet lists only when they improve scanability; avoid rigid templates.',
+    'If a standout line is present, include 1-2 short exact excerpts (max 25 words each) formatted as Markdown italics using single asterisks only. Do not use quotation marks of any kind (straight or curly). Remove any quotation marks from excerpts. If you cannot format an italic excerpt, omit it. Never include ad/sponsor/boilerplate excerpts and do not mention them.',
+    'Do not use emojis.',
     presetLengthLine,
     maxCharactersLine,
     contentLengthLine,
-    formatOutputLanguageInstruction(outputLanguage ?? { kind: "auto" }),
-    "Final check: remove any sponsor/ad references or mentions of skipping/ignoring content. Remove any quotation marks. Ensure standout excerpts are italicized; otherwise omit them.",
-    "Return only the summary.",
+    formatOutputLanguageInstruction(outputLanguage ?? { kind: 'auto' }),
+    'Final check: remove any sponsor/ad references or mentions of skipping/ignoring content. Remove any quotation marks. Ensure standout excerpts are italicized; otherwise omit them.',
+    'Return only the summary.',
   ]
-    .filter((line) => typeof line === "string" && line.trim().length > 0)
-    .join("\n");
+    .filter((line) => typeof line === 'string' && line.trim().length > 0)
+    .join('\n');
 
   const instructions = buildInstructions({
     base: baseInstructions,
-    overrides: { promptOverride, lengthInstruction, languageInstruction } satisfies PromptOverrides,
+    overrides: { languageInstruction, lengthInstruction, promptOverride } satisfies PromptOverrides,
   });
-  const context = headerLines.join("\n");
+  const context = headerLines.join('\n');
 
-  return buildTaggedPrompt({
-    instructions,
-    context,
-    content: "",
-  });
+  return buildTaggedPrompt({ content: '', context, instructions });
 }
 
 export function buildFileTextSummaryPrompt({
@@ -118,24 +114,24 @@ export function buildFileTextSummaryPrompt({
   languageInstruction?: string | null;
 }): string {
   const shouldIgnoreSponsors = Boolean(
-    originalMediaType?.startsWith("audio/") || originalMediaType?.startsWith("video/"),
+    originalMediaType?.startsWith('audio/') ?? originalMediaType?.startsWith('video/'),
   );
   const effectiveSummaryLength =
-    typeof summaryLength === "string"
+    typeof summaryLength === 'string'
       ? summaryLength
-      : summaryLength.maxCharacters > contentLength
+      : (summaryLength.maxCharacters > contentLength
         ? { maxCharacters: contentLength }
-        : summaryLength;
+        : summaryLength);
   const preset =
-    typeof effectiveSummaryLength === "string"
+    typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength
       : pickSummaryLengthForCharacters(effectiveSummaryLength.maxCharacters);
   const directive = resolveSummaryLengthSpec(preset);
   const presetLengthLine =
-    typeof effectiveSummaryLength === "string" ? formatPresetLengthGuidance(preset) : "";
+    typeof effectiveSummaryLength === 'string' ? formatPresetLengthGuidance(preset) : '';
   const maxCharactersLine =
-    typeof effectiveSummaryLength === "string"
-      ? ""
+    typeof effectiveSummaryLength === 'string'
+      ? ''
       : `Target length: up to ${effectiveSummaryLength.maxCharacters.toLocaleString()} characters total (including Markdown and whitespace). Hard limit: do not exceed it.`;
 
   const headerLines = [
@@ -146,39 +142,35 @@ export function buildFileTextSummaryPrompt({
   ].filter(Boolean);
 
   const baseInstructions = [
-    "Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.",
-    "Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.",
-    "You summarize files for curious users.",
-    "Summarize the file content below.",
-    "Be factual and do not invent details.",
+    'Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.',
+    'Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.',
+    'You summarize files for curious users.',
+    'Summarize the file content below.',
+    'Be factual and do not invent details.',
     shouldIgnoreSponsors
-      ? "Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code."
-      : "",
+      ? 'Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code.'
+      : '',
     directive.guidance,
     directive.formatting,
-    "Format the answer in Markdown.",
-    "Use short paragraphs; use bullet lists only when they improve scanability; avoid rigid templates.",
-    "If a standout line is present, include 1-2 short exact excerpts (max 25 words each) formatted as Markdown italics using single asterisks only. Do not use quotation marks of any kind (straight or curly). Remove any quotation marks from excerpts. If you cannot format an italic excerpt, omit it. Never include ad/sponsor/boilerplate excerpts and do not mention them.",
-    "Do not use emojis.",
+    'Format the answer in Markdown.',
+    'Use short paragraphs; use bullet lists only when they improve scanability; avoid rigid templates.',
+    'If a standout line is present, include 1-2 short exact excerpts (max 25 words each) formatted as Markdown italics using single asterisks only. Do not use quotation marks of any kind (straight or curly). Remove any quotation marks from excerpts. If you cannot format an italic excerpt, omit it. Never include ad/sponsor/boilerplate excerpts and do not mention them.',
+    'Do not use emojis.',
     presetLengthLine,
     maxCharactersLine,
-    formatOutputLanguageInstruction(outputLanguage ?? { kind: "auto" }),
-    "Final check: remove any sponsor/ad references or mentions of skipping/ignoring content. Remove any quotation marks. Ensure standout excerpts are italicized; otherwise omit them.",
-    "Return only the summary.",
+    formatOutputLanguageInstruction(outputLanguage ?? { kind: 'auto' }),
+    'Final check: remove any sponsor/ad references or mentions of skipping/ignoring content. Remove any quotation marks. Ensure standout excerpts are italicized; otherwise omit them.',
+    'Return only the summary.',
   ]
-    .filter((line) => typeof line === "string" && line.trim().length > 0)
-    .join("\n");
+    .filter((line) => typeof line === 'string' && line.trim().length > 0)
+    .join('\n');
 
   const instructions = buildInstructions({
     base: baseInstructions,
-    overrides: { promptOverride, lengthInstruction, languageInstruction } satisfies PromptOverrides,
+    overrides: { languageInstruction, lengthInstruction, promptOverride } satisfies PromptOverrides,
   });
-  const context = headerLines.join("\n");
-  const contentText = typeof content === "string" ? content : "";
+  const context = headerLines.join('\n');
+  const contentText = typeof content === 'string' ? content : '';
 
-  return buildTaggedPrompt({
-    instructions,
-    context,
-    content: contentText,
-  });
+  return buildTaggedPrompt({ content: contentText, context, instructions });
 }

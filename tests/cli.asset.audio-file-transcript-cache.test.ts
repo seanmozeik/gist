@@ -4,55 +4,51 @@
  * when transcribing local audio files.
  */
 
-import { mkdtempSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { describe, expect, it, vi } from "vitest";
-import type { TranscriptCache } from "../packages/core/src/content/cache/types.js";
-import { readTranscriptCache } from "../packages/core/src/content/transcript/cache.js";
+import { mkdtempSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-describe("transcript cache integration with audio files", () => {
-  it("caches transcripts using file modification time as cache key component", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-fileMtime-"));
-    const audioPath = join(root, "test.mp3");
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+import { describe, expect, it, vi } from 'vitest';
+
+import type { TranscriptCache } from '../packages/core/src/content/cache/types.js';
+import { readTranscriptCache } from '../packages/core/src/content/transcript/cache.js';
+
+describe('transcript cache integration with audio files', () => {
+  it('caches transcripts using file modification time as cache key component', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-fileMtime-'));
+    const audioPath = join(root, 'test.mp3');
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stats = statSync(audioPath);
     const fileMtime = stats.mtimeMs;
 
-    const cacheGetCalls: Array<{
-      url: string;
-      fileMtime: number | null | undefined;
-    }> = [];
+    const cacheGetCalls: { url: string; fileMtime: number | null | undefined }[] = [];
 
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async (args) => {
-        cacheGetCalls.push({
-          url: args.url,
-          fileMtime: args.fileMtime,
-        });
+        cacheGetCalls.push({ fileMtime: args.fileMtime, url: args.url });
         return null; // Cache miss
       }),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: `file://${audioPath}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime,
+      transcriptCache,
+      url: `file://${audioPath}`,
     });
 
-    expect(outcome.diagnostics.cacheStatus).toBe("miss");
+    expect(outcome.diagnostics.cacheStatus).toBe('miss');
     expect(cacheGetCalls).toHaveLength(1);
     expect(cacheGetCalls[0]?.fileMtime).toBe(fileMtime);
     expect(cacheGetCalls[0]?.url).toBe(`file://${audioPath}`);
   });
 
-  it("invalidates cache when file modification time changes", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-invalidation-"));
-    const audioPath = join(root, "test.mp3");
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+  it('invalidates cache when file modification time changes', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-invalidation-'));
+    const audioPath = join(root, 'test.mp3');
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const originalStats = statSync(audioPath);
     const originalMtime = originalStats.mtimeMs;
@@ -63,10 +59,10 @@ describe("transcript cache integration with audio files", () => {
         // Cache only hits if mtime matches original
         if (args.fileMtime === originalMtime) {
           return {
-            content: "Cached transcript from original mtime",
-            source: "openai",
+            content: 'Cached transcript from original mtime',
             expired: false,
             metadata: null,
+            source: 'openai',
           };
         }
         // Different mtime = cache miss
@@ -77,93 +73,88 @@ describe("transcript cache integration with audio files", () => {
 
     // First read with original mtime
     const outcome1 = await readTranscriptCache({
-      url: `file://${audioPath}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: originalMtime,
+      transcriptCache,
+      url: `file://${audioPath}`,
     });
 
-    expect(outcome1.diagnostics.cacheStatus).toBe("hit");
-    expect(outcome1.resolution?.text).toBe("Cached transcript from original mtime");
+    expect(outcome1.diagnostics.cacheStatus).toBe('hit');
+    expect(outcome1.resolution?.text).toBe('Cached transcript from original mtime');
 
     // Simulate reading with modified file (different mtime)
     const newMtime = originalMtime + 5000; // 5 seconds later
 
     const outcome2 = await readTranscriptCache({
-      url: `file://${audioPath}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: newMtime,
+      transcriptCache,
+      url: `file://${audioPath}`,
     });
 
-    expect(outcome2.diagnostics.cacheStatus).toBe("miss");
+    expect(outcome2.diagnostics.cacheStatus).toBe('miss');
     expect(outcome2.resolution).toBeNull();
   });
 
-  it("preserves backward compatibility: URL-based audio without fileMtime", async () => {
+  it('preserves backward compatibility: URL-based audio without fileMtime', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async (args) => {
         // URL-based transcripts should have fileMtime = null
         expect(args.fileMtime).toBeNull();
         return {
-          content: "URL-based transcript",
-          source: "yt-dlp",
+          content: 'URL-based transcript',
           expired: false,
           metadata: null,
+          source: 'yt-dlp',
         };
       }),
       set: vi.fn(async () => {}),
     };
 
     const outcome = await readTranscriptCache({
-      url: "https://example.com/podcast/episode.mp3",
-      cacheMode: "default",
+      cacheMode: 'default',
+      fileMtime: null,
       transcriptCache,
-      fileMtime: null, // Explicitly null for URLs
+      url: 'https://example.com/podcast/episode.mp3', // Explicitly null for URLs
     });
 
-    expect(outcome.diagnostics.cacheStatus).toBe("hit");
-    expect(outcome.resolution?.text).toBe("URL-based transcript");
+    expect(outcome.diagnostics.cacheStatus).toBe('hit');
+    expect(outcome.resolution?.text).toBe('URL-based transcript');
     expect(vi.mocked(transcriptCache.get)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        fileMtime: null,
-      }),
+      expect.objectContaining({ fileMtime: null }),
     );
   });
 
-  it("handles multiple files with different mtimes independently", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-multiple-files-"));
-    const audioPath1 = join(root, "audio1.mp3");
-    const audioPath2 = join(root, "audio2.mp3");
-    writeFileSync(audioPath1, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
-    writeFileSync(audioPath2, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+  it('handles multiple files with different mtimes independently', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-multiple-files-'));
+    const audioPath1 = join(root, 'audio1.mp3');
+    const audioPath2 = join(root, 'audio2.mp3');
+    writeFileSync(audioPath1, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath2, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime1 = statSync(audioPath1).mtimeMs;
     const mtime2 = statSync(audioPath2).mtimeMs;
 
-    const cacheRequests: Array<{ url: string; fileMtime: number | null }> = [];
+    const cacheRequests: { url: string; fileMtime: number | null }[] = [];
 
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async (args) => {
-        cacheRequests.push({
-          url: args.url,
-          fileMtime: args.fileMtime,
-        });
+        cacheRequests.push({ fileMtime: args.fileMtime, url: args.url });
         // Different transcripts for different files
-        if (args.url.includes("audio1")) {
+        if (args.url.includes('audio1')) {
           return {
-            content: "Transcript for audio 1",
-            source: "openai",
+            content: 'Transcript for audio 1',
             expired: false,
             metadata: null,
+            source: 'openai',
           };
         }
-        if (args.url.includes("audio2")) {
+        if (args.url.includes('audio2')) {
           return {
-            content: "Transcript for audio 2",
-            source: "openai",
+            content: 'Transcript for audio 2',
             expired: false,
             metadata: null,
+            source: 'openai',
           };
         }
         return null;
@@ -173,21 +164,21 @@ describe("transcript cache integration with audio files", () => {
 
     // Read both files
     const outcome1 = await readTranscriptCache({
-      url: `file://${audioPath1}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: mtime1,
+      transcriptCache,
+      url: `file://${audioPath1}`,
     });
 
     const outcome2 = await readTranscriptCache({
-      url: `file://${audioPath2}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: mtime2,
+      transcriptCache,
+      url: `file://${audioPath2}`,
     });
 
-    expect(outcome1.resolution?.text).toBe("Transcript for audio 1");
-    expect(outcome2.resolution?.text).toBe("Transcript for audio 2");
+    expect(outcome1.resolution?.text).toBe('Transcript for audio 1');
+    expect(outcome2.resolution?.text).toBe('Transcript for audio 2');
 
     // Verify both files were cached with their respective mtimes
     expect(cacheRequests).toHaveLength(2);
@@ -195,10 +186,10 @@ describe("transcript cache integration with audio files", () => {
     expect(cacheRequests[1]?.fileMtime).toBe(mtime2);
   });
 
-  it("handles cache misses gracefully when file is new", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-new-file-"));
-    const audioPath = join(root, "new-audio.mp3");
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+  it('handles cache misses gracefully when file is new', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-new-file-'));
+    const audioPath = join(root, 'new-audio.mp3');
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
@@ -208,25 +199,25 @@ describe("transcript cache integration with audio files", () => {
     };
 
     const outcome = await readTranscriptCache({
-      url: `file://${audioPath}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: mtime,
+      transcriptCache,
+      url: `file://${audioPath}`,
     });
 
-    expect(outcome.diagnostics.cacheStatus).toBe("miss");
+    expect(outcome.diagnostics.cacheStatus).toBe('miss');
     expect(outcome.resolution).toBeNull();
     expect(vi.mocked(transcriptCache.get)).toHaveBeenCalled();
   });
 
-  it("threads fileMtime through read and write cache operations", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-thread-mtime-"));
-    const audioPath = join(root, "thread-test.mp3");
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+  it('threads fileMtime through read and write cache operations', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-thread-mtime-'));
+    const audioPath = join(root, 'thread-test.mp3');
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
-    const getArgs: Array<{ fileMtime?: number | null }> = [];
+    const getArgs: { fileMtime?: number | null }[] = [];
 
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async (args) => {
@@ -238,10 +229,10 @@ describe("transcript cache integration with audio files", () => {
 
     // Perform read that would trigger a write
     await readTranscriptCache({
-      url: `file://${audioPath}`,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: mtime,
+      transcriptCache,
+      url: `file://${audioPath}`,
     });
 
     // Verify get was called with fileMtime
@@ -249,10 +240,10 @@ describe("transcript cache integration with audio files", () => {
     expect(getArgs[0]?.fileMtime).toBe(mtime);
   });
 
-  it("uses file:// URL format for file paths in cache keys", async () => {
-    const root = mkdtempSync(join(tmpdir(), "transcript-cache-file-url-"));
-    const audioPath = join(root, "audio.mp3");
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+  it('uses file:// URL format for file paths in cache keys', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'transcript-cache-file-url-'));
+    const audioPath = join(root, 'audio.mp3');
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
@@ -269,25 +260,25 @@ describe("transcript cache integration with audio files", () => {
     const fileUrl = `file://${audioPath}`;
 
     await readTranscriptCache({
-      url: fileUrl,
-      cacheMode: "default",
-      transcriptCache,
+      cacheMode: 'default',
       fileMtime: mtime,
+      transcriptCache,
+      url: fileUrl,
     });
 
     expect(urlsSeenInCache).toContain(fileUrl);
     expect(urlsSeenInCache[0]).toMatch(/^file:\/\//);
   });
 
-  it("supports optional fileMtime parameter for backward compatibility", async () => {
+  it('supports optional fileMtime parameter for backward compatibility', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async (_args) => {
         // Should work even without fileMtime
         return {
-          content: "Works without fileMtime",
-          source: "openai",
+          content: 'Works without fileMtime',
           expired: false,
           metadata: null,
+          source: 'openai',
         };
       }),
       set: vi.fn(async () => {}),
@@ -295,13 +286,13 @@ describe("transcript cache integration with audio files", () => {
 
     // Call without fileMtime parameter
     const outcome = await readTranscriptCache({
-      url: "https://example.com/audio.mp3",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache,
-      // fileMtime not provided
+      url: 'https://example.com/audio.mp3',
+      // FileMtime not provided
     });
 
-    expect(outcome.diagnostics.cacheStatus).toBe("hit");
-    expect(outcome.resolution?.text).toBe("Works without fileMtime");
+    expect(outcome.diagnostics.cacheStatus).toBe('hit');
+    expect(outcome.resolution?.text).toBe('Works without fileMtime');
   });
 });

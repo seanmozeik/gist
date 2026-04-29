@@ -1,13 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   collectSegmentsFromHtml,
   extractArticleContent,
   extractPlainText,
   sanitizeHtmlForMarkdownConversion,
-} from "../packages/core/src/content/link-preview/content/article.js";
+} from '../packages/core/src/content/link-preview/content/article.js';
 
-describe("article content extraction", () => {
-  it("extracts headings, paragraphs, and list items with thresholds", () => {
+describe('article content extraction', () => {
+  it('extracts headings, paragraphs, and list items with thresholds', () => {
     const html = `
       <html><body>
         <h1>Hi</h1>
@@ -22,22 +23,22 @@ describe("article content extraction", () => {
     `;
 
     const segments = collectSegmentsFromHtml(html);
-    expect(segments.join("\n")).toContain("This is a heading");
-    expect(segments.join("\n")).toContain("This paragraph is long enough");
-    expect(segments.join("\n")).toContain("• This list item is long enough");
-    expect(segments.join("\n")).not.toContain("Short.");
+    expect(segments.join('\n')).toContain('This is a heading');
+    expect(segments.join('\n')).toContain('This paragraph is long enough');
+    expect(segments.join('\n')).toContain('• This list item is long enough');
+    expect(segments.join('\n')).not.toContain('Short.');
   });
 
-  it("falls back to body text when no segments exist", () => {
+  it('falls back to body text when no segments exist', () => {
     const html = `<html><body><div>Just some text without allowed tags.</div></body></html>`;
     const segments = collectSegmentsFromHtml(html);
     expect(segments.length).toBe(1);
-    expect(segments[0]).toContain("Just some text");
+    expect(segments[0]).toContain('Just some text');
 
-    expect(extractArticleContent(html)).toContain("Just some text");
+    expect(extractArticleContent(html)).toContain('Just some text');
   });
 
-  it("keeps headings as standalone segments", () => {
+  it('keeps headings as standalone segments', () => {
     const html = `
       <html><body>
         <p>This paragraph is long enough to be included in segments.</p>
@@ -47,11 +48,11 @@ describe("article content extraction", () => {
 
     const segments = collectSegmentsFromHtml(html);
     expect(segments.length).toBe(2);
-    expect(segments[0]).toContain("This paragraph is long enough");
-    expect(segments[1]).toContain("Tiny heading");
+    expect(segments[0]).toContain('This paragraph is long enough');
+    expect(segments[1]).toContain('Tiny heading');
   });
 
-  it("sanitizes HTML for Markdown conversion and keeps href", () => {
+  it('sanitizes HTML for Markdown conversion and keeps href', () => {
     const html = `
       <html><body>
         <script>alert("x")</script>
@@ -61,11 +62,11 @@ describe("article content extraction", () => {
 
     const sanitized = sanitizeHtmlForMarkdownConversion(html);
     expect(sanitized).toContain('href="https://example.com"');
-    expect(sanitized).not.toContain("onclick=");
-    expect(sanitized).not.toContain("<script");
+    expect(sanitized).not.toContain('onclick=');
+    expect(sanitized).not.toContain('<script');
   });
 
-  it("strips hidden elements and comments", () => {
+  it('strips hidden elements and comments', () => {
     const html = `
       <html><body>
         <p>Visible text here.</p>
@@ -77,19 +78,19 @@ describe("article content extraction", () => {
     `;
 
     const content = extractArticleContent(html);
-    expect(content).toContain("Visible text here.");
-    expect(content).not.toContain("Hidden text");
-    expect(content).not.toContain("Also hidden");
-    expect(content).not.toContain("Offscreen text");
+    expect(content).toContain('Visible text here.');
+    expect(content).not.toContain('Hidden text');
+    expect(content).not.toContain('Also hidden');
+    expect(content).not.toContain('Offscreen text');
 
     const plain = extractPlainText(html);
-    expect(plain).toContain("Visible text here.");
-    expect(plain).not.toContain("Hidden text");
-    expect(plain).not.toContain("comment with instructions");
+    expect(plain).toContain('Visible text here.');
+    expect(plain).not.toContain('Hidden text');
+    expect(plain).not.toContain('comment with instructions');
 
     const sanitized = sanitizeHtmlForMarkdownConversion(html);
-    expect(sanitized).toContain("Visible text here.");
-    expect(sanitized).not.toContain("Hidden text");
-    expect(sanitized).not.toContain("Offscreen text");
+    expect(sanitized).toContain('Visible text here.');
+    expect(sanitized).not.toContain('Hidden text');
+    expect(sanitized).not.toContain('Offscreen text');
   });
 });

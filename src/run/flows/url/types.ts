@@ -1,48 +1,48 @@
-import type { CacheState } from "../../../cache.js";
-import type { CliProvider, SummarizeConfig } from "../../../config.js";
+import type { CacheState } from '../../../cache.js';
+import type { CliProvider, SummarizeConfig } from '../../../config.js';
 import type {
   ExtractedLinkContent,
   LinkPreviewProgressEvent,
   MediaCache,
-} from "../../../content/index.js";
-import type { LlmCall, RunMetricsReport } from "../../../costs.js";
-import type { StreamMode } from "../../../flags.js";
-import type { OutputLanguage } from "../../../language.js";
-import type { ModelRequestOptions } from "../../../llm/model-options.js";
-import type { ExecFileFn } from "../../../markitdown.js";
-import type { FixedModelSpec, RequestedModel } from "../../../model-spec.js";
-import type { SummaryLength } from "../../../shared/contracts.js";
+} from '../../../content/index.js';
+import type { LlmCall, RunMetricsReport } from '../../../costs.js';
+import type { StreamMode } from '../../../flags.js';
+import type { OutputLanguage } from '../../../language.js';
+import type { ModelRequestOptions } from '../../../llm/model-options.js';
+import type { ExecFileFn } from '../../../markitdown.js';
+import type { FixedModelSpec, RequestedModel } from '../../../model-spec.js';
+import type { SummaryLength } from '../../../shared/contracts.js';
 import type {
   SlideExtractionResult,
   SlideImage,
   SlideSettings,
   SlideSourceKind,
-} from "../../../slides/index.js";
-import type { createSummaryEngine } from "../../summary-engine.js";
-import type { SummarizeAssetArgs } from "../asset/summary.js";
+} from '../../../slides/index.js';
+import type { createSummaryEngine } from '../../summary-engine.js';
+import type { SummarizeAssetArgs } from '../asset/summary.js';
 
-export type UrlFlowIo = {
+export interface UrlFlowIo {
   env: Record<string, string | undefined>;
   envForRun: Record<string, string | undefined>;
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
   execFileImpl: ExecFileFn;
   fetch: typeof fetch;
-};
+}
 
-export type UrlFlowFlags = {
+export interface UrlFlowFlags {
   timeoutMs: number;
   maxExtractCharacters?: number | null;
   retries: number;
-  format: "text" | "markdown";
-  markdownMode: "off" | "auto" | "llm" | "readability";
-  preprocessMode: "off" | "auto" | "always";
-  youtubeMode: "auto" | "web" | "yt-dlp" | "apify" | "no-auto";
-  firecrawlMode: "off" | "auto" | "always";
-  videoMode: "auto" | "transcript" | "understand";
+  format: 'text' | 'markdown';
+  markdownMode: 'off' | 'auto' | 'llm' | 'readability';
+  preprocessMode: 'off' | 'auto' | 'always';
+  youtubeMode: 'auto' | 'web' | 'yt-dlp' | 'apify' | 'no-auto';
+  firecrawlMode: 'off' | 'auto' | 'always';
+  videoMode: 'auto' | 'transcript' | 'understand';
   transcriptTimestamps: boolean;
   outputLanguage: OutputLanguage;
-  lengthArg: { kind: "preset"; preset: SummaryLength } | { kind: "chars"; maxCharacters: number };
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number };
   forceSummary: boolean;
   promptOverride?: string | null;
   lengthInstruction?: string | null;
@@ -66,9 +66,9 @@ export type UrlFlowFlags = {
   slides: SlideSettings | null;
   slidesDebug: boolean;
   slidesOutput?: boolean;
-};
+}
 
-export type UrlFlowModel = {
+export interface UrlFlowModel {
   requestedModel: RequestedModel;
   requestedModelInput: string;
   requestedModelLabel: string;
@@ -118,12 +118,12 @@ export type UrlFlowModel = {
   };
   summaryEngine: ReturnType<typeof createSummaryEngine>;
   getLiteLlmCatalog: () => Promise<
-    Awaited<ReturnType<typeof import("../../../pricing/litellm.js").loadLiteLlmCatalog>>["catalog"]
+    Awaited<ReturnType<typeof import('../../../pricing/litellm.js').loadLiteLlmCatalog>>['catalog']
   >;
   llmCalls: LlmCall[];
-};
+}
 
-export type UrlFlowHooks = {
+export interface UrlFlowHooks {
   onModelChosen?: ((modelId: string) => void) | null;
   onExtracted?: ((extracted: ExtractedLinkContent) => void) | null;
   onSlidesExtracted?: ((slides: SlideExtractionResult) => void) | null;
@@ -150,31 +150,31 @@ export type UrlFlowHooks = {
   clearProgressIfCurrent: (fn: () => void) => void;
   buildReport: () => Promise<RunMetricsReport>;
   estimateCostUsd: () => Promise<number | null>;
-};
+}
 
 export type UrlFlowEventHooks = Pick<
   UrlFlowHooks,
-  | "onModelChosen"
-  | "onExtracted"
-  | "onSlidesExtracted"
-  | "onSlidesProgress"
-  | "onSlidesDone"
-  | "onSlideChunk"
-  | "onLinkPreviewProgress"
-  | "onSummaryCached"
+  | 'onModelChosen'
+  | 'onExtracted'
+  | 'onSlidesExtracted'
+  | 'onSlidesProgress'
+  | 'onSlidesDone'
+  | 'onSlideChunk'
+  | 'onLinkPreviewProgress'
+  | 'onSummaryCached'
 >;
 
 export type UrlFlowRuntimeHooks = Pick<
   UrlFlowHooks,
-  | "setTranscriptionCost"
-  | "summarizeAsset"
-  | "writeViaFooter"
-  | "clearProgressForStdout"
-  | "restoreProgressAfterStdout"
-  | "setClearProgressBeforeStdout"
-  | "clearProgressIfCurrent"
-  | "buildReport"
-  | "estimateCostUsd"
+  | 'setTranscriptionCost'
+  | 'summarizeAsset'
+  | 'writeViaFooter'
+  | 'clearProgressForStdout'
+  | 'restoreProgressAfterStdout'
+  | 'setClearProgressBeforeStdout'
+  | 'clearProgressIfCurrent'
+  | 'buildReport'
+  | 'estimateCostUsd'
 >;
 
 export function createUrlFlowHooks(options: {
@@ -182,13 +182,13 @@ export function createUrlFlowHooks(options: {
   events?: Partial<UrlFlowEventHooks>;
 }): UrlFlowHooks {
   return {
-    onModelChosen: null,
     onExtracted: null,
+    onLinkPreviewProgress: null,
+    onModelChosen: null,
+    onSlideChunk: undefined,
+    onSlidesDone: null,
     onSlidesExtracted: null,
     onSlidesProgress: null,
-    onSlidesDone: null,
-    onSlideChunk: undefined,
-    onLinkPreviewProgress: null,
     onSummaryCached: null,
     ...options.events,
     ...options.runtime,
@@ -199,10 +199,7 @@ export function composeUrlFlowHooks(
   base: UrlFlowHooks,
   overrides: Partial<UrlFlowHooks>,
 ): UrlFlowHooks {
-  return {
-    ...base,
-    ...overrides,
-  };
+  return { ...base, ...overrides };
 }
 
 export function createUrlFlowContext(options: {
@@ -216,12 +213,12 @@ export function createUrlFlowContext(options: {
 }): UrlFlowContext {
   const { io, flags, model, cache, mediaCache, runtimeHooks, eventHooks } = options;
   return {
-    io,
-    flags,
-    model,
     cache,
-    mediaCache,
+    flags,
     hooks: createUrlFlowHooks({ runtime: runtimeHooks, events: eventHooks }),
+    io,
+    mediaCache,
+    model,
   };
 }
 
@@ -230,11 +227,11 @@ export function createUrlFlowContext(options: {
  * CLI runner populates the full surface; daemon uses a smaller subset (no TTY/progress/footer),
  * but both share the same extraction/cache/model logic.
  */
-export type UrlFlowContext = {
+export interface UrlFlowContext {
   io: UrlFlowIo;
   flags: UrlFlowFlags;
   model: UrlFlowModel;
   cache: CacheState;
   mediaCache: MediaCache | null;
   hooks: UrlFlowHooks;
-};
+}

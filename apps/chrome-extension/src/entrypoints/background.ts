@@ -1,39 +1,40 @@
-import type { AssistantMessage, Message } from "@mariozechner/pi-ai";
-import { defineBackground } from "wxt/utils/define-background";
-import { buildDaemonRequestBody, buildSummarizeRequestBody } from "../lib/daemon-payload";
-import { createDaemonRecovery, isDaemonUnreachableError } from "../lib/daemon-recovery";
-import { createDaemonStatusTracker } from "../lib/daemon-status";
-import { logExtensionEvent } from "../lib/extension-logs";
-import type { BgToPanel, PanelCachePayload, PanelToBg } from "../lib/panel-contracts";
-import { loadSettings, patchSettings } from "../lib/settings";
-import { canSummarizeUrl, extractFromTab, seekInTab } from "./background/content-script-bridge";
-import { daemonHealth, daemonPing, friendlyFetchError } from "./background/daemon-client";
-import { ensureChatExtract, primeMediaHint, type CachedExtract } from "./background/extract-cache";
-import { createHoverController, type HoverToBg } from "./background/hover-controller";
-import { bindBackgroundListeners } from "./background/listeners";
-import { handlePanelAgentRequest, handlePanelChatHistoryRequest } from "./background/panel-chat";
-import { createBackgroundPanelRuntime } from "./background/panel-runtime";
+import type { AssistantMessage, Message } from '@mariozechner/pi-ai';
+import { defineBackground } from 'wxt/utils/define-background';
+
+import { buildDaemonRequestBody, buildSummarizeRequestBody } from '../lib/daemon-payload';
+import { createDaemonRecovery, isDaemonUnreachableError } from '../lib/daemon-recovery';
+import { createDaemonStatusTracker } from '../lib/daemon-status';
+import { logExtensionEvent } from '../lib/extension-logs';
+import type { BgToPanel, PanelCachePayload, PanelToBg } from '../lib/panel-contracts';
+import { loadSettings, patchSettings } from '../lib/settings';
+import { canSummarizeUrl, extractFromTab, seekInTab } from './background/content-script-bridge';
+import { daemonHealth, daemonPing, friendlyFetchError } from './background/daemon-client';
+import { ensureChatExtract, primeMediaHint, type CachedExtract } from './background/extract-cache';
+import { createHoverController, type HoverToBg } from './background/hover-controller';
+import { bindBackgroundListeners } from './background/listeners';
+import { handlePanelAgentRequest, handlePanelChatHistoryRequest } from './background/panel-chat';
+import { createBackgroundPanelRuntime } from './background/panel-runtime';
 import {
   handlePanelClosed,
   handlePanelReady,
   handlePanelSetAuto,
   handlePanelSetLength,
-} from "./background/panel-session-actions";
-import { createPanelSessionStore, type PanelSession } from "./background/panel-session-store";
-import { handlePanelSlidesContextRequest } from "./background/panel-slides-context";
-import { type PanelUiState } from "./background/panel-state";
+} from './background/panel-session-actions';
+import { createPanelSessionStore, type PanelSession } from './background/panel-session-store';
+import { handlePanelSlidesContextRequest } from './background/panel-slides-context';
+import type { PanelUiState } from './background/panel-state';
 import {
   buildSlidesText,
   getActiveTab,
   openOptionsWindow,
   type SlidesPayload,
   urlsMatch,
-} from "./background/panel-utils";
+} from './background/panel-utils';
 import {
   createRuntimeActionsHandler,
   type ArtifactsRequest,
   type NativeInputRequest,
-} from "./background/runtime-actions";
+} from './background/runtime-actions';
 
 type BackgroundPanelSession = PanelSession<
   ReturnType<typeof createDaemonRecovery>,
@@ -45,134 +46,132 @@ export default defineBackground(() => {
     PanelCachePayload,
     ReturnType<typeof createDaemonRecovery>,
     ReturnType<typeof createDaemonStatusTracker>
-  >({
-    createDaemonRecovery,
-    createDaemonStatus: createDaemonStatusTracker,
-  });
+  >({ createDaemonRecovery, createDaemonStatus: createDaemonStatusTracker });
   const hoverControllersByTabId = new Map<
     number,
     { requestId: string; controller: AbortController }
   >();
   // Tabs explicitly armed by the sidepanel for debugger-driven native input.
   // Prevents arbitrary pages from triggering trusted clicks via the
-  // postMessage → content-script → runtime bridge.
+  // PostMessage → content-script → runtime bridge.
   const nativeInputArmedTabs = new Set<number>();
 
   function resolveLogLevel(event: string) {
     const normalized = event.toLowerCase();
-    if (normalized.includes("error") || normalized.includes("failed")) return "error";
-    if (normalized.includes("warn")) return "warn";
-    return "verbose";
+    if (normalized.includes('error') || normalized.includes('failed')) {return 'error';}
+    if (normalized.includes('warn')) {return 'warn';}
+    return 'verbose';
   }
   const logExtract = (windowId: number) => (event: string, detail?: Record<string, unknown>) => {
     const detailPayload = detail ? { windowId, ...detail } : { windowId };
     logExtensionEvent({
-      event,
       detail: detailPayload,
-      scope: "extractor",
+      event,
       level: resolveLogLevel(event),
+      scope: 'extractor',
     });
-    console.debug("[summarize][extractor]", { event, ...detailPayload });
+    console.debug('[summarize][extractor]', { event, ...detailPayload });
   };
-  const runtimeActionsHandler = createRuntimeActionsHandler({
-    armedTabs: nativeInputArmedTabs,
-  });
+  const runtimeActionsHandler = createRuntimeActionsHandler({ armedTabs: nativeInputArmedTabs });
   const hoverController = createHoverController({
-    hoverControllersByTabId,
     buildDaemonRequestBody,
+    hoverControllersByTabId,
     resolveLogLevel,
   });
 
   const { send, sendStatus, emitState, summarizeActiveTab } =
     createBackgroundPanelRuntime<BackgroundPanelSession>({
-      panelSessionStore,
-      loadSettings,
-      getActiveTab,
+      buildSummarizeRequestBody,
+      canSummarizeUrl,
       daemonHealth,
       daemonPing,
-      canSummarizeUrl,
-      urlsMatch,
-      primeMediaHint,
       extractFromTab,
-      buildSummarizeRequestBody,
-      friendlyFetchError,
-      isDaemonUnreachableError,
       fetchImpl: (...args) => fetch(...args),
+      friendlyFetchError,
+      getActiveTab,
+      isDaemonUnreachableError,
+      loadSettings,
+      panelSessionStore,
+      primeMediaHint,
       resolveLogLevel,
+      urlsMatch,
     });
 
   const handlePanelMessage = (session: BackgroundPanelSession, raw: PanelToBg) => {
-    if (!raw || typeof raw !== "object" || typeof (raw as { type?: unknown }).type !== "string") {
+    if (!raw || typeof raw !== 'object' || typeof (raw as { type?: unknown }).type !== 'string') {
       return;
     }
-    const type = raw.type;
-    if (type !== "panel:closed") {
+    const {type} = raw;
+    if (type !== 'panel:closed') {
       session.panelOpen = true;
     }
-    if (type === "panel:ping") session.panelLastPingAt = Date.now();
+    if (type === 'panel:ping') {session.panelLastPingAt = Date.now();}
 
     switch (type) {
-      case "panel:ready":
+      case 'panel:ready': {
         handlePanelReady(session, {
           emitState: () => {
-            void emitState(session, "");
+            void emitState(session, '');
           },
           summarizeActiveTab: (reason) => {
             void summarizeActiveTab(session, reason);
           },
         });
         break;
-      case "panel:closed":
+      }
+      case 'panel:closed': {
         handlePanelClosed(session, {
           clearCachedExtractsForWindow: (windowId) =>
             panelSessionStore.clearCachedExtractsForWindow(windowId),
         });
         break;
-      case "panel:summarize":
+      }
+      case 'panel:summarize': {
         void summarizeActiveTab(
           session,
-          (raw as { refresh?: boolean }).refresh ? "refresh" : "manual",
+          (raw as { refresh?: boolean }).refresh ? 'refresh' : 'manual',
           {
             refresh: Boolean((raw as { refresh?: boolean }).refresh),
-            inputMode: (raw as { inputMode?: "page" | "video" }).inputMode,
+            inputMode: (raw as { inputMode?: 'page' | 'video' }).inputMode,
           },
         );
         break;
-      case "panel:cache": {
+      }
+      case 'panel:cache': {
         const payload = (raw as { cache?: PanelCachePayload }).cache;
-        if (!payload || typeof payload.tabId !== "number" || !payload.url) return;
+        if (!payload || typeof payload.tabId !== 'number' || !payload.url) {return;}
         panelSessionStore.storePanelCache(payload);
         break;
       }
-      case "panel:get-cache": {
+      case 'panel:get-cache': {
         const payload = raw as { requestId: string; tabId: number; url: string };
         if (!payload.requestId || !payload.tabId || !payload.url) {
           return;
         }
         const cached = panelSessionStore.getPanelCache(payload.tabId, payload.url);
         void send(session, {
-          type: "ui:cache",
-          requestId: payload.requestId,
-          ok: Boolean(cached),
           cache: cached ?? undefined,
+          ok: Boolean(cached),
+          requestId: payload.requestId,
+          type: 'ui:cache',
         });
         break;
       }
-      case "panel:agent":
+      case 'panel:agent': {
         void (async () => {
           const settings = await loadSettings();
           if (!settings.chatEnabled) {
-            void send(session, { type: "run:error", message: "Chat is disabled in settings" });
+            void send(session, { type: 'run:error', message: 'Chat is disabled in settings' });
             return;
           }
           if (!settings.token.trim()) {
-            void send(session, { type: "run:error", message: "Setup required (missing token)" });
+            void send(session, { type: 'run:error', message: 'Setup required (missing token)' });
             return;
           }
 
           const tab = await getActiveTab(session.windowId);
           if (!tab?.id || !canSummarizeUrl(tab.url)) {
-            void send(session, { type: "run:error", message: "Cannot chat on this page" });
+            void send(session, { type: 'run:error', message: 'Cannot chat on this page' });
             return;
           }
 
@@ -190,7 +189,7 @@ export default defineBackground(() => {
             });
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            void send(session, { type: "run:error", message });
+            void send(session, { type: 'run:error', message });
             sendStatus(session, `Error: ${message}`);
             return;
           }
@@ -220,25 +219,26 @@ export default defineBackground(() => {
           });
         })();
         break;
-      case "panel:chat-history":
+      }
+      case 'panel:chat-history': {
         void (async () => {
           const payload = raw as { requestId: string; summary?: string | null };
           const settings = await loadSettings();
           if (!settings.chatEnabled) {
             void send(session, {
-              type: "chat:history",
+              type: 'chat:history',
               requestId: payload.requestId,
               ok: false,
-              error: "Chat is disabled in settings",
+              error: 'Chat is disabled in settings',
             });
             return;
           }
           if (!settings.token.trim()) {
             void send(session, {
-              type: "chat:history",
+              type: 'chat:history',
               requestId: payload.requestId,
               ok: false,
-              error: "Setup required (missing token)",
+              error: 'Setup required (missing token)',
             });
             return;
           }
@@ -246,10 +246,10 @@ export default defineBackground(() => {
           const tab = await getActiveTab(session.windowId);
           if (!tab?.id || !canSummarizeUrl(tab.url)) {
             void send(session, {
-              type: "chat:history",
+              type: 'chat:history',
               requestId: payload.requestId,
               ok: false,
-              error: "Cannot chat on this page",
+              error: 'Cannot chat on this page',
             });
             return;
           }
@@ -269,7 +269,7 @@ export default defineBackground(() => {
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             void send(session, {
-              type: "chat:history",
+              type: 'chat:history',
               requestId: payload.requestId,
               ok: false,
               error: message,
@@ -290,20 +290,23 @@ export default defineBackground(() => {
           });
         })();
         break;
-      case "panel:ping":
-        void emitState(session, "", { checkRecovery: true });
+      }
+      case 'panel:ping': {
+        void emitState(session, '', { checkRecovery: true });
         break;
-      case "panel:rememberUrl":
+      }
+      case 'panel:rememberUrl': {
         session.lastSummarizedUrl = (raw as { url: string }).url;
         session.inflightUrl = null;
         break;
-      case "panel:setAuto":
+      }
+      case 'panel:setAuto': {
         void (async () => {
           await handlePanelSetAuto({
             value: (raw as { value: boolean }).value,
             patchSettings,
             emitState: () => {
-              void emitState(session, "");
+              void emitState(session, '');
             },
             summarizeActiveTab: (reason) => {
               void summarizeActiveTab(session, reason);
@@ -311,14 +314,15 @@ export default defineBackground(() => {
           });
         })();
         break;
-      case "panel:setLength":
+      }
+      case 'panel:setLength': {
         void (async () => {
           await handlePanelSetLength({
             value: (raw as { value: string }).value,
             loadSettings,
             patchSettings,
             emitState: () => {
-              void emitState(session, "");
+              void emitState(session, '');
             },
             summarizeActiveTab: (reason) => {
               void summarizeActiveTab(session, reason);
@@ -326,7 +330,8 @@ export default defineBackground(() => {
           });
         })();
         break;
-      case "panel:slides-context":
+      }
+      case 'panel:slides-context': {
         void (async () => {
           const payload = raw as { requestId?: string; url?: string };
           const requestId = payload.requestId;
@@ -335,7 +340,7 @@ export default defineBackground(() => {
             session,
             requestId,
             requestedUrl:
-              typeof payload.url === "string" && payload.url.trim().length > 0
+              typeof payload.url === 'string' && payload.url.trim().length > 0
                 ? payload.url.trim()
                 : null,
             loadSettings,
@@ -351,13 +356,15 @@ export default defineBackground(() => {
           });
         })();
         break;
-      case "panel:openOptions":
+      }
+      case 'panel:openOptions': {
         void openOptionsWindow();
         break;
-      case "panel:seek":
+      }
+      case 'panel:seek': {
         void (async () => {
           const seconds = (raw as { seconds?: number }).seconds;
-          if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) {
+          if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) {
             return;
           }
           const tab = await getActiveTab(session.windowId);
@@ -368,6 +375,7 @@ export default defineBackground(() => {
           }
         })();
         break;
+      }
     }
   };
 
@@ -377,16 +385,20 @@ export default defineBackground(() => {
     }
   ).__summarizeDispatchPanelMessage = (windowId, raw) => {
     const session = panelSessionStore.getPanelSession(windowId);
-    if (!session) return false;
+    if (!session) {return false;}
     handlePanelMessage(session, raw);
     return true;
   };
 
   bindBackgroundListeners({
-    panelSessionStore,
+    emitState: (session, status) => {
+      void emitState(session, status);
+    },
     handlePanelMessage: (session, msg) => {
       handlePanelMessage(session, msg as PanelToBg);
     },
+    hoverRuntimeHandler: (raw, sender, sendResponse) =>
+      hoverController.handleRuntimeMessage(raw as HoverToBg, sender, sendResponse),
     onPanelDisconnect: (session, port, windowId) => {
       if (session.port !== port) return;
       session.runController?.abort();
@@ -399,33 +411,29 @@ export default defineBackground(() => {
       panelSessionStore.deletePanelSession(windowId);
       void panelSessionStore.clearCachedExtractsForWindow(windowId);
     },
-    runtimeActionsHandler: (raw, sender, sendResponse) =>
-      runtimeActionsHandler(raw as NativeInputRequest | ArtifactsRequest, sender, sendResponse),
-    hoverRuntimeHandler: (raw, sender, sendResponse) =>
-      hoverController.handleRuntimeMessage(raw as HoverToBg, sender, sendResponse),
-    emitState: (session, status) => {
-      void emitState(session, status);
-    },
-    summarizeActiveTab: (session, reason) => {
-      void summarizeActiveTab(session, reason);
-    },
     onTabRemoved: (tabId) => {
       hoverController.abortHoverForTab(tabId);
       nativeInputArmedTabs.delete(tabId);
     },
+    panelSessionStore,
+    runtimeActionsHandler: (raw, sender, sendResponse) =>
+      runtimeActionsHandler(raw as NativeInputRequest | ArtifactsRequest, sender, sendResponse),
+    summarizeActiveTab: (session, reason) => {
+      void summarizeActiveTab(session, reason);
+    },
   });
 
   // Chrome: Auto-open side panel on toolbar icon click
-  if (import.meta.env.BROWSER === "chrome") {
+  if (import.meta.env.BROWSER === 'chrome') {
     void chrome.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true });
   }
 
   // Firefox: Toggle sidebar on toolbar icon click
   // Firefox supports sidebarAction.toggle() for programmatic control
-  if (import.meta.env.BROWSER === "firefox") {
+  if (import.meta.env.BROWSER === 'firefox') {
     chrome.action.onClicked.addListener(() => {
       // @ts-expect-error - sidebarAction API exists in Firefox but not in Chrome types
-      if (typeof browser?.sidebarAction?.toggle === "function") {
+      if (typeof browser?.sidebarAction?.toggle === 'function') {
         // @ts-expect-error - Firefox-specific API
         void browser.sidebarAction.toggle();
       }

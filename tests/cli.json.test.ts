@@ -1,20 +1,19 @@
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
-describe("cli --json", () => {
-  const home = mkdtempSync(join(tmpdir(), "summarize-tests-json-"));
+describe('cli --json', () => {
+  const home = mkdtempSync(join(tmpdir(), 'summarize-tests-json-'));
 
-  it("disables AI SDK warning logs (stdout must stay JSON)", async () => {
+  it('disables AI SDK warning logs (stdout must stay JSON)', async () => {
     const globalObject = globalThis as unknown as { AI_SDK_LOG_WARNINGS?: boolean };
     const previous = globalObject.AI_SDK_LOG_WARNINGS;
     globalObject.AI_SDK_LOG_WARNINGS = true;
@@ -22,17 +21,17 @@ describe("cli --json", () => {
     try {
       const html =
         '<!doctype html><html><head><title>Ok</title><meta name="description" content="Desc" /></head>' +
-        `<body><article><p>${"A".repeat(260)}</p></article></body></html>`;
+        `<body><article><p>${'A'.repeat(260)}</p></article></body></html>`;
 
       const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-        const url = typeof input === "string" ? input : input.url;
-        if (url === "https://example.com") {
+        const url = typeof input === 'string' ? input : input.url;
+        if (url === 'https://example.com') {
           return htmlResponse(html);
         }
         throw new Error(`Unexpected fetch call: ${url}`);
       });
 
-      let stdoutText = "";
+      let stdoutText = '';
       const stdout = new Writable({
         write(chunk, _encoding, callback) {
           stdoutText += chunk.toString();
@@ -41,16 +40,16 @@ describe("cli --json", () => {
       });
 
       await runCli(
-        ["--json", "--extract", "--format", "text", "--timeout", "2s", "https://example.com"],
+        ['--json', '--extract', '--format', 'text', '--timeout', '2s', 'https://example.com'],
         {
           env: { HOME: home },
           fetch: fetchMock as unknown as typeof fetch,
-          stdout,
           stderr: new Writable({
             write(_chunk, _encoding, callback) {
               callback();
             },
           }),
+          stdout,
         },
       );
 
@@ -61,20 +60,20 @@ describe("cli --json", () => {
     }
   });
 
-  it("prints JSON with prompt in --extract mode (no LLM call)", async () => {
+  it('prints JSON with prompt in --extract mode (no LLM call)', async () => {
     const html =
       '<!doctype html><html><head><title>Ok</title><meta name="description" content="Desc" /></head>' +
-      `<body><article><p>${"A".repeat(260)}</p></article></body></html>`;
+      `<body><article><p>${'A'.repeat(260)}</p></article></body></html>`;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") {
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {
         return htmlResponse(html);
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    let stdoutText = "";
+    let stdoutText = '';
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
         stdoutText += chunk.toString();
@@ -82,7 +81,7 @@ describe("cli --json", () => {
       },
     });
 
-    let stderrText = "";
+    let stderrText = '';
     const stderr = new Writable({
       write(chunk, _encoding, callback) {
         stderrText += chunk.toString();
@@ -91,16 +90,11 @@ describe("cli --json", () => {
     });
 
     await runCli(
-      ["--json", "--extract", "--format", "text", "--timeout", "2s", "https://example.com"],
-      {
-        env: { HOME: home },
-        fetch: fetchMock as unknown as typeof fetch,
-        stdout,
-        stderr,
-      },
+      ['--json', '--extract', '--format', 'text', '--timeout', '2s', 'https://example.com'],
+      { env: { HOME: home }, fetch: fetchMock as unknown as typeof fetch, stderr, stdout },
     );
 
-    expect(stderrText).toContain("· text");
+    expect(stderrText).toContain('· text');
     const parsed = JSON.parse(stdoutText) as {
       env: {
         hasXaiKey: boolean;
@@ -119,21 +113,21 @@ describe("cli --json", () => {
     expect(parsed.summary).toBeNull();
   });
 
-  it("caps prompt guidance when requested length exceeds extracted content", async () => {
-    const bodyText = "Short content only.";
+  it('caps prompt guidance when requested length exceeds extracted content', async () => {
+    const bodyText = 'Short content only.';
     const html =
       '<!doctype html><html><head><title>Ok</title><meta name="description" content="Desc" /></head>' +
       `<body><article><p>${bodyText}</p></article></body></html>`;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") {
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {
         return htmlResponse(html);
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    let stdoutText = "";
+    let stdoutText = '';
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
         stdoutText += chunk.toString();
@@ -142,16 +136,16 @@ describe("cli --json", () => {
     });
 
     await runCli(
-      ["--json", "--extract-only", "--length", "xxl", "--timeout", "2s", "https://example.com"],
+      ['--json', '--extract-only', '--length', 'xxl', '--timeout', '2s', 'https://example.com'],
       {
         env: { HOME: home },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout,
         stderr: new Writable({
           write(_chunk, _encoding, callback) {
             callback();
           },
         }),
+        stdout,
       },
     );
 
@@ -159,6 +153,6 @@ describe("cli --json", () => {
     expect(parsed.prompt).toContain(
       `Extracted content length: ${parsed.extracted.content.length} characters`,
     );
-    expect(parsed.prompt).toContain("Hard limit: never exceed this length");
+    expect(parsed.prompt).toContain('Hard limit: never exceed this length');
   });
 });

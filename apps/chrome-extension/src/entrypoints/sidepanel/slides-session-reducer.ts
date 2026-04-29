@@ -2,36 +2,36 @@ import {
   buildEmptySlidesSessionDerivedState,
   canSetSlidesSessionTextMode,
   deriveSlidesSessionState,
-} from "./slides-session-derive";
+} from './slides-session-derive';
 import type {
   SlideLike,
   SlidesSessionRawState,
   SlidesSessionSnapshot,
   SlidesSessionState,
   SlidesSessionSummaryOpts,
-} from "./slides-session-types";
-import type { SlideTextMode } from "./slides-state";
+} from './slides-session-types';
+import type { SlideTextMode } from './slides-state';
 
 export type SlidesSessionAction =
-  | { type: "reset" }
-  | { type: "summary-source:clear" }
-  | { type: "summary:apply"; markdown: string; opts?: SlidesSessionSummaryOpts }
-  | { type: "text-mode:set"; value: SlideTextMode }
-  | { type: "transcript:set"; value: string | null };
+  | { type: 'reset' }
+  | { type: 'summary-source:clear' }
+  | { type: 'summary:apply'; markdown: string; opts?: SlidesSessionSummaryOpts }
+  | { type: 'text-mode:set'; value: SlideTextMode }
+  | { type: 'transcript:set'; value: string | null };
 
 export function buildInitialSlidesSessionRawState(): SlidesSessionRawState {
   return {
-    summaryMarkdown: "",
+    summaryMarkdown: '',
     summarySource: null,
-    textMode: "transcript",
+    textMode: 'transcript',
     transcriptTimedText: null,
   };
 }
 
 export function buildInitialSlidesSessionState(): SlidesSessionState {
   return {
-    raw: buildInitialSlidesSessionRawState(),
     derived: buildEmptySlidesSessionDerivedState(),
+    raw: buildInitialSlidesSessionRawState(),
   };
 }
 
@@ -46,15 +46,7 @@ export function deriveSlidesSessionSnapshot({
   lengthValue: string;
   slidesOcrEnabled: boolean;
 }): SlidesSessionSnapshot {
-  return {
-    raw,
-    derived: deriveSlidesSessionState({
-      raw,
-      slides,
-      lengthValue,
-      slidesOcrEnabled,
-    }),
-  };
+  return { derived: deriveSlidesSessionState({ raw, slides, lengthValue, slidesOcrEnabled }), raw };
 }
 
 function applySummaryAction(
@@ -62,8 +54,8 @@ function applySummaryAction(
   markdown: string,
   opts?: SlidesSessionSummaryOpts,
 ): SlidesSessionRawState {
-  const source = opts?.source ?? "summary";
-  if (source === "summary" && raw.summarySource === "slides") {
+  const source = opts?.source ?? 'summary';
+  if (source === 'summary' && raw.summarySource === 'slides') {
     return raw;
   }
   if (!markdown.trim()) {
@@ -72,32 +64,32 @@ function applySummaryAction(
     }
     return {
       ...raw,
-      summaryMarkdown: "",
-      summarySource: source === "slides" ? null : (raw.summarySource ?? "summary"),
+      summaryMarkdown: '',
+      summarySource: source === 'slides' ? null : (raw.summarySource ?? 'summary'),
     };
   }
-  return {
-    ...raw,
-    summaryMarkdown: markdown,
-    summarySource: source,
-  };
+  return { ...raw, summaryMarkdown: markdown, summarySource: source };
 }
 
 export function reduceSlidesSessionRawState(
   raw: SlidesSessionRawState,
   action: SlidesSessionAction,
-  derived: SlidesSessionState["derived"],
+  derived: SlidesSessionState['derived'],
 ): SlidesSessionRawState {
   switch (action.type) {
-    case "reset":
+    case 'reset': {
       return buildInitialSlidesSessionRawState();
-    case "summary-source:clear":
+    }
+    case 'summary-source:clear': {
       return { ...raw, summarySource: null };
-    case "summary:apply":
+    }
+    case 'summary:apply': {
       return applySummaryAction(raw, action.markdown, action.opts);
-    case "transcript:set":
+    }
+    case 'transcript:set': {
       return { ...raw, transcriptTimedText: action.value ?? null };
-    case "text-mode:set":
+    }
+    case 'text-mode:set': {
       if (!canSetSlidesSessionTextMode(action.value, derived)) {
         return raw;
       }
@@ -105,5 +97,6 @@ export function reduceSlidesSessionRawState(
         return raw;
       }
       return { ...raw, textMode: action.value };
+    }
   }
 }

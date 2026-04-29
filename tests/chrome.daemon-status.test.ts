@@ -1,76 +1,77 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   createDaemonStatusTracker,
   isTransientDaemonState,
-} from "../apps/chrome-extension/src/lib/daemon-status.js";
+} from '../apps/chrome-extension/src/lib/daemon-status.js';
 
-describe("chrome/daemon-status", () => {
-  it("keeps the last ready state during active runs on timeout", () => {
+describe('chrome/daemon-status', () => {
+  it('keeps the last ready state during active runs on timeout', () => {
     const tracker = createDaemonStatusTracker({ transientGraceMs: 10 });
 
-    expect(tracker.resolve({ ok: true, authed: true }, { now: 1_000 })).toEqual({
-      ok: true,
+    expect(tracker.resolve({ authed: true, ok: true }, { now: 1000 })).toEqual({
       authed: true,
+      ok: true,
     });
 
     expect(
       tracker.resolve(
-        { ok: false, authed: false, error: "Timed out" },
-        { now: 50_000, keepReady: true },
+        { authed: false, error: 'Timed out', ok: false },
+        { keepReady: true, now: 50_000 },
       ),
-    ).toEqual({ ok: true, authed: true });
+    ).toEqual({ authed: true, ok: true });
   });
 
-  it("keeps the last ready state briefly after a transient probe failure", () => {
-    const tracker = createDaemonStatusTracker({ transientGraceMs: 5_000 });
+  it('keeps the last ready state briefly after a transient probe failure', () => {
+    const tracker = createDaemonStatusTracker({ transientGraceMs: 5000 });
 
-    tracker.resolve({ ok: true, authed: true }, { now: 1_000 });
+    tracker.resolve({ authed: true, ok: true }, { now: 1000 });
 
     expect(
-      tracker.resolve({ ok: false, authed: false, error: "Timed out" }, { now: 5_500 }),
-    ).toEqual({ ok: true, authed: true });
+      tracker.resolve({ authed: false, error: 'Timed out', ok: false }, { now: 5500 }),
+    ).toEqual({ authed: true, ok: true });
   });
 
-  it("surfaces transient failures after the grace window expires", () => {
-    const tracker = createDaemonStatusTracker({ transientGraceMs: 5_000 });
+  it('surfaces transient failures after the grace window expires', () => {
+    const tracker = createDaemonStatusTracker({ transientGraceMs: 5000 });
 
-    tracker.resolve({ ok: true, authed: true }, { now: 1_000 });
+    tracker.resolve({ authed: true, ok: true }, { now: 1000 });
 
     expect(
-      tracker.resolve({ ok: false, authed: false, error: "Timed out" }, { now: 7_000 }),
-    ).toEqual({ ok: false, authed: false, error: "Timed out" });
+      tracker.resolve({ authed: false, error: 'Timed out', ok: false }, { now: 7000 }),
+    ).toEqual({ authed: false, error: 'Timed out', ok: false });
   });
 
-  it("treats successful non-health daemon calls as ready", () => {
-    const tracker = createDaemonStatusTracker({ transientGraceMs: 5_000 });
+  it('treats successful non-health daemon calls as ready', () => {
+    const tracker = createDaemonStatusTracker({ transientGraceMs: 5000 });
 
-    tracker.markReady(1_000);
+    tracker.markReady(1000);
 
     expect(
-      tracker.resolve({ ok: false, authed: false, error: "Timed out" }, { now: 4_000 }),
-    ).toEqual({ ok: true, authed: true });
+      tracker.resolve({ authed: false, error: 'Timed out', ok: false }, { now: 4000 }),
+    ).toEqual({ authed: true, ok: true });
   });
 
-  it("surfaces non-transient auth failures immediately", () => {
+  it('surfaces non-transient auth failures immediately', () => {
     const tracker = createDaemonStatusTracker({ transientGraceMs: 60_000 });
 
-    tracker.resolve({ ok: true, authed: true }, { now: 1_000 });
+    tracker.resolve({ authed: true, ok: true }, { now: 1000 });
 
     expect(
-      tracker.resolve({ ok: true, authed: false, error: "401 Unauthorized" }, { now: 2_000 }),
-    ).toEqual({ ok: true, authed: false, error: "401 Unauthorized" });
+      tracker.resolve({ authed: false, error: '401 Unauthorized', ok: true }, { now: 2000 }),
+    ).toEqual({ authed: false, error: '401 Unauthorized', ok: true });
   });
 
-  it("detects transient daemon probe failures", () => {
-    expect(isTransientDaemonState({ ok: false, authed: false, error: "Timed out" })).toBe(true);
+  it('detects transient daemon probe failures', () => {
+    expect(isTransientDaemonState({ authed: false, error: 'Timed out', ok: false })).toBe(true);
     expect(
       isTransientDaemonState({
-        ok: false,
         authed: false,
-        error: "Failed to fetch (daemon unreachable or blocked by Chrome)",
+        error: 'Failed to fetch (daemon unreachable or blocked by Chrome)',
+        ok: false,
       }),
     ).toBe(true);
-    expect(isTransientDaemonState({ ok: true, authed: false, error: "401 Unauthorized" })).toBe(
+    expect(isTransientDaemonState({ authed: false, error: '401 Unauthorized', ok: true })).toBe(
       false,
     );
   });

@@ -1,25 +1,26 @@
-import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
-import { transcribeWithOnnxCli, transcribeWithOnnxCliFile } from "../onnx-cli.js";
-import { transcribeChunkedFile } from "./chunking.js";
-import { DEFAULT_SEGMENT_SECONDS, MAX_OPENAI_UPLOAD_BYTES } from "./constants.js";
-import { isFfmpegAvailable, transcodeBytesToMp3 } from "./ffmpeg.js";
-import { shouldRetryGroqViaFfmpeg, transcribeWithGroq } from "./groq.js";
-import { resolveOnnxModelPreference } from "./preferences.js";
+import { randomUUID } from 'node:crypto';
+import { promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
+
+import { transcribeWithOnnxCli, transcribeWithOnnxCliFile } from '../onnx-cli.js';
+import { transcribeChunkedFile } from './chunking.js';
+import { DEFAULT_SEGMENT_SECONDS, MAX_OPENAI_UPLOAD_BYTES } from './constants.js';
+import { isFfmpegAvailable, transcodeBytesToMp3 } from './ffmpeg.js';
+import { shouldRetryGroqViaFfmpeg, transcribeWithGroq } from './groq.js';
+import { resolveOnnxModelPreference } from './preferences.js';
 import {
   transcribeBytesWithRemoteFallbacks,
   transcribeFileWithRemoteFallbacks,
   transcribeOversizedBytesViaTempFile,
-} from "./remote.js";
-import type { WhisperProgressEvent, WhisperTranscriptionResult } from "./types.js";
-import { ensureWhisperFilenameExtension, formatBytes, wrapError } from "./utils.js";
-import { isWhisperCppReady, transcribeWithWhisperCppFile } from "./whisper-cpp.js";
+} from './remote.js';
+import type { WhisperProgressEvent, WhisperTranscriptionResult } from './types.js';
+import { ensureWhisperFilenameExtension, formatBytes, wrapError } from './utils.js';
+import { isWhisperCppReady, transcribeWithWhisperCppFile } from './whisper-cpp.js';
 
 type Env = Record<string, string | undefined>;
 
-type MediaRequest = {
+interface MediaRequest {
   groqApiKey: string | null;
   assemblyaiApiKey?: string | null;
   geminiApiKey?: string | null;
@@ -28,7 +29,7 @@ type MediaRequest = {
   totalDurationSeconds?: number | null;
   onProgress?: ((event: WhisperProgressEvent) => void) | null;
   env?: Env;
-};
+}
 
 export async function transcribeMediaWithWhisper({
   bytes,
@@ -55,16 +56,16 @@ export async function transcribeMediaWithWhisper({
   if (groqApiKey && !skipGroq) {
     const groqResult = await transcribeWithGroqFirst({
       bytes,
-      mediaType,
       filename,
       groqApiKey,
+      mediaType,
       notes,
     });
-    bytes = groqResult.bytes;
-    mediaType = groqResult.mediaType;
-    filename = groqResult.filename;
+    ({ bytes } = groqResult);
+    ({ mediaType } = groqResult);
+    ({ filename } = groqResult);
     if (groqResult.text) {
-      return { text: groqResult.text, provider: "groq", error: null, notes };
+      return { error: null, notes, provider: 'groq', text: groqResult.text };
     }
     groqError = groqResult.error;
   }
@@ -77,39 +78,39 @@ export async function transcribeMediaWithWhisper({
 
   const onnx = await transcribeWithLocalOnnx({
     bytes,
-    mediaType,
-    filename,
-    totalDurationSeconds,
-    onProgress,
     env,
+    filename,
+    mediaType,
     notes,
+    onProgress,
+    totalDurationSeconds,
   });
-  if (onnx) return onnx;
+  if (onnx) {return onnx;}
 
   const local = await transcribeWithLocalWhisperBytes({
     bytes,
-    mediaType,
-    filename,
-    totalDurationSeconds,
-    onProgress,
     env,
-    notes,
-  });
-  if (local) return local;
-
-  return await transcribeBytesWithRemoteFallbacks({
-    bytes,
-    mediaType,
     filename,
+    mediaType,
     notes,
+    onProgress,
+    totalDurationSeconds,
+  });
+  if (local) {return local;}
+
+  return  transcribeBytesWithRemoteFallbacks({
+    assemblyaiApiKey,
+    bytes,
+    env,
+    falApiKey,
+    filename,
+    geminiApiKey,
     groqApiKey,
     groqError,
-    assemblyaiApiKey,
-    geminiApiKey,
-    openaiApiKey,
-    falApiKey,
-    env,
+    mediaType,
+    notes,
     onProgress,
+    openaiApiKey,
     transcribeOversizedBytesWithChunking: ({ bytes, mediaType, filename, onProgress }) =>
       transcribeOversizedBytesViaTempFile({
         bytes,
@@ -160,58 +161,58 @@ export async function transcribeMediaFileWithWhisper({
   if (groqApiKey) {
     skipGroqInNestedCalls = true;
     const groqResult = await transcribeGroqFileFirst({
-      filePath,
-      mediaType,
-      filename,
-      groqApiKey,
       assemblyaiApiKey,
-      geminiApiKey,
-      openaiApiKey,
+      env,
       falApiKey,
+      filePath,
+      filename,
+      geminiApiKey,
+      groqApiKey,
+      mediaType,
+      notes,
+      onProgress,
+      openaiApiKey,
       segmentSeconds,
       totalDurationSeconds,
-      onProgress,
-      env,
-      notes,
     });
-    if (groqResult.text) return groqResult;
+    if (groqResult.text) {return groqResult;}
     groqError = groqResult.error;
   }
 
   const onnx = await transcribeWithLocalOnnxFile({
+    env,
     filePath,
     mediaType,
-    totalDurationSeconds,
-    onProgress,
-    env,
     notes,
+    onProgress,
+    totalDurationSeconds,
   });
-  if (onnx) return onnx;
+  if (onnx) {return onnx;}
 
   const local = await transcribeWithLocalWhisperFile({
-    filePath,
-    mediaType,
-    totalDurationSeconds,
-    onProgress,
     env,
-    notes,
-  });
-  if (local) return local;
-
-  return await transcribeFileWithRemoteFallbacks({
     filePath,
     mediaType,
-    filename,
     notes,
+    onProgress,
+    totalDurationSeconds,
+  });
+  if (local) {return local;}
+
+  return  transcribeFileWithRemoteFallbacks({
+    assemblyaiApiKey,
+    env,
+    falApiKey,
+    filePath,
+    filename,
+    geminiApiKey,
     groqApiKey,
     groqError,
-    assemblyaiApiKey,
-    geminiApiKey,
-    openaiApiKey,
-    falApiKey,
-    env,
-    totalDurationSeconds,
+    mediaType,
+    notes,
     onProgress,
+    openaiApiKey,
+    totalDurationSeconds,
     transcribeChunkedFile: ({ filePath, segmentSeconds, totalDurationSeconds, onProgress }) =>
       transcribeChunkedFile({
         filePath,
@@ -221,7 +222,7 @@ export async function transcribeMediaFileWithWhisper({
         transcribeSegment: ({ bytes, filename }) =>
           transcribeMediaWithWhisper({
             bytes,
-            mediaType: "audio/mpeg",
+            mediaType: 'audio/mpeg',
             filename,
             groqApiKey,
             skipGroq: skipGroqInNestedCalls,
@@ -257,32 +258,32 @@ async function transcribeWithGroqFirst({
   let groqError: Error | null = null;
   try {
     const text = await transcribeWithGroq(bytes, mediaType, filename, groqApiKey);
-    if (text) return { text, error: null, bytes, mediaType, filename };
-    groqError = new Error("Groq transcription returned empty text");
+    if (text) {return { text, error: null, bytes, mediaType, filename };}
+    groqError = new Error('Groq transcription returned empty text');
   } catch (error) {
-    groqError = wrapError("Groq transcription failed", error);
+    groqError = wrapError('Groq transcription failed', error);
   }
 
   if (groqError && shouldRetryGroqViaFfmpeg(groqError)) {
     const canTranscode = await isFfmpegAvailable();
     if (canTranscode) {
       try {
-        notes.push("Groq could not decode media; transcoding via ffmpeg and retrying");
+        notes.push('Groq could not decode media; transcoding via ffmpeg and retrying');
         const mp3Bytes = await transcodeBytesToMp3(bytes);
-        const retried = await transcribeWithGroq(mp3Bytes, "audio/mpeg", "audio.mp3", groqApiKey);
+        const retried = await transcribeWithGroq(mp3Bytes, 'audio/mpeg', 'audio.mp3', groqApiKey);
         if (retried) {
           return {
-            text: retried,
-            error: null,
             bytes: mp3Bytes,
-            mediaType: "audio/mpeg",
-            filename: "audio.mp3",
+            error: null,
+            filename: 'audio.mp3',
+            mediaType: 'audio/mpeg',
+            text: retried,
           };
         }
-        groqError = new Error("Groq transcription returned empty text after ffmpeg transcode");
+        groqError = new Error('Groq transcription returned empty text after ffmpeg transcode');
         bytes = mp3Bytes;
-        mediaType = "audio/mpeg";
-        filename = "audio.mp3";
+        mediaType = 'audio/mpeg';
+        filename = 'audio.mp3';
       } catch (error) {
         notes.push(
           `ffmpeg transcode failed; cannot retry Groq decode error: ${
@@ -291,11 +292,11 @@ async function transcribeWithGroqFirst({
         );
       }
     } else {
-      notes.push("Groq could not decode media; install ffmpeg to enable transcoding retry");
+      notes.push('Groq could not decode media; install ffmpeg to enable transcoding retry');
     }
   }
 
-  return { text: null, error: groqError, bytes, mediaType, filename };
+  return { bytes, error: groqError, filename, mediaType, text: null };
 }
 
 async function transcribeGroqFileFirst({
@@ -332,20 +333,20 @@ async function transcribeGroqFileFirst({
     const fileBytes = new Uint8Array(await fs.readFile(filePath));
     try {
       const text = await transcribeWithGroq(fileBytes, mediaType, filename, groqApiKey);
-      if (text) return { text, provider: "groq", error: null, notes };
-      const error = new Error("Groq transcription returned empty text");
+      if (text) {return { text, provider: 'groq', error: null, notes };}
+      const error = new Error('Groq transcription returned empty text');
       notes.push(
-        "Groq transcription returned empty text; falling back to local/AssemblyAI/Gemini/OpenAI",
+        'Groq transcription returned empty text; falling back to local/AssemblyAI/Gemini/OpenAI',
       );
-      return { text: null, provider: "groq", error, notes };
+      return { error, notes, provider: 'groq', text: null };
     } catch (error) {
-      const wrapped = wrapError("Groq transcription failed", error);
+      const wrapped = wrapError('Groq transcription failed', error);
       notes.push(
         `Groq transcription failed; falling back to local/AssemblyAI/Gemini/OpenAI: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
-      return { text: null, provider: "groq", error: wrapped, notes };
+      return { error: wrapped, notes, provider: 'groq', text: null };
     }
   }
 
@@ -355,18 +356,18 @@ async function transcribeGroqFileFirst({
       `File too large for Groq upload (${formatBytes(stat.size)}); trying local providers`,
     );
     notes.push(error.message);
-    return { text: null, provider: "groq", error, notes };
+    return { error, notes, provider: 'groq', text: null };
   }
 
   const chunked = await transcribeChunkedFile({
     filePath,
+    onProgress,
     segmentSeconds,
     totalDurationSeconds,
-    onProgress,
     transcribeSegment: ({ bytes, filename }) =>
       transcribeMediaWithWhisper({
         bytes,
-        mediaType: "audio/mpeg",
+        mediaType: 'audio/mpeg',
         filename,
         groqApiKey,
         assemblyaiApiKey,
@@ -376,13 +377,13 @@ async function transcribeGroqFileFirst({
         env,
       }),
   });
-  if (chunked.notes.length > 0) notes.push(...chunked.notes);
-  if (chunked.text) return { ...chunked, notes };
-  const error = chunked.error ?? new Error("Groq chunked transcription failed");
+  if (chunked.notes.length > 0) {notes.push(...chunked.notes);}
+  if (chunked.text) {return { ...chunked, notes };}
+  const error = chunked.error ?? new Error('Groq chunked transcription failed');
   notes.push(
     `Groq chunked transcription failed; falling back to local/AssemblyAI/Gemini/OpenAI: ${error.message}`,
   );
-  return { text: null, provider: "groq", error, notes };
+  return { error, notes, provider: 'groq', text: null };
 }
 
 async function transcribeWithLocalOnnx({
@@ -403,23 +404,23 @@ async function transcribeWithLocalOnnx({
   notes: string[];
 }): Promise<WhisperTranscriptionResult | null> {
   const onnxPreference = resolveOnnxModelPreference(env);
-  if (!onnxPreference) return null;
+  if (!onnxPreference) {return null;}
   const onnx = await transcribeWithOnnxCli({
-    model: onnxPreference,
     bytes,
-    mediaType,
-    filename,
-    totalDurationSeconds,
-    onProgress,
     env,
+    filename,
+    mediaType,
+    model: onnxPreference,
+    onProgress,
+    totalDurationSeconds,
   });
   if (onnx.text) {
-    if (onnx.notes.length > 0) notes.push(...onnx.notes);
+    if (onnx.notes.length > 0) {notes.push(...onnx.notes);}
     return { ...onnx, notes };
   }
-  if (onnx.notes.length > 0) notes.push(...onnx.notes);
+  if (onnx.notes.length > 0) {notes.push(...onnx.notes);}
   if (onnx.error) {
-    notes.push(`${onnx.provider ?? "onnx"} failed; falling back to Whisper: ${onnx.error.message}`);
+    notes.push(`${onnx.provider ?? 'onnx'} failed; falling back to Whisper: ${onnx.error.message}`);
   }
   return null;
 }
@@ -440,7 +441,7 @@ async function transcribeWithLocalOnnxFile({
   notes: string[];
 }): Promise<WhisperTranscriptionResult | null> {
   const onnxPreference = resolveOnnxModelPreference(env);
-  if (!onnxPreference) return null;
+  if (!onnxPreference) {return null;}
   onProgress?.({
     partIndex: null,
     parts: null,
@@ -448,20 +449,20 @@ async function transcribeWithLocalOnnxFile({
     totalDurationSeconds,
   });
   const onnx = await transcribeWithOnnxCliFile({
-    model: onnxPreference,
+    env,
     filePath,
     mediaType,
-    totalDurationSeconds,
+    model: onnxPreference,
     onProgress,
-    env,
+    totalDurationSeconds,
   });
   if (onnx.text) {
-    if (onnx.notes.length > 0) notes.push(...onnx.notes);
+    if (onnx.notes.length > 0) {notes.push(...onnx.notes);}
     return { ...onnx, notes };
   }
-  if (onnx.notes.length > 0) notes.push(...onnx.notes);
+  if (onnx.notes.length > 0) {notes.push(...onnx.notes);}
   if (onnx.error) {
-    notes.push(`${onnx.provider ?? "onnx"} failed; falling back to Whisper: ${onnx.error.message}`);
+    notes.push(`${onnx.provider ?? 'onnx'} failed; falling back to Whisper: ${onnx.error.message}`);
   }
   return null;
 }
@@ -484,8 +485,8 @@ async function transcribeWithLocalWhisperBytes({
   notes: string[];
 }): Promise<WhisperTranscriptionResult | null> {
   const localReady = await isWhisperCppReady(env);
-  if (!localReady) return null;
-  const nameHint = filename?.trim() ? basename(filename.trim()) : "media";
+  if (!localReady) {return null;}
+  const nameHint = filename?.trim() ? basename(filename.trim()) : 'media';
   const tempFile = join(
     tmpdir(),
     `summarize-whisper-local-${randomUUID()}-${ensureWhisperFilenameExtension(nameHint, mediaType)}`,
@@ -493,17 +494,17 @@ async function transcribeWithLocalWhisperBytes({
   try {
     await fs.writeFile(tempFile, bytes);
     const result = await safeTranscribeWithWhisperCppFile({
+      env,
       filePath: tempFile,
       mediaType,
-      totalDurationSeconds,
       onProgress,
-      env,
+      totalDurationSeconds,
     });
     if (result.text) {
-      if (result.notes.length > 0) notes.push(...result.notes);
+      if (result.notes.length > 0) {notes.push(...result.notes);}
       return { ...result, notes };
     }
-    if (result.notes.length > 0) notes.push(...result.notes);
+    if (result.notes.length > 0) {notes.push(...result.notes);}
     if (result.error) {
       notes.push(`whisper.cpp failed; falling back to remote Whisper: ${result.error.message}`);
     }
@@ -529,7 +530,7 @@ async function transcribeWithLocalWhisperFile({
   notes: string[];
 }): Promise<WhisperTranscriptionResult | null> {
   const localReady = await isWhisperCppReady(env);
-  if (!localReady) return null;
+  if (!localReady) {return null;}
   onProgress?.({
     partIndex: null,
     parts: null,
@@ -537,17 +538,17 @@ async function transcribeWithLocalWhisperFile({
     totalDurationSeconds,
   });
   const result = await safeTranscribeWithWhisperCppFile({
+    env,
     filePath,
     mediaType,
-    totalDurationSeconds,
     onProgress,
-    env,
+    totalDurationSeconds,
   });
   if (result.text) {
-    if (result.notes.length > 0) notes.push(...result.notes);
+    if (result.notes.length > 0) {notes.push(...result.notes);}
     return { ...result, notes };
   }
-  if (result.notes.length > 0) notes.push(...result.notes);
+  if (result.notes.length > 0) {notes.push(...result.notes);}
   if (result.error) {
     notes.push(`whisper.cpp failed; falling back to remote Whisper: ${result.error.message}`);
   }
@@ -565,10 +566,10 @@ async function safeTranscribeWithWhisperCppFile(args: {
     return await transcribeWithWhisperCppFile(args);
   } catch (error) {
     return {
-      text: null,
-      provider: "whisper.cpp",
-      error: wrapError("whisper.cpp failed", error),
+      error: wrapError('whisper.cpp failed', error),
       notes: [],
+      provider: 'whisper.cpp',
+      text: null,
     };
   }
 }

@@ -1,11 +1,12 @@
-import type { Api, Context, Model } from "@mariozechner/pi-ai";
+import type { Api, Context, Model } from '@mariozechner/pi-ai';
+
 import {
   createSyntheticModel,
   resolveBaseUrlOverride,
   tryGetModel,
   wantsImages,
-} from "./shared.js";
-import type { OpenAiClientConfig } from "./types.js";
+} from './shared.js';
+import type { OpenAiClientConfig } from './types.js';
 
 export function resolveOpenAiModel({
   modelId,
@@ -17,23 +18,20 @@ export function resolveOpenAiModel({
   openaiConfig: OpenAiClientConfig;
 }): Model<Api> {
   const allowImages = wantsImages(context);
-  const base = tryGetModel("openai", modelId);
-  const api = openaiConfig.useChatCompletions ? "openai-completions" : "openai-responses";
-  const baseUrl = openaiConfig.baseURL ?? base?.baseUrl ?? "https://api.openai.com/v1";
+  const base = tryGetModel('openai', modelId);
+  const api = openaiConfig.useChatCompletions ? 'openai-completions' : 'openai-responses';
+  const baseUrl = openaiConfig.baseURL ?? base?.baseUrl ?? 'https://api.openai.com/v1';
   const headers = openaiConfig.isOpenRouter
     ? {
-        ...(base?.headers ?? {}),
-        "HTTP-Referer": "https://github.com/steipete/summarize",
-        "X-Title": "summarize",
+        ...base?.headers,
+        'HTTP-Referer': 'https://github.com/steipete/summarize',
+        'X-Title': 'summarize',
       }
-    : openaiConfig.extraHeaders
-      ? {
-          ...(base?.headers ?? {}),
-          ...openaiConfig.extraHeaders,
-        }
-      : base?.headers;
+    : (openaiConfig.extraHeaders
+      ? { ...(base?.headers ?? {}), ...openaiConfig.extraHeaders }
+      : base?.headers);
   return {
-    ...(base ?? createSyntheticModel({ provider: "openai", modelId, api, baseUrl, allowImages })),
+    ...(base ?? createSyntheticModel({ allowImages, api, baseUrl, modelId, provider: 'openai' })),
     api,
     baseUrl,
     ...(headers ? { headers } : {}),
@@ -50,14 +48,14 @@ export function resolveZaiModel({
   openaiBaseUrlOverride?: string | null;
 }): Model<Api> {
   const allowImages = wantsImages(context);
-  const base = tryGetModel("zai", modelId);
-  const api = "openai-completions";
-  const baseUrl = openaiBaseUrlOverride ?? base?.baseUrl ?? "https://api.z.ai/api/paas/v4";
+  const base = tryGetModel('zai', modelId);
+  const api = 'openai-completions';
+  const baseUrl = openaiBaseUrlOverride ?? base?.baseUrl ?? 'https://api.z.ai/api/paas/v4';
   return {
-    ...(base ?? createSyntheticModel({ provider: "zai", modelId, api, baseUrl, allowImages })),
+    ...(base ?? createSyntheticModel({ allowImages, api, baseUrl, modelId, provider: 'zai' })),
     api,
     baseUrl,
-    input: allowImages ? ["text", "image"] : ["text"],
+    input: allowImages ? ['text', 'image'] : ['text'],
   };
 }
 
@@ -72,14 +70,14 @@ export function resolveNvidiaModel({
 }): Model<Api> {
   const allowImages = wantsImages(context);
   // The NVIDIA Integrate API is OpenAI-compatible; treat it like an OpenAI gateway.
-  const base = tryGetModel("openai", modelId);
-  const api = "openai-completions";
-  const baseUrl = openaiBaseUrlOverride ?? base?.baseUrl ?? "https://integrate.api.nvidia.com/v1";
+  const base = tryGetModel('openai', modelId);
+  const api = 'openai-completions';
+  const baseUrl = openaiBaseUrlOverride ?? base?.baseUrl ?? 'https://integrate.api.nvidia.com/v1';
   return {
-    ...(base ?? createSyntheticModel({ provider: "openai", modelId, api, baseUrl, allowImages })),
+    ...(base ?? createSyntheticModel({ allowImages, api, baseUrl, modelId, provider: 'openai' })),
     api,
     baseUrl,
-    input: allowImages ? ["text", "image"] : ["text"],
+    input: allowImages ? ['text', 'image'] : ['text'],
   };
 }
 
@@ -93,17 +91,17 @@ export function resolveXaiModel({
   xaiBaseUrlOverride?: string | null;
 }): Model<Api> {
   const allowImages = wantsImages(context);
-  const base = tryGetModel("xai", modelId);
+  const base = tryGetModel('xai', modelId);
   const override = resolveBaseUrlOverride(xaiBaseUrlOverride);
   if (override) {
     return {
       ...(base ??
         createSyntheticModel({
-          provider: "xai",
-          modelId,
-          api: "openai-completions",
-          baseUrl: override,
           allowImages,
+          api: 'openai-completions',
+          baseUrl: override,
+          modelId,
+          provider: 'xai',
         })),
       baseUrl: override,
     };
@@ -111,11 +109,11 @@ export function resolveXaiModel({
   return (
     base ??
     createSyntheticModel({
-      provider: "xai",
-      modelId,
-      api: "openai-completions",
-      baseUrl: "https://api.x.ai/v1",
       allowImages,
+      api: 'openai-completions',
+      baseUrl: 'https://api.x.ai/v1',
+      modelId,
+      provider: 'xai',
     })
   );
 }
@@ -130,17 +128,17 @@ export function resolveGoogleModel({
   googleBaseUrlOverride?: string | null;
 }): Model<Api> {
   const allowImages = wantsImages(context);
-  const base = tryGetModel("google", modelId);
+  const base = tryGetModel('google', modelId);
   const override = resolveBaseUrlOverride(googleBaseUrlOverride);
   if (override) {
     return {
       ...(base ??
         createSyntheticModel({
-          provider: "google",
-          modelId,
-          api: "google-generative-ai",
-          baseUrl: override,
           allowImages,
+          api: 'google-generative-ai',
+          baseUrl: override,
+          modelId,
+          provider: 'google',
         })),
       baseUrl: override,
     };
@@ -148,11 +146,11 @@ export function resolveGoogleModel({
   return (
     base ??
     createSyntheticModel({
-      provider: "google",
-      modelId,
-      api: "google-generative-ai",
-      baseUrl: "https://generativelanguage.googleapis.com/v1beta",
       allowImages,
+      api: 'google-generative-ai',
+      baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+      modelId,
+      provider: 'google',
     })
   );
 }
@@ -167,17 +165,17 @@ export function resolveAnthropicModel({
   anthropicBaseUrlOverride?: string | null;
 }): Model<Api> {
   const allowImages = wantsImages(context);
-  const base = tryGetModel("anthropic", modelId);
+  const base = tryGetModel('anthropic', modelId);
   const override = resolveBaseUrlOverride(anthropicBaseUrlOverride);
   if (override) {
     return {
       ...(base ??
         createSyntheticModel({
-          provider: "anthropic",
-          modelId,
-          api: "anthropic-messages",
-          baseUrl: override,
           allowImages,
+          api: 'anthropic-messages',
+          baseUrl: override,
+          modelId,
+          provider: 'anthropic',
         })),
       baseUrl: override,
     };
@@ -185,11 +183,11 @@ export function resolveAnthropicModel({
   return (
     base ??
     createSyntheticModel({
-      provider: "anthropic",
-      modelId,
-      api: "anthropic-messages",
-      baseUrl: "https://api.anthropic.com",
       allowImages,
+      api: 'anthropic-messages',
+      baseUrl: 'https://api.anthropic.com',
+      modelId,
+      provider: 'anthropic',
     })
   );
 }

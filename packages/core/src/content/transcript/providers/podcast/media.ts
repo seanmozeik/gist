@@ -1,33 +1,34 @@
-import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { randomUUID } from 'node:crypto';
+import { promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import {
   isFfmpegAvailable,
   MAX_OPENAI_UPLOAD_BYTES,
   probeMediaDurationSecondsWithFfprobe,
   transcribeMediaFileWithWhisper,
   transcribeMediaWithWhisper,
-} from "../../../../transcription/whisper.js";
+} from '../../../../transcription/whisper.js';
 import {
   resolveTranscriptionConfig,
   type TranscriptionConfig,
-} from "../../transcription-config.js";
-import type { ProviderFetchOptions } from "../../types.js";
-import { resolveTranscriptionStartInfo } from "../transcription-start.js";
-import { MAX_REMOTE_MEDIA_BYTES, TRANSCRIPTION_TIMEOUT_MS } from "./constants.js";
+} from '../../transcription-config.js';
+import type { ProviderFetchOptions } from '../../types.js';
+import { resolveTranscriptionStartInfo } from '../transcription-start.js';
+import { MAX_REMOTE_MEDIA_BYTES, TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
 
-export type TranscribeRequest = {
+export interface TranscribeRequest {
   url: string;
   filenameHint: string;
   durationSecondsHint: number | null;
-};
+}
 
-export type TranscriptionResult = {
+export interface TranscriptionResult {
   text: string | null;
   provider: string | null;
   error: Error | null;
-};
+}
 
 export async function transcribeMediaUrl({
   fetchImpl,
@@ -58,26 +59,24 @@ export async function transcribeMediaUrl({
   notes: string[];
   progress: {
     url: string;
-    service: "podcast";
-    onProgress: ProviderFetchOptions["onProgress"] | null;
+    service: 'podcast';
+    onProgress: ProviderFetchOptions['onProgress'] | null;
   } | null;
 }): Promise<TranscriptionResult> {
   const canChunk = await isFfmpegAvailable();
   const effectiveTranscription = resolveTranscriptionConfig({
-    env,
-    transcription,
-    groqApiKey,
     assemblyaiApiKey,
-    geminiApiKey,
-    openaiApiKey,
+    env,
     falApiKey,
+    geminiApiKey,
+    groqApiKey,
+    openaiApiKey,
+    transcription,
   });
   const effectiveEnv = effectiveTranscription.env ?? process.env;
-  const startInfo = await resolveTranscriptionStartInfo({
-    transcription: effectiveTranscription,
-  });
-  const providerHint = startInfo.providerHint;
-  const modelId = startInfo.modelId;
+  const startInfo = await resolveTranscriptionStartInfo({ transcription: effectiveTranscription });
+  const {providerHint} = startInfo;
+  const {modelId} = startInfo;
 
   const head = await probeRemoteMedia(fetchImpl, url);
   if (head.contentLength !== null && head.contentLength > MAX_REMOTE_MEDIA_BYTES) {
@@ -86,63 +85,61 @@ export async function transcribeMediaUrl({
     );
   }
 
-  const mediaType = head.mediaType ?? "application/octet-stream";
+  const mediaType = head.mediaType ?? 'application/octet-stream';
   const filename = head.filename ?? filenameHint;
   const totalBytes = head.contentLength;
 
   progress?.onProgress?.({
-    kind: "transcript-media-download-start",
-    url: progress.url,
-    service: progress.service,
+    kind: 'transcript-media-download-start',
+    mediaKind: 'audio',
     mediaUrl: url,
-    mediaKind: "audio",
+    service: progress.service,
     totalBytes,
+    url: progress.url,
   });
   if (!canChunk) {
     const bytes = await downloadCappedBytes(fetchImpl, url, MAX_OPENAI_UPLOAD_BYTES, {
-      totalBytes,
       onProgress: (downloadedBytes) =>
         progress?.onProgress?.({
-          kind: "transcript-media-download-progress",
+          kind: 'transcript-media-download-progress',
           url: progress.url,
           service: progress.service,
           downloadedBytes,
           totalBytes,
-          mediaKind: "audio",
+          mediaKind: 'audio',
         }),
-    });
-    progress?.onProgress?.({
-      kind: "transcript-media-download-done",
-      url: progress.url,
-      service: progress.service,
-      downloadedBytes: bytes.byteLength,
       totalBytes,
-      mediaKind: "audio",
     });
     progress?.onProgress?.({
-      kind: "transcript-whisper-start",
-      url: progress.url,
+      downloadedBytes: bytes.byteLength,
+      kind: 'transcript-media-download-done',
+      mediaKind: 'audio',
       service: progress.service,
-      providerHint,
+      totalBytes,
+      url: progress.url,
+    });
+    progress?.onProgress?.({
+      kind: 'transcript-whisper-start',
       modelId,
-      totalDurationSeconds: durationSecondsHint,
       parts: null,
+      providerHint,
+      service: progress.service,
+      totalDurationSeconds: durationSecondsHint,
+      url: progress.url,
     });
     notes.push(`Transcribed first ${formatBytes(bytes.byteLength)} only (ffmpeg not available)`);
     const transcript = await transcribeMediaWithWhisper({
-      bytes,
-      mediaType,
-      filename,
-      groqApiKey: effectiveTranscription.groqApiKey,
       assemblyaiApiKey: effectiveTranscription.assemblyaiApiKey,
-      geminiApiKey: effectiveTranscription.geminiApiKey,
-      openaiApiKey: effectiveTranscription.openaiApiKey,
-      falApiKey: effectiveTranscription.falApiKey,
-      totalDurationSeconds: durationSecondsHint,
+      bytes,
       env: effectiveEnv,
+      falApiKey: effectiveTranscription.falApiKey,
+      filename,
+      geminiApiKey: effectiveTranscription.geminiApiKey,
+      groqApiKey: effectiveTranscription.groqApiKey,
+      mediaType,
       onProgress: (event) => {
         progress?.onProgress?.({
-          kind: "transcript-whisper-progress",
+          kind: 'transcript-whisper-progress',
           url: progress.url,
           service: progress.service,
           processedDurationSeconds: event.processedDurationSeconds,
@@ -151,55 +148,55 @@ export async function transcribeMediaUrl({
           parts: event.parts,
         });
       },
+      openaiApiKey: effectiveTranscription.openaiApiKey,
+      totalDurationSeconds: durationSecondsHint,
     });
-    if (transcript.notes.length > 0) notes.push(...transcript.notes);
-    return { text: transcript.text, provider: transcript.provider, error: transcript.error };
+    if (transcript.notes.length > 0) {notes.push(...transcript.notes);}
+    return { error: transcript.error, provider: transcript.provider, text: transcript.text };
   }
 
   if (head.contentLength !== null && head.contentLength <= MAX_OPENAI_UPLOAD_BYTES) {
     const bytes = await downloadCappedBytes(fetchImpl, url, MAX_OPENAI_UPLOAD_BYTES, {
-      totalBytes,
       onProgress: (downloadedBytes) =>
         progress?.onProgress?.({
-          kind: "transcript-media-download-progress",
+          kind: 'transcript-media-download-progress',
           url: progress.url,
           service: progress.service,
           downloadedBytes,
           totalBytes,
-          mediaKind: "audio",
+          mediaKind: 'audio',
         }),
-    });
-    progress?.onProgress?.({
-      kind: "transcript-media-download-done",
-      url: progress.url,
-      service: progress.service,
-      downloadedBytes: bytes.byteLength,
       totalBytes,
-      mediaKind: "audio",
     });
     progress?.onProgress?.({
-      kind: "transcript-whisper-start",
-      url: progress.url,
+      downloadedBytes: bytes.byteLength,
+      kind: 'transcript-media-download-done',
+      mediaKind: 'audio',
       service: progress.service,
-      providerHint,
+      totalBytes,
+      url: progress.url,
+    });
+    progress?.onProgress?.({
+      kind: 'transcript-whisper-start',
       modelId,
-      totalDurationSeconds: durationSecondsHint,
       parts: null,
+      providerHint,
+      service: progress.service,
+      totalDurationSeconds: durationSecondsHint,
+      url: progress.url,
     });
     const transcript = await transcribeMediaWithWhisper({
-      bytes,
-      mediaType,
-      filename,
-      groqApiKey: effectiveTranscription.groqApiKey,
       assemblyaiApiKey: effectiveTranscription.assemblyaiApiKey,
-      geminiApiKey: effectiveTranscription.geminiApiKey,
-      openaiApiKey: effectiveTranscription.openaiApiKey,
-      falApiKey: effectiveTranscription.falApiKey,
-      totalDurationSeconds: durationSecondsHint,
+      bytes,
       env: effectiveEnv,
+      falApiKey: effectiveTranscription.falApiKey,
+      filename,
+      geminiApiKey: effectiveTranscription.geminiApiKey,
+      groqApiKey: effectiveTranscription.groqApiKey,
+      mediaType,
       onProgress: (event) => {
         progress?.onProgress?.({
-          kind: "transcript-whisper-progress",
+          kind: 'transcript-whisper-progress',
           url: progress.url,
           service: progress.service,
           processedDurationSeconds: event.processedDurationSeconds,
@@ -208,59 +205,59 @@ export async function transcribeMediaUrl({
           parts: event.parts,
         });
       },
+      openaiApiKey: effectiveTranscription.openaiApiKey,
+      totalDurationSeconds: durationSecondsHint,
     });
-    if (transcript.notes.length > 0) notes.push(...transcript.notes);
-    return { text: transcript.text, provider: transcript.provider, error: transcript.error };
+    if (transcript.notes.length > 0) {notes.push(...transcript.notes);}
+    return { error: transcript.error, provider: transcript.provider, text: transcript.text };
   }
 
   const tmpFile = join(tmpdir(), `summarize-podcast-${randomUUID()}.bin`);
   try {
     const downloadedBytes = await downloadToFile(fetchImpl, url, tmpFile, {
-      totalBytes,
       onProgress: (nextDownloadedBytes) =>
         progress?.onProgress?.({
-          kind: "transcript-media-download-progress",
+          kind: 'transcript-media-download-progress',
           url: progress.url,
           service: progress.service,
           downloadedBytes: nextDownloadedBytes,
           totalBytes,
-          mediaKind: "audio",
+          mediaKind: 'audio',
         }),
+      totalBytes,
     });
     progress?.onProgress?.({
-      kind: "transcript-media-download-done",
-      url: progress.url,
-      service: progress.service,
       downloadedBytes,
+      kind: 'transcript-media-download-done',
+      mediaKind: 'audio',
+      service: progress.service,
       totalBytes,
-      mediaKind: "audio",
+      url: progress.url,
     });
 
     const probedDurationSeconds =
       durationSecondsHint ?? (await probeMediaDurationSecondsWithFfprobe(tmpFile));
     progress?.onProgress?.({
-      kind: "transcript-whisper-start",
-      url: progress.url,
-      service: progress.service,
-      providerHint,
+      kind: 'transcript-whisper-start',
       modelId,
-      totalDurationSeconds: probedDurationSeconds,
       parts: null,
+      providerHint,
+      service: progress.service,
+      totalDurationSeconds: probedDurationSeconds,
+      url: progress.url,
     });
     const transcript = await transcribeMediaFileWithWhisper({
-      filePath: tmpFile,
-      mediaType,
-      filename,
-      groqApiKey: effectiveTranscription.groqApiKey,
       assemblyaiApiKey: effectiveTranscription.assemblyaiApiKey,
-      geminiApiKey: effectiveTranscription.geminiApiKey,
-      openaiApiKey: effectiveTranscription.openaiApiKey,
-      falApiKey: effectiveTranscription.falApiKey,
-      totalDurationSeconds: probedDurationSeconds,
       env: effectiveEnv,
+      falApiKey: effectiveTranscription.falApiKey,
+      filePath: tmpFile,
+      filename,
+      geminiApiKey: effectiveTranscription.geminiApiKey,
+      groqApiKey: effectiveTranscription.groqApiKey,
+      mediaType,
       onProgress: (event) => {
         progress?.onProgress?.({
-          kind: "transcript-whisper-progress",
+          kind: 'transcript-whisper-progress',
           url: progress.url,
           service: progress.service,
           processedDurationSeconds: event.processedDurationSeconds,
@@ -269,9 +266,11 @@ export async function transcribeMediaUrl({
           parts: event.parts,
         });
       },
+      openaiApiKey: effectiveTranscription.openaiApiKey,
+      totalDurationSeconds: probedDurationSeconds,
     });
-    if (transcript.notes.length > 0) notes.push(...transcript.notes);
-    return { text: transcript.text, provider: transcript.provider, error: transcript.error };
+    if (transcript.notes.length > 0) {notes.push(...transcript.notes);}
+    return { error: transcript.error, provider: transcript.provider, text: transcript.text };
   } finally {
     await fs.unlink(tmpFile).catch(() => {});
   }
@@ -283,17 +282,17 @@ export async function probeRemoteMedia(
 ): Promise<{ contentLength: number | null; mediaType: string | null; filename: string | null }> {
   try {
     const res = await fetchImpl(url, {
-      method: "HEAD",
-      redirect: "follow",
+      method: 'HEAD',
+      redirect: 'follow',
       signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
     });
-    if (!res.ok) throw new Error("head failed");
-    const contentLength = parseContentLength(res.headers.get("content-length"));
-    const mediaType = normalizeHeaderType(res.headers.get("content-type"));
+    if (!res.ok) {throw new Error('head failed');}
+    const contentLength = parseContentLength(res.headers.get('content-length'));
+    const mediaType = normalizeHeaderType(res.headers.get('content-type'));
     const filename = filenameFromUrl(url);
-    return { contentLength, mediaType, filename };
+    return { contentLength, filename, mediaType };
   } catch {
-    return { contentLength: null, mediaType: null, filename: filenameFromUrl(url) };
+    return { contentLength: null, filename: filenameFromUrl(url), mediaType: null };
   }
 }
 
@@ -304,14 +303,14 @@ export async function downloadCappedBytes(
   options?: { totalBytes: number | null; onProgress?: ((downloadedBytes: number) => void) | null },
 ): Promise<Uint8Array> {
   const res = await fetchImpl(url, {
-    redirect: "follow",
     headers: { Range: `bytes=0-${maxBytes - 1}` },
+    redirect: 'follow',
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   if (!res.ok) {
     throw new Error(`Download failed (${res.status})`);
   }
-  const body = res.body;
+  const {body} = res;
   if (!body) {
     const arrayBuffer = await res.arrayBuffer();
     return new Uint8Array(arrayBuffer.slice(0, maxBytes));
@@ -324,8 +323,8 @@ export async function downloadCappedBytes(
   try {
     while (total < maxBytes) {
       const { value, done } = await reader.read();
-      if (done) break;
-      if (!value) continue;
+      if (done) {break;}
+      if (!value) {continue;}
       const remaining = maxBytes - total;
       const next = value.byteLength > remaining ? value.slice(0, remaining) : value;
       chunks.push(next);
@@ -334,7 +333,7 @@ export async function downloadCappedBytes(
         lastReported = total;
         options?.onProgress?.(total);
       }
-      if (total >= maxBytes) break;
+      if (total >= maxBytes) {break;}
     }
   } finally {
     await reader.cancel().catch(() => {});
@@ -357,13 +356,13 @@ export async function downloadToFile(
   options?: { totalBytes: number | null; onProgress?: ((downloadedBytes: number) => void) | null },
 ): Promise<number> {
   const res = await fetchImpl(url, {
-    redirect: "follow",
+    redirect: 'follow',
     signal: AbortSignal.timeout(TRANSCRIPTION_TIMEOUT_MS),
   });
   if (!res.ok) {
     throw new Error(`Download failed (${res.status})`);
   }
-  const body = res.body;
+  const {body} = res;
   if (!body) {
     const bytes = new Uint8Array(await res.arrayBuffer());
     await fs.writeFile(filePath, bytes);
@@ -371,7 +370,7 @@ export async function downloadToFile(
     return bytes.byteLength;
   }
 
-  const handle = await fs.open(filePath, "w");
+  const handle = await fs.open(filePath, 'w');
   let downloadedBytes = 0;
   let lastReported = 0;
   try {
@@ -379,8 +378,8 @@ export async function downloadToFile(
     try {
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
-        if (!value) continue;
+        if (done) {break;}
+        if (!value) {continue;}
         await handle.write(value);
         downloadedBytes += value.byteLength;
         if (downloadedBytes - lastReported >= 128 * 1024) {
@@ -399,14 +398,14 @@ export async function downloadToFile(
 }
 
 export function normalizeHeaderType(value: string | null): string | null {
-  if (!value) return null;
+  if (!value) {return null;}
   const trimmed = value.trim();
-  if (!trimmed) return null;
-  return trimmed.split(";")[0]?.trim().toLowerCase() ?? null;
+  if (!trimmed) {return null;}
+  return trimmed.split(';')[0]?.trim().toLowerCase() ?? null;
 }
 
 export function parseContentLength(value: string | null): number | null {
-  if (!value) return null;
+  if (!value) {return null;}
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
 }
@@ -414,7 +413,7 @@ export function parseContentLength(value: string | null): number | null {
 export function filenameFromUrl(url: string): string | null {
   try {
     const parsed = new URL(url);
-    const base = parsed.pathname.split("/").pop() ?? "";
+    const base = parsed.pathname.split('/').pop() ?? '';
     return base.trim().length > 0 ? base : null;
   } catch {
     return null;
@@ -422,7 +421,7 @@ export function filenameFromUrl(url: string): string | null {
 }
 
 export function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB"];
+  const units = ['B', 'KB', 'MB', 'GB'];
   let value = bytes;
   let idx = 0;
   while (value >= 1024 && idx < units.length - 1) {

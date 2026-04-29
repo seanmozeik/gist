@@ -1,26 +1,26 @@
-import type { CacheState } from "../cache.js";
-import type { MediaCache } from "../content/index.js";
-import { createAssetSummaryContext, type SummarizeAssetArgs } from "./flows/asset/summary.js";
-import { summarizeAsset as summarizeAssetFlow } from "./flows/asset/summary.js";
-import { createUrlFlowContext, type UrlFlowContext } from "./flows/url/types.js";
+import type { CacheState } from '../cache.js';
+import type { MediaCache } from '../content/index.js';
+import { createAssetSummaryContext, type SummarizeAssetArgs } from './flows/asset/summary.js';
+import { summarizeAsset as summarizeAssetFlow } from './flows/asset/summary.js';
+import { createUrlFlowContext, type UrlFlowContext } from './flows/url/types.js';
 
-type SummarizeMediaFile = typeof import("./flows/asset/media.js").summarizeMediaFile;
+type SummarizeMediaFile = typeof import('./flows/asset/media.js').summarizeMediaFile;
 
 export function createRunnerFlowContexts(options: {
   summarizeMediaFileImpl: SummarizeMediaFile;
   cacheState: CacheState;
   mediaCache: MediaCache | null;
-  io: UrlFlowContext["io"];
-  flags: UrlFlowContext["flags"];
-  model: UrlFlowContext["model"];
-  setTranscriptionCost: UrlFlowContext["hooks"]["setTranscriptionCost"];
-  writeViaFooter: UrlFlowContext["hooks"]["writeViaFooter"];
-  clearProgressForStdout: UrlFlowContext["hooks"]["clearProgressForStdout"];
-  restoreProgressAfterStdout: UrlFlowContext["hooks"]["restoreProgressAfterStdout"];
-  setClearProgressBeforeStdout: UrlFlowContext["hooks"]["setClearProgressBeforeStdout"];
-  clearProgressIfCurrent: UrlFlowContext["hooks"]["clearProgressIfCurrent"];
-  buildReport: UrlFlowContext["hooks"]["buildReport"];
-  estimateCostUsd: UrlFlowContext["hooks"]["estimateCostUsd"];
+  io: UrlFlowContext['io'];
+  flags: UrlFlowContext['flags'];
+  model: UrlFlowContext['model'];
+  setTranscriptionCost: UrlFlowContext['hooks']['setTranscriptionCost'];
+  writeViaFooter: UrlFlowContext['hooks']['writeViaFooter'];
+  clearProgressForStdout: UrlFlowContext['hooks']['clearProgressForStdout'];
+  restoreProgressAfterStdout: UrlFlowContext['hooks']['restoreProgressAfterStdout'];
+  setClearProgressBeforeStdout: UrlFlowContext['hooks']['setClearProgressBeforeStdout'];
+  clearProgressIfCurrent: UrlFlowContext['hooks']['clearProgressIfCurrent'];
+  buildReport: UrlFlowContext['hooks']['buildReport'];
+  estimateCostUsd: UrlFlowContext['hooks']['estimateCostUsd'];
 }) {
   const {
     summarizeMediaFileImpl,
@@ -40,84 +40,81 @@ export function createRunnerFlowContexts(options: {
   } = options;
 
   const assetSummaryContext = createAssetSummaryContext({
+    apiStatus: {
+      anthropicConfigured: model.apiStatus.anthropicConfigured,
+      apiKey: model.apiStatus.apiKey,
+      apifyToken: model.apiStatus.apifyToken,
+      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
+      firecrawlConfigured: model.apiStatus.firecrawlConfigured,
+      googleConfigured: model.apiStatus.googleConfigured,
+      nvidiaApiKey: model.apiStatus.nvidiaApiKey,
+      nvidiaBaseUrl: model.apiStatus.nvidiaBaseUrl,
+      openaiApiKey: model.apiStatus.openaiApiKey,
+      openrouterApiKey: model.apiStatus.openrouterApiKey,
+      providerBaseUrls: model.apiStatus.providerBaseUrls,
+      xaiApiKey: model.apiStatus.xaiApiKey,
+      zaiApiKey: model.apiStatus.zaiApiKey,
+      zaiBaseUrl: model.apiStatus.zaiBaseUrl,
+    },
+    cache: { cache: cacheState, mediaCache },
+    hooks: {
+      buildReport,
+      clearProgressForStdout,
+      estimateCostUsd,
+      restoreProgressAfterStdout,
+      writeViaFooter,
+    },
     io: {
       env: io.env,
       envForRun: io.envForRun,
-      stdout: io.stdout,
-      stderr: io.stderr,
       execFileImpl: io.execFileImpl,
+      stderr: io.stderr,
+      stdout: io.stdout,
       trackedFetch: io.fetch,
     },
-    summary: {
-      timeoutMs: flags.timeoutMs,
-      preprocessMode: flags.preprocessMode,
-      format: flags.format,
-      extractMode: flags.extractMode,
-      lengthArg: flags.lengthArg,
-      forceSummary: flags.forceSummary,
-      outputLanguage: flags.outputLanguage,
-      videoMode: flags.videoMode,
-      promptOverride: flags.promptOverride,
-      lengthInstruction: flags.lengthInstruction,
-      languageInstruction: flags.languageInstruction,
-      maxOutputTokensArg: flags.maxOutputTokensArg,
-      summaryCacheBypass: flags.summaryCacheBypass,
-    },
     model: {
-      fixedModelSpec: model.fixedModelSpec,
-      isFallbackModel: model.isFallbackModel,
-      isImplicitAutoSelection: model.isImplicitAutoSelection,
       allowAutoCliFallback: model.allowAutoCliFallback,
+      cliAvailability: model.cliAvailability,
+      configForModelSelection: model.configForModelSelection,
       desiredOutputTokens: model.desiredOutputTokens,
       envForAuto: model.envForAuto,
-      configForModelSelection: model.configForModelSelection,
-      cliAvailability: model.cliAvailability,
+      fixedModelSpec: model.fixedModelSpec,
+      getLiteLlmCatalog: model.getLiteLlmCatalog,
+      isFallbackModel: model.isFallbackModel,
+      isImplicitAutoSelection: model.isImplicitAutoSelection,
+      isNamedModelSelection: model.isNamedModelSelection,
+      llmCalls: model.llmCalls,
       requestedModel: model.requestedModel,
       requestedModelInput: model.requestedModelInput,
       requestedModelLabel: model.requestedModelLabel,
-      wantsFreeNamedModel: model.wantsFreeNamedModel,
-      isNamedModelSelection: model.isNamedModelSelection,
       summaryEngine: model.summaryEngine,
-      getLiteLlmCatalog: model.getLiteLlmCatalog,
-      llmCalls: model.llmCalls,
+      wantsFreeNamedModel: model.wantsFreeNamedModel,
     },
     output: {
       json: flags.json,
-      metricsEnabled: flags.metricsEnabled,
       metricsDetailed: flags.metricsDetailed,
-      shouldComputeReport: flags.shouldComputeReport,
+      metricsEnabled: flags.metricsEnabled,
+      plain: flags.plain,
       runStartedAtMs: flags.runStartedAtMs,
+      shouldComputeReport: flags.shouldComputeReport,
+      streamingEnabled: flags.streamingEnabled,
       verbose: flags.verbose,
       verboseColor: flags.verboseColor,
-      streamingEnabled: flags.streamingEnabled,
-      plain: flags.plain,
     },
-    hooks: {
-      writeViaFooter,
-      clearProgressForStdout,
-      restoreProgressAfterStdout,
-      buildReport,
-      estimateCostUsd,
-    },
-    cache: {
-      cache: cacheState,
-      mediaCache,
-    },
-    apiStatus: {
-      xaiApiKey: model.apiStatus.xaiApiKey,
-      apiKey: model.apiStatus.apiKey,
-      nvidiaApiKey: model.apiStatus.nvidiaApiKey,
-      openrouterApiKey: model.apiStatus.openrouterApiKey,
-      apifyToken: model.apiStatus.apifyToken,
-      firecrawlConfigured: model.apiStatus.firecrawlConfigured,
-      googleConfigured: model.apiStatus.googleConfigured,
-      anthropicConfigured: model.apiStatus.anthropicConfigured,
-      providerBaseUrls: model.apiStatus.providerBaseUrls,
-      zaiApiKey: model.apiStatus.zaiApiKey,
-      zaiBaseUrl: model.apiStatus.zaiBaseUrl,
-      nvidiaBaseUrl: model.apiStatus.nvidiaBaseUrl,
-      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
-      openaiApiKey: model.apiStatus.openaiApiKey,
+    summary: {
+      extractMode: flags.extractMode,
+      forceSummary: flags.forceSummary,
+      format: flags.format,
+      languageInstruction: flags.languageInstruction,
+      lengthArg: flags.lengthArg,
+      lengthInstruction: flags.lengthInstruction,
+      maxOutputTokensArg: flags.maxOutputTokensArg,
+      outputLanguage: flags.outputLanguage,
+      preprocessMode: flags.preprocessMode,
+      promptOverride: flags.promptOverride,
+      summaryCacheBypass: flags.summaryCacheBypass,
+      timeoutMs: flags.timeoutMs,
+      videoMode: flags.videoMode,
     },
   });
 
@@ -127,19 +124,19 @@ export function createRunnerFlowContexts(options: {
     summarizeMediaFileImpl(assetSummaryContext, args);
 
   return {
-    summarizeAsset,
     assetInputContext: {
+      clearProgressIfCurrent,
       env: assetSummaryContext.env,
       envForRun: assetSummaryContext.envForRun,
-      stderr: assetSummaryContext.stderr,
       progressEnabled: flags.progressEnabled,
-      timeoutMs: flags.timeoutMs,
-      trackedFetch: io.fetch,
+      setClearProgressBeforeStdout,
+      stderr: assetSummaryContext.stderr,
       summarizeAsset,
       summarizeMediaFile,
-      setClearProgressBeforeStdout,
-      clearProgressIfCurrent,
+      timeoutMs: flags.timeoutMs,
+      trackedFetch: io.fetch,
     },
+    summarizeAsset,
     urlFlowContext: createUrlFlowContext({
       io,
       flags,

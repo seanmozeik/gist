@@ -1,9 +1,9 @@
-import { logExtensionEvent } from "../../lib/extension-logs";
-import type { PanelSession } from "./panel-session-store";
+import { logExtensionEvent } from '../../lib/extension-logs';
+import type { PanelSession } from './panel-session-store';
 
 type SlidesContextResponse =
-  | { type: "slides:context"; requestId: string; ok: false; error: string }
-  | { type: "slides:context"; requestId: string; ok: true; transcriptTimedText: string | null };
+  | { type: 'slides:context'; requestId: string; ok: false; error: string }
+  | { type: 'slides:context'; requestId: string; ok: true; transcriptTimedText: string | null };
 
 export async function handlePanelSlidesContextRequest<
   CachedExtract extends {
@@ -16,17 +16,17 @@ export async function handlePanelSlidesContextRequest<
   session: PanelSession<Recovery, Status>;
   requestId: string;
   requestedUrl: string | null;
-  loadSettings: typeof import("../../lib/settings").loadSettings;
-  getActiveTab: typeof import("./panel-utils").getActiveTab;
+  loadSettings: typeof import('../../lib/settings').loadSettings;
+  getActiveTab: typeof import('./panel-utils').getActiveTab;
   canSummarizeUrl: (url: string | null | undefined) => boolean;
   panelSessionStore: {
     getCachedExtract: (tabId: number, url?: string | null) => CachedExtract | null;
     setCachedExtract: (tabId: number, payload: CachedExtract) => void;
   };
-  urlsMatch: typeof import("./panel-utils").urlsMatch;
+  urlsMatch: typeof import('./panel-utils').urlsMatch;
   send: (message: SlidesContextResponse) => void;
   fetchImpl?: typeof fetch;
-  resolveLogLevel: (event: string) => "verbose" | "warn" | "error";
+  resolveLogLevel: (event: string) => 'verbose' | 'warn' | 'error';
 }) {
   const {
     session,
@@ -43,27 +43,22 @@ export async function handlePanelSlidesContextRequest<
   } = options;
   const settings = await loadSettings();
   const logSlides = (event: string, detail?: Record<string, unknown>) => {
-    if (!settings.extendedLogging) return;
+    if (!settings.extendedLogging) {return;}
     const payload = detail ? { event, ...detail } : { event };
     logExtensionEvent({
-      event,
       detail: detail ?? {},
-      scope: "slides:bg",
+      event,
       level: resolveLogLevel(event),
+      scope: 'slides:bg',
     });
-    console.debug("[summarize][slides:bg]", payload);
+    console.debug('[summarize][slides:bg]', payload);
   };
   const tab = await getActiveTab(session.windowId);
-  const tabUrl = typeof tab?.url === "string" ? tab.url : null;
+  const tabUrl = typeof tab?.url === 'string' ? tab.url : null;
   const targetUrl = requestedUrl ?? tabUrl;
   if (!targetUrl || !canSummarizeUrl(targetUrl)) {
-    send({
-      type: "slides:context",
-      requestId,
-      ok: false,
-      error: "No active tab for slides.",
-    });
-    logSlides("context:error", { reason: "no-tab", url: targetUrl });
+    send({ error: 'No active tab for slides.', ok: false, requestId, type: 'slides:context' });
+    logSlides('context:error', { reason: 'no-tab', url: targetUrl });
     return;
   }
 
@@ -73,19 +68,19 @@ export async function handlePanelSlidesContextRequest<
 
   if (!transcriptTimedText && settings.token.trim()) {
     try {
-      const res = await (fetchImpl ?? fetch)("http://127.0.0.1:8787/v1/summarize", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${settings.token.trim()}`,
-          "content-type": "application/json",
-        },
+      const res = await (fetchImpl ?? fetch)('http://127.0.0.1:8787/v1/summarize', {
         body: JSON.stringify({
           url: targetUrl,
-          mode: "url",
+          mode: 'url',
           extractOnly: true,
           timestamps: true,
           maxCharacters: null,
         }),
+        headers: {
+          Authorization: `Bearer ${settings.token.trim()}`,
+          'content-type': 'application/json',
+        },
+        method: 'POST',
       });
       const json = (await res.json()) as {
         ok?: boolean;
@@ -99,23 +94,23 @@ export async function handlePanelSlidesContextRequest<
       if (transcriptTimedText) {
         if (!cached && canUseCache && tab?.id && tabUrl) {
           cached = {
-            url: tabUrl,
-            title: tab.title?.trim() ?? null,
-            text: "",
-            source: "url",
-            truncated: false,
-            totalCharacters: 0,
-            wordCount: null,
+            diagnostics: null,
             media: null,
-            transcriptSource: null,
-            transcriptionProvider: null,
-            transcriptCharacters: null,
-            transcriptWordCount: null,
-            transcriptLines: null,
-            transcriptTimedText,
             mediaDurationSeconds: null,
             slides: null,
-            diagnostics: null,
+            source: 'url',
+            text: '',
+            title: tab.title?.trim() ?? null,
+            totalCharacters: 0,
+            transcriptCharacters: null,
+            transcriptLines: null,
+            transcriptSource: null,
+            transcriptTimedText,
+            transcriptWordCount: null,
+            transcriptionProvider: null,
+            truncated: false,
+            url: tabUrl,
+            wordCount: null,
           } as CachedExtract;
         } else if (cached) {
           cached = { ...cached, transcriptTimedText };
@@ -124,27 +119,19 @@ export async function handlePanelSlidesContextRequest<
           panelSessionStore.setCachedExtract(tab.id, cached);
         }
       }
-      logSlides("context:fetch-transcript", {
-        ok: Boolean(transcriptTimedText),
+      logSlides('context:fetch-transcript', { ok: Boolean(transcriptTimedText), url: targetUrl });
+    } catch (error) {
+      logSlides('context:fetch-error', {
         url: targetUrl,
-      });
-    } catch (err) {
-      logSlides("context:fetch-error", {
-        url: targetUrl,
-        error: err instanceof Error ? err.message : String(err),
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
 
-  send({
-    type: "slides:context",
-    requestId,
-    ok: true,
-    transcriptTimedText,
-  });
-  logSlides("context:ready", {
-    url: targetUrl,
-    transcriptTimedText: Boolean(transcriptTimedText),
+  send({ ok: true, requestId, transcriptTimedText, type: 'slides:context' });
+  logSlides('context:ready', {
     slides: cached?.slides?.slides?.length ?? 0,
+    transcriptTimedText: Boolean(transcriptTimedText),
+    url: targetUrl,
   });
 }

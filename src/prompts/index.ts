@@ -1,1 +1,1 @@
-export * from "@steipete/summarize-core/prompts";
+export * from '@steipete/summarize-core/prompts';

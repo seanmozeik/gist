@@ -1,8 +1,9 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
 
 function collectStream({ isTTY }: { isTTY: boolean }) {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
@@ -11,47 +12,47 @@ function collectStream({ isTTY }: { isTTY: boolean }) {
   });
   (stream as unknown as { isTTY?: boolean }).isTTY = isTTY;
   (stream as unknown as { columns?: number }).columns = 120;
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 const mocks = vi.hoisted(() => {
   const fetchLinkContent = vi.fn(async (_url: string, options?: Record<string, unknown>) => {
     return {
-      url: _url,
-      title: "Media",
+      __options: options ?? null,
+      content: 'Transcript: hello',
       description: null,
-      siteName: null,
-      content: "Transcript: hello",
-      truncated: false,
-      totalCharacters: 17,
-      wordCount: 2,
-      transcriptCharacters: 11,
-      transcriptLines: null,
-      transcriptWordCount: 1,
-      transcriptSource: "embedded",
-      transcriptMetadata: null,
-      transcriptionProvider: null,
-      transcriptSegments: null,
-      transcriptTimedText: null,
-      mediaDurationSeconds: null,
-      video: { kind: "direct", url: _url },
-      isVideoOnly: true,
       diagnostics: {
-        strategy: "html",
-        cacheMode: "default",
-        cacheStatus: "miss",
-        firecrawl: { attempted: false, used: false, notes: null },
-        markdown: { requested: false, used: false, provider: null, notes: null },
+        cacheMode: 'default',
+        cacheStatus: 'miss',
+        firecrawl: { attempted: false, notes: null, used: false },
+        markdown: { notes: null, provider: null, requested: false, used: false },
+        strategy: 'html',
         transcript: {
-          cacheMode: "default",
-          cacheStatus: "miss",
-          textProvided: true,
-          provider: "embedded",
-          attemptedProviders: ["embedded"],
+          attemptedProviders: ['embedded'],
+          cacheMode: 'default',
+          cacheStatus: 'miss',
           notes: null,
+          provider: 'embedded',
+          textProvided: true,
         },
       },
-      __options: options ?? null,
+      isVideoOnly: true,
+      mediaDurationSeconds: null,
+      siteName: null,
+      title: 'Media',
+      totalCharacters: 17,
+      transcriptCharacters: 11,
+      transcriptLines: null,
+      transcriptMetadata: null,
+      transcriptSegments: null,
+      transcriptSource: 'embedded',
+      transcriptTimedText: null,
+      transcriptWordCount: 1,
+      transcriptionProvider: null,
+      truncated: false,
+      url: _url,
+      video: { kind: 'direct', url: _url },
+      wordCount: 2,
     };
   });
 
@@ -60,30 +61,30 @@ const mocks = vi.hoisted(() => {
   return { createLinkPreviewClient, fetchLinkContent };
 });
 
-vi.mock("../src/content/index.js", () => ({
+vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runCli } from "../src/run.js";
+import { runCli } from '../src/run.js';
 
-describe("cli --video-mode transcript", () => {
-  it("passes media transcript preference to the extractor", async () => {
+describe('cli --video-mode transcript', () => {
+  it('passes media transcript preference to the extractor', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: true });
 
     await runCli(
-      ["--extract", "--metrics", "off", "--video-mode", "transcript", "https://example.com/page"],
+      ['--extract', '--metrics', 'off', '--video-mode', 'transcript', 'https://example.com/page'],
       {
         env: {},
         fetch: vi.fn() as unknown as typeof fetch,
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       },
     );
 
     const options = mocks.fetchLinkContent.mock.calls[0]?.[1] as
       | Record<string, unknown>
       | undefined;
-    expect(options?.mediaTranscript).toBe("prefer");
+    expect(options?.mediaTranscript).toBe('prefer');
   });
 });

@@ -1,78 +1,72 @@
-import type { SummaryLength } from "@steipete/summarize-core";
-import { SUMMARY_LENGTH_SPECS } from "@steipete/summarize-core/prompts";
-import { render } from "preact";
-import { createPortal } from "preact/compat";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { readPresetOrCustomValue, resolvePresetOrCustom } from "../../lib/combo";
-import { defaultSettings } from "../../lib/settings";
-import type { ColorMode, ColorScheme } from "../../lib/theme";
-import { getOverlayRoot } from "../../ui/portal";
-import { SchemeChips } from "../../ui/scheme-chips";
-import { type SelectItem, useZagSelect } from "../../ui/zag-select";
+import type { SummaryLength } from '@steipete/summarize-core';
+import { SUMMARY_LENGTH_SPECS } from '@steipete/summarize-core/prompts';
+import { render } from 'preact';
+import { createPortal } from 'preact/compat';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-type SidepanelPickerState = {
-  scheme: ColorScheme;
-  mode: ColorMode;
-  fontFamily: string;
-};
+import { readPresetOrCustomValue, resolvePresetOrCustom } from '../../lib/combo';
+import { defaultSettings } from '../../lib/settings';
+import type { ColorMode, ColorScheme } from '../../lib/theme';
+import { getOverlayRoot } from '../../ui/portal';
+import { SchemeChips } from '../../ui/scheme-chips';
+import { type SelectItem, useZagSelect } from '../../ui/zag-select';
 
-type SidepanelPickerHandlers = {
+interface SidepanelPickerState { scheme: ColorScheme; mode: ColorMode; fontFamily: string }
+
+interface SidepanelPickerHandlers {
   onSchemeChange: (value: ColorScheme) => void;
   onModeChange: (value: ColorMode) => void;
   onFontChange: (value: string) => void;
-};
+}
 
 type SidepanelPickerProps = SidepanelPickerState & SidepanelPickerHandlers;
 
-type SidepanelLengthPickerProps = {
-  length: string;
-  onLengthChange: (value: string) => void;
-};
+interface SidepanelLengthPickerProps { length: string; onLengthChange: (value: string) => void }
 
-type SummarizeControlProps = {
-  mode: "page" | "video";
+interface SummarizeControlProps {
+  mode: 'page' | 'video';
   slidesEnabled: boolean;
   mediaAvailable: boolean;
   busy?: boolean;
   videoLabel?: string;
   pageWords?: number | null;
   videoDurationSeconds?: number | null;
-  slidesTextMode?: "transcript" | "ocr";
+  slidesTextMode?: 'transcript' | 'ocr';
   slidesTextToggleVisible?: boolean;
-  onSlidesTextModeChange?: (value: "transcript" | "ocr") => void;
-  onChange: (value: { mode: "page" | "video"; slides: boolean }) => void;
+  onSlidesTextModeChange?: (value: 'transcript' | 'ocr') => void;
+  onChange: (value: { mode: 'page' | 'video'; slides: boolean }) => void;
   onSummarize: () => void;
-};
+}
 
-const lengthPresets = ["short", "medium", "long", "xl", "xxl", "20k"];
+const lengthPresets = ['short', 'medium', 'long', 'xl', 'xxl', '20k'];
 const MIN_CUSTOM_LENGTH_CHARS = 10;
 const LENGTH_COUNT_PATTERN = /^(?<value>\d+(?:\.\d+)?)(?<unit>k|m)?$/i;
 
 type LengthItem = SelectItem & { tooltip?: string };
 
 const lengthLabels: Record<SummaryLength, string> = {
-  short: "Short",
-  medium: "Medium",
-  long: "Long",
-  xl: "Extra Large (XL)",
-  xxl: "Extra Extra Large (XXL)",
+  long: 'Long',
+  medium: 'Medium',
+  short: 'Short',
+  xl: 'Extra Large (XL)',
+  xxl: 'Extra Extra Large (XXL)',
 };
 
 const formatCount = (value: number) => value.toLocaleString();
 
 const formatWordCount = (value: number | null | undefined) => {
-  if (!value || !Number.isFinite(value)) return null;
+  if (!value || !Number.isFinite(value)) {return null;}
   return `${formatCount(value)} words`;
 };
 
 const formatDuration = (seconds: number | null | undefined) => {
-  if (!seconds || !Number.isFinite(seconds)) return null;
+  if (!seconds || !Number.isFinite(seconds)) {return null;}
   const total = Math.max(0, Math.floor(seconds));
   const hours = Math.floor(total / 3600);
   const minutes = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  const mm = minutes.toString().padStart(2, "0");
-  const ss = secs.toString().padStart(2, "0");
+  const mm = minutes.toString().padStart(2, '0');
+  const ss = secs.toString().padStart(2, '0');
   return hours > 0 ? `${hours}:${mm}:${ss} min` : `${minutes}:${ss} min`;
 };
 
@@ -84,35 +78,58 @@ const formatLengthTooltip = (preset: SummaryLength): string => {
 };
 
 const lengthItems: LengthItem[] = [
-  { value: "short", label: "Short", tooltip: formatLengthTooltip("short") },
-  { value: "medium", label: "Medium", tooltip: formatLengthTooltip("medium") },
-  { value: "long", label: "Long", tooltip: formatLengthTooltip("long") },
-  { value: "xl", label: "XL", tooltip: formatLengthTooltip("xl") },
-  { value: "xxl", label: "XXL", tooltip: formatLengthTooltip("xxl") },
+  { label: 'Short', tooltip: formatLengthTooltip('short'), value: 'short' },
+  { label: 'Medium', tooltip: formatLengthTooltip('medium'), value: 'medium' },
+  { label: 'Long', tooltip: formatLengthTooltip('long'), value: 'long' },
+  { label: 'XL', tooltip: formatLengthTooltip('xl'), value: 'xl' },
+  { label: 'XXL', tooltip: formatLengthTooltip('xxl'), value: 'xxl' },
   {
-    value: "20k",
-    label: "20k",
-    tooltip: "Custom target around 20,000 characters (soft guideline).",
+    label: '20k',
+    tooltip: 'Custom target around 20,000 characters (soft guideline).',
+    value: '20k',
   },
-  { value: "custom", label: "Custom…", tooltip: "Set a custom length like 1500, 20k, or 1.5k." },
+  { label: 'Custom…', tooltip: 'Set a custom length like 1500, 20k, or 1.5k.', value: 'custom' },
 ];
 
 const schemeItems: SelectItem[] = [
-  { value: "slate", label: "Slate" },
-  { value: "cedar", label: "Cedar" },
-  { value: "mint", label: "Mint" },
-  { value: "ocean", label: "Ocean" },
-  { value: "ember", label: "Ember" },
-  { value: "iris", label: "Iris" },
+  { label: 'Slate', value: 'slate' },
+  { label: 'Cedar', value: 'cedar' },
+  { label: 'Mint', value: 'mint' },
+  { label: 'Ocean', value: 'ocean' },
+  { label: 'Ember', value: 'ember' },
+  { label: 'Iris', value: 'iris' },
 ];
 
 const modeItems: SelectItem[] = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
+  { label: 'System', value: 'system' },
+  { label: 'Light', value: 'light' },
+  { label: 'Dark', value: 'dark' },
 ];
 
 const modeIcons: Record<string, JSX.Element> = {
+  dark: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M20.5 15a7.5 7.5 0 1 1-10-10 6.2 6.2 0 0 0 10 10Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  light: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M12 3.5v2.5M12 18v2.5M3.5 12h2.5M18 12h2.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
   system: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <rect
@@ -129,42 +146,16 @@ const modeIcons: Record<string, JSX.Element> = {
       <path d="M12 16v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
-  light: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M12 3.5v2.5M12 18v2.5M3.5 12h2.5M18 12h2.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  dark: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M20.5 15a7.5 7.5 0 1 1-10-10 6.2 6.2 0 0 0 10 10Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
 };
 
 const fontItems: SelectItem[] = [
   {
+    label: 'San Francisco',
     value: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-    label: "San Francisco",
   },
-  { value: "Georgia, serif", label: "Georgia" },
-  { value: "Iowan Old Style, Palatino, serif", label: "Iowan" },
-  {
-    value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-    label: "Mono",
-  },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Iowan', value: 'Iowan Old Style, Palatino, serif' },
+  { label: 'Mono', value: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' },
 ];
 
 function SelectField({
@@ -186,19 +177,15 @@ function SelectField({
   optionContent: (item: SelectItem) => JSX.Element;
   items: SelectItem[];
 }) {
-  const selectedValue = api.value[0] ?? "";
+  const selectedValue = api.value[0] ?? '';
   const selectedLabel =
-    api.valueAsString || items.find((item) => item.value === selectedValue)?.label || "";
+    api.valueAsString || items.find((item) => item.value === selectedValue)?.label || '';
   const portalRoot = getOverlayRoot();
 
   const positionerProps = api.getPositionerProps();
-  const positionerStyle = {
-    ...(positionerProps.style ?? {}),
-    position: "fixed",
-    zIndex: 9999,
-  };
-  if ("width" in positionerStyle) delete positionerStyle.width;
-  if ("maxWidth" in positionerStyle) delete positionerStyle.maxWidth;
+  const positionerStyle = { ...positionerProps.style, position: 'fixed', zIndex: 9999 };
+  if ('width' in positionerStyle) {delete positionerStyle.width;}
+  if ('maxWidth' in positionerStyle) {delete positionerStyle.maxWidth;}
   const content = (
     <div
       className="pickerPositioner"
@@ -220,7 +207,7 @@ function SelectField({
 
   return (
     <label className={labelClassName} {...api.getLabelProps()}>
-      <span className={titleClassName ?? "pickerTitle"}>{label}</span>
+      <span className={titleClassName ?? 'pickerTitle'}>{label}</span>
       <div className="picker" {...api.getRootProps()}>
         <button className="pickerTrigger" {...api.getTriggerProps()}>
           {triggerContent(selectedLabel, selectedValue)}
@@ -235,15 +222,15 @@ function SelectField({
 function LengthField({
   value,
   onValueChange,
-  variant = "grid",
+  variant = 'grid',
 }: {
   value: string;
   onValueChange: (value: string) => void;
-  variant?: "grid" | "mini";
+  variant?: 'grid' | 'mini';
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const shouldFocusCustomInputRef = useRef(false);
-  const resolved = useMemo(() => resolvePresetOrCustom({ value, presets: lengthPresets }), [value]);
+  const resolved = useMemo(() => resolvePresetOrCustom({ presets: lengthPresets, value }), [value]);
   const [presetValue, setPresetValue] = useState(resolved.presetValue);
   const [customValue, setCustomValue] = useState(resolved.customValue);
   const portalRoot = getOverlayRoot();
@@ -254,29 +241,29 @@ function LengthField({
   }, [resolved.customValue, resolved.presetValue]);
 
   const api = useZagSelect({
-    id: "length",
+    id: 'length',
     items: lengthItems,
-    value: presetValue,
     onValueChange: (next) => {
       const nextValue = next || defaultSettings.length;
       setPresetValue(nextValue);
-      if (nextValue === "custom") {
+      if (nextValue === 'custom') {
         shouldFocusCustomInputRef.current = true;
         return;
       }
       onValueChange(nextValue);
     },
+    value: presetValue,
   });
 
   const labelProps = api.getLabelProps();
   const resolvedLabelProps =
-    presetValue === "custom"
-      ? { ...labelProps, htmlFor: "lengthCustom", onClick: undefined }
+    presetValue === 'custom'
+      ? { ...labelProps, htmlFor: 'lengthCustom', onClick: undefined }
       : labelProps;
 
   useEffect(() => {
-    if (presetValue !== "custom") return;
-    if (!shouldFocusCustomInputRef.current) return;
+    if (presetValue !== 'custom') {return;}
+    if (!shouldFocusCustomInputRef.current) {return;}
     shouldFocusCustomInputRef.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [presetValue]);
@@ -284,13 +271,13 @@ function LengthField({
   const clampCustomLength = (raw: string) => {
     const trimmed = raw.trim();
     const match = LENGTH_COUNT_PATTERN.exec(trimmed);
-    if (!match?.groups) return trimmed;
+    if (!match?.groups) {return trimmed;}
     const numeric = Number(match.groups.value);
-    if (!Number.isFinite(numeric) || numeric <= 0) return trimmed;
+    if (!Number.isFinite(numeric) || numeric <= 0) {return trimmed;}
     const unit = match.groups.unit?.toLowerCase() ?? null;
-    const multiplier = unit === "k" ? 1000 : unit === "m" ? 1_000_000 : 1;
+    const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
     const maxCharacters = Math.floor(numeric * multiplier);
-    if (maxCharacters < MIN_CUSTOM_LENGTH_CHARS) return String(MIN_CUSTOM_LENGTH_CHARS);
+    if (maxCharacters < MIN_CUSTOM_LENGTH_CHARS) {return String(MIN_CUSTOM_LENGTH_CHARS);}
     return trimmed;
   };
 
@@ -300,21 +287,17 @@ function LengthField({
       setCustomValue(clamped);
     }
     const next = readPresetOrCustomValue({
-      presetValue: "custom",
       customValue: clamped,
       defaultValue: defaultSettings.length,
+      presetValue: 'custom',
     });
     onValueChange(next);
   };
 
   const positionerProps = api.getPositionerProps();
-  const positionerStyle = {
-    ...(positionerProps.style ?? {}),
-    position: "fixed",
-    zIndex: 9999,
-  };
-  if ("width" in positionerStyle) delete positionerStyle.width;
-  if ("maxWidth" in positionerStyle) delete positionerStyle.maxWidth;
+  const positionerStyle = { ...positionerProps.style, position: 'fixed', zIndex: 9999 };
+  if ('width' in positionerStyle) {delete positionerStyle.width;}
+  if ('maxWidth' in positionerStyle) {delete positionerStyle.maxWidth;}
   const content = (
     <div
       className="pickerPositioner"
@@ -329,7 +312,7 @@ function LengthField({
             <button
               key={item.value}
               className="pickerOption"
-              style={item.value === "custom" ? { gridColumn: "1 / -1" } : undefined}
+              style={item.value === 'custom' ? { gridColumn: '1 / -1' } : undefined}
               title={item.tooltip}
               {...api.getItemProps({ item })}
             >
@@ -342,11 +325,11 @@ function LengthField({
   );
 
   return (
-    <label className={variant === "mini" ? "length mini" : "length wide"} {...resolvedLabelProps}>
+    <label className={variant === 'mini' ? 'length mini' : 'length wide'} {...resolvedLabelProps}>
       <span className="pickerTitle">Length</span>
       <div className="combo">
         <div className="picker" {...api.getRootProps()}>
-          {presetValue === "custom" ? (
+          {presetValue === 'custom' ? (
             <div className="lengthCustomRow">
               <input
                 ref={inputRef}
@@ -362,12 +345,12 @@ function LengthField({
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => event.stopPropagation()}
                 onKeyDown={(event) => {
-                  if (event.key === "ArrowDown") {
+                  if (event.key === 'ArrowDown') {
                     event.preventDefault();
                     api.setOpen(true);
                     return;
                   }
-                  if (event.key !== "Enter") return;
+                  if (event.key !== 'Enter') {return;}
                   event.preventDefault();
                   commitCustom();
                 }}
@@ -378,7 +361,7 @@ function LengthField({
             </div>
           ) : (
             <button className="pickerTrigger" {...api.getTriggerProps()}>
-              <span>{api.valueAsString || "Length"}</span>
+              <span>{api.valueAsString || 'Length'}</span>
             </button>
           )}
           {portalRoot ? createPortal(content, portalRoot) : content}
@@ -391,33 +374,33 @@ function LengthField({
 
 function SidepanelPickers(props: SidepanelPickerProps) {
   const schemeApi = useZagSelect({
-    id: "scheme",
+    id: 'scheme',
     items: schemeItems,
-    value: props.scheme,
     onValueChange: (value) => {
       if (!value) return;
       props.onSchemeChange(value as ColorScheme);
     },
+    value: props.scheme,
   });
 
   const modeApi = useZagSelect({
-    id: "mode",
+    id: 'mode',
     items: modeItems,
-    value: props.mode,
     onValueChange: (value) => {
       if (!value) return;
       props.onModeChange(value as ColorMode);
     },
+    value: props.mode,
   });
 
   const fontApi = useZagSelect({
-    id: "font",
+    id: 'font',
     items: fontItems,
-    value: props.fontFamily,
     onValueChange: (value) => {
       if (!value) return;
       props.onFontChange(value);
     },
+    value: props.fontFamily,
   });
 
   return (
@@ -430,8 +413,8 @@ function SidepanelPickers(props: SidepanelPickerProps) {
         items={schemeItems}
         triggerContent={(label, value) => (
           <>
-            <span className="scheme-label">{label || "Slate"}</span>
-            <SchemeChips scheme={value || "slate"} />
+            <span className="scheme-label">{label || 'Slate'}</span>
+            <SchemeChips scheme={value || 'slate'} />
           </>
         )}
         optionContent={(item) => (
@@ -449,7 +432,7 @@ function SidepanelPickers(props: SidepanelPickerProps) {
         items={modeItems}
         triggerContent={(label, value) => (
           <>
-            <span>{label || "System"}</span>
+            <span>{label || 'System'}</span>
             <span className="modeIcon">{modeIcons[value] ?? null}</span>
           </>
         )}
@@ -467,7 +450,7 @@ function SidepanelPickers(props: SidepanelPickerProps) {
         api={fontApi}
         items={fontItems}
         triggerContent={(label, value) => (
-          <span style={value ? { fontFamily: value } : undefined}>{label || "San Francisco"}</span>
+          <span style={value ? { fontFamily: value } : undefined}>{label || 'San Francisco'}</span>
         )}
         optionContent={(item) => <span style={{ fontFamily: item.value }}>{item.label}</span>}
       />
@@ -499,46 +482,42 @@ function SummarizeControl(props: SummarizeControlProps) {
   const pageMeta = formatWordCount(props.pageWords);
   const videoMeta = formatDuration(props.videoDurationSeconds);
 
-  const pageLabel = pageMeta ? `Page · ${pageMeta}` : "Page";
-  const videoLabel = `${props.videoLabel ?? "Video"}${videoMeta ? ` · ${videoMeta}` : ""}`;
-  const videoSlidesLabel = `${props.videoLabel ?? "Video"} + Slides`;
+  const pageLabel = pageMeta ? `Page · ${pageMeta}` : 'Page';
+  const videoLabel = `${props.videoLabel ?? 'Video'}${videoMeta ? ` · ${videoMeta}` : ''}`;
+  const videoSlidesLabel = `${props.videoLabel ?? 'Video'} + Slides`;
 
   const sourceItems: SelectItem[] = props.mediaAvailable
     ? [
-        { value: "page", label: pageLabel },
-        { value: "video", label: videoLabel },
-        { value: "video-slides", label: videoSlidesLabel },
+        { label: pageLabel, value: 'page' },
+        { label: videoLabel, value: 'video' },
+        { label: videoSlidesLabel, value: 'video-slides' },
       ]
-    : [{ value: "page", label: pageLabel }];
+    : [{ label: pageLabel, value: 'page' }];
   const portalRoot = getOverlayRoot();
   const api = useZagSelect({
-    id: "source",
+    id: 'source',
     items: sourceItems,
-    value: props.slidesEnabled ? "video-slides" : props.mode,
     onValueChange: (next) => {
       const raw = Array.isArray(next) ? next[0] : next;
-      if (raw === "video-slides") {
-        props.onChange({ mode: "video", slides: true });
-      } else if (raw === "video") {
-        props.onChange({ mode: "video", slides: false });
+      if (raw === 'video-slides') {
+        props.onChange({ mode: 'video', slides: true });
+      } else if (raw === 'video') {
+        props.onChange({ mode: 'video', slides: false });
       } else {
-        props.onChange({ mode: "page", slides: false });
+        props.onChange({ mode: 'page', slides: false });
       }
     },
+    value: props.slidesEnabled ? 'video-slides' : props.mode,
   });
 
-  const selectedValue = api.value[0] ?? "";
+  const selectedValue = api.value[0] ?? '';
   const selectedLabel =
-    api.valueAsString || sourceItems.find((item) => item.value === selectedValue)?.label || "Page";
+    api.valueAsString || sourceItems.find((item) => item.value === selectedValue)?.label || 'Page';
 
   const positionerProps = api.getPositionerProps();
-  const positionerStyle = {
-    ...(positionerProps.style ?? {}),
-    position: "fixed",
-    zIndex: 9999,
-  };
-  if ("width" in positionerStyle) delete positionerStyle.width;
-  if ("maxWidth" in positionerStyle) delete positionerStyle.maxWidth;
+  const positionerStyle = { ...positionerProps.style, position: 'fixed', zIndex: 9999 };
+  if ('width' in positionerStyle) {delete positionerStyle.width;}
+  if ('maxWidth' in positionerStyle) {delete positionerStyle.maxWidth;}
   const content = (
     <div
       className="pickerPositioner"
@@ -566,7 +545,7 @@ function SummarizeControl(props: SummarizeControlProps) {
       triggerProps.onClick?.(event);
       return;
     }
-    if (api.open) api.setOpen(false);
+    if (api.open) {api.setOpen(false);}
     props.onSummarize();
   };
   const onPointerDown = (event: PointerEvent) => {
@@ -577,12 +556,12 @@ function SummarizeControl(props: SummarizeControlProps) {
     }
   };
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       api.setOpen(true);
       return;
     }
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       props.onSummarize();
       return;
@@ -610,8 +589,8 @@ function SummarizeControl(props: SummarizeControlProps) {
           type="button"
           className="ghost summarizeButton isDropdown"
           aria-label={`Summarize (${selectedLabel})`}
-          data-busy={props.busy ? "true" : "false"}
-          disabled={!props.mediaAvailable && props.mode === "video"}
+          data-busy={props.busy ? 'true' : 'false'}
+          disabled={!props.mediaAvailable && props.mode === 'video'}
           {...rest}
           onClick={onClick}
           onPointerDown={onPointerDown}
@@ -627,15 +606,15 @@ function SummarizeControl(props: SummarizeControlProps) {
           <legend className="summarizeSlidesToggle__label">Slides text source</legend>
           <button
             type="button"
-            data-active={props.slidesTextMode === "transcript" ? "true" : "false"}
-            onClick={() => props.onSlidesTextModeChange?.("transcript")}
+            data-active={props.slidesTextMode === 'transcript' ? 'true' : 'false'}
+            onClick={() => props.onSlidesTextModeChange?.('transcript')}
           >
             Transcript
           </button>
           <button
             type="button"
-            data-active={props.slidesTextMode === "ocr" ? "true" : "false"}
-            onClick={() => props.onSlidesTextModeChange?.("ocr")}
+            data-active={props.slidesTextMode === 'ocr' ? 'true' : 'false'}
+            onClick={() => props.onSlidesTextModeChange?.('ocr')}
           >
             OCR
           </button>

@@ -1,35 +1,33 @@
-import { render } from "preact";
-import { createPortal } from "preact/compat";
-import type { ColorMode, ColorScheme } from "../../lib/theme";
-import { getOverlayRoot } from "../../ui/portal";
-import { SchemeChips } from "../../ui/scheme-chips";
-import { type SelectItem, useZagSelect } from "../../ui/zag-select";
+import { render } from 'preact';
+import { createPortal } from 'preact/compat';
 
-type OptionsPickerState = {
-  scheme: ColorScheme;
-  mode: ColorMode;
-};
+import type { ColorMode, ColorScheme } from '../../lib/theme';
+import { getOverlayRoot } from '../../ui/portal';
+import { SchemeChips } from '../../ui/scheme-chips';
+import { type SelectItem, useZagSelect } from '../../ui/zag-select';
 
-type OptionsPickerHandlers = {
+interface OptionsPickerState { scheme: ColorScheme; mode: ColorMode }
+
+interface OptionsPickerHandlers {
   onSchemeChange: (value: ColorScheme) => void;
   onModeChange: (value: ColorMode) => void;
-};
+}
 
 type OptionsPickerProps = OptionsPickerState & OptionsPickerHandlers;
 
 const schemeItems: SelectItem[] = [
-  { value: "slate", label: "Slate" },
-  { value: "cedar", label: "Cedar" },
-  { value: "mint", label: "Mint" },
-  { value: "ocean", label: "Ocean" },
-  { value: "ember", label: "Ember" },
-  { value: "iris", label: "Iris" },
+  { label: 'Slate', value: 'slate' },
+  { label: 'Cedar', value: 'cedar' },
+  { label: 'Mint', value: 'mint' },
+  { label: 'Ocean', value: 'ocean' },
+  { label: 'Ember', value: 'ember' },
+  { label: 'Iris', value: 'iris' },
 ];
 
 const modeItems: SelectItem[] = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
+  { label: 'System', value: 'system' },
+  { label: 'Light', value: 'light' },
+  { label: 'Dark', value: 'dark' },
 ];
 
 function SelectField({
@@ -47,16 +45,16 @@ function SelectField({
   optionContent: (item: SelectItem) => JSX.Element;
   items: SelectItem[];
 }) {
-  const selectedValue = api.value[0] ?? "";
+  const selectedValue = api.value[0] ?? '';
   const selectedLabel =
-    api.valueAsString || items.find((item) => item.value === selectedValue)?.label || "";
+    api.valueAsString || items.find((item) => item.value === selectedValue)?.label || '';
   const portalRoot = getOverlayRoot();
   const positionerProps = api.getPositionerProps();
   const positionerStyle = {
-    ...(positionerProps.style ?? {}),
-    position: "fixed",
+    ...positionerProps.style,
+    pointerEvents: api.open ? 'auto' : 'none',
+    position: 'fixed',
     zIndex: 9999,
-    pointerEvents: api.open ? "auto" : "none",
   };
   const content = (
     <div className="pickerPositioner" {...positionerProps} style={positionerStyle}>
@@ -88,23 +86,23 @@ function SelectField({
 
 function OptionsPickers(props: OptionsPickerProps) {
   const schemeApi = useZagSelect({
-    id: "options-scheme",
+    id: 'options-scheme',
     items: schemeItems,
-    value: props.scheme,
     onValueChange: (value) => {
       if (!value) return;
       props.onSchemeChange(value as ColorScheme);
     },
+    value: props.scheme,
   });
 
   const modeApi = useZagSelect({
-    id: "options-mode",
+    id: 'options-mode',
     items: modeItems,
-    value: props.mode,
     onValueChange: (value) => {
       if (!value) return;
       props.onModeChange(value as ColorMode);
     },
+    value: props.mode,
   });
 
   return (
@@ -116,8 +114,8 @@ function OptionsPickers(props: OptionsPickerProps) {
         items={schemeItems}
         triggerContent={(label, value) => (
           <>
-            <span className="scheme-label">{label || "Slate"}</span>
-            <SchemeChips scheme={value || "slate"} />
+            <span className="scheme-label">{label || 'Slate'}</span>
+            <SchemeChips scheme={value || 'slate'} />
           </>
         )}
         optionContent={(item) => (
@@ -132,7 +130,7 @@ function OptionsPickers(props: OptionsPickerProps) {
         labelClassName="mode"
         api={modeApi}
         items={modeItems}
-        triggerContent={(label) => <span>{label || "System"}</span>}
+        triggerContent={(label) => <span>{label || 'System'}</span>}
         optionContent={(item) => <span>{item.label}</span>}
       />
     </>

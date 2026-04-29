@@ -1,13 +1,14 @@
-import type { Command } from "commander";
-import type { InputTarget } from "../content/asset.js";
-import { resolveInputTarget } from "../content/asset.js";
-import { buildConciseHelp } from "./help.js";
+import type { Command } from 'commander';
 
-export type InputResolution = {
+import type { InputTarget } from '../content/asset.js';
+import { resolveInputTarget } from '../content/asset.js';
+import { buildConciseHelp } from './help.js';
+
+export interface InputResolution {
   inputTarget: InputTarget;
   url: string | null;
   cliProviderArgRaw: string | null;
-};
+}
 
 export function resolveRunInput({
   program,
@@ -28,7 +29,7 @@ export function resolveRunInput({
       rawInput = resolvedCliProviderArgRaw;
       resolvedCliProviderArgRaw = null;
     } catch {
-      // keep rawInput as-is
+      // Keep rawInput as-is
     }
   }
   if (!rawInput) {
@@ -38,7 +39,7 @@ export function resolveRunInput({
   }
 
   const inputTarget = resolveInputTarget(rawInput);
-  const url = inputTarget.kind === "url" ? inputTarget.url : null;
+  const url = inputTarget.kind === 'url' ? inputTarget.url : null;
 
-  return { inputTarget, url, cliProviderArgRaw: resolvedCliProviderArgRaw };
+  return { cliProviderArgRaw: resolvedCliProviderArgRaw, inputTarget, url };
 }

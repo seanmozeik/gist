@@ -1,17 +1,15 @@
-import { defineContentScript } from "wxt/utils/define-content-script";
-import { META_SITE_EXCLUDE_MATCHES } from "../lib/content-script-matches";
-import { mergeStreamingChunk } from "../lib/runtime-contracts";
-import { loadSettings, type Settings } from "../lib/settings";
+import { defineContentScript } from 'wxt/utils/define-content-script';
 
-type HoverCacheEntry = {
-  summary: string;
-  updatedAt: number;
-};
+import { META_SITE_EXCLUDE_MATCHES } from '../lib/content-script-matches';
+import { mergeStreamingChunk } from '../lib/runtime-contracts';
+import { loadSettings, type Settings } from '../lib/settings';
+
+interface HoverCacheEntry { summary: string; updatedAt: number }
 
 const HOVER_DELAY_MS = 420;
 const CACHE_TTL_MS = 12 * 60 * 1000;
-const TOOLTIP_ID = "__summarize_hover_tooltip__";
-const STYLE_ID = "__summarize_hover_tooltip_style__";
+const TOOLTIP_ID = '__summarize_hover_tooltip__';
+const STYLE_ID = '__summarize_hover_tooltip_style__';
 const ERRORISH_PATTERN =
   /(^error:|failed to load|failed to fetch|failed to connect|unable to load|unable to fetch|unable to connect|cannot access|cannot summarize|something went wrong|try again|technical error|privacy[- ]related|please disable|access denied|forbidden|captcha|verify you are human|enable javascript|cloudflare|rate limit|too many requests|temporarily unavailable|page not found|not found|404|403|500|shortened t\\.co|t\\.co url|no summary returned|summary failed|daemon unreachable|not logged in|log in to|login to|sign in to|formerly twitter|please provide the text content|provided content.*empty)/i;
 const titleCache = new WeakMap<HTMLElement, string | null>();
@@ -21,15 +19,15 @@ function isValidUrl(raw: string): boolean {
 }
 
 function resolveUrl(anchor: HTMLAnchorElement): string | null {
-  const raw = anchor.getAttribute("href")?.trim() ?? "";
-  if (!raw) return null;
-  if (raw.startsWith("#")) return null;
-  if (raw.startsWith("javascript:")) return null;
-  if (raw.startsWith("mailto:")) return null;
-  if (raw.startsWith("tel:")) return null;
+  const raw = anchor.getAttribute('href')?.trim() ?? '';
+  if (!raw) {return null;}
+  if (raw.startsWith('#')) {return null;}
+  if (raw.startsWith('javascript:')) {return null;}
+  if (raw.startsWith('mailto:')) {return null;}
+  if (raw.startsWith('tel:')) {return null;}
   try {
     const url = new URL(raw, location.href);
-    if (!isValidUrl(url.href)) return null;
+    if (!isValidUrl(url.href)) {return null;}
     return url.href;
   } catch {
     return null;
@@ -37,34 +35,34 @@ function resolveUrl(anchor: HTMLAnchorElement): string | null {
 }
 
 function clampText(input: string): string {
-  return input.replace(/\s+/g, " ").trim();
+  return input.replaceAll(/\s+/g, ' ').trim();
 }
 
 function muteNativeTooltip(anchor: HTMLElement) {
-  if (titleCache.has(anchor)) return;
-  if (!anchor.hasAttribute("title")) return;
-  const title = anchor.getAttribute("title");
+  if (titleCache.has(anchor)) {return;}
+  if (!anchor.hasAttribute('title')) {return;}
+  const title = anchor.getAttribute('title');
   titleCache.set(anchor, title);
-  anchor.removeAttribute("title");
+  anchor.removeAttribute('title');
 }
 
 function restoreNativeTooltip(anchor: HTMLElement | null) {
-  if (!anchor) return;
-  if (!titleCache.has(anchor)) return;
+  if (!anchor) {return;}
+  if (!titleCache.has(anchor)) {return;}
   const title = titleCache.get(anchor);
   titleCache.delete(anchor);
-  if (title != null) anchor.setAttribute("title", title);
+  if (title != null) {anchor.setAttribute('title', title);}
 }
 
 function looksLikeErrorText(input: string): boolean {
   const text = clampText(input);
-  if (!text) return false;
+  if (!text) {return false;}
   return ERRORISH_PATTERN.test(text);
 }
 
 function ensureStyle() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
+  if (document.querySelector(`#${STYLE_ID}`)) {return;}
+  const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
     #${TOOLTIP_ID} {
@@ -104,33 +102,30 @@ function ensureStyle() {
   document.documentElement.append(style);
 }
 
-type Tooltip = {
-  el: HTMLDivElement;
-  textEl: HTMLDivElement;
-};
+interface Tooltip { el: HTMLDivElement; textEl: HTMLDivElement }
 
 type HoverFromBg =
-  | { type: "hover:chunk"; requestId: string; url: string; text: string }
-  | { type: "hover:done"; requestId: string; url: string }
-  | { type: "hover:error"; requestId: string; url: string; message: string };
+  | { type: 'hover:chunk'; requestId: string; url: string; text: string }
+  | { type: 'hover:done'; requestId: string; url: string }
+  | { type: 'hover:error'; requestId: string; url: string; message: string };
 
 function ensureTooltip(): Tooltip {
   ensureStyle();
-  let el = document.getElementById(TOOLTIP_ID) as HTMLDivElement | null;
+  let el = document.querySelector(`#${TOOLTIP_ID}`) as HTMLDivElement | null;
   if (!el) {
-    el = document.createElement("div");
+    el = document.createElement('div');
     el.id = TOOLTIP_ID;
-    el.setAttribute("role", "tooltip");
-    const textEl = document.createElement("div");
-    textEl.className = "summary";
+    el.setAttribute('role', 'tooltip');
+    const textEl = document.createElement('div');
+    textEl.className = 'summary';
     el.append(textEl);
     document.documentElement.append(el);
     return { el, textEl };
   }
-  const textEl = el.querySelector(".summary") as HTMLDivElement | null;
+  const textEl = el.querySelector('.summary') as HTMLDivElement | null;
   if (!textEl) {
-    const nextText = document.createElement("div");
-    nextText.className = "summary";
+    const nextText = document.createElement('div');
+    nextText.className = 'summary';
     el.append(nextText);
     return { el, textEl: nextText };
   }
@@ -163,39 +158,37 @@ function showTooltip(anchor: HTMLElement, text: string, { status = false } = {})
   muteNativeTooltip(anchor);
   const tooltip = ensureTooltip();
   tooltip.textEl.textContent = text;
-  tooltip.textEl.classList.toggle("status", status);
-  tooltip.el.dataset.visible = "true";
+  tooltip.textEl.classList.toggle('status', status);
+  tooltip.el.dataset.visible = 'true';
   requestAnimationFrame(() => positionTooltip(anchor, tooltip));
 }
 
 function hideTooltip() {
-  const el = document.getElementById(TOOLTIP_ID) as HTMLDivElement | null;
-  if (!el) return;
+  const el = document.querySelector(`#${TOOLTIP_ID}`) as HTMLDivElement | null;
+  if (!el) {return;}
   delete el.dataset.visible;
 }
 
 function getAnchorFromEvent(event: Event): HTMLAnchorElement | null {
   const target = event.target as Element | null;
-  if (target && typeof target.closest === "function") {
-    return target.closest("a[href]");
+  if (target && typeof target.closest === 'function') {
+    return target.closest('a[href]');
   }
-  const composedPath = typeof event.composedPath === "function" ? event.composedPath() : [];
+  const composedPath = typeof event.composedPath === 'function' ? event.composedPath() : [];
   for (const node of composedPath) {
     const element = node as Element;
-    if (element && typeof element.closest === "function") {
-      const anchor = element.closest("a[href]");
-      if (anchor) return anchor;
+    if (element && typeof element.closest === 'function') {
+      const anchor = element.closest('a[href]');
+      if (anchor) {return anchor;}
     }
   }
   return null;
 }
 
 export default defineContentScript({
-  matches: ["<all_urls>"],
   excludeMatches: META_SITE_EXCLUDE_MATCHES,
-  runAt: "document_idle",
   main() {
-    const flag = "__summarize_hover_installed__";
+    const flag = '__summarize_hover_installed__';
     if ((globalThis as unknown as Record<string, unknown>)[flag]) return;
     (globalThis as unknown as Record<string, unknown>)[flag] = true;
 
@@ -207,7 +200,7 @@ export default defineContentScript({
     };
     void refreshSettings();
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area !== "local") return;
+      if (area !== 'local') return;
       if (!changes.settings) return;
       void refreshSettings();
     });
@@ -215,9 +208,9 @@ export default defineContentScript({
     const cache = new Map<string, HoverCacheEntry>();
     let hoverTimer: number | null = null;
     let activeAnchor: HTMLAnchorElement | null = null;
-    let activeUrl = "";
-    let activeRequestId = "";
-    let activeSummary = "";
+    let activeUrl = '';
+    let activeRequestId = '';
+    let activeSummary = '';
     let activeHasChunk = false;
     let activeHasShown = false;
     let renderQueued = 0;
@@ -226,7 +219,7 @@ export default defineContentScript({
     const logHover = (event: string, detail?: Record<string, unknown>) => {
       if (!settings?.extendedLogging) return;
       const payload = detail ? { event, ...detail } : { event };
-      console.debug("[summarize][hover]", payload);
+      console.debug('[summarize][hover]', payload);
     };
 
     const clearHoverTimer = () => {
@@ -238,12 +231,12 @@ export default defineContentScript({
     const abortActive = () => {
       if (!activeRequestId) return;
       try {
-        void chrome.runtime.sendMessage({ type: "hover:abort", requestId: activeRequestId });
+        void chrome.runtime.sendMessage({ type: 'hover:abort', requestId: activeRequestId });
       } catch {
         // ignore
       }
-      activeRequestId = "";
-      activeSummary = "";
+      activeRequestId = '';
+      activeSummary = '';
       activeHasChunk = false;
       activeHasShown = false;
     };
@@ -253,15 +246,15 @@ export default defineContentScript({
       abortActive();
       restoreNativeTooltip(activeAnchor);
       activeAnchor = null;
-      activeUrl = "";
+      activeUrl = '';
       hideTooltip();
     };
 
     chrome.runtime.onMessage.addListener((raw: unknown) => {
-      if (!raw || typeof raw !== "object") return;
+      if (!raw || typeof raw !== 'object') return;
       const msg = raw as Partial<HoverFromBg>;
       if (!msg.type) return;
-      if (msg.type !== "hover:chunk" && msg.type !== "hover:done" && msg.type !== "hover:error") {
+      if (msg.type !== 'hover:chunk' && msg.type !== 'hover:done' && msg.type !== 'hover:error') {
         return;
       }
 
@@ -269,17 +262,17 @@ export default defineContentScript({
       if (!activeUrl) return;
       if (!activeRequestId) return;
       if (msg.requestId !== activeRequestId) {
-        logHover("drop", { reason: "requestId", activeRequestId, msgRequestId: msg.requestId });
+        logHover('drop', { reason: 'requestId', activeRequestId, msgRequestId: msg.requestId });
         return;
       }
       if (msg.url !== activeUrl) {
-        logHover("drop", { reason: "url", activeUrl, msgUrl: msg.url });
+        logHover('drop', { reason: 'url', activeUrl, msgUrl: msg.url });
         return;
       }
 
-      if (msg.type === "hover:chunk") {
+      if (msg.type === 'hover:chunk') {
         activeHasChunk = true;
-        const merged = mergeStreamingChunk(activeSummary, msg.text ?? "");
+        const merged = mergeStreamingChunk(activeSummary, msg.text ?? '');
         activeSummary = merged.next;
         const cleaned = clampText(activeSummary);
         if (cleaned) {
@@ -293,7 +286,7 @@ export default defineContentScript({
         return;
       }
 
-      if (msg.type === "hover:done") {
+      if (msg.type === 'hover:done') {
         if (!activeHasChunk) {
           hideTooltip();
           return;
@@ -309,7 +302,7 @@ export default defineContentScript({
         return;
       }
 
-      if (msg.type === "hover:error") {
+      if (msg.type === 'hover:error') {
         if (!activeHasShown) hideTooltip();
       }
     });
@@ -328,8 +321,8 @@ export default defineContentScript({
     const ensureScrollHandler = () => {
       if (cachedScrollHandler) return;
       cachedScrollHandler = 1;
-      window.addEventListener("scroll", scheduleReposition, { passive: true });
-      window.addEventListener("resize", scheduleReposition);
+      window.addEventListener('scroll', scheduleReposition, { passive: true });
+      window.addEventListener('resize', scheduleReposition);
     };
 
     const scheduleHover = (anchor: HTMLAnchorElement) => {
@@ -350,7 +343,7 @@ export default defineContentScript({
       activeAnchor = anchor;
       activeUrl = url;
       ensureScrollHandler();
-      logHover("start", { url, title: anchor.textContent?.trim() || null });
+      logHover('start', { url, title: anchor.textContent?.trim() || null });
 
       const cached = cache.get(url);
       if (cached && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
@@ -358,7 +351,7 @@ export default defineContentScript({
           cache.delete(url);
           return;
         }
-        logHover("cache-hit", { url, ageMs: Date.now() - cached.updatedAt });
+        logHover('cache-hit', { url, ageMs: Date.now() - cached.updatedAt });
         showTooltip(anchor, cached.summary);
         activeHasShown = true;
         return;
@@ -366,10 +359,10 @@ export default defineContentScript({
 
       abortActive();
       activeRequestId =
-        typeof crypto?.randomUUID === "function"
+        typeof crypto?.randomUUID === 'function'
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      activeSummary = "";
+      activeSummary = '';
       activeHasChunk = false;
       activeHasShown = false;
 
@@ -378,28 +371,28 @@ export default defineContentScript({
         // Chrome may attribute the request to the current origin and show the “Local network access” prompt
         // on every site. Proxy through the extension background service worker instead.
         const res = (await chrome.runtime.sendMessage({
-          type: "hover:summarize",
+          type: 'hover:summarize',
           requestId: activeRequestId,
           url,
           title: anchor.textContent?.trim() || null,
         })) as { ok?: boolean; error?: string };
 
-        if (!res?.ok) throw new Error(res?.error || "Failed to start hover summary");
+        if (!res?.ok) throw new Error(res?.error || 'Failed to start hover summary');
       } catch {
-        logHover("start-failed", { url });
+        logHover('start-failed', { url });
         if (activeAnchor && activeUrl === url) {
           if (!activeHasShown) hideTooltip();
         }
       }
     };
 
-    document.addEventListener("mouseover", (event) => {
+    document.addEventListener('mouseover', (event) => {
       const anchor = getAnchorFromEvent(event);
       if (!anchor) return;
       if (activeAnchor === anchor) {
         const resolved = resolveUrl(anchor);
         if (resolved && resolved !== activeUrl) {
-          logHover("anchor-reused", { from: activeUrl, to: resolved });
+          logHover('anchor-reused', { from: activeUrl, to: resolved });
           clearActive();
           scheduleHover(anchor);
         }
@@ -409,14 +402,16 @@ export default defineContentScript({
       scheduleHover(anchor);
     });
 
-    document.addEventListener("mouseout", (event) => {
+    document.addEventListener('mouseout', (event) => {
       if (!activeAnchor) return;
       if (event.relatedTarget && activeAnchor.contains(event.relatedTarget as Node)) return;
       clearActive();
     });
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState !== "visible") clearActive();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') clearActive();
     });
   },
+  matches: ['<all_urls>'],
+  runAt: 'document_idle',
 });

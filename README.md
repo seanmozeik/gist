@@ -75,15 +75,15 @@ More:
 ### Advanced (unpacked / dev)
 
 1. Build + load the extension (unpacked):
-   - Chrome: `pnpm -C apps/chrome-extension build`
+   - Chrome: `bun -C apps/chrome-extension run build`
      - `chrome://extensions` → Developer mode → Load unpacked
      - Pick: `apps/chrome-extension/.output/chrome-mv3`
-   - Firefox: `pnpm -C apps/chrome-extension build:firefox`
+   - Firefox: `bun -C apps/chrome-extension run build:firefox`
      - `about:debugging#/runtime/this-firefox` → Load Temporary Add-on
      - Pick: `apps/chrome-extension/.output/firefox-mv3/manifest.json`
 2. Open Side Panel/Sidebar → copy token.
 3. Install daemon in dev mode:
-   - `pnpm summarize daemon install --token <TOKEN> --dev`
+   - `bun run summarize daemon install --token <TOKEN> --dev`
 
 ## CLI
 
@@ -112,7 +112,7 @@ npm i @steipete/summarize-core
 ```
 
 ```ts
-import { createLinkPreviewClient } from "@steipete/summarize-core/content";
+import { createLinkPreviewClient } from '@steipete/summarize-core/content';
 ```
 
 - Homebrew:
@@ -296,13 +296,7 @@ summarize "https://example.com" --model openai/gpt-5.4 --service-tier fast --thi
 Config equivalent:
 
 ```json
-{
-  "model": "openai/gpt-5.5",
-  "openai": {
-    "serviceTier": "fast",
-    "thinking": "medium"
-  }
-}
+{ "model": "openai/gpt-5.5", "openai": { "serviceTier": "fast", "thinking": "medium" } }
 ```
 
 Compatibility aliases still work, but prefer the explicit flags above:
@@ -388,9 +382,7 @@ summarize --cli opencode --plain --timeout 2m /tmp/summarize-cli-smoke.txt
 Set explicit CLI allowlist/order:
 
 ```json
-{
-  "cli": { "enabled": ["codex", "claude", "gemini", "agent", "openclaw", "opencode"] }
-}
+{ "cli": { "enabled": ["codex", "claude", "gemini", "agent", "openclaw", "opencode"] } }
 ```
 
 Configure implicit auto CLI fallback:
@@ -422,17 +414,13 @@ Default fallback behavior: only when no API keys are configured, order `claude, 
 Set explicit CLI attempts:
 
 ```json
-{
-  "cli": { "enabled": ["gemini"] }
-}
+{ "cli": { "enabled": ["gemini"] } }
 ```
 
 Disable implicit auto CLI fallback:
 
 ```json
-{
-  "cli": { "autoFallback": { "enabled": false } }
-}
+{ "cli": { "autoFallback": { "enabled": false } } }
 ```
 
 Note: explicit `--model auto` does not trigger implicit auto CLI fallback unless `cli.enabled` is set.
@@ -576,9 +564,7 @@ Supported keys today:
 Shorthand (equivalent):
 
 ```json
-{
-  "model": "openai/gpt-5-mini"
-}
+{ "model": "openai/gpt-5-mini" }
 ```
 
 Also supported:
@@ -603,11 +589,7 @@ Note: the config is parsed leniently (JSON5), but comments are not allowed. Unkn
 Media cache defaults:
 
 ```json
-{
-  "cache": {
-    "media": { "enabled": true, "ttlDays": 7, "maxMb": 2048, "verify": "size" }
-  }
-}
+{ "cache": { "media": { "enabled": true, "ttlDays": 7, "maxMb": 2048, "verify": "size" } } }
 ```
 
 Note: `--no-cache` bypasses summary caching only (LLM output). Extract/transcript caches still apply. Use `--no-media-cache` to skip media files.
@@ -759,8 +741,8 @@ Compatibility (pulls in CLI deps):
 ### Development
 
 ```bash
-pnpm install
-pnpm check
+bun install
+bun run check
 ```
 
 ## More

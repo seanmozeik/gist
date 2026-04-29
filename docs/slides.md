@@ -1,7 +1,7 @@
 ---
-summary: "Plan for slide-first UX without model usage."
+summary: 'Plan for slide-first UX without model usage.'
 read_when:
-  - "When changing slide summaries, slide UI, or slide/seek behavior in the side panel."
+  - 'When changing slide summaries, slide UI, or slide/seek behavior in the side panel.'
 ---
 
 # Slides plan (no model)

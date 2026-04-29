@@ -1,10 +1,10 @@
-import type { OscProgressController } from "../../../tty/osc-progress.js";
+import type { OscProgressController } from '../../../tty/osc-progress.js';
 import {
   applySlidesText,
   applySummaryText,
   clearSlidesText,
   createUrlProgressStatusState,
-} from "./progress-status-state.js";
+} from './progress-status-state.js';
 
 export function createUrlProgressStatus({
   enabled,
@@ -20,47 +20,47 @@ export function createUrlProgressStatus({
   const state = createUrlProgressStatusState();
 
   const render = (text: string | null) => {
-    if (!enabled || !text) return;
+    if (!enabled || !text) {return;}
     spinner.setText(text);
   };
   const refresh = () => {
-    if (!enabled) return;
+    if (!enabled) {return;}
     spinner.refresh?.();
   };
 
   return {
+    clearSlides() {
+      const next = clearSlidesText(state);
+      if (next.summaryText) {
+        render(next.renderText);
+        oscProgress.setIndeterminate('Summarizing');
+        refresh();
+      }
+    },
+    getSlidesText() {
+      return state.slidesText;
+    },
+    getSummaryText() {
+      return state.summaryText;
+    },
+    isSlidesActive() {
+      return state.slidesActive;
+    },
+    setSlides(text: string, percent?: number | null) {
+      render(applySlidesText(state, text, now()).renderText);
+      if (typeof percent === 'number' && Number.isFinite(percent)) {
+        oscProgress.setPercent('Slides', Math.max(0, Math.min(100, percent)));
+      } else {
+        oscProgress.setIndeterminate('Slides');
+      }
+      refresh();
+    },
     setSummary(text: string, oscLabel?: string | null) {
       render(applySummaryText(state, text).renderText);
       if (oscLabel) {
         oscProgress.setIndeterminate(oscLabel);
         refresh();
       }
-    },
-    setSlides(text: string, percent?: number | null) {
-      render(applySlidesText(state, text, now()).renderText);
-      if (typeof percent === "number" && Number.isFinite(percent)) {
-        oscProgress.setPercent("Slides", Math.max(0, Math.min(100, percent)));
-      } else {
-        oscProgress.setIndeterminate("Slides");
-      }
-      refresh();
-    },
-    clearSlides() {
-      const next = clearSlidesText(state);
-      if (next.summaryText) {
-        render(next.renderText);
-        oscProgress.setIndeterminate("Summarizing");
-        refresh();
-      }
-    },
-    isSlidesActive() {
-      return state.slidesActive;
-    },
-    getSummaryText() {
-      return state.summaryText;
-    },
-    getSlidesText() {
-      return state.slidesText;
     },
   };
 }

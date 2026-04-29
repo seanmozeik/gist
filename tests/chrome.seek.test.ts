@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
-import { seekToSecondsInDocument } from "../apps/chrome-extension/src/lib/seek";
+import { describe, expect, it, vi } from 'vitest';
 
-describe("seekToSecondsInDocument", () => {
-  it("seeks and plays HTML media elements", () => {
+import { seekToSecondsInDocument } from '../apps/chrome-extension/src/lib/seek';
+
+describe('seekToSecondsInDocument', () => {
+  it('seeks and plays HTML media elements', () => {
     let currentTime = 0;
-    const play = vi.fn().mockResolvedValue(undefined);
+    const play = vi.fn().mockResolvedValue();
     const video = {
       get currentTime() {
         return currentTime;
@@ -14,10 +15,7 @@ describe("seekToSecondsInDocument", () => {
       },
       play,
     } as unknown as HTMLVideoElement;
-    const doc = {
-      querySelector: () => video,
-      getElementById: () => null,
-    } as unknown as Document;
+    const doc = { getElementById: () => null, querySelector: () => video } as unknown as Document;
 
     const result = seekToSecondsInDocument(doc, 42);
 
@@ -26,7 +24,7 @@ describe("seekToSecondsInDocument", () => {
     expect(play).toHaveBeenCalled();
   });
 
-  it("seeks and plays YouTube player when present", () => {
+  it('seeks and plays YouTube player when present', () => {
     const player = {} as HTMLElement & {
       seekTo?: (time: number, allowSeekAhead?: boolean) => void;
       playVideo?: () => void;
@@ -35,10 +33,7 @@ describe("seekToSecondsInDocument", () => {
     const playVideo = vi.fn();
     player.seekTo = seekTo;
     player.playVideo = playVideo;
-    const doc = {
-      querySelector: () => null,
-      getElementById: () => player,
-    } as unknown as Document;
+    const doc = { getElementById: () => player, querySelector: () => null } as unknown as Document;
 
     const result = seekToSecondsInDocument(doc, 12);
 

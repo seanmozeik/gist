@@ -1,13 +1,14 @@
-import type { LinkPreviewProgressEvent } from "@steipete/summarize-core/content";
-import type { OscProgressController } from "../osc-progress.js";
-import type { ThemeRenderer } from "../theme.js";
+import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
+
+import type { OscProgressController } from '../osc-progress.js';
+import type { ThemeRenderer } from '../theme.js';
 import {
   applyTranscriptProgressEvent,
   createTranscriptProgressState,
   renderTranscriptLine,
   renderTranscriptSimple,
   resolveTranscriptOscPayload,
-} from "./transcript-state.js";
+} from './transcript-state.js';
 
 export function createTranscriptProgressRenderer({
   spinner,
@@ -17,17 +18,14 @@ export function createTranscriptProgressRenderer({
   spinner: { setText: (text: string) => void; refresh?: () => void };
   oscProgress?: OscProgressController | null;
   theme?: ThemeRenderer | null;
-}): {
-  stop: () => void;
-  onProgress: (event: LinkPreviewProgressEvent) => void;
-} {
+}): { stop: () => void; onProgress: (event: LinkPreviewProgressEvent) => void } {
   const state = createTranscriptProgressState();
   let ticker: ReturnType<typeof setInterval> | null = null;
   let lastSpinnerUpdateAtMs = 0;
 
   const updateSpinner = (text: string, options?: { force?: boolean }) => {
     const now = Date.now();
-    if (!options?.force && now - lastSpinnerUpdateAtMs < 100) return;
+    if (!options?.force && now - lastSpinnerUpdateAtMs < 100) {return;}
     lastSpinnerUpdateAtMs = now;
     spinner.setText(text);
   };
@@ -36,22 +34,18 @@ export function createTranscriptProgressRenderer({
   };
 
   const stopTicker = () => {
-    if (!ticker) return;
+    if (!ticker) {return;}
     clearInterval(ticker);
     ticker = null;
   };
 
-  const renderActiveLine = () =>
-    renderTranscriptLine(state, {
-      nowMs: Date.now(),
-      theme,
-    }) ?? "";
+  const renderActiveLine = () => renderTranscriptLine(state, { nowMs: Date.now(), theme }) ?? '';
 
   const updateOsc = () => {
-    if (!oscProgress) return;
+    if (!oscProgress) {return;}
     const payload = resolveTranscriptOscPayload(state);
-    if (!payload) return;
-    if (typeof payload.percent === "number") {
+    if (!payload) {return;}
+    if (typeof payload.percent === 'number') {
       oscProgress.setPercent(payload.label, payload.percent);
     } else {
       oscProgress.setIndeterminate(payload.label);
@@ -71,34 +65,33 @@ export function createTranscriptProgressRenderer({
     options?: { force?: boolean; stopTicker?: boolean },
   ) => {
     applyTranscriptProgressEvent(state, event, Date.now());
-    if (options?.stopTicker) stopTicker();
+    if (options?.stopTicker) {stopTicker();}
     updateSpinner(renderActiveLine(), { force: options?.force });
     updateOsc();
   };
 
   return {
-    stop: stopTicker,
     onProgress: (event) => {
-      if (event.kind === "transcript-media-download-start") {
+      if (event.kind === 'transcript-media-download-start') {
         applyTranscriptProgressEvent(state, event, Date.now());
         stopTicker();
         startTicker();
-        updateSpinner(renderTranscriptSimple(state, theme) ?? "", { force: true });
+        updateSpinner(renderTranscriptSimple(state, theme) ?? '', { force: true });
         updateOsc();
         return;
       }
 
-      if (event.kind === "transcript-media-download-progress") {
+      if (event.kind === 'transcript-media-download-progress') {
         updatePhase(event);
         return;
       }
 
-      if (event.kind === "transcript-media-download-done") {
+      if (event.kind === 'transcript-media-download-done') {
         updatePhase(event, { force: true, stopTicker: true });
         return;
       }
 
-      if (event.kind === "transcript-whisper-start") {
+      if (event.kind === 'transcript-whisper-start') {
         applyTranscriptProgressEvent(state, event, Date.now());
         stopTicker();
         startTicker();
@@ -107,9 +100,10 @@ export function createTranscriptProgressRenderer({
         return;
       }
 
-      if (event.kind === "transcript-whisper-progress") {
+      if (event.kind === 'transcript-whisper-progress') {
         updatePhase(event);
       }
     },
+    stop: stopTicker,
   };
 }

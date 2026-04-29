@@ -1,6 +1,6 @@
-title: "summarize"
-description: "Summarize docs"
-baseurl: ""
+title: 'summarize'
+description: 'Summarize docs'
+baseurl: ''
 markdown: kramdown
 highlighter: rouge
 
@@ -16,7 +16,7 @@ exclude:
 
 defaults:
   - scope:
-      path: ""
+      path: ''
     values:
       layout: default
       permalink: /docs/:basename:output_ext

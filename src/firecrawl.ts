@@ -1,6 +1,6 @@
-import type { FirecrawlScrapeResult, ScrapeWithFirecrawl } from "@steipete/summarize-core/content";
+import type { FirecrawlScrapeResult, ScrapeWithFirecrawl } from '@steipete/summarize-core/content';
 
-type FirecrawlResponse = {
+interface FirecrawlResponse {
   success: boolean;
   data?: {
     markdown?: string | null;
@@ -8,7 +8,7 @@ type FirecrawlResponse = {
     metadata?: Record<string, unknown> | null;
   } | null;
   error?: string | null;
-};
+}
 
 export function createFirecrawlScraper({
   apiKey,
@@ -23,55 +23,52 @@ export function createFirecrawlScraper({
   ): Promise<FirecrawlScrapeResult | null> => {
     const controller = new AbortController();
     const timeoutMs = options?.timeoutMs;
-    const hasTimeout = typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0;
-    const timeout = hasTimeout ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    const hasTimeout = typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0;
+    const timeout = hasTimeout ? setTimeout(() =>{  controller.abort(); }, timeoutMs) : null;
 
     try {
-      const response = await fetchImpl("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
+      const response = await fetchImpl('https://api.firecrawl.dev/v1/scrape', {
         body: JSON.stringify({
           url,
-          formats: ["markdown", "html"],
+          formats: ['markdown', 'html'],
           onlyMainContent: true,
-          proxy: "auto",
+          proxy: 'auto',
           maxAge: 0,
         }),
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        method: 'POST',
+        signal: controller.signal,
       });
 
       const payload = (await response.json().catch(() => null)) as FirecrawlResponse | null;
 
       if (!response.ok) {
-        const message = payload?.error ? `: ${payload.error}` : "";
+        const message = payload?.error ? `: ${payload.error}` : '';
         throw new Error(`Firecrawl request failed (${response.status})${message}`);
       }
 
       if (!payload?.success) {
-        throw new Error(payload?.error ?? "Firecrawl response was not successful");
+        throw new Error(payload?.error ?? 'Firecrawl response was not successful');
       }
 
-      const data = payload.data;
+      const {data} = payload;
       const markdown = data?.markdown ?? null;
-      if (typeof markdown !== "string" || markdown.trim().length === 0) {
+      if (typeof markdown !== 'string' || markdown.trim().length === 0) {
         return null;
       }
 
       return {
+        html: typeof data?.html === 'string' ? data.html : null,
         markdown,
-        html: typeof data?.html === "string" ? data.html : null,
         metadata: data?.metadata ?? null,
       };
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        throw new Error("Firecrawl request timed out");
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error('Firecrawl request timed out', { cause: error });
       }
       throw error;
     } finally {
-      if (timeout) clearTimeout(timeout);
+      if (timeout) {clearTimeout(timeout);}
     }
   };
 }

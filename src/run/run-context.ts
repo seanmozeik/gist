@@ -1,6 +1,6 @@
-import type { CliProvider } from "../config.js";
-import { resolveConfigState } from "./run-config.js";
-import { resolveEnvState } from "./run-env.js";
+import type { CliProvider } from '../config.js';
+import { resolveConfigState } from './run-config.js';
+import { resolveEnvState } from './run-env.js';
 
 export function resolveRunContextState({
   env,
@@ -20,17 +20,13 @@ export function resolveRunContextState({
   cliProviderArg: CliProvider | null;
 }) {
   const configState = resolveConfigState({
-    envForRun,
-    programOpts,
-    languageExplicitlySet,
-    videoModeExplicitlySet,
     cliFlagPresent,
     cliProviderArg,
-  });
-  const envState = resolveEnvState({
-    env,
     envForRun,
-    configForCli: configState.configForCli,
+    languageExplicitlySet,
+    programOpts,
+    videoModeExplicitlySet,
   });
+  const envState = resolveEnvState({ configForCli: configState.configForCli, env, envForRun });
   return { ...configState, ...envState };
 }

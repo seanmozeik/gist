@@ -1,7 +1,7 @@
 ---
-summary: "LLM usage, env vars, flags, and prompt rules."
+summary: 'LLM usage, env vars, flags, and prompt rules.'
 read_when:
-  - "When changing model selection or prompt formatting."
+  - 'When changing model selection or prompt formatting.'
 ---
 
 # LLM / summarization mode

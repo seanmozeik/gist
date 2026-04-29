@@ -1,14 +1,14 @@
-import type { MediaCache } from "../cache/types.js";
-import type { MediaTranscriptMode, YoutubeTranscriptMode } from "../link-preview/content/types.js";
+import type { MediaCache } from '../cache/types.js';
+import type { MediaTranscriptMode, YoutubeTranscriptMode } from '../link-preview/content/types.js';
 import type {
   LinkPreviewProgressEvent,
   ResolveTwitterCookies,
   ScrapeWithFirecrawl,
-} from "../link-preview/deps.js";
-import type { TranscriptResolution, TranscriptSource } from "../link-preview/types.js";
-import type { TranscriptionConfig } from "./transcription-config.js";
+} from '../link-preview/deps.js';
+import type { TranscriptResolution, TranscriptSource } from '../link-preview/types.js';
+import type { TranscriptionConfig } from './transcription-config.js';
 
-export type TranscriptService = "youtube" | "podcast" | "generic";
+export type TranscriptService = 'youtube' | 'podcast' | 'generic';
 
 export interface ProviderContext {
   url: string;
@@ -23,7 +23,7 @@ export interface ProviderFetchOptions {
   apifyApiToken: string | null;
   youtubeTranscriptMode: YoutubeTranscriptMode;
   mediaTranscriptMode: MediaTranscriptMode;
-  mediaKindHint?: "video" | "audio" | null;
+  mediaKindHint?: 'video' | 'audio' | null;
   transcriptTimestamps?: boolean;
   ytDlpPath: string | null;
   transcription?: TranscriptionConfig;
@@ -49,4 +49,4 @@ export interface ProviderModule {
   fetchTranscript(context: ProviderContext, options: ProviderFetchOptions): Promise<ProviderResult>;
 }
 
-export type { TranscriptSource } from "../link-preview/types.js";
+export type { TranscriptSource } from '../link-preview/types.js';

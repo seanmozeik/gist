@@ -1,21 +1,21 @@
-import type { ExtractedLinkContent } from "../../../content/index.js";
+import type { ExtractedLinkContent } from '../../../content/index.js';
 import {
   buildLinkSummaryPrompt,
   SUMMARY_LENGTH_TARGET_CHARACTERS,
-} from "../../../prompts/index.js";
-import { resolveTargetCharacters } from "../../format.js";
-import type { UrlFlowContext } from "./types.js";
+} from '../../../prompts/index.js';
+import { resolveTargetCharacters } from '../../format.js';
+import type { UrlFlowContext } from './types.js';
 
 type SlidesResult = Awaited<
-  ReturnType<typeof import("../../../slides/index.js").extractSlidesForSource>
+  ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
 >;
 
-type TranscriptSegment = { startSeconds: number; text: string };
+interface TranscriptSegment { startSeconds: number; text: string }
 
 const MAX_SLIDE_TRANSCRIPT_CHARS_BY_PRESET = {
-  short: 2500,
-  medium: 5000,
   long: 9000,
+  medium: 5000,
+  short: 2500,
   xl: 15000,
   xxl: 24000,
 } as const;
@@ -24,28 +24,28 @@ const SLIDE_TRANSCRIPT_DEFAULT_EDGE_SECONDS = 30;
 const SLIDE_TRANSCRIPT_LEEWAY_SECONDS = 10;
 
 function parseTimestampSeconds(value: string): number | null {
-  const parts = value.split(":").map((item) => Number(item));
-  if (parts.some((item) => !Number.isFinite(item))) return null;
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  const parts = value.split(':').map((item) => Number(item));
+  if (parts.some((item) => !Number.isFinite(item))) {return null;}
+  if (parts.length === 2) {return parts[0] * 60 + parts[1];}
+  if (parts.length === 3) {return parts[0] * 3600 + parts[1] * 60 + parts[2];}
   return null;
 }
 
 function parseTranscriptTimedText(input: string | null | undefined): TranscriptSegment[] {
-  if (!input) return [];
+  if (!input) {return [];}
   const segments: TranscriptSegment[] = [];
-  for (const line of input.split("\n")) {
+  for (const line of input.split('\n')) {
     const trimmed = line.trim();
-    if (!trimmed.startsWith("[")) continue;
-    const match = trimmed.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/);
-    if (!match) continue;
+    if (!trimmed.startsWith('[')) {continue;}
+    const match = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/.exec(trimmed);
+    if (!match) {continue;}
     const seconds = parseTimestampSeconds(match[1]);
-    if (seconds == null) continue;
-    const text = (match[2] ?? "").trim();
-    if (!text) continue;
+    if (seconds == null) {continue;}
+    const text = (match[2] ?? '').trim();
+    if (!text) {continue;}
     segments.push({ startSeconds: seconds, text });
   }
-  return segments.sort((a, b) => a.startSeconds - b.startSeconds);
+  return segments.toSorted((a, b) => a.startSeconds - b.startSeconds);
 }
 
 function formatTimestamp(seconds: number): string {
@@ -53,18 +53,18 @@ function formatTimestamp(seconds: number): string {
   const hours = Math.floor(clamped / 3600);
   const minutes = Math.floor((clamped % 3600) / 60);
   const secs = clamped % 60;
-  if (hours <= 0) return `${minutes}:${String(secs).padStart(2, "0")}`;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(
+  if (hours <= 0) {return `${minutes}:${String(secs).padStart(2, '0')}`;}
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(
     secs,
-  ).padStart(2, "0")}`;
+  ).padStart(2, '0')}`;
 }
 
 function truncateTranscript(value: string, limit: number): string {
-  if (value.length <= limit) return value;
+  if (value.length <= limit) {return value;}
   const truncated = value.slice(0, limit).trimEnd();
-  const clean = truncated.replace(/\s+\S*$/, "").trim();
+  const clean = truncated.replace(/\s+\S*$/, '').trim();
   const result = clean.length > 0 ? clean : truncated.trim();
-  return result.length > 0 ? `${result}…` : "";
+  return result.length > 0 ? `${result}…` : '';
 }
 
 function buildSlidesPromptText({
@@ -74,15 +74,15 @@ function buildSlidesPromptText({
 }: {
   slides: SlidesResult | null | undefined;
   transcriptTimedText: string | null | undefined;
-  preset: "short" | "medium" | "long" | "xl" | "xxl";
+  preset: 'short' | 'medium' | 'long' | 'xl' | 'xxl';
 }): string | null {
-  if (!slides || slides.slides.length === 0) return null;
+  if (!slides || slides.slides.length === 0) {return null;}
   const segments = parseTranscriptTimedText(transcriptTimedText);
   const slidesWithTimestamps = slides.slides
     .filter((slide) => Number.isFinite(slide.timestamp))
     .map((slide) => ({ index: slide.index, timestamp: Math.max(0, Math.floor(slide.timestamp)) }))
-    .sort((a, b) => a.timestamp - b.timestamp);
-  if (slidesWithTimestamps.length === 0) return null;
+    .toSorted((a, b) => a.timestamp - b.timestamp);
+  if (slidesWithTimestamps.length === 0) {return null;}
 
   const totalBudget = Number(MAX_SLIDE_TRANSCRIPT_CHARS_BY_PRESET[preset]);
   const perSlideBudget = Math.max(
@@ -94,7 +94,7 @@ function buildSlidesPromptText({
 
   for (let i = 0; i < slidesWithTimestamps.length; i += 1) {
     const slide = slidesWithTimestamps[i];
-    if (!slide) continue;
+    if (!slide) {continue;}
     const prev = slidesWithTimestamps[i - 1];
     const next = slidesWithTimestamps[i + 1];
     const startBase = prev ? Math.floor((prev.timestamp + slide.timestamp) / 2) : slide.timestamp;
@@ -111,19 +111,19 @@ function buildSlidesPromptText({
     const excerptRaw = segments
       .filter((segment) => segment.startSeconds >= start && segment.startSeconds <= end)
       .map((segment) => segment.text)
-      .join(" ")
+      .join(' ')
       .trim()
-      .replace(/\s+/g, " ");
+      .replaceAll(/\s+/g, ' ');
     const excerptBudget = remaining > 0 ? Math.min(perSlideBudget, remaining) : 0;
     const excerpt =
-      excerptRaw && excerptBudget > 0 ? truncateTranscript(excerptRaw, excerptBudget) : "";
+      excerptRaw && excerptBudget > 0 ? truncateTranscript(excerptRaw, excerptBudget) : '';
     const label = `[slide:${slide.index}] [${formatTimestamp(start)}–${formatTimestamp(end)}]`;
     const block = excerpt ? `${label}\n${excerpt}` : label;
     blocks.push(block);
     remaining = Math.max(0, remaining - block.length);
   }
 
-  return blocks.length > 0 ? blocks.join("\n\n") : null;
+  return blocks.length > 0 ? blocks.join('\n\n') : null;
 }
 
 export function shouldBypassShortContentSummary({
@@ -135,19 +135,19 @@ export function shouldBypassShortContentSummary({
   countTokens,
 }: {
   extracted: ExtractedLinkContent;
-  lengthArg: UrlFlowContext["flags"]["lengthArg"];
+  lengthArg: UrlFlowContext['flags']['lengthArg'];
   forceSummary: boolean;
   maxOutputTokensArg: number | null;
   json: boolean;
   countTokens: (value: string) => number;
 }): boolean {
-  if (forceSummary) return false;
-  if (!extracted.content || extracted.content.length === 0) return false;
+  if (forceSummary) {return false;}
+  if (!extracted.content || extracted.content.length === 0) {return false;}
   const targetCharacters = resolveTargetCharacters(lengthArg, SUMMARY_LENGTH_TARGET_CHARACTERS);
-  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) return false;
-  if (extracted.content.length > targetCharacters) return false;
-  if (!json && typeof maxOutputTokensArg === "number") {
-    if (countTokens(extracted.content) > maxOutputTokensArg) return false;
+  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) {return false;}
+  if (extracted.content.length > targetCharacters) {return false;}
+  if (!json && typeof maxOutputTokensArg === 'number') {
+    if (countTokens(extracted.content) > maxOutputTokensArg) {return false;}
   }
   return true;
 }
@@ -163,43 +163,43 @@ export function buildUrlPrompt({
   buildSummaryTimestampLimitInstruction,
 }: {
   extracted: ExtractedLinkContent;
-  outputLanguage: UrlFlowContext["flags"]["outputLanguage"];
-  lengthArg: UrlFlowContext["flags"]["lengthArg"];
+  outputLanguage: UrlFlowContext['flags']['outputLanguage'];
+  lengthArg: UrlFlowContext['flags']['lengthArg'];
   promptOverride?: string | null;
   lengthInstruction?: string | null;
   languageInstruction?: string | null;
   slides?: SlidesResult | null;
   buildSummaryTimestampLimitInstruction: (extracted: ExtractedLinkContent) => string | null;
 }): string {
-  const preset = lengthArg.kind === "preset" ? lengthArg.preset : "medium";
+  const preset = lengthArg.kind === 'preset' ? lengthArg.preset : 'medium';
   const slidesText = buildSlidesPromptText({
+    preset,
     slides,
     transcriptTimedText: extracted.transcriptTimedText,
-    preset,
   });
-  const isYouTube = extracted.siteName === "YouTube";
+  const isYouTube = extracted.siteName === 'YouTube';
   return buildLinkSummaryPrompt({
-    url: extracted.url,
-    title: extracted.title,
-    siteName: extracted.siteName,
-    description: extracted.description,
     content: extracted.content,
-    truncated: extracted.truncated,
+    description: extracted.description,
     hasTranscript:
       isYouTube ||
-      (extracted.transcriptSource !== null && extracted.transcriptSource !== "unavailable"),
+      (extracted.transcriptSource !== null && extracted.transcriptSource !== 'unavailable'),
     hasTranscriptTimestamps: Boolean(extracted.transcriptTimedText),
-    timestampLimitInstruction: buildSummaryTimestampLimitInstruction(extracted),
+    languageInstruction: languageInstruction ?? null,
+    lengthInstruction: lengthInstruction ?? null,
+    outputLanguage,
+    promptOverride: promptOverride ?? null,
+    shares: [],
+    siteName: extracted.siteName,
     slides:
       slides && slides.slides.length > 0
-        ? { count: slides.slides.length, text: slidesText ?? "" }
+        ? { count: slides.slides.length, text: slidesText ?? '' }
         : null,
     summaryLength:
-      lengthArg.kind === "preset" ? lengthArg.preset : { maxCharacters: lengthArg.maxCharacters },
-    outputLanguage,
-    shares: [],
-    promptOverride: promptOverride ?? null,
-    lengthInstruction: lengthInstruction ?? null,
-    languageInstruction: languageInstruction ?? null,
+      lengthArg.kind === 'preset' ? lengthArg.preset : { maxCharacters: lengthArg.maxCharacters },
+    timestampLimitInstruction: buildSummaryTimestampLimitInstruction(extracted),
+    title: extracted.title,
+    truncated: extracted.truncated,
+    url: extracted.url,
   });
 }

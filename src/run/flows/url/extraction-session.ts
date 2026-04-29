@@ -1,33 +1,34 @@
-import { NEGATIVE_TTL_MS } from "@steipete/summarize-core/content";
-import * as urlUtils from "@steipete/summarize-core/content/url";
-import { buildExtractCacheKey } from "../../../cache.js";
+import { NEGATIVE_TTL_MS } from '@steipete/summarize-core/content';
+import * as urlUtils from '@steipete/summarize-core/content/url';
+
+import { buildExtractCacheKey } from '../../../cache.js';
 import {
   createLinkPreviewClient,
   type ExtractedLinkContent,
   type LinkPreviewProgressEvent,
-} from "../../../content/index.js";
-import { createFirecrawlScraper } from "../../../firecrawl.js";
-import { resolveSlideSource } from "../../../slides/index.js";
-import { readTweetWithPreferredClient } from "../../bird.js";
-import { resolveTwitterCookies } from "../../cookies/twitter.js";
-import { hasBirdCli, hasXurlCli } from "../../env.js";
-import { writeVerbose } from "../../logging.js";
-import { fetchLinkContentWithBirdTip } from "./extract.js";
-import { resolveUrlFetchOptions } from "./fetch-options.js";
-import type { UrlFlowContext } from "./types.js";
+} from '../../../content/index.js';
+import { createFirecrawlScraper } from '../../../firecrawl.js';
+import { resolveSlideSource } from '../../../slides/index.js';
+import { readTweetWithPreferredClient } from '../../bird.js';
+import { resolveTwitterCookies } from '../../cookies/twitter.js';
+import { hasBirdCli, hasXurlCli } from '../../env.js';
+import { writeVerbose } from '../../logging.js';
+import { fetchLinkContentWithBirdTip } from './extract.js';
+import { resolveUrlFetchOptions } from './fetch-options.js';
+import type { UrlFlowContext } from './types.js';
 
 type LinkPreviewClientOptions = NonNullable<Parameters<typeof createLinkPreviewClient>[0]>;
-type ConvertHtmlToMarkdown = LinkPreviewClientOptions["convertHtmlToMarkdown"];
+type ConvertHtmlToMarkdown = LinkPreviewClientOptions['convertHtmlToMarkdown'];
 type LinkPreviewProgressHandler = ((event: LinkPreviewProgressEvent) => void) | null;
 
-export type UrlExtractionSession = {
-  cacheStore: UrlFlowContext["cache"]["store"] | null;
+export interface UrlExtractionSession {
+  cacheStore: UrlFlowContext['cache']['store'] | null;
   fetchInitialExtract: (url: string) => Promise<ExtractedLinkContent>;
   fetchWithCache: (
     targetUrl: string,
     options?: { bypassExtractCache?: boolean },
   ) => Promise<ExtractedLinkContent>;
-};
+}
 
 export function createUrlExtractionSession({
   ctx,
@@ -37,43 +38,33 @@ export function createUrlExtractionSession({
   ctx: UrlFlowContext;
   markdown: {
     convertHtmlToMarkdown: ConvertHtmlToMarkdown;
-    effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+    effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
     markdownRequested: boolean;
   };
   onProgress: LinkPreviewProgressHandler;
 }): UrlExtractionSession {
   const { io, flags, model, cache: cacheState } = ctx;
-  const cacheStore = cacheState.mode === "default" ? cacheState.store : null;
+  const cacheStore = cacheState.mode === 'default' ? cacheState.store : null;
   const transcriptCache = cacheStore ? cacheStore.transcriptCache : null;
-  const firecrawlApiKey = model.apiStatus.firecrawlApiKey;
+  const {firecrawlApiKey} = model.apiStatus;
   const scrapeWithFirecrawl =
-    model.apiStatus.firecrawlConfigured && flags.firecrawlMode !== "off" && firecrawlApiKey
-      ? createFirecrawlScraper({
-          apiKey: firecrawlApiKey,
-          fetchImpl: io.fetch,
-        })
+    model.apiStatus.firecrawlConfigured && flags.firecrawlMode !== 'off' && firecrawlApiKey
+      ? createFirecrawlScraper({ apiKey: firecrawlApiKey, fetchImpl: io.fetch })
       : null;
 
   const readTweetWithBirdClient =
     hasXurlCli(io.env) || hasBirdCli(io.env)
       ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
-          readTweetWithPreferredClient({ url, timeoutMs, env: io.env })
+          readTweetWithPreferredClient({ env: io.env, timeoutMs, url })
       : null;
 
   const client = createLinkPreviewClient({
-    env: io.envForRun,
     apifyApiToken: model.apiStatus.apifyToken,
-    ytDlpPath: model.apiStatus.ytDlpPath,
-    transcription: {
-      env: io.envForRun,
-      falApiKey: model.apiStatus.falApiKey,
-      groqApiKey: model.apiStatus.groqApiKey,
-      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
-      openaiApiKey: model.apiStatus.openaiApiKey,
-      geminiApiKey: model.apiStatus.googleApiKey,
-    },
-    scrapeWithFirecrawl,
     convertHtmlToMarkdown: markdown.convertHtmlToMarkdown,
+    env: io.envForRun,
+    fetch: io.fetch,
+    mediaCache: ctx.mediaCache ?? null,
+    onProgress,
     readTweetWithBird: readTweetWithBirdClient,
     resolveTwitterCookies: async (_args) => {
       const res = await resolveTwitterCookies({ env: io.env });
@@ -83,10 +74,17 @@ export function createUrlExtractionSession({
         warnings: res.warnings,
       };
     },
-    fetch: io.fetch,
+    scrapeWithFirecrawl,
     transcriptCache,
-    mediaCache: ctx.mediaCache ?? null,
-    onProgress,
+    transcription: {
+      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
+      env: io.envForRun,
+      falApiKey: model.apiStatus.falApiKey,
+      geminiApiKey: model.apiStatus.googleApiKey,
+      groqApiKey: model.apiStatus.groqApiKey,
+      openaiApiKey: model.apiStatus.openaiApiKey,
+    },
+    ytDlpPath: model.apiStatus.ytDlpPath,
   });
 
   const fetchWithCache = async (
@@ -94,35 +92,35 @@ export function createUrlExtractionSession({
     { bypassExtractCache = false }: { bypassExtractCache?: boolean } = {},
   ): Promise<ExtractedLinkContent> => {
     const { localFile, options } = resolveUrlFetchOptions({
-      targetUrl,
+      cacheMode: cacheState.mode,
       flags,
       markdown,
-      cacheMode: cacheState.mode,
+      targetUrl,
     });
     const cacheKey =
-      !localFile && cacheStore && cacheState.mode === "default"
+      !localFile && cacheStore && cacheState.mode === 'default'
         ? buildExtractCacheKey({
-            url: targetUrl,
             options: {
-              youtubeTranscript: options.youtubeTranscript,
-              mediaTranscript: options.mediaTranscript,
               firecrawl: options.firecrawl,
               format: options.format,
               markdownMode: options.markdownMode ?? null,
+              mediaTranscript: options.mediaTranscript,
               transcriptTimestamps: options.transcriptTimestamps ?? false,
-              ...(typeof options.maxCharacters === "number"
+              youtubeTranscript: options.youtubeTranscript,
+              ...(typeof options.maxCharacters === 'number'
                 ? { maxCharacters: options.maxCharacters }
                 : {}),
             },
+            url: targetUrl,
           })
         : null;
     if (!bypassExtractCache && cacheKey && cacheStore) {
-      const cached = cacheStore.getJson<ExtractedLinkContent>("extract", cacheKey);
+      const cached = cacheStore.getJson<ExtractedLinkContent>('extract', cacheKey);
       if (cached) {
         writeVerbose(
           io.stderr,
           flags.verbose,
-          "cache hit extract",
+          'cache hit extract',
           flags.verboseColor,
           io.envForRun,
         );
@@ -131,7 +129,7 @@ export function createUrlExtractionSession({
       writeVerbose(
         io.stderr,
         flags.verbose,
-        "cache miss extract",
+        'cache miss extract',
         flags.verboseColor,
         io.envForRun,
       );
@@ -139,96 +137,96 @@ export function createUrlExtractionSession({
     try {
       const extracted = await fetchLinkContentWithBirdTip({
         client,
-        url: targetUrl,
-        options,
         env: io.env,
+        options,
+        url: targetUrl,
       });
       if (cacheKey && cacheStore) {
         const extractTtlMs =
-          extracted.transcriptSource === "unavailable" ? NEGATIVE_TTL_MS : cacheState.ttlMs;
-        cacheStore.setJson("extract", cacheKey, extracted, extractTtlMs);
+          extracted.transcriptSource === 'unavailable' ? NEGATIVE_TTL_MS : cacheState.ttlMs;
+        cacheStore.setJson('extract', cacheKey, extracted, extractTtlMs);
         writeVerbose(
           io.stderr,
           flags.verbose,
-          "cache write extract",
+          'cache write extract',
           flags.verboseColor,
           io.envForRun,
         );
       }
       return extracted;
-    } catch (err) {
+    } catch (error) {
       const preferUrlMode =
-        typeof urlUtils.shouldPreferUrlMode === "function"
+        typeof urlUtils.shouldPreferUrlMode === 'function'
           ? urlUtils.shouldPreferUrlMode(targetUrl)
           : false;
       const isTwitter = urlUtils.isTwitterStatusUrl?.(targetUrl) ?? false;
       const isPodcast = urlUtils.isPodcastHost?.(targetUrl) ?? false;
-      if (!preferUrlMode || isTwitter || isPodcast) throw err;
+      if (!preferUrlMode || isTwitter || isPodcast) throw error;
       writeVerbose(
         io.stderr,
         flags.verbose,
-        `extract fallback url-only (${(err as Error).message ?? String(err)})`,
+        `extract fallback url-only (${(error as Error).message ?? String(error)})`,
         flags.verboseColor,
         io.envForRun,
       );
       return {
-        content: "",
-        title: null,
+        content: '',
         description: null,
-        url: targetUrl,
-        siteName: null,
-        wordCount: 0,
-        totalCharacters: 0,
-        truncated: false,
-        mediaDurationSeconds: null,
-        video: null,
+        diagnostics: {
+          firecrawl: {
+            attempted: false,
+            cacheMode: cacheState.mode,
+            cacheStatus: 'bypassed',
+            notes: 'skipped (url-only fallback)',
+            used: false,
+          },
+          markdown: {
+            notes: 'skipped (url fallback)',
+            provider: null,
+            requested: false,
+            used: false,
+          },
+          strategy: 'html',
+          transcript: {
+            attemptedProviders: [],
+            cacheMode: cacheState.mode,
+            cacheStatus: 'unknown',
+            provider: null,
+            textProvided: false,
+          },
+        },
         isVideoOnly: true,
-        transcriptSource: null,
+        mediaDurationSeconds: null,
+        siteName: null,
+        title: null,
+        totalCharacters: 0,
         transcriptCharacters: null,
-        transcriptWordCount: null,
         transcriptLines: null,
         transcriptMetadata: null,
         transcriptSegments: null,
+        transcriptSource: null,
         transcriptTimedText: null,
+        transcriptWordCount: null,
         transcriptionProvider: null,
-        diagnostics: {
-          strategy: "html",
-          firecrawl: {
-            attempted: false,
-            used: false,
-            cacheMode: cacheState.mode,
-            cacheStatus: "bypassed",
-            notes: "skipped (url-only fallback)",
-          },
-          markdown: {
-            requested: false,
-            used: false,
-            provider: null,
-            notes: "skipped (url fallback)",
-          },
-          transcript: {
-            cacheMode: cacheState.mode,
-            cacheStatus: "unknown",
-            textProvided: false,
-            provider: null,
-            attemptedProviders: [],
-          },
-        },
+        truncated: false,
+        url: targetUrl,
+        video: null,
+        wordCount: 0,
       };
     }
   };
 
   const fetchInitialExtract = async (url: string): Promise<ExtractedLinkContent> => {
     let extracted = await fetchWithCache(url);
-    if (flags.slides && !resolveSlideSource({ url, extracted })) {
+    if (flags.slides && !resolveSlideSource({ extracted, url })) {
       const isTwitter = urlUtils.isTwitterStatusUrl?.(url) ?? false;
       if (isTwitter) {
         const refreshed = await fetchWithCache(url, { bypassExtractCache: true });
-        if (resolveSlideSource({ url, extracted: refreshed })) {
+        if (resolveSlideSource({ extracted: refreshed, url })) {
           writeVerbose(
             io.stderr,
             flags.verbose,
-            "extract refresh for slides",
+            'extract refresh for slides',
             flags.verboseColor,
             io.envForRun,
           );
@@ -239,9 +237,5 @@ export function createUrlExtractionSession({
     return extracted;
   };
 
-  return {
-    cacheStore,
-    fetchInitialExtract,
-    fetchWithCache,
-  };
+  return { cacheStore, fetchInitialExtract, fetchWithCache };
 }

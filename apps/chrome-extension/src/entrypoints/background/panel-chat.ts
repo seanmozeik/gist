@@ -1,26 +1,25 @@
-import type { AssistantMessage, Message } from "@mariozechner/pi-ai";
-import { readAgentResponse } from "../../lib/agent-response";
-import { buildChatPageContent } from "../../lib/chat-context";
-import type { Settings } from "../../lib/settings";
-import type { CachedExtract } from "./extract-cache";
+import type { AssistantMessage, Message } from '@mariozechner/pi-ai';
 
-type BackgroundChatSession = {
-  agentController: AbortController | null;
-};
+import { readAgentResponse } from '../../lib/agent-response';
+import { buildChatPageContent } from '../../lib/chat-context';
+import type { Settings } from '../../lib/settings';
+import type { CachedExtract } from './extract-cache';
+
+interface BackgroundChatSession { agentController: AbortController | null }
 
 type SendFn = (
   msg:
-    | { type: "run:error"; message: string }
-    | { type: "agent:chunk"; requestId: string; text: string }
+    | { type: 'run:error'; message: string }
+    | { type: 'agent:chunk'; requestId: string; text: string }
     | {
-        type: "agent:response";
+        type: 'agent:response';
         requestId: string;
         ok: boolean;
         assistant?: AssistantMessage;
         error?: string;
       }
     | {
-        type: "chat:history";
+        type: 'chat:history';
         requestId: string;
         ok: boolean;
         messages?: Message[];
@@ -40,6 +39,7 @@ function buildChatRequestContext({
   slidesText?: { count: number; text: string } | null;
 }) {
   return {
+    cacheContent: cachedExtract.transcriptTimedText ?? cachedExtract.text,
     pageContent: buildChatPageContent({
       transcript: cachedExtract.transcriptTimedText ?? cachedExtract.text,
       summary: summaryText,
@@ -50,11 +50,11 @@ function buildChatRequestContext({
         title: cachedExtract.title,
         source: cachedExtract.source,
         extractionStrategy:
-          cachedExtract.source === "page"
-            ? "readability (content script)"
+          cachedExtract.source === 'page'
+            ? 'readability (content script)'
             : (cachedExtract.diagnostics?.strategy ?? null),
         markdownProvider: cachedExtract.diagnostics?.markdown?.used
-          ? (cachedExtract.diagnostics?.markdown?.provider ?? "unknown")
+          ? (cachedExtract.diagnostics?.markdown?.provider ?? 'unknown')
           : null,
         firecrawlUsed: cachedExtract.diagnostics?.firecrawl?.used ?? null,
         transcriptSource: cachedExtract.transcriptSource,
@@ -72,7 +72,6 @@ function buildChatRequestContext({
         truncated: cachedExtract.truncated,
       },
     }),
-    cacheContent: cachedExtract.transcriptTimedText ?? cachedExtract.text,
   };
 }
 
@@ -109,24 +108,18 @@ export async function handlePanelAgentRequest({
   const isStillActive = () =>
     session.agentController === agentController && !agentController.signal.aborted;
 
-  const summaryText = typeof summary === "string" ? summary.trim() : "";
+  const summaryText = typeof summary === 'string' ? summary.trim() : '';
   const { pageContent, cacheContent } = buildChatRequestContext({
     cachedExtract,
     settings,
-    summaryText,
     slidesText,
+    summaryText,
   });
 
-  sendStatus("Sending to AI…");
+  sendStatus('Sending to AI…');
 
   try {
-    const res = await fetchImpl("http://127.0.0.1:8787/v1/agent", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${settings.token.trim()}`,
-        "content-type": "application/json",
-        Accept: "text/event-stream",
-      },
+    const res = await fetchImpl('http://127.0.0.1:8787/v1/agent', {
       body: JSON.stringify({
         url: cachedExtract.url,
         title: cachedExtract.title,
@@ -139,37 +132,43 @@ export async function handlePanelAgentRequest({
         tools,
         automationEnabled: settings.automationEnabled,
       }),
+      headers: {
+        Accept: 'text/event-stream',
+        Authorization: `Bearer ${settings.token.trim()}`,
+        'content-type': 'application/json',
+      },
+      method: 'POST',
       signal: agentController.signal,
     });
     if (!res.ok) {
-      const rawText = await res.text().catch(() => "");
-      const isMissingAgent = res.status === 404 || rawText.trim().toLowerCase() === "not found";
+      const rawText = await res.text().catch(() => '');
+      const isMissingAgent = res.status === 404 || rawText.trim().toLowerCase() === 'not found';
       const error = isMissingAgent
-        ? "Daemon does not support /v1/agent. Restart the daemon after updating (summarize daemon restart)."
+        ? 'Daemon does not support /v1/agent. Restart the daemon after updating (summarize daemon restart).'
         : rawText.trim() || `${res.status} ${res.statusText}`;
       throw new Error(error);
     }
 
     let sawAssistant = false;
     for await (const event of readAgentResponse(res)) {
-      if (!isStillActive()) return;
-      if (event.type === "chunk") {
-        send({ type: "agent:chunk", requestId, text: event.text });
-      } else if (event.type === "assistant") {
+      if (!isStillActive()) {return;}
+      if (event.type === 'chunk') {
+        send({ requestId, text: event.text, type: 'agent:chunk' });
+      } else if (event.type === 'assistant') {
         sawAssistant = true;
-        send({ type: "agent:response", requestId, ok: true, assistant: event.assistant });
+        send({ assistant: event.assistant, ok: true, requestId, type: 'agent:response' });
       }
     }
 
     if (!sawAssistant) {
-      throw new Error("Agent stream ended without a response.");
+      throw new Error('Agent stream ended without a response.');
     }
 
-    sendStatus("");
-  } catch (err) {
+    sendStatus('');
+  } catch (error) {
     if (agentController.signal.aborted) return;
-    const message = friendlyFetchError(err, "Chat request failed");
-    send({ type: "agent:response", requestId, ok: false, error: message });
+    const message = friendlyFetchError(error, 'Chat request failed');
+    send({ error: message, ok: false, requestId, type: 'agent:response' });
     sendStatus(`Error: ${message}`);
   } finally {
     if (session.agentController === agentController) {
@@ -195,7 +194,7 @@ export async function handlePanelChatHistoryRequest({
   fetchImpl: typeof fetch;
   friendlyFetchError: (error: unknown, fallback: string) => string;
 }) {
-  const summaryText = typeof summary === "string" ? summary.trim() : "";
+  const summaryText = typeof summary === 'string' ? summary.trim() : '';
   const { pageContent, cacheContent } = buildChatRequestContext({
     cachedExtract,
     settings,
@@ -203,12 +202,7 @@ export async function handlePanelChatHistoryRequest({
   });
 
   try {
-    const res = await fetchImpl("http://127.0.0.1:8787/v1/agent/history", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${settings.token.trim()}`,
-        "content-type": "application/json",
-      },
+    const res = await fetchImpl('http://127.0.0.1:8787/v1/agent/history', {
       body: JSON.stringify({
         url: cachedExtract.url,
         title: cachedExtract.title,
@@ -219,6 +213,11 @@ export async function handlePanelChatHistoryRequest({
         language: settings.language,
         automationEnabled: settings.automationEnabled,
       }),
+      headers: {
+        Authorization: `Bearer ${settings.token.trim()}`,
+        'content-type': 'application/json',
+      },
+      method: 'POST',
     });
     const rawText = await res.text();
     let json: { ok?: boolean; messages?: Message[]; error?: string } | null = null;
@@ -234,13 +233,13 @@ export async function handlePanelChatHistoryRequest({
       throw new Error(error);
     }
     send({
-      type: "chat:history",
-      requestId,
-      ok: true,
       messages: Array.isArray(json?.messages) ? json.messages : undefined,
+      ok: true,
+      requestId,
+      type: 'chat:history',
     });
-  } catch (err) {
-    const message = friendlyFetchError(err, "Chat history request failed");
-    send({ type: "chat:history", requestId, ok: false, error: message });
+  } catch (error) {
+    const message = friendlyFetchError(error, 'Chat history request failed');
+    send({ error: message, ok: false, requestId, type: 'chat:history' });
   }
 }

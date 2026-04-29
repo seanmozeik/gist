@@ -1,174 +1,172 @@
-import { describe, expect, it, vi } from "vitest";
-import type { TranscriptCache } from "../packages/core/src/content/cache/types.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import type { TranscriptCache } from '../packages/core/src/content/cache/types.js';
 import {
   DEFAULT_TTL_MS,
   mapCachedSource,
   NEGATIVE_TTL_MS,
   readTranscriptCache,
   writeTranscriptCache,
-} from "../packages/core/src/content/transcript/cache.js";
+} from '../packages/core/src/content/transcript/cache.js';
 
-describe("transcript cache - more branches", () => {
-  it("reports bypass diagnostics even without a cache", async () => {
+describe('transcript cache - more branches', () => {
+  it('reports bypass diagnostics even without a cache', async () => {
     const outcome = await readTranscriptCache({
-      url: "u",
-      cacheMode: "bypass",
+      cacheMode: 'bypass',
       transcriptCache: null,
+      url: 'u',
     });
 
     expect(outcome.cached).toBeNull();
     expect(outcome.resolution).toBeNull();
-    expect(outcome.diagnostics.cacheStatus).toBe("bypassed");
-    expect(outcome.diagnostics.notes).toContain("Cache bypass requested");
+    expect(outcome.diagnostics.cacheStatus).toBe('bypassed');
+    expect(outcome.diagnostics.notes).toContain('Cache bypass requested');
   });
 
-  it("reads cache miss / bypass / expired / hit", async () => {
+  it('reads cache miss / bypass / expired / hit', async () => {
     const miss = await readTranscriptCache({
-      url: "u",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache: null,
+      url: 'u',
     });
     expect(miss.cached).toBeNull();
-    expect(miss.diagnostics.cacheStatus).toBe("miss");
+    expect(miss.diagnostics.cacheStatus).toBe('miss');
 
     const cache: TranscriptCache = {
       get: vi.fn(async (_args: { url: string }) => ({
-        content: "hi",
-        source: "youtubei",
+        content: 'hi',
         expired: false,
         metadata: { a: 1 },
+        source: 'youtubei',
       })),
       set: vi.fn(async () => {}),
     };
 
     const bypass = await readTranscriptCache({
-      url: "u",
-      cacheMode: "bypass",
+      cacheMode: 'bypass',
       transcriptCache: cache,
+      url: 'u',
     });
     expect(bypass.cached).not.toBeNull();
     expect(bypass.resolution).toBeNull();
-    expect(bypass.diagnostics.cacheStatus).toBe("bypassed");
-    expect(bypass.diagnostics.notes).toContain("Cache bypass requested");
+    expect(bypass.diagnostics.cacheStatus).toBe('bypassed');
+    expect(bypass.diagnostics.notes).toContain('Cache bypass requested');
 
     cache.get.mockResolvedValueOnce({
-      content: "hi",
-      source: "captionTracks",
+      content: 'hi',
       expired: true,
       metadata: null,
+      source: 'captionTracks',
     });
     const expired = await readTranscriptCache({
-      url: "u",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache: cache,
+      url: 'u',
     });
-    expect(expired.diagnostics.cacheStatus).toBe("expired");
+    expect(expired.diagnostics.cacheStatus).toBe('expired');
     expect(expired.resolution).toBeNull();
 
     cache.get.mockResolvedValueOnce({
-      content: "hi",
-      source: "captionTracks",
+      content: 'hi',
       expired: false,
       metadata: null,
+      source: 'captionTracks',
     });
     const hit = await readTranscriptCache({
-      url: "u",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache: cache,
+      url: 'u',
     });
-    expect(hit.diagnostics.cacheStatus).toBe("hit");
-    expect(hit.resolution?.text).toBe("hi");
-    expect(hit.resolution?.source).toBe("captionTracks");
+    expect(hit.diagnostics.cacheStatus).toBe('hit');
+    expect(hit.resolution?.text).toBe('hi');
+    expect(hit.resolution?.source).toBe('captionTracks');
 
     cache.get.mockResolvedValueOnce({
-      content: "",
-      source: "weird",
+      content: '',
       expired: false,
       metadata: null,
+      source: 'weird',
     });
     const empty = await readTranscriptCache({
-      url: "u",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache: cache,
+      url: 'u',
     });
     expect(empty.diagnostics.textProvided).toBe(false);
-    expect(empty.resolution?.source).toBe("unknown");
+    expect(empty.resolution?.source).toBe('unknown');
   });
 
-  it("propagates cached metadata + attempted providers on hit", async () => {
+  it('propagates cached metadata + attempted providers on hit', async () => {
     const cache: TranscriptCache = {
       get: vi.fn(async () => ({
-        content: "cached transcript",
-        source: "podcastTranscript",
+        content: 'cached transcript',
         expired: false,
         metadata: { episode: 12 },
+        source: 'podcastTranscript',
       })),
       set: vi.fn(async () => {}),
     };
 
     const hit = await readTranscriptCache({
-      url: "u",
-      cacheMode: "default",
+      cacheMode: 'default',
       transcriptCache: cache,
+      url: 'u',
     });
 
     expect(hit.resolution?.metadata).toEqual({ episode: 12 });
-    expect(hit.diagnostics.attemptedProviders).toEqual(["podcastTranscript"]);
+    expect(hit.diagnostics.attemptedProviders).toEqual(['podcastTranscript']);
   });
 
-  it("maps cached sources, including unknown values", () => {
+  it('maps cached sources, including unknown values', () => {
     expect(mapCachedSource(null)).toBeNull();
-    expect(mapCachedSource("yt-dlp")).toBe("yt-dlp");
-    expect(mapCachedSource("weird")).toBe("unknown");
+    expect(mapCachedSource('yt-dlp')).toBe('yt-dlp');
+    expect(mapCachedSource('weird')).toBe('unknown');
   });
 
-  it("writes cache entries with correct TTL + resolved source", async () => {
-    const cache: TranscriptCache = {
-      get: vi.fn(async () => null),
-      set: vi.fn(async () => {}),
-    };
+  it('writes cache entries with correct TTL + resolved source', async () => {
+    const cache: TranscriptCache = { get: vi.fn(async () => null), set: vi.fn(async () => {}) };
 
     await writeTranscriptCache({
-      url: "u",
-      service: "svc",
       resourceKey: null,
-      result: { text: "hi", source: "youtubei" },
+      result: { source: 'youtubei', text: 'hi' },
+      service: 'svc',
       transcriptCache: null,
+      url: 'u',
     });
 
     await writeTranscriptCache({
-      url: "u",
-      service: "svc",
       resourceKey: null,
-      result: { text: null, source: null },
+      result: { source: null, text: null },
+      service: 'svc',
       transcriptCache: cache,
+      url: 'u',
     });
     expect(cache.set).not.toHaveBeenCalled();
 
     await writeTranscriptCache({
-      url: "u",
-      service: "svc",
       resourceKey: null,
-      result: { text: null, source: "youtubei" },
+      result: { source: 'youtubei', text: null },
+      service: 'svc',
       transcriptCache: cache,
+      url: 'u',
     });
     expect(cache.set).toHaveBeenCalledWith(
-      expect.objectContaining({ ttlMs: NEGATIVE_TTL_MS, source: "youtubei", content: null }),
+      expect.objectContaining({ content: null, source: 'youtubei', ttlMs: NEGATIVE_TTL_MS }),
     );
 
     await writeTranscriptCache({
-      url: "u",
-      service: "svc",
       resourceKey: null,
-      result: { text: "hi", source: null, metadata: { x: 1 } },
+      result: { metadata: { x: 1 }, source: null, text: 'hi' },
+      service: 'svc',
       transcriptCache: cache,
+      url: 'u',
     });
     expect(cache.set).toHaveBeenCalledWith(
       expect.objectContaining({
-        ttlMs: DEFAULT_TTL_MS,
-        source: "unknown",
-        content: "hi",
+        content: 'hi',
         metadata: { x: 1 },
+        source: 'unknown',
+        ttlMs: DEFAULT_TTL_MS,
       }),
     );
   });

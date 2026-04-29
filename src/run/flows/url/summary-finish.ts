@@ -1,8 +1,8 @@
-import type { ExtractedLinkContent } from "../../../content/index.js";
-import { parseGatewayStyleModelId } from "../../../llm/model-id.js";
-import { buildLengthPartsForFinishLine } from "../../finish-line.js";
-import type { ModelAttempt } from "../../types.js";
-import type { UrlFlowContext } from "./types.js";
+import type { ExtractedLinkContent } from '../../../content/index.js';
+import { parseGatewayStyleModelId } from '../../../llm/model-id.js';
+import { buildLengthPartsForFinishLine } from '../../finish-line.js';
+import type { ModelAttempt } from '../../types.js';
+import type { UrlFlowContext } from './types.js';
 
 export function buildFinishExtras({
   extracted,
@@ -21,36 +21,36 @@ export function buildFinishExtras({
 }
 
 export function pickModelForFinishLine(
-  llmCalls: UrlFlowContext["model"]["llmCalls"],
+  llmCalls: UrlFlowContext['model']['llmCalls'],
   fallback: string | null,
 ) {
-  const findLastModel = (purpose: (typeof llmCalls)[number]["purpose"]): string | null => {
+  const findLastModel = (purpose: (typeof llmCalls)[number]['purpose']): string | null => {
     for (let i = llmCalls.length - 1; i >= 0; i -= 1) {
       const call = llmCalls[i];
-      if (call && call.purpose === purpose) return call.model;
+      if (call?.purpose === purpose) {return call.model;}
     }
     return null;
   };
 
-  const summaryModel = findLastModel("summary");
-  if (summaryModel) return summaryModel;
+  const summaryModel = findLastModel('summary');
+  if (summaryModel) {return summaryModel;}
 
-  const markdownModel = findLastModel("markdown");
-  if (markdownModel) return markdownModel;
+  const markdownModel = findLastModel('markdown');
+  if (markdownModel) {return markdownModel;}
 
   const lastCall = llmCalls.at(-1);
-  if (lastCall?.model) return lastCall.model;
+  if (lastCall?.model) {return lastCall.model;}
 
   return fallback;
 }
 
 export function buildModelMetaFromAttempt(attempt: ModelAttempt) {
-  if (attempt.transport === "cli") {
-    return { provider: "cli" as const, canonical: attempt.userModelId };
+  if (attempt.transport === 'cli') {
+    return { canonical: attempt.userModelId, provider: 'cli' as const };
   }
   const parsed = parseGatewayStyleModelId(attempt.llmModelId ?? attempt.userModelId);
-  const canonical = attempt.userModelId.toLowerCase().startsWith("openrouter/")
+  const canonical = attempt.userModelId.toLowerCase().startsWith('openrouter/')
     ? attempt.userModelId
     : parsed.canonical;
-  return { provider: parsed.provider, canonical };
+  return { canonical, provider: parsed.provider };
 }

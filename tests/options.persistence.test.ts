@@ -1,18 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
-import { createOptionsSaveRuntime } from "../apps/chrome-extension/src/entrypoints/options/persistence.js";
+import { describe, expect, it, vi } from 'vitest';
 
-describe("options persistence", () => {
-  it("debounces autosave and flushes one queued rerun", async () => {
+import { createOptionsSaveRuntime } from '../apps/chrome-extension/src/entrypoints/options/persistence.js';
+
+describe('options persistence', () => {
+  it('debounces autosave and flushes one queued rerun', async () => {
     vi.useFakeTimers();
     const persist = vi.fn(async () => {});
     const setStatus = vi.fn();
     const flashStatus = vi.fn();
 
     const runtime = createOptionsSaveRuntime({
-      isInitializing: () => false,
-      setStatus,
       flashStatus,
+      isInitializing: () => false,
       persist,
+      setStatus,
     });
 
     runtime.scheduleAutoSave(200);
@@ -25,10 +26,10 @@ describe("options persistence", () => {
 
     const blockedPersist = vi.fn(() => new Promise<void>((resolve) => setTimeout(resolve, 10)));
     const queuedRuntime = createOptionsSaveRuntime({
-      isInitializing: () => false,
-      setStatus,
       flashStatus,
+      isInitializing: () => false,
       persist: blockedPersist,
+      setStatus,
     });
 
     const first = queuedRuntime.saveNow();

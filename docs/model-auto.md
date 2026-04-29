@@ -1,7 +1,7 @@
 ---
-summary: "Auto model selection logic and config rules."
+summary: 'Auto model selection logic and config rules.'
 read_when:
-  - "When changing auto selection behavior."
+  - 'When changing auto selection behavior.'
 ---
 
 # Auto model selection (`--model auto`)
@@ -66,25 +66,15 @@ Example:
   "model": {
     "mode": "auto",
     "rules": [
-      {
-        "when": ["video"],
-        "candidates": ["google/gemini-3-flash"]
-      },
+      { "when": ["video"], "candidates": ["google/gemini-3-flash"] },
       {
         "when": ["website", "youtube"],
         "bands": [
-          {
-            "token": { "max": 8000 },
-            "candidates": ["openai/gpt-5-mini"]
-          },
-          {
-            "candidates": ["xai/grok-4-fast-non-reasoning"]
-          }
+          { "token": { "max": 8000 }, "candidates": ["openai/gpt-5-mini"] },
+          { "candidates": ["xai/grok-4-fast-non-reasoning"] }
         ]
       },
-      {
-        "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"]
-      }
+      { "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"] }
     ]
   },
   "media": { "videoMode": "auto" }
@@ -94,7 +84,5 @@ Example:
 Minimal shorthand:
 
 ```json
-{
-  "model": "auto"
-}
+{ "model": "auto" }
 ```

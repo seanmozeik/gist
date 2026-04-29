@@ -1,16 +1,16 @@
-import type { ExtractedLinkContent, FetchLinkContentOptions } from "../../../content/index.js";
-import { formatBytes } from "../../../tty/format.js";
-import { withBirdTip } from "../../bird.js";
-import { buildSummaryFinishLabel } from "../../finish-line.js";
-import { formatOptionalNumber, formatOptionalString } from "../../format.js";
-import { writeVerbose } from "../../logging.js";
+import type { ExtractedLinkContent, FetchLinkContentOptions } from '../../../content/index.js';
+import { formatBytes } from '../../../tty/format.js';
+import { withBirdTip } from '../../bird.js';
+import { buildSummaryFinishLabel } from '../../finish-line.js';
+import { formatOptionalNumber, formatOptionalString } from '../../format.js';
+import { writeVerbose } from '../../logging.js';
 
-export type UrlExtractionUi = {
+export interface UrlExtractionUi {
   contentSizeLabel: string;
   viaSourceLabel: string;
   footerParts: string[];
   finishSourceLabel: string | null;
-};
+}
 
 export async function fetchLinkContentWithBirdTip({
   client,
@@ -36,10 +36,10 @@ export async function fetchLinkContentWithBirdTip({
 }
 
 export function deriveExtractionUi(extracted: ExtractedLinkContent): UrlExtractionUi {
-  const extractedContentBytes = Buffer.byteLength(extracted.content, "utf8");
+  const extractedContentBytes = Buffer.byteLength(extracted.content, 'utf8');
   const contentSizeLabel = formatBytes(extractedContentBytes);
   const twitterStrategy =
-    extracted.diagnostics.strategy === "xurl" || extracted.diagnostics.strategy === "bird"
+    extracted.diagnostics.strategy === 'xurl' || extracted.diagnostics.strategy === 'bird'
       ? extracted.diagnostics.strategy
       : null;
 
@@ -47,45 +47,40 @@ export function deriveExtractionUi(extracted: ExtractedLinkContent): UrlExtracti
   if (twitterStrategy) {
     viaSources.push(twitterStrategy);
   }
-  if (extracted.diagnostics.strategy === "nitter") {
-    viaSources.push("Nitter");
+  if (extracted.diagnostics.strategy === 'nitter') {
+    viaSources.push('Nitter');
   }
   if (extracted.diagnostics.firecrawl.used) {
-    viaSources.push("Firecrawl");
+    viaSources.push('Firecrawl');
   }
-  const viaSourceLabel = viaSources.length > 0 ? `, ${viaSources.join("+")}` : "";
+  const viaSourceLabel = viaSources.length > 0 ? `, ${viaSources.join('+')}` : '';
 
   const footerParts: string[] = [];
-  if (extracted.diagnostics.strategy === "html") footerParts.push("html");
-  if (twitterStrategy) footerParts.push(twitterStrategy);
-  if (extracted.diagnostics.strategy === "nitter") footerParts.push("nitter");
-  if (extracted.diagnostics.firecrawl.used) footerParts.push("firecrawl");
+  if (extracted.diagnostics.strategy === 'html') {footerParts.push('html');}
+  if (twitterStrategy) {footerParts.push(twitterStrategy);}
+  if (extracted.diagnostics.strategy === 'nitter') {footerParts.push('nitter');}
+  if (extracted.diagnostics.firecrawl.used) {footerParts.push('firecrawl');}
   if (extracted.diagnostics.markdown.used) {
-    if (extracted.diagnostics.markdown.provider === "llm") {
+    if (extracted.diagnostics.markdown.provider === 'llm') {
       footerParts.push(
-        extracted.diagnostics.markdown.notes === "transcript" ? "transcript→md llm" : "html→md llm",
+        extracted.diagnostics.markdown.notes === 'transcript' ? 'transcript→md llm' : 'html→md llm',
       );
     } else {
-      footerParts.push("markdown");
+      footerParts.push('markdown');
     }
   }
   if (extracted.diagnostics.transcript.textProvided) {
-    footerParts.push(`transcript ${extracted.diagnostics.transcript.provider ?? "unknown"}`);
+    footerParts.push(`transcript ${extracted.diagnostics.transcript.provider ?? 'unknown'}`);
   }
   if (extracted.isVideoOnly && extracted.video) {
-    footerParts.push(extracted.video.kind === "youtube" ? "video youtube" : "video url");
+    footerParts.push(extracted.video.kind === 'youtube' ? 'video youtube' : 'video url');
   }
 
   const finishSourceLabel = buildSummaryFinishLabel({
     extracted: { diagnostics: extracted.diagnostics, wordCount: extracted.wordCount },
   });
 
-  return {
-    contentSizeLabel,
-    viaSourceLabel,
-    footerParts,
-    finishSourceLabel,
-  };
+  return { contentSizeLabel, finishSourceLabel, footerParts, viaSourceLabel };
 }
 
 export function logExtractionDiagnostics({
@@ -146,8 +141,8 @@ export function logExtractionDiagnostics({
       extracted.diagnostics.transcript.provider ?? null,
     )} attemptedProviders=${
       extracted.diagnostics.transcript.attemptedProviders.length > 0
-        ? extracted.diagnostics.transcript.attemptedProviders.join(",")
-        : "none"
+        ? extracted.diagnostics.transcript.attemptedProviders.join(',')
+        : 'none'
     } notes=${formatOptionalString(extracted.diagnostics.transcript.notes ?? null)}`,
     verboseColor,
     env,

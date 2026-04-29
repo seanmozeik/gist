@@ -42,9 +42,9 @@ export function createTypographyController({
 
   return {
     apply(fontFamily: string, fontSize: number, lineHeight: number) {
-      document.documentElement.style.setProperty("--font-body", fontFamily);
-      document.documentElement.style.setProperty("--font-size", `${fontSize}px`);
-      document.documentElement.style.setProperty("--line-height", `${lineHeight}`);
+      document.documentElement.style.setProperty('--font-body', fontFamily);
+      document.documentElement.style.setProperty('--font-size', `${fontSize}px`);
+      document.documentElement.style.setProperty('--line-height', `${lineHeight}`);
     },
     clampFontSize,
     clampLineHeight,

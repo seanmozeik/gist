@@ -1,14 +1,15 @@
-import { promises as fs } from "node:fs";
-import http from "node:http";
-import type { SummarizeConfig } from "../config.js";
-import type { DaemonLogger } from "../logging/daemon.js";
-import { buildModelPickerOptions } from "./models.js";
+import { promises as fs } from 'node:fs';
+import type http from 'node:http';
+
+import type { SummarizeConfig } from '../config.js';
+import type { DaemonLogger } from '../logging/daemon.js';
+import { buildModelPickerOptions } from './models.js';
 import {
   buildProcessListResult,
   buildProcessLogsResult,
   type ProcessRegistry,
-} from "./process-registry.js";
-import { clampNumber, json } from "./server-http.js";
+} from './process-registry.js';
+import { clampNumber, json } from './server-http.js';
 
 async function readLogTail({
   filePath,
@@ -20,17 +21,17 @@ async function readLogTail({
   maxLines: number;
 }): Promise<{ lines: string[]; truncated: boolean; bytesRead: number }> {
   const stat = await fs.stat(filePath);
-  const size = stat.size;
+  const {size} = stat;
   const readBytes = Math.max(0, Math.min(size, maxBytes));
-  const handle = await fs.open(filePath, "r");
+  const handle = await fs.open(filePath, 'r');
   try {
     const buffer = Buffer.alloc(readBytes);
     const start = Math.max(0, size - readBytes);
     await handle.read(buffer, 0, readBytes, start);
-    let text = buffer.toString("utf8");
+    let text = buffer.toString('utf8');
     let truncated = size > readBytes;
     if (truncated) {
-      const firstNewline = text.indexOf("\n");
+      const firstNewline = text.indexOf('\n');
       if (firstNewline !== -1) {
         text = text.slice(firstNewline + 1);
       }
@@ -40,7 +41,7 @@ async function readLogTail({
       lines = lines.slice(lines.length - maxLines);
       truncated = true;
     }
-    return { lines, truncated, bytesRead: readBytes };
+    return { bytesRead: readBytes, lines, truncated };
   } finally {
     await handle.close();
   }
@@ -79,47 +80,47 @@ export async function handleAdminRoutes({
     explicitEnvKey?: string,
   ) => string | null;
 }): Promise<boolean> {
-  if (req.method === "GET" && pathname === "/v1/ping") {
+  if (req.method === 'GET' && pathname === '/v1/ping') {
     json(res, 200, { ok: true }, cors);
     return true;
   }
 
-  if (req.method === "GET" && pathname === "/v1/logs") {
-    const source = url.searchParams.get("source")?.trim() || "daemon";
-    const tailParam = url.searchParams.get("tail")?.trim() || "";
-    const tail = clampNumber(Number(tailParam || "800"), 50, 5000);
+  if (req.method === 'GET' && pathname === '/v1/logs') {
+    const source = url.searchParams.get('source')?.trim() ?? 'daemon';
+    const tailParam = url.searchParams.get('tail')?.trim() ?? '';
+    const tail = clampNumber(Number(tailParam || '800'), 50, 5000);
     const maxBytes = clampNumber(
-      Number(url.searchParams.get("maxBytes") ?? "262144"),
+      Number(url.searchParams.get('maxBytes') ?? '262144'),
       16_384,
       2_000_000,
     );
 
     const sources: Record<
       string,
-      { filePath: string; format: "json" | "pretty" | "text"; enabled?: boolean }
+      { filePath: string; format: 'json' | 'pretty' | 'text'; enabled?: boolean }
     > = {
       daemon: {
-        filePath: daemonLogFile,
-        format: daemonLogger.config?.format ?? "json",
         enabled: daemonLogger.enabled,
+        filePath: daemonLogFile,
+        format: daemonLogger.config?.format ?? 'json',
       },
-      stdout: { filePath: daemonLogPaths.stdoutPath, format: "text" },
-      stderr: { filePath: daemonLogPaths.stderrPath, format: "text" },
+      stderr: { filePath: daemonLogPaths.stderrPath, format: 'text' },
+      stdout: { filePath: daemonLogPaths.stdoutPath, format: 'text' },
     };
 
     const selected = sources[source];
     if (!selected) {
-      json(res, 400, { ok: false, error: `Unknown log source "${source}".` }, cors);
+      json(res, 400, { error: `Unknown log source "${source}".`, ok: false }, cors);
       return true;
     }
 
     const stat = await fs.stat(selected.filePath).catch(() => null);
     if (!stat?.isFile()) {
       const disabledNote =
-        source === "daemon" && selected.enabled === false
-          ? "Daemon logging is disabled (no log file)."
-          : "Log file not found.";
-      json(res, 404, { ok: false, error: disabledNote }, cors);
+        source === 'daemon' && selected.enabled === false
+          ? 'Daemon logging is disabled (no log file).'
+          : 'Log file not found.';
+      json(res, 404, { error: disabledNote, ok: false }, cors);
       return true;
     }
 
@@ -129,21 +130,21 @@ export async function handleAdminRoutes({
       maxLines: tail,
     });
     const warning =
-      source === "daemon" && selected.enabled === false
-        ? "Daemon logging disabled; showing existing file only."
+      source === 'daemon' && selected.enabled === false
+        ? 'Daemon logging disabled; showing existing file only.'
         : null;
     json(
       res,
       200,
       {
-        ok: true,
-        source,
+        bytesRead,
         format: selected.format,
         lines,
-        truncated,
-        bytesRead,
-        sizeBytes: stat.size,
         mtimeMs: stat.mtimeMs,
+        ok: true,
+        sizeBytes: stat.size,
+        source,
+        truncated,
         ...(warning ? { warning } : {}),
       },
       cors,
@@ -151,56 +152,56 @@ export async function handleAdminRoutes({
     return true;
   }
 
-  const processLogsMatch = pathname.match(/^\/v1\/processes\/([^/]+)\/logs$/);
-  if (req.method === "GET" && processLogsMatch) {
+  const processLogsMatch = /^\/v1\/processes\/([^/]+)\/logs$/.exec(pathname);
+  if (req.method === 'GET' && processLogsMatch) {
     const id = processLogsMatch[1];
-    const tail = clampNumber(Number(url.searchParams.get("tail") ?? "200"), 20, 1000);
-    const streamRaw = (url.searchParams.get("stream") ?? "merged").toLowerCase();
+    const tail = clampNumber(Number(url.searchParams.get('tail') ?? '200'), 20, 1000);
+    const streamRaw = (url.searchParams.get('stream') ?? 'merged').toLowerCase();
     const stream =
-      streamRaw === "stdout" || streamRaw === "stderr" ? streamRaw : ("merged" as const);
-    const result = buildProcessLogsResult(processRegistry, id, { tail, stream });
+      streamRaw === 'stdout' || streamRaw === 'stderr' ? streamRaw : ('merged' as const);
+    const result = buildProcessLogsResult(processRegistry, id, { stream, tail });
     if (!result) {
-      json(res, 404, { ok: false, error: "not found" }, cors);
+      json(res, 404, { error: 'not found', ok: false }, cors);
       return true;
     }
     json(res, 200, result, cors);
     return true;
   }
 
-  if (req.method === "GET" && pathname === "/v1/processes") {
+  if (req.method === 'GET' && pathname === '/v1/processes') {
     const includeCompleted =
-      (url.searchParams.get("includeCompleted") ?? "").toLowerCase() === "true" ||
-      url.searchParams.get("includeCompleted") === "1";
-    const limit = clampNumber(Number(url.searchParams.get("limit") ?? "80"), 10, 200);
+      (url.searchParams.get('includeCompleted') ?? '').toLowerCase() === 'true' ||
+      url.searchParams.get('includeCompleted') === '1';
+    const limit = clampNumber(Number(url.searchParams.get('limit') ?? '80'), 10, 200);
     const result = buildProcessListResult(processRegistry, { includeCompleted, limit });
     json(res, 200, result, cors);
     return true;
   }
 
-  if (req.method === "GET" && pathname === "/v1/models") {
+  if (req.method === 'GET' && pathname === '/v1/models') {
     const result = await buildModelPickerOptions({
+      configForCli: summarizeConfig,
       env,
       envForRun: env,
-      configForCli: summarizeConfig,
       fetchImpl,
     });
     json(res, 200, result, cors);
     return true;
   }
 
-  if (req.method === "GET" && pathname === "/v1/tools") {
-    const ytDlpPath = resolveToolPath("yt-dlp", env, "YT_DLP_PATH");
-    const ffmpegPath = resolveToolPath("ffmpeg", env, "FFMPEG_PATH");
-    const tesseractPath = resolveToolPath("tesseract", env, "TESSERACT_PATH");
+  if (req.method === 'GET' && pathname === '/v1/tools') {
+    const ytDlpPath = resolveToolPath('yt-dlp', env, 'YT_DLP_PATH');
+    const ffmpegPath = resolveToolPath('ffmpeg', env, 'FFMPEG_PATH');
+    const tesseractPath = resolveToolPath('tesseract', env, 'TESSERACT_PATH');
     json(
       res,
       200,
       {
         ok: true,
         tools: {
-          ytDlp: { available: Boolean(ytDlpPath), path: ytDlpPath },
           ffmpeg: { available: Boolean(ffmpegPath), path: ffmpegPath },
           tesseract: { available: Boolean(tesseractPath), path: tesseractPath },
+          ytDlp: { available: Boolean(ytDlpPath), path: ytDlpPath },
         },
       },
       cors,

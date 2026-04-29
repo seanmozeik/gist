@@ -1,19 +1,19 @@
-import { isOnnxCliConfigured, resolvePreferredOnnxModel } from "../../../transcription/onnx-cli.js";
+import { isOnnxCliConfigured, resolvePreferredOnnxModel } from '../../../transcription/onnx-cli.js';
 import {
   isWhisperCppReady,
   resolveWhisperCppModelNameForDisplay,
-} from "../../../transcription/whisper.js";
+} from '../../../transcription/whisper.js';
 import {
   buildCloudModelIdChain,
   buildCloudProviderHint,
-} from "../../../transcription/whisper/cloud-providers.js";
-import { resolveGeminiTranscriptionModel } from "../../../transcription/whisper/provider-setup.js";
-import type { TranscriptionProviderHint } from "../../link-preview/deps.js";
-import { resolveTranscriptionConfig, type TranscriptionConfig } from "../transcription-config.js";
+} from '../../../transcription/whisper/cloud-providers.js';
+import { resolveGeminiTranscriptionModel } from '../../../transcription/whisper/provider-setup.js';
+import type { TranscriptionProviderHint } from '../../link-preview/deps.js';
+import { resolveTranscriptionConfig, type TranscriptionConfig } from '../transcription-config.js';
 
 type Env = Record<string, string | undefined>;
 
-export type TranscriptionAvailability = {
+export interface TranscriptionAvailability {
   preferredOnnxModel: ReturnType<typeof resolvePreferredOnnxModel>;
   onnxReady: boolean;
   hasLocalWhisper: boolean;
@@ -25,7 +25,7 @@ export type TranscriptionAvailability = {
   hasAnyProvider: boolean;
   geminiModelId: string;
   effectiveEnv: Env;
-};
+}
 
 export async function resolveTranscriptionAvailability({
   env,
@@ -45,13 +45,13 @@ export async function resolveTranscriptionAvailability({
   falApiKey?: string | null;
 }): Promise<TranscriptionAvailability> {
   const effective = resolveTranscriptionConfig({
-    env,
-    transcription,
-    groqApiKey,
     assemblyaiApiKey,
-    geminiApiKey,
-    openaiApiKey,
+    env,
     falApiKey,
+    geminiApiKey,
+    groqApiKey,
+    openaiApiKey,
+    transcription,
   });
   const effectiveEnv = effective.env ?? process.env;
   const preferredOnnxModel = resolvePreferredOnnxModel(effectiveEnv);
@@ -69,17 +69,17 @@ export async function resolveTranscriptionAvailability({
     onnxReady || hasLocalWhisper || hasGroq || hasAssemblyAi || hasGemini || hasOpenai || hasFal;
 
   return {
-    preferredOnnxModel,
-    onnxReady,
-    hasLocalWhisper,
-    hasGroq,
-    hasAssemblyAi,
-    hasGemini,
-    hasOpenai,
-    hasFal,
-    hasAnyProvider,
-    geminiModelId: effective.geminiModel ?? resolveGeminiTranscriptionModel(effectiveEnv),
     effectiveEnv,
+    geminiModelId: effective.geminiModel ?? resolveGeminiTranscriptionModel(effectiveEnv),
+    hasAnyProvider,
+    hasAssemblyAi,
+    hasFal,
+    hasGemini,
+    hasGroq,
+    hasLocalWhisper,
+    hasOpenai,
+    onnxReady,
+    preferredOnnxModel,
   };
 }
 
@@ -105,31 +105,31 @@ export async function resolveTranscriptionStartInfo({
   modelId: string | null;
 }> {
   const availability = await resolveTranscriptionAvailability({
-    env,
-    transcription,
-    groqApiKey,
     assemblyaiApiKey,
-    geminiApiKey,
-    openaiApiKey,
+    env,
     falApiKey,
+    geminiApiKey,
+    groqApiKey,
+    openaiApiKey,
+    transcription,
   });
 
   const providerHint: TranscriptionProviderHint = availability.onnxReady
-    ? "onnx"
-    : availability.hasLocalWhisper
-      ? "cpp"
-      : resolveCloudProviderHint(availability);
+    ? 'onnx'
+    : (availability.hasLocalWhisper
+      ? 'cpp'
+      : resolveCloudProviderHint(availability));
 
   const modelId =
-    providerHint === "onnx"
-      ? availability.preferredOnnxModel
+    providerHint === 'onnx'
+      ? (availability.preferredOnnxModel
         ? `onnx/${availability.preferredOnnxModel}`
-        : "onnx"
-      : providerHint === "cpp"
-        ? ((await resolveWhisperCppModelNameForDisplay(availability.effectiveEnv)) ?? "whisper.cpp")
-        : resolveCloudModelId(availability);
+        : 'onnx')
+      : (providerHint === 'cpp'
+        ? ((await resolveWhisperCppModelNameForDisplay(availability.effectiveEnv)) ?? 'whisper.cpp')
+        : resolveCloudModelId(availability));
 
-  return { availability, providerHint, modelId };
+  return { availability, modelId, providerHint };
 }
 
 function resolveCloudModelId(availability: TranscriptionAvailability): string | null {
@@ -137,10 +137,10 @@ function resolveCloudModelId(availability: TranscriptionAvailability): string | 
     availability,
     geminiModelId: availability.geminiModelId,
   });
-  if (!availability.hasGroq) return cloudModelId;
+  if (!availability.hasGroq) {return cloudModelId;}
   return cloudModelId
     ? `groq/whisper-large-v3-turbo->${cloudModelId}`
-    : "groq/whisper-large-v3-turbo";
+    : 'groq/whisper-large-v3-turbo';
 }
 
 function resolveCloudProviderHint(
@@ -148,12 +148,12 @@ function resolveCloudProviderHint(
 ): TranscriptionProviderHint {
   const cloudHint = buildCloudProviderHint({
     hasAssemblyAi: availability.hasAssemblyAi,
+    hasFal: availability.hasFal,
     hasGemini: availability.hasGemini,
     hasOpenai: availability.hasOpenai,
-    hasFal: availability.hasFal,
   });
   const chain = availability.hasGroq
-    ? ["groq", cloudHint].filter(Boolean).join("->")
-    : (cloudHint ?? "");
-  return chain.length > 0 ? (chain as TranscriptionProviderHint) : "unknown";
+    ? ['groq', cloudHint].filter(Boolean).join('->')
+    : (cloudHint ?? '');
+  return chain.length > 0 ? (chain as TranscriptionProviderHint) : 'unknown';
 }

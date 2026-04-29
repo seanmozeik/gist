@@ -1,34 +1,35 @@
-import { describe, expect, it, vi } from "vitest";
-import { fetchTranscript } from "../packages/core/src/content/transcript/providers/generic.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import { fetchTranscript } from '../packages/core/src/content/transcript/providers/generic.js';
 
 const fetchTranscriptWithYtDlp = vi.fn(async () => ({
-  text: "yt-dlp transcript",
-  provider: "openai",
-  notes: [],
   error: null,
+  notes: [],
+  provider: 'openai',
+  text: 'yt-dlp transcript',
 }));
 
-vi.mock("../packages/core/src/content/transcript/providers/youtube/yt-dlp.js", () => ({
+vi.mock('../packages/core/src/content/transcript/providers/youtube/yt-dlp.js', () => ({
   fetchTranscriptWithYtDlp,
 }));
 
 const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>) => ({
-  fetch: fetch,
+  fetch,
   scrapeWithFirecrawl: null,
   apifyApiToken: null,
-  youtubeTranscriptMode: "auto",
-  mediaTranscriptMode: "auto",
-  ytDlpPath: "/usr/bin/yt-dlp",
+  youtubeTranscriptMode: 'auto',
+  mediaTranscriptMode: 'auto',
+  ytDlpPath: '/usr/bin/yt-dlp',
   groqApiKey: null,
   falApiKey: null,
-  openaiApiKey: "test",
+  openaiApiKey: 'test',
   resolveTwitterCookies: null,
   onProgress: null,
   ...overrides,
 });
 
-describe("generic transcript provider (video tag fallback)", () => {
-  it("uses yt-dlp when mediaTranscriptMode=prefer and a video tag lacks src", async () => {
+describe('generic transcript provider (video tag fallback)', () => {
+  it('uses yt-dlp when mediaTranscriptMode=prefer and a video tag lacks src', async () => {
     const html = `
       <html>
         <body>
@@ -38,20 +39,20 @@ describe("generic transcript provider (video tag fallback)", () => {
     `;
 
     const result = await fetchTranscript(
-      { url: "https://example.com/page", html, resourceKey: null },
-      buildOptions({ mediaTranscriptMode: "prefer" }),
+      { html, resourceKey: null, url: 'https://example.com/page' },
+      buildOptions({ mediaTranscriptMode: 'prefer' }),
     );
 
     expect(fetchTranscriptWithYtDlp).toHaveBeenCalledTimes(1);
     expect(fetchTranscriptWithYtDlp).toHaveBeenCalledWith(
-      expect.objectContaining({ url: "https://example.com/page" }),
+      expect.objectContaining({ url: 'https://example.com/page' }),
     );
-    expect(result.source).toBe("yt-dlp");
-    expect(result.text).toContain("yt-dlp transcript");
-    expect(result.attemptedProviders).toContain("yt-dlp");
+    expect(result.source).toBe('yt-dlp');
+    expect(result.text).toContain('yt-dlp transcript');
+    expect(result.attemptedProviders).toContain('yt-dlp');
   });
 
-  it("does not use yt-dlp without prefer mode", async () => {
+  it('does not use yt-dlp without prefer mode', async () => {
     fetchTranscriptWithYtDlp.mockClear();
     const html = `
       <html>
@@ -62,27 +63,24 @@ describe("generic transcript provider (video tag fallback)", () => {
     `;
 
     const result = await fetchTranscript(
-      { url: "https://example.com/page", html, resourceKey: null },
-      buildOptions({ mediaTranscriptMode: "auto" }),
+      { html, resourceKey: null, url: 'https://example.com/page' },
+      buildOptions({ mediaTranscriptMode: 'auto' }),
     );
 
     expect(fetchTranscriptWithYtDlp).not.toHaveBeenCalled();
     expect(result.source).toBeNull();
   });
 
-  it("passes inferred video kind for direct media URLs", async () => {
+  it('passes inferred video kind for direct media URLs', async () => {
     fetchTranscriptWithYtDlp.mockClear();
 
     await fetchTranscript(
-      { url: "file:///tmp/local-video.webm", html: null, resourceKey: null },
-      buildOptions({ mediaTranscriptMode: "prefer" }),
+      { html: null, resourceKey: null, url: 'file:///tmp/local-video.webm' },
+      buildOptions({ mediaTranscriptMode: 'prefer' }),
     );
 
     expect(fetchTranscriptWithYtDlp).toHaveBeenCalledWith(
-      expect.objectContaining({
-        url: "file:///tmp/local-video.webm",
-        mediaKind: "video",
-      }),
+      expect.objectContaining({ mediaKind: 'video', url: 'file:///tmp/local-video.webm' }),
     );
   });
 });

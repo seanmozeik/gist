@@ -1,69 +1,70 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createMetricsController } from "../apps/chrome-extension/src/entrypoints/sidepanel/metrics-controller.js";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createMetricsController } from '../apps/chrome-extension/src/entrypoints/sidepanel/metrics-controller.js';
 
 class MockResizeObserver {
   observe() {}
 }
 
-describe("sidepanel metrics controller", () => {
+describe('sidepanel metrics controller', () => {
   beforeEach(() => {
-    document.body.innerHTML = "";
-    vi.stubGlobal("ResizeObserver", MockResizeObserver);
+    document.body.innerHTML = '';
+    vi.stubGlobal('ResizeObserver', MockResizeObserver);
   });
 
-  it("renders summary metrics in the home slot", () => {
-    const metricsEl = document.createElement("div");
-    const metricsHomeEl = document.createElement("div");
-    const chatMetricsSlotEl = document.createElement("div");
+  it('renders summary metrics in the home slot', () => {
+    const metricsEl = document.createElement('div');
+    const metricsHomeEl = document.createElement('div');
+    const chatMetricsSlotEl = document.createElement('div');
     document.body.append(metricsHomeEl, chatMetricsSlotEl);
     metricsHomeEl.append(metricsEl);
 
     const controller = createMetricsController({
-      metricsEl: metricsEl as HTMLDivElement,
-      metricsHomeEl: metricsHomeEl as HTMLDivElement,
-      chatMetricsSlotEl: chatMetricsSlotEl as HTMLDivElement,
+      chatMetricsSlotEl: chatMetricsSlotEl,
+      metricsEl: metricsEl,
+      metricsHomeEl: metricsHomeEl,
     });
 
     controller.setForMode(
-      "summary",
-      "12m YouTube · 1.2k words",
+      'summary',
+      '12m YouTube · 1.2k words',
       null,
-      "https://youtube.com/watch?v=test",
+      'https://youtube.com/watch?v=test',
     );
-    controller.setActiveMode("summary");
+    controller.setActiveMode('summary');
 
     expect(metricsHomeEl.contains(metricsEl)).toBe(true);
-    expect(metricsEl.textContent).toContain("12m");
-    expect(metricsEl.textContent).toContain("YouTube");
-    expect(metricsEl.classList.contains("hidden")).toBe(false);
+    expect(metricsEl.textContent).toContain('12m');
+    expect(metricsEl.textContent).toContain('YouTube');
+    expect(metricsEl.classList.contains('hidden')).toBe(false);
   });
 
-  it("moves chat metrics into the chat slot and toggles visibility", () => {
-    const metricsEl = document.createElement("div");
-    const metricsHomeEl = document.createElement("div");
-    const chatMetricsSlotEl = document.createElement("div");
+  it('moves chat metrics into the chat slot and toggles visibility', () => {
+    const metricsEl = document.createElement('div');
+    const metricsHomeEl = document.createElement('div');
+    const chatMetricsSlotEl = document.createElement('div');
     document.body.append(metricsHomeEl, chatMetricsSlotEl);
     metricsHomeEl.append(metricsEl);
 
     const controller = createMetricsController({
-      metricsEl: metricsEl as HTMLDivElement,
-      metricsHomeEl: metricsHomeEl as HTMLDivElement,
-      chatMetricsSlotEl: chatMetricsSlotEl as HTMLDivElement,
+      chatMetricsSlotEl: chatMetricsSlotEl,
+      metricsEl: metricsEl,
+      metricsHomeEl: metricsHomeEl,
     });
 
-    controller.setForMode("chat", "Cached · example.com", null, null);
-    controller.setActiveMode("chat");
+    controller.setForMode('chat', 'Cached · example.com', null, null);
+    controller.setActiveMode('chat');
 
     expect(chatMetricsSlotEl.contains(metricsEl)).toBe(true);
-    expect(chatMetricsSlotEl.classList.contains("isVisible")).toBe(true);
+    expect(chatMetricsSlotEl.classList.contains('isVisible')).toBe(true);
 
-    controller.clearForMode("chat");
-    controller.setActiveMode("chat");
+    controller.clearForMode('chat');
+    controller.setActiveMode('chat');
 
-    expect(metricsEl.textContent).toBe("");
-    expect(metricsEl.classList.contains("hidden")).toBe(true);
-    expect(chatMetricsSlotEl.classList.contains("isVisible")).toBe(false);
+    expect(metricsEl.textContent).toBe('');
+    expect(metricsEl.classList.contains('hidden')).toBe(true);
+    expect(chatMetricsSlotEl.classList.contains('isVisible')).toBe(false);
   });
 });

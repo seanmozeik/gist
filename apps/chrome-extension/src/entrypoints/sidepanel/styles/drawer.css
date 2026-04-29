@@ -46,7 +46,7 @@
   z-index: 0;
 }
 
-.drawer label:has(.picker[data-state="open"]) {
+.drawer label:has(.picker[data-state='open']) {
   z-index: 8;
 }
 
@@ -205,7 +205,7 @@
     transform 160ms ease;
 }
 
-.checkboxControl[data-state="checked"] {
+.checkboxControl[data-state='checked'] {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
   background: color-mix(in srgb, var(--accent) 75%, transparent);
   color: #fff;
@@ -225,7 +225,7 @@
     transform 160ms ease;
 }
 
-.checkboxControl[data-state="checked"] .checkboxIndicator {
+.checkboxControl[data-state='checked'] .checkboxIndicator {
   opacity: 1;
   transform: scale(1);
 }
@@ -263,7 +263,7 @@
 }
 
 .drawerAdvanced summary::after {
-  content: "";
+  content: '';
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -359,15 +359,15 @@
   color: var(--muted);
 }
 
-.modelStatus[data-state="running"] {
+.modelStatus[data-state='running'] {
   color: color-mix(in srgb, var(--accent) 65%, var(--muted));
 }
 
-.modelStatus[data-state="error"] {
+.modelStatus[data-state='error'] {
   color: color-mix(in srgb, #ff6b6b 70%, var(--muted));
 }
 
-.modelStatus[data-state="ok"] {
+.modelStatus[data-state='ok'] {
   color: color-mix(in srgb, var(--accent) 80%, var(--muted));
 }
 
@@ -414,7 +414,7 @@ label.length.mini .lengthCustomRow {
   align-items: center;
 }
 
-label.length.mini .lengthCustomRow input[type="text"] {
+label.length.mini .lengthCustomRow input[type='text'] {
   width: 100%;
   min-width: 0;
 }

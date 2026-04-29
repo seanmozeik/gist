@@ -1,27 +1,20 @@
-import { describe, expect, it } from "vitest";
-import { installStepsHtml } from "../apps/chrome-extension/src/entrypoints/sidepanel/setup-view";
+import { describe, expect, it } from 'vitest';
 
-describe("sidepanel setup view", () => {
-  it("renders the official Homebrew formula for mac setup", () => {
-    const html = installStepsHtml({
-      token: "token",
-      headline: "Setup",
-      platformKind: "mac",
-    });
+import { installStepsHtml } from '../apps/chrome-extension/src/entrypoints/sidepanel/setup-view';
 
-    expect(html).toContain("brew install summarize");
-    expect(html).not.toContain("steipete/tap/summarize");
+describe('sidepanel setup view', () => {
+  it('renders the official Homebrew formula for mac setup', () => {
+    const html = installStepsHtml({ headline: 'Setup', platformKind: 'mac', token: 'token' });
+
+    expect(html).toContain('brew install summarize');
+    expect(html).not.toContain('steipete/tap/summarize');
   });
 
-  it("shows npm guidance for non-mac setup instead of the old tap warning", () => {
-    const html = installStepsHtml({
-      token: "token",
-      headline: "Setup",
-      platformKind: "linux",
-    });
+  it('shows npm guidance for non-mac setup instead of the old tap warning', () => {
+    const html = installStepsHtml({ headline: 'Setup', platformKind: 'linux', token: 'token' });
 
-    expect(html).toContain("npm i -g @steipete/summarize");
-    expect(html).toContain("NPM installs the CLI (requires Node.js).");
-    expect(html).not.toContain("Homebrew tap is macOS-only.");
+    expect(html).toContain('npm i -g @steipete/summarize');
+    expect(html).toContain('NPM installs the CLI (requires Node.js).');
+    expect(html).not.toContain('Homebrew tap is macOS-only.');
   });
 });

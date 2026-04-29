@@ -1,27 +1,28 @@
-import { streamSimple } from "@mariozechner/pi-ai";
-import type { Context } from "@mariozechner/pi-ai";
-import { createUnsupportedFunctionalityError } from "./errors.js";
-import { resolveEffectiveTemperature, streamUsageWithTimeout } from "./generate-text-shared.js";
-import type { LlmApiKeys } from "./generate-text.js";
-import { parseGatewayStyleModelId } from "./model-id.js";
-import type { LlmProvider } from "./model-id.js";
-import type { ModelRequestOptions } from "./model-options.js";
+import { streamSimple } from '@mariozechner/pi-ai';
+import type { Context } from '@mariozechner/pi-ai';
+
+import { createUnsupportedFunctionalityError } from './errors.js';
+import { resolveEffectiveTemperature, streamUsageWithTimeout } from './generate-text-shared.js';
+import type { LlmApiKeys } from './generate-text.js';
+import { parseGatewayStyleModelId } from './model-id.js';
+import type { LlmProvider } from './model-id.js';
+import type { ModelRequestOptions } from './model-options.js';
 import {
   resolveOpenAiCompatibleClientConfigForProvider,
   supportsStreaming,
-} from "./provider-capabilities.js";
-import { normalizeAnthropicModelAccessError } from "./providers/anthropic.js";
+} from './provider-capabilities.js';
+import { normalizeAnthropicModelAccessError } from './providers/anthropic.js';
 import {
   resolveAnthropicModel,
   resolveGoogleModel,
   resolveOpenAiModel,
   resolveXaiModel,
-} from "./providers/models.js";
-import { completeOpenAiText } from "./providers/openai.js";
-import type { OpenAiClientConfig } from "./providers/types.js";
-import type { LlmTokenUsage } from "./types.js";
+} from './providers/models.js';
+import { completeOpenAiText } from './providers/openai.js';
+import type { OpenAiClientConfig } from './providers/types.js';
+import type { LlmTokenUsage } from './types.js';
 
-export type StreamTextWithContextArgs = {
+export interface StreamTextWithContextArgs {
   modelId: string;
   apiKeys: LlmApiKeys;
   context: Context;
@@ -36,15 +37,15 @@ export type StreamTextWithContextArgs = {
   xaiBaseUrlOverride?: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
-};
+}
 
-export type StreamTextResult = {
+export interface StreamTextResult {
   textStream: AsyncIterable<string>;
   canonicalModelId: string;
   provider: LlmProvider;
   usage: Promise<LlmTokenUsage | null>;
   lastError: () => unknown;
-};
+}
 
 function createTimedTextStream({
   textStream,
@@ -59,17 +60,17 @@ function createTimedTextStream({
 }): AsyncIterable<string> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   const startedAtMs = Date.now();
-  const timeoutError = new Error("LLM request timed out");
+  const timeoutError = new Error('LLM request timed out');
   const markTimedOut = () => {
     setLastError(timeoutError);
     controller.abort();
   };
   const startTimeout = () => {
-    if (timeoutId) return;
+    if (timeoutId) {return;}
     timeoutId = setTimeout(markTimedOut, timeoutMs);
   };
   const stopTimeout = () => {
-    if (!timeoutId) return;
+    if (!timeoutId) {return;}
     clearTimeout(timeoutId);
     timeoutId = null;
   };
@@ -92,7 +93,7 @@ function createTimedTextStream({
         }),
       ]);
     } finally {
-      if (timer) clearTimeout(timer);
+      if (timer) {clearTimeout(timer);}
     }
   };
 
@@ -103,16 +104,16 @@ function createTimedTextStream({
       try {
         while (true) {
           const result = await nextWithDeadline(iterator.next());
-          if (result.done) break;
+          if (result.done) {break;}
           yield result.value;
         }
       } finally {
         stopTimeout();
-        if (typeof iterator.return === "function") {
+        if (typeof iterator.return === 'function') {
           const cleanup = iterator.return();
           const cleanupPromise =
-            typeof cleanup === "undefined" ? undefined : (cleanup as Promise<unknown>);
-          if (typeof cleanupPromise?.catch === "function") {
+            cleanup === undefined ? undefined : (cleanup as Promise<unknown>);
+          if (typeof cleanupPromise?.catch === 'function') {
             void cleanupPromise.catch(() => {});
           }
         }
@@ -131,10 +132,10 @@ function collectTextDeltas({
   return {
     async *[Symbol.asyncIterator]() {
       for await (const event of stream) {
-        if (event.type === "text_delta" && typeof event.delta === "string") {
+        if (event.type === 'text_delta' && typeof event.delta === 'string') {
           yield event.delta;
         }
-        if (event.type === "error") {
+        if (event.type === 'error') {
           onError(event.error);
           break;
         }
@@ -166,8 +167,8 @@ export async function streamTextWithContext({
     );
   }
   const effectiveTemperature = resolveEffectiveTemperature({
-    provider: parsed.provider,
     model: parsed.model,
+    provider: parsed.provider,
     temperature,
   });
   void fetchImpl;
@@ -175,26 +176,25 @@ export async function streamTextWithContext({
   const controller = new AbortController();
   let lastError: unknown = null;
   const setLastError = (error: unknown) => {
-    if ((lastError as Error | null)?.message === "LLM request timed out") return;
+    if ((lastError as Error | null)?.message === 'LLM request timed out') {return;}
     lastError = error;
   };
 
   try {
-    if (parsed.provider === "xai") {
+    if (parsed.provider === 'xai') {
       const apiKey = apiKeys.xaiApiKey;
-      if (!apiKey) throw new Error("Missing XAI_API_KEY for xai/... model");
-      const model = resolveXaiModel({
-        modelId: parsed.model,
-        context,
-        xaiBaseUrlOverride,
-      });
+      if (!apiKey) {throw new Error('Missing XAI_API_KEY for xai/... model');}
+      const model = resolveXaiModel({ context, modelId: parsed.model, xaiBaseUrlOverride });
       const stream = streamSimple(model, context, {
-        ...(typeof effectiveTemperature === "number" ? { temperature: effectiveTemperature } : {}),
-        ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+        ...(typeof effectiveTemperature === 'number' ? { temperature: effectiveTemperature } : {}),
+        ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
         apiKey,
         signal: controller.signal,
       });
       return {
+        canonicalModelId: parsed.canonical,
+        lastError: () => lastError,
+        provider: parsed.provider,
         textStream: createTimedTextStream({
           textStream: collectTextDeltas({
             stream,
@@ -206,32 +206,28 @@ export async function streamTextWithContext({
           controller,
           setLastError,
         }),
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
         usage: streamUsageWithTimeout({ result: stream.result(), timeoutMs }),
-        lastError: () => lastError,
       };
     }
 
-    if (parsed.provider === "google") {
+    if (parsed.provider === 'google') {
       const apiKey = apiKeys.googleApiKey;
       if (!apiKey) {
         throw new Error(
-          "Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model",
+          'Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model',
         );
       }
-      const model = resolveGoogleModel({
-        modelId: parsed.model,
-        context,
-        googleBaseUrlOverride,
-      });
+      const model = resolveGoogleModel({ context, googleBaseUrlOverride, modelId: parsed.model });
       const stream = streamSimple(model, context, {
-        ...(typeof effectiveTemperature === "number" ? { temperature: effectiveTemperature } : {}),
-        ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+        ...(typeof effectiveTemperature === 'number' ? { temperature: effectiveTemperature } : {}),
+        ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
         apiKey,
         signal: controller.signal,
       });
       return {
+        canonicalModelId: parsed.canonical,
+        lastError: () => lastError,
+        provider: parsed.provider,
         textStream: createTimedTextStream({
           textStream: collectTextDeltas({
             stream,
@@ -243,28 +239,28 @@ export async function streamTextWithContext({
           controller,
           setLastError,
         }),
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
         usage: streamUsageWithTimeout({ result: stream.result(), timeoutMs }),
-        lastError: () => lastError,
       };
     }
 
-    if (parsed.provider === "anthropic") {
+    if (parsed.provider === 'anthropic') {
       const apiKey = apiKeys.anthropicApiKey;
-      if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY for anthropic/... model");
+      if (!apiKey) {throw new Error('Missing ANTHROPIC_API_KEY for anthropic/... model');}
       const model = resolveAnthropicModel({
-        modelId: parsed.model,
-        context,
         anthropicBaseUrlOverride,
+        context,
+        modelId: parsed.model,
       });
       const stream = streamSimple(model, context, {
-        ...(typeof effectiveTemperature === "number" ? { temperature: effectiveTemperature } : {}),
-        ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+        ...(typeof effectiveTemperature === 'number' ? { temperature: effectiveTemperature } : {}),
+        ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
         apiKey,
         signal: controller.signal,
       });
       return {
+        canonicalModelId: parsed.canonical,
+        lastError: () => lastError,
+        provider: parsed.provider,
         textStream: createTimedTextStream({
           textStream: collectTextDeltas({
             stream,
@@ -276,42 +272,44 @@ export async function streamTextWithContext({
           controller,
           setLastError,
         }),
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
         usage: streamUsageWithTimeout({ result: stream.result(), timeoutMs }),
-        lastError: () => lastError,
       };
     }
 
     if (
-      parsed.provider === "openai" ||
-      parsed.provider === "zai" ||
-      parsed.provider === "nvidia" ||
-      parsed.provider === "github-copilot"
+      parsed.provider === 'openai' ||
+      parsed.provider === 'zai' ||
+      parsed.provider === 'nvidia' ||
+      parsed.provider === 'github-copilot'
     ) {
       const openaiConfig: OpenAiClientConfig = resolveOpenAiCompatibleClientConfigForProvider({
-        provider: parsed.provider,
-        openaiApiKey: apiKeys.openaiApiKey,
-        openrouterApiKey: apiKeys.openrouterApiKey,
-        forceOpenRouter,
-        openaiBaseUrlOverride,
         forceChatCompletions,
+        forceOpenRouter,
+        openaiApiKey: apiKeys.openaiApiKey,
+        openaiBaseUrlOverride,
+        openrouterApiKey: apiKeys.openrouterApiKey,
+        provider: parsed.provider,
         requestOptions,
       });
       if (
-        parsed.provider === "github-copilot" ||
-        (parsed.provider === "openai" && requestOptions)
+        parsed.provider === 'github-copilot' ||
+        (parsed.provider === 'openai' && requestOptions)
       ) {
         const result = await completeOpenAiText({
+          context,
+          fetchImpl,
+          maxOutputTokens,
           modelId: parsed.model,
           openaiConfig,
-          context,
-          temperature: effectiveTemperature,
-          maxOutputTokens,
           signal: controller.signal,
-          fetchImpl,
+          temperature: effectiveTemperature,
         });
         return {
+          canonicalModelId: result.resolvedModelId
+            ? `${parsed.provider}/${result.resolvedModelId}`
+            : parsed.canonical,
+          lastError: () => lastError,
+          provider: parsed.provider,
           textStream: createTimedTextStream({
             textStream: {
               async *[Symbol.asyncIterator]() {
@@ -322,22 +320,20 @@ export async function streamTextWithContext({
             controller,
             setLastError,
           }),
-          canonicalModelId: result.resolvedModelId
-            ? `${parsed.provider}/${result.resolvedModelId}`
-            : parsed.canonical,
-          provider: parsed.provider,
           usage: Promise.resolve(result.usage),
-          lastError: () => lastError,
         };
       }
-      const model = resolveOpenAiModel({ modelId: parsed.model, context, openaiConfig });
+      const model = resolveOpenAiModel({ context, modelId: parsed.model, openaiConfig });
       const stream = streamSimple(model, context, {
-        ...(typeof effectiveTemperature === "number" ? { temperature: effectiveTemperature } : {}),
-        ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+        ...(typeof effectiveTemperature === 'number' ? { temperature: effectiveTemperature } : {}),
+        ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
         apiKey: openaiConfig.apiKey,
         signal: controller.signal,
       });
       return {
+        canonicalModelId: parsed.canonical,
+        lastError: () => lastError,
+        provider: parsed.provider,
         textStream: createTimedTextStream({
           textStream: collectTextDeltas({
             stream,
@@ -349,21 +345,18 @@ export async function streamTextWithContext({
           controller,
           setLastError,
         }),
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
         usage: streamUsageWithTimeout({ result: stream.result(), timeoutMs }),
-        lastError: () => lastError,
       };
     }
 
     throw new Error(`Unknown provider ${parsed.provider}`);
   } catch (error) {
-    if (parsed.provider === "anthropic") {
+    if (parsed.provider === 'anthropic') {
       const normalized = normalizeAnthropicModelAccessError(error, parsed.model);
-      if (normalized) throw normalized;
+      if (normalized) {throw normalized;}
     }
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("LLM request timed out");
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('LLM request timed out', { cause: error });
     }
     throw error;
   }

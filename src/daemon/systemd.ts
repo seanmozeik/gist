@@ -1,25 +1,26 @@
-import { execFile } from "node:child_process";
-import fs from "node:fs/promises";
-import path from "node:path";
-import { promisify } from "node:util";
-import { DAEMON_SYSTEMD_SERVICE_NAME } from "./constants.js";
+import { execFile } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
+
+import { DAEMON_SYSTEMD_SERVICE_NAME } from './constants.js';
 
 const execFileAsync = promisify(execFile);
 
 function resolveHomeDir(env: Record<string, string | undefined>): string {
-  const home = env.HOME?.trim() || env.USERPROFILE?.trim();
-  if (!home) throw new Error("Missing HOME");
+  const home = env.HOME?.trim() ?? env.USERPROFILE?.trim();
+  if (!home) {throw new Error('Missing HOME');}
   return home;
 }
 
 function resolveSystemdUnitPath(env: Record<string, string | undefined>): string {
   const home = resolveHomeDir(env);
-  return path.join(home, ".config", "systemd", "user", `${DAEMON_SYSTEMD_SERVICE_NAME}.service`);
+  return path.join(home, '.config', 'systemd', 'user', `${DAEMON_SYSTEMD_SERVICE_NAME}.service`);
 }
 
 function systemdEscapeArg(value: string): string {
-  if (!/[\s"\\]/.test(value)) return value;
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  if (!/[\s"\\]/.test(value)) {return value;}
+  return `"${value.replaceAll(/\\/g, String.raw`\\`).replaceAll(/"/g, String.raw`\"`)}"`;
 }
 
 function buildSystemdUnit({
@@ -29,30 +30,30 @@ function buildSystemdUnit({
   programArguments: string[];
   workingDirectory?: string;
 }): string {
-  const execStart = programArguments.map(systemdEscapeArg).join(" ");
+  const execStart = programArguments.map(systemdEscapeArg).join(' ');
   const workingDirLine = workingDirectory
     ? `WorkingDirectory=${systemdEscapeArg(workingDirectory)}`
     : null;
   return [
-    "[Unit]",
-    "Description=Summarize daemon",
-    "",
-    "[Service]",
+    '[Unit]',
+    'Description=Summarize daemon',
+    '',
+    '[Service]',
     `ExecStart=${execStart}`,
-    "Restart=always",
+    'Restart=always',
     workingDirLine,
-    "",
-    "[Install]",
-    "WantedBy=default.target",
-    "",
+    '',
+    '[Install]',
+    'WantedBy=default.target',
+    '',
   ]
     .filter((line) => line !== null)
-    .join("\n");
+    .join('\n');
 }
 
 function parseSystemdExecStart(value: string): string[] {
   const args: string[] = [];
-  let current = "";
+  let current = '';
   let inQuotes = false;
   let escapeNext = false;
 
@@ -62,7 +63,7 @@ function parseSystemdExecStart(value: string): string[] {
       escapeNext = false;
       continue;
     }
-    if (char === "\\") {
+    if (char === '\\') {
       escapeNext = true;
       continue;
     }
@@ -73,13 +74,13 @@ function parseSystemdExecStart(value: string): string[] {
     if (!inQuotes && /\s/.test(char)) {
       if (current) {
         args.push(current);
-        current = "";
+        current = '';
       }
       continue;
     }
     current += char;
   }
-  if (current) args.push(current);
+  if (current) {args.push(current);}
   return args;
 }
 
@@ -88,24 +89,21 @@ export async function readSystemdServiceExecStart(
 ): Promise<{ programArguments: string[]; workingDirectory?: string } | null> {
   const unitPath = resolveSystemdUnitPath(env);
   try {
-    const content = await fs.readFile(unitPath, "utf8");
-    let execStart = "";
-    let workingDirectory = "";
-    for (const rawLine of content.split("\n")) {
+    const content = await fs.readFile(unitPath, 'utf8');
+    let execStart = '';
+    let workingDirectory = '';
+    for (const rawLine of content.split('\n')) {
       const line = rawLine.trim();
-      if (!line || line.startsWith("#")) continue;
-      if (line.startsWith("ExecStart=")) {
-        execStart = line.slice("ExecStart=".length).trim();
-      } else if (line.startsWith("WorkingDirectory=")) {
-        workingDirectory = line.slice("WorkingDirectory=".length).trim();
+      if (!line || line.startsWith('#')) {continue;}
+      if (line.startsWith('ExecStart=')) {
+        execStart = line.slice('ExecStart='.length).trim();
+      } else if (line.startsWith('WorkingDirectory=')) {
+        workingDirectory = line.slice('WorkingDirectory='.length).trim();
       }
     }
-    if (!execStart) return null;
+    if (!execStart) {return null;}
     const programArguments = parseSystemdExecStart(execStart);
-    return {
-      programArguments,
-      ...(workingDirectory ? { workingDirectory } : {}),
-    };
+    return { programArguments, ...(workingDirectory ? { workingDirectory } : {}) };
   } catch {
     return null;
   }
@@ -115,27 +113,27 @@ async function execSystemctl(
   args: string[],
 ): Promise<{ stdout: string; stderr: string; code: number }> {
   try {
-    const { stdout, stderr } = await execFileAsync("systemctl", args, { encoding: "utf8" });
-    return { stdout: String(stdout ?? ""), stderr: String(stderr ?? ""), code: 0 };
+    const { stdout, stderr } = await execFileAsync('systemctl', args, { encoding: 'utf8' });
+    return { code: 0, stderr: String(stderr ?? ''), stdout: String(stdout ?? '') };
   } catch (error) {
     const e = error as { stdout?: unknown; stderr?: unknown; code?: unknown; message?: unknown };
     return {
-      stdout: typeof e.stdout === "string" ? e.stdout : "",
+      code: typeof e.code === 'number' ? e.code : 1,
       stderr:
-        typeof e.stderr === "string" ? e.stderr : typeof e.message === "string" ? e.message : "",
-      code: typeof e.code === "number" ? e.code : 1,
+        typeof e.stderr === 'string' ? e.stderr : typeof e.message === 'string' ? e.message : '',
+      stdout: typeof e.stdout === 'string' ? e.stdout : '',
     };
   }
 }
 
 async function assertSystemdAvailable() {
-  const res = await execSystemctl(["--user", "status"]);
-  if (res.code === 0) return;
+  const res = await execSystemctl(['--user', 'status']);
+  if (res.code === 0) {return;}
   const detail = res.stderr || res.stdout;
-  if (detail.toLowerCase().includes("not found")) {
-    throw new Error("systemctl not available; systemd user services are required on Linux.");
+  if (detail.toLowerCase().includes('not found')) {
+    throw new Error('systemctl not available; systemd user services are required on Linux.');
   }
-  throw new Error(`systemctl --user unavailable: ${detail || "unknown error"}`.trim());
+  throw new Error(`systemctl --user unavailable: ${detail || 'unknown error'}`.trim());
 }
 
 export async function installSystemdService({
@@ -154,20 +152,20 @@ export async function installSystemdService({
   const unitPath = resolveSystemdUnitPath(env);
   await fs.mkdir(path.dirname(unitPath), { recursive: true });
   const unit = buildSystemdUnit({ programArguments, workingDirectory });
-  await fs.writeFile(unitPath, unit, "utf8");
+  await fs.writeFile(unitPath, unit, 'utf8');
 
   const unitName = `${DAEMON_SYSTEMD_SERVICE_NAME}.service`;
-  const reload = await execSystemctl(["--user", "daemon-reload"]);
+  const reload = await execSystemctl(['--user', 'daemon-reload']);
   if (reload.code !== 0) {
     throw new Error(`systemctl daemon-reload failed: ${reload.stderr || reload.stdout}`.trim());
   }
 
-  const enable = await execSystemctl(["--user", "enable", unitName]);
+  const enable = await execSystemctl(['--user', 'enable', unitName]);
   if (enable.code !== 0) {
     throw new Error(`systemctl enable failed: ${enable.stderr || enable.stdout}`.trim());
   }
 
-  const restart = await execSystemctl(["--user", "restart", unitName]);
+  const restart = await execSystemctl(['--user', 'restart', unitName]);
   if (restart.code !== 0) {
     throw new Error(`systemctl restart failed: ${restart.stderr || restart.stdout}`.trim());
   }
@@ -185,7 +183,7 @@ export async function uninstallSystemdService({
 }): Promise<void> {
   await assertSystemdAvailable();
   const unitName = `${DAEMON_SYSTEMD_SERVICE_NAME}.service`;
-  await execSystemctl(["--user", "disable", "--now", unitName]);
+  await execSystemctl(['--user', 'disable', '--now', unitName]);
 
   const unitPath = resolveSystemdUnitPath(env);
   try {
@@ -203,7 +201,7 @@ export async function restartSystemdService({
 }): Promise<void> {
   await assertSystemdAvailable();
   const unitName = `${DAEMON_SYSTEMD_SERVICE_NAME}.service`;
-  const res = await execSystemctl(["--user", "restart", unitName]);
+  const res = await execSystemctl(['--user', 'restart', unitName]);
   if (res.code !== 0) {
     throw new Error(`systemctl restart failed: ${res.stderr || res.stdout}`.trim());
   }
@@ -213,6 +211,6 @@ export async function restartSystemdService({
 export async function isSystemdServiceEnabled(): Promise<boolean> {
   await assertSystemdAvailable();
   const unitName = `${DAEMON_SYSTEMD_SERVICE_NAME}.service`;
-  const res = await execSystemctl(["--user", "is-enabled", unitName]);
+  const res = await execSystemctl(['--user', 'is-enabled', unitName]);
   return res.code === 0;
 }

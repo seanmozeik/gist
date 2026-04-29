@@ -86,8 +86,8 @@
   position: relative;
 }
 
-.chatMessage.assistant.streaming[data-placeholder="true"]::after {
-  content: "";
+.chatMessage.assistant.streaming[data-placeholder='true']::after {
+  content: '';
 }
 
 .chatTyping {
@@ -332,7 +332,7 @@
   display: none;
 }
 
-.chatContextStatus[data-state="warn"] {
+.chatContextStatus[data-state='warn'] {
   color: color-mix(in srgb, var(--accent) 65%, var(--text));
 }
 

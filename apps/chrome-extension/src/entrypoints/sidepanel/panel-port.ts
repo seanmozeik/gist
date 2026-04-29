@@ -9,7 +9,7 @@ export function createPanelPortRuntime<TMessage>({
   getCurrentWindowId = () =>
     new Promise<number | null>((resolve) => {
       chrome.windows.getCurrent((window) => {
-        resolve(typeof window?.id === "number" ? window.id : null);
+        resolve(typeof window?.id === 'number' ? window.id : null);
       });
     }),
   onMessage,
@@ -23,12 +23,12 @@ export function createPanelPortRuntime<TMessage>({
   let panelWindowId: number | null = null;
 
   const ensure = async (): Promise<chrome.runtime.Port | null> => {
-    if (panelPort) return panelPort;
-    if (panelPortConnecting) return panelPortConnecting;
+    if (panelPort) {return panelPort;}
+    if (panelPortConnecting) {return panelPortConnecting;}
     panelPortConnecting = (async () => {
       const windowId = panelWindowId ?? (await getCurrentWindowId());
       panelWindowId = windowId;
-      if (typeof windowId !== "number") return null;
+      if (typeof windowId !== 'number') {return null;}
       const port = connect(`sidepanel:${windowId}`);
       panelPort = port;
       setDebugPort(port);
@@ -36,7 +36,7 @@ export function createPanelPortRuntime<TMessage>({
         onMessage(message as TMessage);
       });
       port.onDisconnect.addListener(() => {
-        if (panelPort !== port) return;
+        if (panelPort !== port) {return;}
         panelPort = null;
         panelPortConnecting = null;
         setDebugPort(undefined);
@@ -44,22 +44,19 @@ export function createPanelPortRuntime<TMessage>({
       return port;
     })();
     const resolved = await panelPortConnecting;
-    if (!resolved) panelPortConnecting = null;
+    if (!resolved) {panelPortConnecting = null;}
     return resolved;
   };
 
   const send = async (message: unknown) => {
     const port = await ensure();
-    if (!port) return;
+    if (!port) {return;}
     try {
       port.postMessage(message);
     } catch {
-      // ignore (panel/background race while reloading)
+      // Ignore (panel/background race while reloading)
     }
   };
 
-  return {
-    ensure,
-    send,
-  };
+  return { ensure, send };
 }

@@ -1,45 +1,43 @@
-import type { Context } from "@mariozechner/pi-ai";
-import { completeSimple } from "@mariozechner/pi-ai";
-import { isOpenRouterBaseUrl, normalizeBaseUrl } from "@steipete/summarize-core";
-import type { Attachment } from "../attachments.js";
-import { createUnsupportedFunctionalityError } from "../errors.js";
-import { toOpenAiServiceTierParam, type ModelRequestOptions } from "../model-options.js";
-import type { LlmTokenUsage } from "../types.js";
-import { normalizeOpenAiUsage, normalizeTokenUsage } from "../usage.js";
-import { resolveOpenAiModel } from "./models.js";
-import { bytesToBase64 } from "./shared.js";
-import type { OpenAiClientConfig } from "./types.js";
+import type { Context } from '@mariozechner/pi-ai';
+import { completeSimple } from '@mariozechner/pi-ai';
+import { isOpenRouterBaseUrl, normalizeBaseUrl } from '@steipete/summarize-core';
 
-export type OpenAiClientConfigInput = {
-  apiKeys: {
-    openaiApiKey: string | null;
-    openrouterApiKey: string | null;
-  };
+import type { Attachment } from '../attachments.js';
+import { createUnsupportedFunctionalityError } from '../errors.js';
+import { toOpenAiServiceTierParam, type ModelRequestOptions } from '../model-options.js';
+import type { LlmTokenUsage } from '../types.js';
+import { normalizeOpenAiUsage, normalizeTokenUsage } from '../usage.js';
+import { resolveOpenAiModel } from './models.js';
+import { bytesToBase64 } from './shared.js';
+import type { OpenAiClientConfig } from './types.js';
+
+export interface OpenAiClientConfigInput {
+  apiKeys: { openaiApiKey: string | null; openrouterApiKey: string | null };
   forceOpenRouter?: boolean;
   openaiBaseUrlOverride?: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
-};
+}
 
-type OpenAiTextCompletionResult = {
+interface OpenAiTextCompletionResult {
   text: string;
   usage: LlmTokenUsage | null;
   resolvedModelId?: string;
-};
+}
 
 function isGitHubModelsBaseUrl(baseUrl: string | undefined): boolean {
-  if (!baseUrl) return false;
+  if (!baseUrl) {return false;}
   try {
-    return new URL(baseUrl).host === "models.github.ai";
+    return new URL(baseUrl).host === 'models.github.ai';
   } catch {
     return false;
   }
 }
 
 function isApiOpenAiBaseUrl(baseUrl: string | undefined): boolean {
-  if (!baseUrl) return true;
+  if (!baseUrl) {return true;}
   try {
-    return new URL(baseUrl).host === "api.openai.com";
+    return new URL(baseUrl).host === 'api.openai.com';
   } catch {
     return false;
   }
@@ -54,14 +52,14 @@ export function resolveOpenAiClientConfig({
 }: OpenAiClientConfigInput): OpenAiClientConfig {
   const baseUrlRaw =
     openaiBaseUrlOverride ??
-    (typeof process !== "undefined" ? process.env.OPENAI_BASE_URL : undefined);
+    (typeof process !== 'undefined' ? process.env.OPENAI_BASE_URL : undefined);
   const baseUrl = normalizeBaseUrl(baseUrlRaw);
   const isOpenRouterViaBaseUrl = baseUrl ? isOpenRouterBaseUrl(baseUrl) : false;
   const hasOpenRouterKey = apiKeys.openrouterApiKey != null;
   const hasOpenAiKey = apiKeys.openaiApiKey != null;
   const isOpenRouter =
     Boolean(forceOpenRouter) ||
-    isOpenRouterViaBaseUrl ||
+    isOpenRouterViaBaseUrl ??
     (hasOpenRouterKey && !baseUrl && !hasOpenAiKey);
 
   const apiKey = isOpenRouter
@@ -70,43 +68,43 @@ export function resolveOpenAiClientConfig({
   if (!apiKey) {
     throw new Error(
       isOpenRouter
-        ? "Missing OPENROUTER_API_KEY (or OPENAI_API_KEY) for OpenRouter"
-        : "Missing OPENAI_API_KEY for openai/... model",
+        ? 'Missing OPENROUTER_API_KEY (or OPENAI_API_KEY) for OpenRouter'
+        : 'Missing OPENAI_API_KEY for openai/... model',
     );
   }
 
   const baseURL = forceOpenRouter
-    ? "https://openrouter.ai/api/v1"
-    : (baseUrl ?? (isOpenRouter ? "https://openrouter.ai/api/v1" : undefined));
+    ? 'https://openrouter.ai/api/v1'
+    : (baseUrl ?? (isOpenRouter ? 'https://openrouter.ai/api/v1' : undefined));
 
   const isCustomBaseURL = (() => {
-    if (!baseURL) return false;
+    if (!baseURL) {return false;}
     try {
       const url = new URL(baseURL);
-      return url.host !== "api.openai.com" && url.host !== "openrouter.ai";
+      return url.host !== 'api.openai.com' && url.host !== 'openrouter.ai';
     } catch {
       return false;
     }
   })();
 
-  const useChatCompletions = Boolean(forceChatCompletions) || isOpenRouter || isCustomBaseURL;
+  const useChatCompletions = Boolean(forceChatCompletions) || isOpenRouter ?? isCustomBaseURL;
   return {
     apiKey,
     baseURL: baseURL ?? undefined,
-    useChatCompletions,
     isOpenRouter,
+    useChatCompletions,
     ...(requestOptions ? { requestOptions } : {}),
   };
 }
 
 function resolveOpenAiResponsesUrl(baseUrl: string): URL {
   const url = new URL(baseUrl);
-  const path = url.pathname.replace(/\/$/, "");
-  if (/\/responses$/.test(path)) {
+  const path = url.pathname.replace(/\/$/, '');
+  if (path.endsWith('/responses')) {
     url.pathname = path;
     return url;
   }
-  if (/\/v1$/.test(path)) {
+  if (path.endsWith('/v1')) {
     url.pathname = `${path}/responses`;
     return url;
   }
@@ -116,20 +114,20 @@ function resolveOpenAiResponsesUrl(baseUrl: string): URL {
 
 function resolveOpenAiChatCompletionsUrl(baseUrl: string): URL {
   const url = new URL(baseUrl);
-  const path = url.pathname.replace(/\/$/, "");
-  if (url.host === "models.github.ai") {
-    if (/\/chat\/completions$/.test(path)) {
+  const path = url.pathname.replace(/\/$/, '');
+  if (url.host === 'models.github.ai') {
+    if (path.endsWith('/chat/completions')) {
       url.pathname = path;
       return url;
     }
     url.pathname = `${path}/chat/completions`;
     return url;
   }
-  if (/\/chat\/completions$/.test(path)) {
+  if (path.endsWith('/chat/completions')) {
     url.pathname = path;
     return url;
   }
-  if (/\/v1$/.test(path)) {
+  if (path.endsWith('/v1')) {
     url.pathname = `${path}/chat/completions`;
     return url;
   }
@@ -138,18 +136,18 @@ function resolveOpenAiChatCompletionsUrl(baseUrl: string): URL {
 }
 
 function stripOpenAiProviderPrefix(modelId: string): string {
-  return modelId.trim().replace(/^openai\//i, "");
+  return modelId.trim().replace(/^openai\//i, '');
 }
 
 function isOpenAiResponsesTextModelId(modelId: string): boolean {
   const normalized = stripOpenAiProviderPrefix(modelId).toLowerCase();
-  return normalized.startsWith("gpt-5") && normalized !== "gpt-5-chat";
+  return normalized.startsWith('gpt-5') && normalized !== 'gpt-5-chat';
 }
 
 function buildOpenAiResponsesRequestOptions(
   requestOptions: ModelRequestOptions | undefined,
 ): Record<string, unknown> {
-  if (!requestOptions) return {};
+  if (!requestOptions) {return {};}
   const serviceTier = toOpenAiServiceTierParam(requestOptions.serviceTier);
   return {
     ...(serviceTier ? { service_tier: serviceTier } : {}),
@@ -163,7 +161,7 @@ function buildOpenAiResponsesRequestOptions(
 function buildOpenAiChatRequestOptions(
   requestOptions: ModelRequestOptions | undefined,
 ): Record<string, unknown> {
-  if (!requestOptions) return {};
+  if (!requestOptions) {return {};}
   const serviceTier = toOpenAiServiceTierParam(requestOptions.serviceTier);
   return {
     ...(serviceTier ? { service_tier: serviceTier } : {}),
@@ -174,15 +172,15 @@ function buildOpenAiChatRequestOptions(
 
 function resolveGitHubModelsCompatFallbackModelId(modelId: string): string | null {
   const normalized = modelId.trim().toLowerCase();
-  if (!normalized.startsWith("openai/gpt-5") || normalized === "openai/gpt-5-chat") {
+  if (!normalized.startsWith('openai/gpt-5') || normalized === 'openai/gpt-5-chat') {
     return null;
   }
-  return "openai/gpt-5-chat";
+  return 'openai/gpt-5-chat';
 }
 
 function shouldRetryGitHubModelsCompat(error: unknown): boolean {
   const statusCode =
-    typeof (error as { statusCode?: unknown })?.statusCode === "number"
+    typeof (error as { statusCode?: unknown })?.statusCode === 'number'
       ? Number((error as { statusCode?: unknown }).statusCode)
       : null;
   return statusCode === 400 || statusCode === 404 || statusCode === 500 || statusCode === 502;
@@ -190,87 +188,79 @@ function shouldRetryGitHubModelsCompat(error: unknown): boolean {
 
 function extractOpenAiResponseText(payload: {
   output_text?: unknown;
-  output?: Array<{ content?: Array<{ text?: string }> }>;
+  output?: { content?: Array<{ text?: string }> }[];
 }): string {
-  if (typeof payload.output_text === "string") return payload.output_text.trim();
+  if (typeof payload.output_text === 'string') {return payload.output_text.trim();}
   const output = Array.isArray(payload.output) ? payload.output : [];
   const text = output
     .flatMap((item) => (Array.isArray(item.content) ? item.content : []))
-    .map((block) => (typeof block.text === "string" ? block.text : ""))
-    .join("")
+    .map((block) => (typeof block.text === 'string' ? block.text : ''))
+    .join('')
     .trim();
   return text;
 }
 
 function extractChatCompletionText(payload: {
-  choices?: Array<{
-    message?: {
-      content?: unknown;
-    };
-  }>;
+  choices?: { message?: { content?: unknown } }[];
 }): string {
   const choices = Array.isArray(payload.choices) ? payload.choices : [];
   const content = choices[0]?.message?.content;
-  if (typeof content === "string") return content.trim();
-  if (!Array.isArray(content)) return "";
+  if (typeof content === 'string') {return content.trim();}
+  if (!Array.isArray(content)) {return '';}
   return content
     .map((part) => {
-      if (!part || typeof part !== "object") return "";
+      if (!part || typeof part !== 'object') {return '';}
       const record = part as Record<string, unknown>;
-      return typeof record.text === "string" ? record.text : "";
+      return typeof record.text === 'string' ? record.text : '';
     })
-    .join("")
+    .join('')
     .trim();
 }
 
 function contextToChatCompletionMessages(
   context: Context,
-): Array<{ role: string; content: string }> {
-  const messages: Array<{ role: string; content: string }> = [];
+): { role: string; content: string }[] {
+  const messages: { role: string; content: string }[] = [];
   const systemPrompt = context.systemPrompt?.trim();
   if (systemPrompt) {
-    messages.push({ role: "system", content: systemPrompt });
+    messages.push({ content: systemPrompt, role: 'system' });
   }
   for (const message of context.messages) {
     const content =
-      typeof message.content === "string"
+      typeof message.content === 'string'
         ? message.content.trim()
-        : Array.isArray(message.content)
+        : (Array.isArray(message.content)
           ? message.content
-              .map((part) => (part.type === "text" ? part.text : ""))
-              .join("")
+              .map((part) => (part.type === 'text' ? part.text : ''))
+              .join('')
               .trim()
-          : "";
-    if (!content) continue;
-    messages.push({ role: message.role, content });
+          : '');
+    if (!content) {continue;}
+    messages.push({ content, role: message.role });
   }
   return messages;
 }
 
-function contextToResponsesInput(context: Context): Array<{
-  role: string;
-  content: Array<{ type: "input_text"; text: string }>;
-}> {
+function contextToResponsesInput(
+  context: Context,
+): { role: string; content: Array<{ type: 'input_text'; text: string }> }[] {
   return contextToChatCompletionMessages({
-    systemPrompt: undefined,
     messages: context.messages,
+    systemPrompt: undefined,
   }).map((message) => ({
+    content: [{ type: 'input_text', text: message.content }],
     role: message.role,
-    content: [{ type: "input_text", text: message.content }],
   }));
 }
 
 function buildOpenAiRequestHeaders(openaiConfig: OpenAiClientConfig): Record<string, string> {
   return {
-    "content-type": "application/json",
     authorization: `Bearer ${openaiConfig.apiKey}`,
+    'content-type': 'application/json',
     ...(openaiConfig.isOpenRouter
-      ? {
-          "HTTP-Referer": "https://github.com/steipete/summarize",
-          "X-Title": "summarize",
-        }
+      ? { 'HTTP-Referer': 'https://github.com/steipete/summarize', 'X-Title': 'summarize' }
       : {}),
-    ...(openaiConfig.extraHeaders ?? {}),
+    ...openaiConfig.extraHeaders,
   };
 }
 
@@ -285,7 +275,7 @@ function createOpenAiHttpError({
 }): Error {
   const message =
     isGitHubModelsBaseUrl(baseUrl) && status === 429
-      ? "GitHub Models rate limit exceeded (429). Try again later or use another model/token."
+      ? 'GitHub Models rate limit exceeded (429). Try again later or use another model/token.'
       : `OpenAI API error (${status}).`;
   const error = new Error(message);
   (error as { statusCode?: number }).statusCode = status;
@@ -310,32 +300,32 @@ async function completeOpenAiChatText({
   signal: AbortSignal;
   fetchImpl: typeof fetch;
 }): Promise<OpenAiTextCompletionResult> {
-  const baseUrl = openaiConfig.baseURL ?? "https://api.openai.com/v1";
+  const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
   const response = await fetchImpl(String(resolveOpenAiChatCompletionsUrl(baseUrl)), {
-    method: "POST",
-    headers: buildOpenAiRequestHeaders(openaiConfig),
     body: JSON.stringify({
       model: modelId,
       messages: contextToChatCompletionMessages(context),
       ...buildOpenAiChatRequestOptions(openaiConfig.requestOptions),
-      ...(typeof maxOutputTokens === "number" ? { max_tokens: maxOutputTokens } : {}),
-      ...(typeof temperature === "number" ? { temperature } : {}),
+      ...(typeof maxOutputTokens === 'number' ? { max_tokens: maxOutputTokens } : {}),
+      ...(typeof temperature === 'number' ? { temperature } : {}),
     }),
+    headers: buildOpenAiRequestHeaders(openaiConfig),
+    method: 'POST',
     signal,
   });
 
   const bodyText = await response.text();
   if (!response.ok) {
-    throw createOpenAiHttpError({ baseUrl, status: response.status, bodyText });
+    throw createOpenAiHttpError({ baseUrl, bodyText, status: response.status });
   }
 
   const data = JSON.parse(bodyText) as {
-    choices?: Array<{ message?: { content?: unknown } }>;
+    choices?: { message?: { content?: unknown } }[];
     usage?: unknown;
   };
   const text = extractChatCompletionText(data);
-  if (!text) throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
-  return { text, usage: normalizeOpenAiUsage(data.usage), resolvedModelId: modelId };
+  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
+  return { resolvedModelId: modelId, text, usage: normalizeOpenAiUsage(data.usage) };
 }
 
 async function completeOpenAiResponsesText({
@@ -355,34 +345,34 @@ async function completeOpenAiResponsesText({
   signal: AbortSignal;
   fetchImpl: typeof fetch;
 }): Promise<OpenAiTextCompletionResult> {
-  const baseUrl = openaiConfig.baseURL ?? "https://api.openai.com/v1";
+  const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
   const response = await fetchImpl(String(resolveOpenAiResponsesUrl(baseUrl)), {
-    method: "POST",
-    headers: buildOpenAiRequestHeaders(openaiConfig),
     body: JSON.stringify({
       model: modelId,
       input: contextToResponsesInput(context),
       ...(context.systemPrompt?.trim() ? { instructions: context.systemPrompt.trim() } : {}),
       ...buildOpenAiResponsesRequestOptions(openaiConfig.requestOptions),
-      ...(typeof maxOutputTokens === "number" ? { max_output_tokens: maxOutputTokens } : {}),
-      ...(typeof temperature === "number" ? { temperature } : {}),
+      ...(typeof maxOutputTokens === 'number' ? { max_output_tokens: maxOutputTokens } : {}),
+      ...(typeof temperature === 'number' ? { temperature } : {}),
     }),
+    headers: buildOpenAiRequestHeaders(openaiConfig),
+    method: 'POST',
     signal,
   });
 
   const bodyText = await response.text();
   if (!response.ok) {
-    throw createOpenAiHttpError({ baseUrl, status: response.status, bodyText });
+    throw createOpenAiHttpError({ baseUrl, bodyText, status: response.status });
   }
 
   const data = JSON.parse(bodyText) as {
     output_text?: unknown;
-    output?: Array<{ content?: Array<{ text?: string }> }>;
+    output?: { content?: Array<{ text?: string }> }[];
     usage?: unknown;
   };
   const text = extractOpenAiResponseText(data);
-  if (!text) throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
-  return { text, usage: normalizeOpenAiUsage(data.usage), resolvedModelId: modelId };
+  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
+  return { resolvedModelId: modelId, text, usage: normalizeOpenAiUsage(data.usage) };
 }
 
 async function completeGitHubModelsText({
@@ -404,13 +394,13 @@ async function completeGitHubModelsText({
 }): Promise<OpenAiTextCompletionResult> {
   try {
     return await completeOpenAiChatText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   } catch (error) {
     const fallbackModelId = resolveGitHubModelsCompatFallbackModelId(modelId);
@@ -418,13 +408,13 @@ async function completeGitHubModelsText({
       throw error;
     }
     return completeOpenAiChatText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId: fallbackModelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   }
 }
@@ -448,13 +438,13 @@ export async function completeOpenAiText({
 }): Promise<OpenAiTextCompletionResult> {
   if (isGitHubModelsBaseUrl(openaiConfig.baseURL)) {
     return completeGitHubModelsText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   }
   if (
@@ -464,24 +454,24 @@ export async function completeOpenAiText({
     isApiOpenAiBaseUrl(openaiConfig.baseURL)
   ) {
     return completeOpenAiChatText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   }
   if (openaiConfig.isOpenRouter && isOpenAiResponsesTextModelId(modelId)) {
     return completeOpenAiChatText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   }
   if (
@@ -490,28 +480,28 @@ export async function completeOpenAiText({
     isOpenAiResponsesTextModelId(modelId)
   ) {
     return completeOpenAiResponsesText({
+      context,
+      fetchImpl,
+      maxOutputTokens,
       modelId,
       openaiConfig,
-      context,
-      temperature,
-      maxOutputTokens,
       signal,
-      fetchImpl,
+      temperature,
     });
   }
-  const model = resolveOpenAiModel({ modelId, context, openaiConfig });
+  const model = resolveOpenAiModel({ context, modelId, openaiConfig });
   const result = await completeSimple(model, context, {
-    ...(typeof temperature === "number" ? { temperature } : {}),
-    ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+    ...(typeof temperature === 'number' ? { temperature } : {}),
+    ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
     apiKey: openaiConfig.apiKey,
     signal,
   });
   const text = result.content
-    .filter((c) => c.type === "text")
+    .filter((c) => c.type === 'text')
     .map((c) => c.text)
-    .join("")
+    .join('')
     .trim();
-  if (!text) throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
+  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
   return { text, usage: normalizeTokenUsage(result.usage) };
 }
 
@@ -534,17 +524,17 @@ export async function completeOpenAiDocument({
   timeoutMs: number;
   fetchImpl: typeof fetch;
 }): Promise<{ text: string; usage: LlmTokenUsage | null }> {
-  if (document.kind !== "document") {
-    throw new Error("Internal error: expected a document attachment for OpenAI.");
+  if (document.kind !== 'document') {
+    throw new Error('Internal error: expected a document attachment for OpenAI.');
   }
   if (openaiConfig.isOpenRouter) {
     throw createUnsupportedFunctionalityError(
-      "OpenRouter does not support PDF attachments for openai/... models",
+      'OpenRouter does not support PDF attachments for openai/... models',
     );
   }
-  const baseUrl = openaiConfig.baseURL ?? "https://api.openai.com/v1";
-  const host = new URL(baseUrl).host;
-  if (host !== "api.openai.com") {
+  const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
+  const {host} = new URL(baseUrl);
+  if (host !== 'api.openai.com') {
     throw createUnsupportedFunctionalityError(
       `Document attachments require api.openai.com; got ${host}`,
     );
@@ -552,47 +542,47 @@ export async function completeOpenAiDocument({
 
   const url = resolveOpenAiResponsesUrl(baseUrl);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  const filename = document.filename?.trim() || "document.pdf";
+  const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
+  const filename = document.filename?.trim() ?? 'document.pdf';
   const payload = {
-    model: modelId,
     input: [
       {
-        role: "user",
+        role: 'user',
         content: [
           {
-            type: "input_file",
+            type: 'input_file',
             filename,
             file_data: `data:${document.mediaType};base64,${bytesToBase64(document.bytes)}`,
           },
-          { type: "input_text", text: promptText },
+          { type: 'input_text', text: promptText },
         ],
       },
     ],
+    model: modelId,
     ...buildOpenAiResponsesRequestOptions(openaiConfig.requestOptions),
-    ...(typeof maxOutputTokens === "number" ? { max_output_tokens: maxOutputTokens } : {}),
-    ...(typeof temperature === "number" ? { temperature } : {}),
+    ...(typeof maxOutputTokens === 'number' ? { max_output_tokens: maxOutputTokens } : {}),
+    ...(typeof temperature === 'number' ? { temperature } : {}),
   };
 
   try {
     const response = await fetchImpl(String(url), {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${openaiConfig.apiKey}`,
-      },
       body: JSON.stringify(payload),
+      headers: {
+        authorization: `Bearer ${openaiConfig.apiKey}`,
+        'content-type': 'application/json',
+      },
+      method: 'POST',
       signal: controller.signal,
     });
 
     const bodyText = await response.text();
     if (!response.ok) {
-      throw createOpenAiHttpError({ baseUrl, status: response.status, bodyText });
+      throw createOpenAiHttpError({ baseUrl, bodyText, status: response.status });
     }
 
     const data = JSON.parse(bodyText) as {
       output_text?: unknown;
-      output?: Array<{ content?: Array<{ text?: string }> }>;
+      output?: { content?: Array<{ text?: string }> }[];
       usage?: unknown;
     };
     const text = extractOpenAiResponseText(data);

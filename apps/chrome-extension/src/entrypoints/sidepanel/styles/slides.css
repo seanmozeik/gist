@@ -42,7 +42,7 @@
   transition: opacity 140ms ease;
 }
 
-.slideInline__thumbImage[data-loaded="true"] {
+.slideInline__thumbImage[data-loaded='true'] {
   opacity: 1;
 }
 
@@ -146,7 +146,7 @@
   transition: opacity 140ms ease;
 }
 
-.slideStrip__thumbImage[data-loaded="true"] {
+.slideStrip__thumbImage[data-loaded='true'] {
   opacity: 1;
 }
 
@@ -269,7 +269,7 @@
   padding: 16px;
 }
 
-.slideModal[data-open="true"] {
+.slideModal[data-open='true'] {
   display: flex;
 }
 

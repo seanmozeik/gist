@@ -1,36 +1,34 @@
-import type { Command } from "commander";
-import { type CacheState } from "../cache.js";
-import type { ExecFileFn } from "../markitdown.js";
-import type { FixedModelSpec } from "../model-spec.js";
+import type { Command } from 'commander';
+
+import type { CacheState } from '../cache.js';
+import type { ExecFileFn } from '../markitdown.js';
+import type { FixedModelSpec } from '../model-spec.js';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
-} from "../tty/theme.js";
-import { createCacheStateFromConfig } from "./cache-state.js";
-import { parseCliProviderArg } from "./env.js";
-import { isPdfExtension, isTranscribableExtension } from "./flows/asset/input.js";
-import { summarizeMediaFile as summarizeMediaFileImpl } from "./flows/asset/media.js";
-import { createMediaCacheFromConfig } from "./media-cache-state.js";
-import { createProgressGate } from "./progress.js";
-import { resolveRunContextState } from "./run-context.js";
-import { resolveRunInput } from "./run-input.js";
-import { createRunMetrics } from "./run-metrics.js";
-import { resolveModelSelection } from "./run-models.js";
-import { resolveDesiredOutputTokens } from "./run-output.js";
-import { buildPromptLengthInstruction, resolveSummaryLength } from "./run-settings.js";
-import { resolveStreamSettings } from "./run-stream.js";
-import { createRunnerFlowContexts } from "./runner-contexts.js";
-import { executeRunnerInput } from "./runner-execution.js";
-import { resolveRunnerFlags } from "./runner-flags.js";
-import { resolveRunnerSlidesSettings } from "./runner-slides.js";
-import { createSummaryEngine } from "./summary-engine.js";
-import { isRichTty, supportsColor } from "./terminal.js";
+} from '../tty/theme.js';
+import { createCacheStateFromConfig } from './cache-state.js';
+import { parseCliProviderArg } from './env.js';
+import { isPdfExtension, isTranscribableExtension } from './flows/asset/input.js';
+import { summarizeMediaFile as summarizeMediaFileImpl } from './flows/asset/media.js';
+import { createMediaCacheFromConfig } from './media-cache-state.js';
+import { createProgressGate } from './progress.js';
+import { resolveRunContextState } from './run-context.js';
+import { resolveRunInput } from './run-input.js';
+import { createRunMetrics } from './run-metrics.js';
+import { resolveModelSelection } from './run-models.js';
+import { resolveDesiredOutputTokens } from './run-output.js';
+import { buildPromptLengthInstruction, resolveSummaryLength } from './run-settings.js';
+import { resolveStreamSettings } from './run-stream.js';
+import { createRunnerFlowContexts } from './runner-contexts.js';
+import { executeRunnerInput } from './runner-execution.js';
+import { resolveRunnerFlags } from './runner-flags.js';
+import { resolveRunnerSlidesSettings } from './runner-slides.js';
+import { createSummaryEngine } from './summary-engine.js';
+import { isRichTty, supportsColor } from './terminal.js';
 
-export type RunnerPlan = {
-  cacheState: CacheState;
-  execute: () => Promise<void>;
-};
+export interface RunnerPlan { cacheState: CacheState; execute: () => Promise<void> }
 
 export async function createRunnerPlan(options: {
   normalizedArgv: string[];
@@ -58,17 +56,12 @@ export async function createRunnerPlan(options: {
   let { promptOverride } = options;
   const programOpts = program.opts() as Record<string, unknown>;
 
-  const cliFlagPresent = normalizedArgv.some((arg) => arg === "--cli" || arg.startsWith("--cli="));
-  let cliProviderArgRaw = typeof programOpts.cli === "string" ? programOpts.cli : null;
-  const inputResolution = resolveRunInput({
-    program,
-    cliFlagPresent,
-    cliProviderArgRaw,
-    stdout,
-  });
-  cliProviderArgRaw = inputResolution.cliProviderArgRaw;
-  const inputTarget = inputResolution.inputTarget;
-  const url = inputResolution.url;
+  const cliFlagPresent = normalizedArgv.some((arg) => arg === '--cli' || arg.startsWith('--cli='));
+  let cliProviderArgRaw = typeof programOpts.cli === 'string' ? programOpts.cli : null;
+  const inputResolution = resolveRunInput({ cliFlagPresent, cliProviderArgRaw, program, stdout });
+  ({ cliProviderArgRaw } = inputResolution);
+  const {inputTarget} = inputResolution;
+  const {url} = inputResolution;
 
   const runStartedAtMs = Date.now();
   const {
@@ -100,29 +93,29 @@ export async function createRunnerPlan(options: {
     shouldComputeReport,
     markdownModeExplicitlySet,
   } = resolveRunnerFlags({
+    envForRun,
     normalizedArgv,
     programOpts,
-    envForRun,
-    url: inputTarget.kind === "url" ? inputTarget.url : url,
+    url: inputTarget.kind === 'url' ? inputTarget.url : url,
   });
 
   if (extractMode && lengthExplicitlySet && !json && isRichTty(stderr)) {
-    stderr.write("Warning: --length is ignored with --extract (no summary is generated).\n");
+    stderr.write('Warning: --length is ignored with --extract (no summary is generated).\n');
   }
 
-  const modelArg = typeof programOpts.model === "string" ? programOpts.model : null;
+  const modelArg = typeof programOpts.model === 'string' ? programOpts.model : null;
   const cliProviderArg =
-    typeof cliProviderArgRaw === "string" && cliProviderArgRaw.trim().length > 0
+    typeof cliProviderArgRaw === 'string' && cliProviderArgRaw.trim().length > 0
       ? parseCliProviderArg(cliProviderArgRaw)
       : null;
   if (cliFlagPresent && modelArg) {
-    throw new Error("Use either --model or --cli (not both).");
+    throw new Error('Use either --model or --cli (not both).');
   }
   const explicitModelArg = cliProviderArg
     ? `cli/${cliProviderArg}`
-    : cliFlagPresent
-      ? "auto"
-      : modelArg;
+    : (cliFlagPresent
+      ? 'auto'
+      : modelArg);
 
   const {
     config,
@@ -161,22 +154,22 @@ export async function createRunnerPlan(options: {
     cliAvailability,
     envForAuto,
   } = resolveRunContextState({
-    env,
-    envForRun,
-    programOpts,
-    languageExplicitlySet,
-    videoModeExplicitlySet,
     cliFlagPresent,
     cliProviderArg,
+    env,
+    envForRun,
+    languageExplicitlySet,
+    programOpts,
+    videoModeExplicitlySet,
   });
 
   const themeName = resolveThemeNameFromSources({
     cli: (programOpts as { theme?: unknown }).theme,
-    env: envForRun.SUMMARIZE_THEME,
     config: config?.ui?.theme,
+    env: envForRun.SUMMARIZE_THEME,
   });
   envForRun.SUMMARIZE_THEME = themeName;
-  if (!promptOverride && typeof config?.prompt === "string" && config.prompt.trim().length > 0) {
+  if (!promptOverride && typeof config?.prompt === 'string' && config.prompt.trim().length > 0) {
     promptOverride = config.prompt.trim();
   }
   const lengthArg = lengthExplicitlySet
@@ -184,58 +177,50 @@ export async function createRunnerPlan(options: {
     : resolveSummaryLength(config?.output?.length).lengthArg;
 
   const slidesSettings = resolveRunnerSlidesSettings({
-    normalizedArgv,
-    programOpts,
     config,
     inputTarget,
+    normalizedArgv,
+    programOpts,
   });
   const transcriptTimestamps = Boolean(programOpts.timestamps) || Boolean(slidesSettings);
 
   const lengthInstruction = promptOverride ? buildPromptLengthInstruction(lengthArg) : null;
   const languageInstruction =
-    promptOverride && outputLanguage.kind === "fixed"
+    promptOverride && outputLanguage.kind === 'fixed'
       ? `Output should be ${outputLanguage.label}.`
       : null;
 
   const transcriptNamespace = `yt:${youtubeMode}`;
   const cacheState = await createCacheStateFromConfig({
-    envForRun,
     config,
+    envForRun,
     noCacheFlag,
     transcriptNamespace,
   });
-  const mediaCache = await createMediaCacheFromConfig({
-    envForRun,
-    config,
-    noMediaCacheFlag,
-  });
+  const mediaCache = await createMediaCacheFromConfig({ config, envForRun, noMediaCacheFlag });
 
-  if (markdownModeExplicitlySet && format !== "markdown") {
-    throw new Error("--markdown-mode is only supported with --format md");
+  if (markdownModeExplicitlySet && format !== 'markdown') {
+    throw new Error('--markdown-mode is only supported with --format md');
   }
   if (
     markdownModeExplicitlySet &&
-    inputTarget.kind !== "url" &&
-    inputTarget.kind !== "file" &&
-    inputTarget.kind !== "stdin"
+    inputTarget.kind !== 'url' &&
+    inputTarget.kind !== 'file' &&
+    inputTarget.kind !== 'stdin'
   ) {
-    throw new Error("--markdown-mode is only supported for URL, file, or stdin inputs");
+    throw new Error('--markdown-mode is only supported for URL, file, or stdin inputs');
   }
   if (
     markdownModeExplicitlySet &&
-    (inputTarget.kind === "file" || inputTarget.kind === "stdin") &&
-    markdownMode !== "llm"
+    (inputTarget.kind === 'file' || inputTarget.kind === 'stdin') &&
+    markdownMode !== 'llm'
   ) {
     throw new Error(
-      "Only --markdown-mode llm is supported for file/stdin inputs; other modes require a URL",
+      'Only --markdown-mode llm is supported for file/stdin inputs; other modes require a URL',
     );
   }
 
-  const metrics = createRunMetrics({
-    env,
-    fetchImpl,
-    maxOutputTokensArg,
-  });
+  const metrics = createRunMetrics({ env, fetchImpl, maxOutputTokensArg });
   const {
     llmCalls,
     trackedFetch,
@@ -256,45 +241,34 @@ export async function createRunnerPlan(options: {
     wantsFreeNamedModel,
     configForModelSelection,
     isFallbackModel,
-  } = resolveModelSelection({
-    config,
-    configForCli,
-    configPath,
-    envForRun,
-    explicitModelArg,
-  });
+  } = resolveModelSelection({ config, configForCli, configPath, envForRun, explicitModelArg });
 
   const verboseColor = supportsColor(stderr, envForRun);
   const themeForStderr = createThemeRenderer({
-    themeName,
     enabled: verboseColor,
+    themeName,
     trueColor: resolveTrueColor(envForRun),
   });
-  const renderSpinnerStatus = (label: string, detail = "…") =>
+  const renderSpinnerStatus = (label: string, detail = '…') =>
     `${themeForStderr.label(label)}${themeForStderr.dim(detail)}`;
   const renderSpinnerStatusWithModel = (label: string, modelId: string) =>
-    `${themeForStderr.label(label)}${themeForStderr.dim(" (model: ")}${themeForStderr.accent(
+    `${themeForStderr.label(label)}${themeForStderr.dim(' (model: ')}${themeForStderr.accent(
       modelId,
-    )}${themeForStderr.dim(")…")}`;
-  const { streamingEnabled } = resolveStreamSettings({
-    streamMode,
-    stdout,
-    json,
-    extractMode,
-  });
+    )}${themeForStderr.dim(')…')}`;
+  const { streamingEnabled } = resolveStreamSettings({ extractMode, json, stdout, streamMode });
 
   if (
     extractMode &&
-    inputTarget.kind === "file" &&
+    inputTarget.kind === 'file' &&
     !isTranscribableExtension(inputTarget.filePath) &&
     !isPdfExtension(inputTarget.filePath)
   ) {
     throw new Error(
-      "--extract for local files is only supported for media files (MP3, MP4, WAV, etc.) and PDF files",
+      '--extract for local files is only supported for media files (MP3, MP4, WAV, etc.) and PDF files',
     );
   }
-  if (extractMode && inputTarget.kind === "stdin") {
-    throw new Error("--extract is not supported for piped stdin input");
+  if (extractMode && inputTarget.kind === 'stdin') {
+    throw new Error('--extract is not supported for piped stdin input');
   }
 
   const progressEnabled = isRichTty(stderr) && !verbose && !json;
@@ -307,224 +281,195 @@ export async function createRunnerPlan(options: {
   } = progressGate;
 
   const fixedModelSpec: FixedModelSpec | null =
-    requestedModel.kind === "fixed" ? requestedModel : null;
+    requestedModel.kind === 'fixed' ? requestedModel : null;
   const desiredOutputTokens = resolveDesiredOutputTokens({ lengthArg, maxOutputTokensArg });
 
   const summaryEngine = createSummaryEngine({
+    apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey: apiKey, openrouterApiKey, xaiApiKey },
+    clearProgressForStdout,
+    cliAvailability,
+    cliConfigForRun: cliConfigForRun ?? null,
     env,
     envForRun,
-    stdout,
-    stderr,
     execFileImpl,
-    timeoutMs,
-    retries,
-    streamingEnabled,
-    plain,
-    verbose,
-    verboseColor,
-    openaiUseChatCompletions,
+    keyFlags: { anthropicConfigured, googleConfigured, openrouterConfigured },
+    llmCalls,
+    nvidia: { apiKey: nvidiaApiKey, baseUrl: nvidiaBaseUrl },
     openaiRequestOptions,
     openaiRequestOptionsOverride,
-    cliConfigForRun: cliConfigForRun ?? null,
-    cliAvailability,
-    trackedFetch,
-    resolveMaxOutputTokensForCall,
-    resolveMaxInputTokensForCall,
-    llmCalls,
-    clearProgressForStdout,
-    restoreProgressAfterStdout,
-    apiKeys: {
-      xaiApiKey,
-      openaiApiKey: apiKey,
-      googleApiKey,
-      anthropicApiKey,
-      openrouterApiKey,
-    },
-    keyFlags: {
-      googleConfigured,
-      anthropicConfigured,
-      openrouterConfigured,
-    },
-    zai: {
-      apiKey: zaiApiKey,
-      baseUrl: zaiBaseUrl,
-    },
-    nvidia: {
-      apiKey: nvidiaApiKey,
-      baseUrl: nvidiaBaseUrl,
-    },
+    openaiUseChatCompletions,
+    plain,
     providerBaseUrls,
+    resolveMaxInputTokensForCall,
+    resolveMaxOutputTokensForCall,
+    restoreProgressAfterStdout,
+    retries,
+    stderr,
+    stdout,
+    streamingEnabled,
+    timeoutMs,
+    trackedFetch,
+    verbose,
+    verboseColor,
+    zai: { apiKey: zaiApiKey, baseUrl: zaiBaseUrl },
   });
 
   const writeViaFooter = (parts: string[]) => {
-    if (json || extractMode) return;
+    if (json || extractMode) {return;}
     const filtered = parts.map((part) => part.trim()).filter(Boolean);
-    if (filtered.length === 0) return;
+    if (filtered.length === 0) {return;}
     clearProgressForStdout();
-    stderr.write(`${themeForStderr.dim(`via ${filtered.join(", ")}`)}\n`);
+    stderr.write(`${themeForStderr.dim(`via ${filtered.join(', ')}`)}\n`);
     restoreProgressAfterStdout?.();
   };
 
   const { summarizeAsset, assetInputContext, urlFlowContext } = createRunnerFlowContexts({
-    summarizeMediaFileImpl,
+    buildReport,
     cacheState,
-    mediaCache,
-    io: {
-      env,
-      envForRun,
-      stdout,
-      stderr,
-      execFileImpl,
-      fetch: trackedFetch,
-    },
+    clearProgressForStdout,
+    clearProgressIfCurrent,
+    estimateCostUsd,
     flags: {
-      timeoutMs,
-      maxExtractCharacters: extractMode ? maxExtractCharacters : null,
-      retries,
-      format,
-      markdownMode,
-      preprocessMode,
-      youtubeMode,
-      firecrawlMode: requestedFirecrawlMode,
-      videoMode,
-      transcriptTimestamps,
-      outputLanguage,
-      lengthArg,
-      forceSummary,
-      promptOverride,
-      lengthInstruction,
-      languageInstruction,
-      summaryCacheBypass: noCacheFlag,
-      maxOutputTokensArg,
-      json,
-      extractMode,
-      metricsEnabled,
-      metricsDetailed,
-      shouldComputeReport,
-      runStartedAtMs,
-      verbose,
-      verboseColor,
-      progressEnabled,
-      streamMode,
-      streamingEnabled,
-      plain,
-      configPath,
       configModelLabel,
+      configPath,
+      extractMode,
+      firecrawlMode: requestedFirecrawlMode,
+      forceSummary,
+      format,
+      json,
+      languageInstruction,
+      lengthArg,
+      lengthInstruction,
+      markdownMode,
+      maxExtractCharacters: extractMode ? maxExtractCharacters : null,
+      maxOutputTokensArg,
+      metricsDetailed,
+      metricsEnabled,
+      outputLanguage,
+      plain,
+      preprocessMode,
+      progressEnabled,
+      promptOverride,
+      retries,
+      runStartedAtMs,
+      shouldComputeReport,
       slides: slidesSettings,
       slidesDebug,
       slidesOutput: true,
+      streamMode,
+      streamingEnabled,
+      summaryCacheBypass: noCacheFlag,
+      timeoutMs,
+      transcriptTimestamps,
+      verbose,
+      verboseColor,
+      videoMode,
+      youtubeMode,
     },
+    io: { env, envForRun, execFileImpl, fetch: trackedFetch, stderr, stdout },
+    mediaCache,
     model: {
+      allowAutoCliFallback: false,
+      apiStatus: {
+        anthropicApiKey,
+        anthropicConfigured,
+        apiKey,
+        apifyToken,
+        assemblyaiApiKey,
+        falApiKey,
+        firecrawlApiKey,
+        firecrawlConfigured,
+        googleApiKey,
+        googleConfigured,
+        groqApiKey,
+        nvidiaApiKey,
+        nvidiaBaseUrl,
+        openaiApiKey,
+        openrouterApiKey,
+        openrouterConfigured,
+        providerBaseUrls,
+        xaiApiKey,
+        ytDlpCookiesFromBrowser,
+        ytDlpPath,
+        zaiApiKey,
+        zaiBaseUrl,
+      },
+      cliAvailability,
+      configForModelSelection,
+      desiredOutputTokens,
+      envForAuto,
+      fixedModelSpec,
+      getLiteLlmCatalog,
+      isFallbackModel,
+      isImplicitAutoSelection,
+      isNamedModelSelection,
+      llmCalls,
+      openaiRequestOptions,
+      openaiRequestOptionsOverride,
+      openaiUseChatCompletions,
+      openaiWhisperUsdPerMinute,
       requestedModel,
       requestedModelInput,
       requestedModelLabel,
-      fixedModelSpec,
-      isFallbackModel,
-      isImplicitAutoSelection,
-      allowAutoCliFallback: false,
-      isNamedModelSelection,
-      wantsFreeNamedModel,
-      desiredOutputTokens,
-      configForModelSelection,
-      envForAuto,
-      cliAvailability,
-      openaiUseChatCompletions,
-      openaiRequestOptions,
-      openaiRequestOptionsOverride,
-      openaiWhisperUsdPerMinute,
-      apiStatus: {
-        xaiApiKey,
-        apiKey,
-        nvidiaApiKey,
-        openrouterApiKey,
-        openrouterConfigured,
-        googleApiKey,
-        googleConfigured,
-        anthropicApiKey,
-        anthropicConfigured,
-        providerBaseUrls,
-        zaiApiKey,
-        zaiBaseUrl,
-        nvidiaBaseUrl,
-        firecrawlConfigured,
-        firecrawlApiKey,
-        apifyToken,
-        ytDlpPath,
-        ytDlpCookiesFromBrowser,
-        falApiKey,
-        groqApiKey,
-        assemblyaiApiKey,
-        openaiApiKey,
-      },
       summaryEngine,
-      getLiteLlmCatalog,
-      llmCalls,
+      wantsFreeNamedModel,
     },
-    setTranscriptionCost,
-    writeViaFooter,
-    clearProgressForStdout,
     restoreProgressAfterStdout,
     setClearProgressBeforeStdout,
-    clearProgressIfCurrent,
-    buildReport,
-    estimateCostUsd,
+    setTranscriptionCost,
+    summarizeMediaFileImpl,
+    writeViaFooter,
   });
 
   return {
     cacheState,
     execute: async () => {
       await executeRunnerInput({
-        inputTarget,
-        stdin: stdin ?? process.stdin,
-        handleFileInputContext: assetInputContext,
-        url,
-        isYoutubeUrl,
-        withUrlAssetContext: assetInputContext,
-        slidesEnabled: Boolean(slidesSettings),
+        extractAssetContext: { env, envForRun, execFileImpl, preprocessMode, timeoutMs },
         extractMode,
-        progressEnabled,
-        renderSpinnerStatus,
-        renderSpinnerStatusWithModel,
-        extractAssetContext: {
-          env,
-          envForRun,
-          execFileImpl,
-          timeoutMs,
-          preprocessMode,
-        },
+        handleFileInputContext: assetInputContext,
+        inputTarget,
+        isYoutubeUrl,
         outputExtractedAssetContext: {
-          io: { env, envForRun, stdout, stderr },
-          flags: {
-            timeoutMs,
-            preprocessMode,
-            format,
-            plain,
-            json,
-            metricsEnabled,
-            metricsDetailed,
-            shouldComputeReport,
-            runStartedAtMs,
-            verboseColor,
-          },
-          hooks: {
-            clearProgressForStdout,
-            restoreProgressAfterStdout,
-            buildReport,
-            estimateCostUsd,
-          },
           apiStatus: {
-            xaiApiKey,
+            anthropicConfigured,
             apiKey,
-            openrouterApiKey,
             apifyToken,
             firecrawlConfigured,
             googleConfigured,
-            anthropicConfigured,
             openaiApiKey,
+            openrouterApiKey,
+            xaiApiKey,
           },
+          flags: {
+            format,
+            json,
+            metricsDetailed,
+            metricsEnabled,
+            plain,
+            preprocessMode,
+            runStartedAtMs,
+            shouldComputeReport,
+            timeoutMs,
+            verboseColor,
+          },
+          hooks: {
+            buildReport,
+            clearProgressForStdout,
+            estimateCostUsd,
+            restoreProgressAfterStdout,
+          },
+          io: { env, envForRun, stderr, stdout },
         },
-        summarizeAsset,
+        progressEnabled,
+        renderSpinnerStatus,
+        renderSpinnerStatusWithModel,
         runUrlFlowContext: urlFlowContext,
+        slidesEnabled: Boolean(slidesSettings),
+        stdin: stdin ?? process.stdin,
+        summarizeAsset,
+        url,
+        withUrlAssetContext: assetInputContext,
       });
     },
   };

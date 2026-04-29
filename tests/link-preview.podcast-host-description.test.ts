@@ -1,16 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
-import { createLinkPreviewClient } from "../src/content/index.js";
+import { describe, expect, it, vi } from 'vitest';
+
+import { createLinkPreviewClient } from '../src/content/index.js';
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
-describe("link preview extraction (podcast host description)", () => {
-  it("prefers meta description on podcast hosts when page text is noisy", async () => {
-    const description = "P".repeat(200);
-    const navText = "Noisy listing content that should not dominate output";
+describe('link preview extraction (podcast host description)', () => {
+  it('prefers meta description on podcast hosts when page text is noisy', async () => {
+    const description = 'P'.repeat(200);
+    const navText = 'Noisy listing content that should not dominate output';
     const html = `<!doctype html><html><head>
       <title>Episode</title>
       <meta name="description" content="${description}" />
@@ -20,19 +18,17 @@ describe("link preview extraction (podcast host description)", () => {
     </body></html>`;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://podbean.com/e/sample-episode") return htmlResponse(html);
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://podbean.com/e/sample-episode') {return htmlResponse(html);}
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
-    });
+    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
 
-    const result = await client.fetchLinkContent("https://podbean.com/e/sample-episode", {
+    const result = await client.fetchLinkContent('https://podbean.com/e/sample-episode', {
+      firecrawl: 'off',
+      format: 'text',
       timeoutMs: 2000,
-      firecrawl: "off",
-      format: "text",
     });
 
     expect(result.content).toContain(description);

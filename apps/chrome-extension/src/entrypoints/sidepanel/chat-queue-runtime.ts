@@ -1,20 +1,16 @@
-type ChatQueueItem = {
-  id: string;
-  text: string;
-  createdAt: number;
-};
+interface ChatQueueItem { id: string; text: string; createdAt: number }
 
-type ChatQueueRuntimeOpts = {
+interface ChatQueueRuntimeOpts {
   chatQueueEl: HTMLElement;
   maxQueue: number;
   setStatus: (value: string) => void;
-};
+}
 
 export function createChatQueueRuntime(opts: ChatQueueRuntimeOpts) {
   let queue: ChatQueueItem[] = [];
 
   function normalizeQueueText(input: string) {
-    return input.replace(/\s+/g, " ").trim();
+    return input.replaceAll(/\s+/g, ' ').trim();
   }
 
   function removeQueuedMessage(id: string) {
@@ -24,29 +20,29 @@ export function createChatQueueRuntime(opts: ChatQueueRuntimeOpts) {
 
   function renderChatQueue() {
     if (queue.length === 0) {
-      opts.chatQueueEl.classList.add("isHidden");
+      opts.chatQueueEl.classList.add('isHidden');
       opts.chatQueueEl.replaceChildren();
       return;
     }
-    opts.chatQueueEl.classList.remove("isHidden");
+    opts.chatQueueEl.classList.remove('isHidden');
     opts.chatQueueEl.replaceChildren();
 
     for (const item of queue) {
-      const row = document.createElement("div");
-      row.className = "chatQueueItem";
+      const row = document.createElement('div');
+      row.className = 'chatQueueItem';
       row.dataset.id = item.id;
 
-      const text = document.createElement("div");
-      text.className = "chatQueueText";
+      const text = document.createElement('div');
+      text.className = 'chatQueueText';
       text.textContent = item.text;
       text.title = item.text;
 
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "chatQueueRemove";
-      remove.textContent = "x";
-      remove.setAttribute("aria-label", "Remove queued message");
-      remove.addEventListener("click", () => removeQueuedMessage(item.id));
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'chatQueueRemove';
+      remove.textContent = 'x';
+      remove.setAttribute('aria-label', 'Remove queued message');
+      remove.addEventListener('click', () => removeQueuedMessage(item.id));
 
       row.append(text, remove);
       opts.chatQueueEl.append(row);
@@ -55,18 +51,18 @@ export function createChatQueueRuntime(opts: ChatQueueRuntimeOpts) {
 
   function enqueueChatMessage(input: string): boolean {
     const text = normalizeQueueText(input);
-    if (!text) return false;
+    if (!text) {return false;}
     if (queue.length >= opts.maxQueue) {
       opts.setStatus(`Queue full (${opts.maxQueue}). Remove one to add more.`);
       return false;
     }
-    queue.push({ id: crypto.randomUUID(), text, createdAt: Date.now() });
+    queue.push({ createdAt: Date.now(), id: crypto.randomUUID(), text });
     renderChatQueue();
     return true;
   }
 
   function clearQueuedMessages() {
-    if (queue.length === 0) return;
+    if (queue.length === 0) {return;}
     queue = [];
     renderChatQueue();
   }

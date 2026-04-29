@@ -1,20 +1,20 @@
-import { execTweetCli } from "./bird/exec.js";
-import { parseBirdTweetPayload, parseXurlTweetPayload } from "./bird/parse.js";
-import type { BirdTweetPayload, TweetCliClient } from "./bird/types.js";
-import { BIRD_TIP, TWITTER_HOSTS } from "./constants.js";
-import { hasBirdCli, hasXurlCli } from "./env.js";
+import { execTweetCli } from './bird/exec.js';
+import { parseBirdTweetPayload, parseXurlTweetPayload } from './bird/parse.js';
+import type { BirdTweetPayload, TweetCliClient } from './bird/types.js';
+import { BIRD_TIP, TWITTER_HOSTS } from './constants.js';
+import { hasBirdCli, hasXurlCli } from './env.js';
 
-export type { TweetCliClient } from "./bird/types.js";
+export type { TweetCliClient } from './bird/types.js';
 
 function parseTweetId(raw: string): string | null {
   const trimmed = raw.trim();
-  if (!trimmed) return null;
-  if (/^\d+$/.test(trimmed)) return trimmed;
+  if (!trimmed) {return null;}
+  if (/^\d+$/.test(trimmed)) {return trimmed;}
   try {
     const parsed = new URL(trimmed);
-    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-    if (!TWITTER_HOSTS.has(host)) return null;
-    const match = parsed.pathname.match(/\/status\/(\d+)/);
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+    if (!TWITTER_HOSTS.has(host)) {return null;}
+    const match = /\/status\/(\d+)/.exec(parsed.pathname);
     return match?.[1] ?? null;
   } catch {
     return null;
@@ -24,8 +24,8 @@ function parseTweetId(raw: string): string | null {
 function isTwitterStatusUrl(raw: string): boolean {
   try {
     const parsed = new URL(raw);
-    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-    if (!TWITTER_HOSTS.has(host)) return false;
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+    if (!TWITTER_HOSTS.has(host)) {return false;}
     return /\/status\/\d+/.test(parsed.pathname);
   } catch {
     return false;
@@ -34,10 +34,10 @@ function isTwitterStatusUrl(raw: string): boolean {
 
 function buildXurlTweetEndpoint(tweetId: string): string {
   const params = new URLSearchParams({
-    expansions: "author_id,attachments.media_keys",
-    "tweet.fields": "created_at,attachments,entities,note_tweet,article",
-    "user.fields": "username,name",
-    "media.fields": "type,url,preview_image_url,variants",
+    expansions: 'author_id,attachments.media_keys',
+    'media.fields': 'type,url,preview_image_url,variants',
+    'tweet.fields': 'created_at,attachments,entities,note_tweet,article',
+    'user.fields': 'username,name',
   });
   return `/2/tweets/${tweetId}?${params.toString()}`;
 }
@@ -49,29 +49,29 @@ export async function readTweetWithXurl(args: {
 }): Promise<BirdTweetPayload> {
   const tweetId = parseTweetId(args.url);
   if (!tweetId) {
-    throw new Error("xurl read requires a tweet status URL or id");
+    throw new Error('xurl read requires a tweet status URL or id');
   }
   const stdout = await execTweetCli(
-    "xurl",
+    'xurl',
     [buildXurlTweetEndpoint(tweetId)],
     args.timeoutMs,
     args.env,
   );
   if (!stdout) {
-    throw new Error("xurl read returned empty output");
+    throw new Error('xurl read returned empty output');
   }
   try {
     return parseXurlTweetPayload(JSON.parse(stdout));
   } catch (parseError) {
     if (
       parseError instanceof Error &&
-      (parseError.message.startsWith("xurl read returned") ||
-        parseError.message.startsWith("xurl API error"))
+      (parseError.message.startsWith('xurl read returned') ||
+        parseError.message.startsWith('xurl API error'))
     ) {
       throw parseError;
     }
     const message = parseError instanceof Error ? parseError.message : String(parseError);
-    throw new Error(`xurl read returned invalid JSON: ${message}`);
+    throw new Error(`xurl read returned invalid JSON: ${message}`, { cause: parseError });
   }
 }
 
@@ -81,22 +81,22 @@ export async function readTweetWithBird(args: {
   env: Record<string, string | undefined>;
 }): Promise<BirdTweetPayload> {
   const stdout = await execTweetCli(
-    "bird",
-    ["read", args.url, "--json-full"],
+    'bird',
+    ['read', args.url, '--json-full'],
     args.timeoutMs,
     args.env,
   );
   if (!stdout) {
-    throw new Error("bird read returned empty output");
+    throw new Error('bird read returned empty output');
   }
   try {
     return parseBirdTweetPayload(JSON.parse(stdout));
   } catch (parseError) {
-    if (parseError instanceof Error && parseError.message.startsWith("bird read returned")) {
+    if (parseError instanceof Error && parseError.message.startsWith('bird read returned')) {
       throw parseError;
     }
     const message = parseError instanceof Error ? parseError.message : String(parseError);
-    throw new Error(`bird read returned invalid JSON: ${message}`);
+    throw new Error(`bird read returned invalid JSON: ${message}`, { cause: parseError });
   }
 }
 
@@ -105,12 +105,12 @@ export async function readTweetWithPreferredClient(args: {
   timeoutMs: number;
   env: Record<string, string | undefined>;
 }): Promise<BirdTweetPayload> {
-  const attempts: Array<[TweetCliClient, () => Promise<BirdTweetPayload>]> = [];
+  const attempts: [TweetCliClient, () => Promise<BirdTweetPayload>][] = [];
   if (hasXurlCli(args.env)) {
-    attempts.push(["xurl", () => readTweetWithXurl(args)]);
+    attempts.push(['xurl', () => readTweetWithXurl(args)]);
   }
   if (hasBirdCli(args.env)) {
-    attempts.push(["bird", () => readTweetWithBird(args)]);
+    attempts.push(['bird', () => readTweetWithBird(args)]);
   }
 
   const errors: string[] = [];
@@ -124,9 +124,9 @@ export async function readTweetWithPreferredClient(args: {
   }
 
   if (errors.length > 0) {
-    throw new Error(errors.join("; "));
+    throw new Error(errors.join('; '));
   }
-  throw new Error("No X CLI available");
+  throw new Error('No X CLI available');
 }
 
 export function withBirdTip(

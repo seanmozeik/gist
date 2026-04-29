@@ -1,86 +1,85 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
-import { makeAssistantMessage, makeTextDeltaStream } from "./helpers/pi-ai-mock.js";
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
+import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 function collectStream() {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 const mocks = vi.hoisted(() => ({
-  streamSimple: vi.fn(),
   completeSimple: vi.fn(),
   getModel: vi.fn(() => {
-    throw new Error("no model");
+    throw new Error('no model');
   }),
+  streamSimple: vi.fn(),
 }));
 
 mocks.streamSimple.mockImplementation(() =>
   makeTextDeltaStream(
-    ["Cached summary."],
+    ['Cached summary.'],
     makeAssistantMessage({
-      text: "Cached summary.",
+      text: 'Cached summary.',
       usage: { input: 1, output: 1, totalTokens: 2 },
     }),
   ),
 );
 
-vi.mock("@mariozechner/pi-ai", () => ({
-  streamSimple: mocks.streamSimple,
+vi.mock('@mariozechner/pi-ai', () => ({
   completeSimple: mocks.completeSimple,
   getModel: mocks.getModel,
+  streamSimple: mocks.streamSimple,
 }));
 
-describe("cli cache summary", () => {
-  it("reuses cached summaries and extracted content", async () => {
+describe('cli cache summary', () => {
+  it('reuses cached summaries and extracted content', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), "summarize-cache-cli-"));
-    const summarizeDir = join(root, ".summarize");
-    const cacheDir = join(summarizeDir, "cache");
+    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-cli-'));
+    const summarizeDir = join(root, '.summarize');
+    const cacheDir = join(summarizeDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, "config.json"),
+      join(summarizeDir, 'config.json'),
       JSON.stringify({ cache: { enabled: true, maxMb: 32, ttlDays: 30 } }),
-      "utf8",
+      'utf8',
     );
 
     writeFileSync(
-      join(cacheDir, "litellm-model_prices_and_context_window.json"),
-      JSON.stringify({ "gpt-5.2": { max_input_tokens: 999_999 } }),
-      "utf8",
+      join(cacheDir, 'litellm-model_prices_and_context_window.json'),
+      JSON.stringify({ 'gpt-5.2': { max_input_tokens: 999_999 } }),
+      'utf8',
     );
     writeFileSync(
-      join(cacheDir, "litellm-model_prices_and_context_window.meta.json"),
+      join(cacheDir, 'litellm-model_prices_and_context_window.meta.json'),
       JSON.stringify({ fetchedAtMs: Date.now() }),
-      "utf8",
+      'utf8',
     );
 
-    const globalFetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
-      throw new Error("unexpected LiteLLM catalog fetch");
+    const globalFetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('unexpected LiteLLM catalog fetch');
     });
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") {
-        return htmlResponse("<!doctype html><html><body>Hi</body></html>");
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {
+        return htmlResponse('<!doctype html><html><body>Hi</body></html>');
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
@@ -91,21 +90,21 @@ describe("cli cache summary", () => {
 
     await runCli(
       [
-        "--model",
-        "openai/gpt-5.2",
-        "--timeout",
-        "2s",
-        "--stream",
-        "on",
-        "--metrics",
-        "off",
-        "https://example.com",
+        '--model',
+        'openai/gpt-5.2',
+        '--timeout',
+        '2s',
+        '--stream',
+        'on',
+        '--metrics',
+        'off',
+        'https://example.com',
       ],
       {
-        env: { HOME: root, OPENAI_API_KEY: "test" },
+        env: { HOME: root, OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout: stdout1.stream,
         stderr: stderr1.stream,
+        stdout: stdout1.stream,
       },
     );
 
@@ -118,21 +117,21 @@ describe("cli cache summary", () => {
 
     await runCli(
       [
-        "--model",
-        "openai/gpt-5.2",
-        "--timeout",
-        "2s",
-        "--stream",
-        "on",
-        "--metrics",
-        "off",
-        "https://example.com",
+        '--model',
+        'openai/gpt-5.2',
+        '--timeout',
+        '2s',
+        '--stream',
+        'on',
+        '--metrics',
+        'off',
+        'https://example.com',
       ],
       {
-        env: { HOME: root, OPENAI_API_KEY: "test" },
+        env: { HOME: root, OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout: stdout2.stream,
         stderr: stderr2.stream,
+        stdout: stdout2.stream,
       },
     );
 

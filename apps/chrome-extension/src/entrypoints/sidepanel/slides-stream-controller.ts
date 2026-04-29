@@ -1,13 +1,13 @@
-import { parseSseEvent, type SseSlidesData } from "../../lib/runtime-contracts";
-import { parseSseStream, type SseMessage } from "../../lib/sse";
+import { parseSseEvent, type SseSlidesData } from '../../lib/runtime-contracts';
+import { parseSseStream, type SseMessage } from '../../lib/sse';
 
-export type SlidesStreamController = {
+export interface SlidesStreamController {
   start: (runId: string) => Promise<void>;
   abort: () => void;
   isStreaming: () => boolean;
-};
+}
 
-export type SlidesStreamControllerOptions = {
+export interface SlidesStreamControllerOptions {
   getToken: () => Promise<string>;
   onSlides: (slides: SseSlidesData) => void;
   onStatus?: ((text: string) => void) | null;
@@ -16,7 +16,7 @@ export type SlidesStreamControllerOptions = {
   fetchImpl?: typeof fetch;
   idleTimeoutMs?: number;
   idleTimeoutMessage?: string;
-};
+}
 
 export function createSlidesStreamController(
   options: SlidesStreamControllerOptions,
@@ -29,11 +29,11 @@ export function createSlidesStreamController(
     onError,
     fetchImpl,
     idleTimeoutMs = 300_000,
-    idleTimeoutMessage = "Timed out waiting for slide updates.",
+    idleTimeoutMessage = 'Timed out waiting for slide updates.',
   } = options;
   let controller: AbortController | null = null;
   let streaming = false;
-  let activeAbortState: { reason: "manual" | "timeout" | null } | null = null;
+  let activeAbortState: { reason: 'manual' | 'timeout' | null } | null = null;
   let activeGeneration = 0;
 
   const abort = () => {
@@ -43,7 +43,7 @@ export function createSlidesStreamController(
       streaming = false;
       return;
     }
-    if (activeAbortState) activeAbortState.reason = "manual";
+    if (activeAbortState) {activeAbortState.reason = 'manual';}
     controller.abort();
     controller = null;
     activeAbortState = null;
@@ -54,87 +54,84 @@ export function createSlidesStreamController(
     const generation = activeGeneration + 1;
     activeGeneration = generation;
     if (controller) {
-      if (activeAbortState) activeAbortState.reason = "manual";
+      if (activeAbortState) {activeAbortState.reason = 'manual';}
       controller.abort();
       controller = null;
       activeAbortState = null;
     }
     streaming = true;
     const token = (await getToken()).trim();
-    if (generation !== activeGeneration) return;
+    if (generation !== activeGeneration) {return;}
     if (!token) {
       streaming = false;
       return;
     }
     const nextController = new AbortController();
     controller = nextController;
-    const abortState = { reason: null as "manual" | "timeout" | null };
+    const abortState = { reason: null as 'manual' | 'timeout' | null };
     activeAbortState = abortState;
     let sawDone = false;
 
     try {
       const res = await (fetchImpl ?? fetch)(
         `http://127.0.0.1:8787/v1/summarize/${runId}/slides/events`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: nextController.signal,
-        },
+        { headers: { Authorization: `Bearer ${token}` }, signal: nextController.signal },
       );
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      if (!res.body) throw new Error("Missing stream body");
+      if (!res.ok) {throw new Error(`${res.status} ${res.statusText}`);}
+      if (!res.body) {throw new Error('Missing stream body');}
 
       const iterator = parseSseStream(res.body);
       const useIdleTimeout = Number.isFinite(idleTimeoutMs) && idleTimeoutMs > 0;
       const nextWithTimeout = async () => {
-        if (!useIdleTimeout) return iterator.next();
+        if (!useIdleTimeout) {return iterator.next();}
         let timer: ReturnType<typeof setTimeout> | null = null;
         const timeoutPromise = new Promise<IteratorResult<SseMessage>>((_, reject) => {
           timer = setTimeout(() => {
             const error = new Error(idleTimeoutMessage);
-            error.name = "IdleTimeoutError";
+            error.name = 'IdleTimeoutError';
             reject(error);
           }, idleTimeoutMs);
         });
         try {
           return await Promise.race([iterator.next(), timeoutPromise]);
         } finally {
-          if (timer) clearTimeout(timer);
+          if (timer) {clearTimeout(timer);}
         }
       };
 
       while (true) {
         const { value: msg, done } = await nextWithTimeout();
-        if (done) break;
-        if (generation !== activeGeneration) return;
-        if (nextController.signal.aborted) return;
+        if (done) {break;}
+        if (generation !== activeGeneration) {return;}
+        if (nextController.signal.aborted) {return;}
         const event = parseSseEvent(msg);
-        if (!event) continue;
-        if (event.event === "slides") {
+        if (!event) {continue;}
+        if (event.event === 'slides') {
           onSlides(event.data);
-        } else if (event.event === "status") {
-          onStatus?.(event.data.text ?? "");
-        } else if (event.event === "error") {
+        } else if (event.event === 'status') {
+          onStatus?.(event.data.text ?? '');
+        } else if (event.event === 'error') {
           throw new Error(event.data.message);
-        } else if (event.event === "done") {
+        } else if (event.event === 'done') {
           sawDone = true;
           break;
         }
       }
 
-      if (generation !== activeGeneration) return;
-      if (nextController.signal.aborted) return;
+      if (generation !== activeGeneration) {return;}
+      if (nextController.signal.aborted) {return;}
       if (!sawDone) {
-        throw new Error("Stream ended unexpectedly. The daemon may have stopped.");
+        throw new Error('Stream ended unexpectedly. The daemon may have stopped.');
       }
-    } catch (err) {
-      if (err instanceof Error && err.name === "IdleTimeoutError") {
-        abortState.reason = "timeout";
+    } catch (error) {
+      if (error instanceof Error && error.name === 'IdleTimeoutError') {
+        abortState.reason = 'timeout';
         if (!nextController.signal.aborted) {
           nextController.abort();
         }
       }
-      if (nextController.signal.aborted && abortState.reason !== "timeout") return;
-      onError?.(err);
+      if (nextController.signal.aborted && abortState.reason !== 'timeout') return;
+      onError?.(error);
     } finally {
       if (generation === activeGeneration && controller === nextController) {
         streaming = false;
@@ -146,9 +143,5 @@ export function createSlidesStreamController(
     }
   };
 
-  return {
-    start,
-    abort,
-    isStreaming: () => streaming,
-  };
+  return { abort, isStreaming: () => streaming, start };
 }

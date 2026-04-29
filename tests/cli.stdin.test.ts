@@ -1,9 +1,11 @@
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Readable, Writable } from "node:stream";
-import { afterAll, describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Readable, Writable } from 'node:stream';
+
+import { afterAll, describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
 
 const noopStream = () =>
   new Writable({
@@ -19,8 +21,9 @@ const createStdinStream = (content: string): Readable => {
 };
 
 const collectStream = () => {
-  let text = "";
+  let text = '';
   return {
+    getText: () => text,
     stream: new Writable({
       write(chunk, encoding, callback) {
         void encoding;
@@ -28,93 +31,92 @@ const collectStream = () => {
         callback();
       },
     }),
-    getText: () => text,
   };
 };
 
-describe("cli stdin support", () => {
-  const home = mkdtempSync(join(tmpdir(), "summarize-tests-stdin-"));
+describe('cli stdin support', () => {
+  const home = mkdtempSync(join(tmpdir(), 'summarize-tests-stdin-'));
 
   afterAll(() => {
-    rmSync(home, { recursive: true, force: true });
+    rmSync(home, { force: true, recursive: true });
   });
 
-  it("errors on empty stdin", async () => {
+  it('errors on empty stdin', async () => {
     await expect(
-      runCli(["-"], {
+      runCli(['-'], {
         env: { HOME: home },
         fetch: vi.fn() as unknown as typeof fetch,
-        stdin: createStdinStream("   "),
-        stdout: noopStream(),
         stderr: noopStream(),
-      }),
-    ).rejects.toThrow("Stdin is empty");
-  });
-
-  it("errors on completely empty stdin", async () => {
-    await expect(
-      runCli(["-"], {
-        env: { HOME: home },
-        fetch: vi.fn() as unknown as typeof fetch,
-        stdin: createStdinStream(""),
+        stdin: createStdinStream('   '),
         stdout: noopStream(),
-        stderr: noopStream(),
       }),
-    ).rejects.toThrow("Stdin is empty");
+    ).rejects.toThrow('Stdin is empty');
   });
 
-  it("errors on --extract with stdin", async () => {
-    const testContent = "This is a test document for extraction.";
-
+  it('errors on completely empty stdin', async () => {
     await expect(
-      runCli(["--extract", "-"], {
+      runCli(['-'], {
         env: { HOME: home },
         fetch: vi.fn() as unknown as typeof fetch,
+        stderr: noopStream(),
+        stdin: createStdinStream(''),
+        stdout: noopStream(),
+      }),
+    ).rejects.toThrow('Stdin is empty');
+  });
+
+  it('errors on --extract with stdin', async () => {
+    const testContent = 'This is a test document for extraction.';
+
+    await expect(
+      runCli(['--extract', '-'], {
+        env: { HOME: home },
+        fetch: vi.fn() as unknown as typeof fetch,
+        stderr: noopStream(),
         stdin: createStdinStream(testContent),
         stdout: noopStream(),
-        stderr: noopStream(),
       }),
-    ).rejects.toThrow("--extract is not supported for piped stdin input");
+    ).rejects.toThrow('--extract is not supported for piped stdin input');
   });
 
-  it("allows --markdown-mode llm for stdin", async () => {
-    const testContent = "Test content for markdown mode.";
+  it('allows --markdown-mode llm for stdin', async () => {
+    const testContent = 'Test content for markdown mode.';
 
     await expect(
-      runCli(["--extract", "--format", "md", "--markdown-mode", "llm", "-"], {
+      runCli(['--extract', '--format', 'md', '--markdown-mode', 'llm', '-'], {
         env: { HOME: home },
         fetch: vi.fn() as unknown as typeof fetch,
+        stderr: noopStream(),
         stdin: createStdinStream(testContent),
         stdout: noopStream(),
-        stderr: noopStream(),
       }),
-    ).rejects.toThrow("--extract is not supported for piped stdin input");
+    ).rejects.toThrow('--extract is not supported for piped stdin input');
   });
 
-  it("rejects --markdown-mode readability for stdin", async () => {
-    const testContent = "Test content.";
+  it('rejects --markdown-mode readability for stdin', async () => {
+    const testContent = 'Test content.';
 
     await expect(
-      runCli(["--format", "md", "--markdown-mode", "readability", "-"], {
+      runCli(['--format', 'md', '--markdown-mode', 'readability', '-'], {
         env: { HOME: home },
         fetch: vi.fn() as unknown as typeof fetch,
+        stderr: noopStream(),
         stdin: createStdinStream(testContent),
         stdout: noopStream(),
-        stderr: noopStream(),
       }),
-    ).rejects.toThrow("Only --markdown-mode llm is supported for file/stdin inputs");
+    ).rejects.toThrow('Only --markdown-mode llm is supported for file/stdin inputs');
   });
 
-  it("prints short text from stdin without requiring model setup", async () => {
-    const testContent = "Test content for basic processing.";
+  it('prints short text from stdin without requiring model setup', async () => {
+    const testContent = 'Test content for basic processing.';
     const stdout = collectStream();
 
-    await runCli(["-"], {
+    await runCli(['-'], {
       env: { HOME: home },
       fetch: vi.fn() as unknown as typeof fetch,
+      stderr: noopStream(),
       stdin: createStdinStream(testContent),
       stdout: stdout.stream,
-      stderr: noopStream(),
     });
 
     expect(stdout.getText()).toContain(testContent);

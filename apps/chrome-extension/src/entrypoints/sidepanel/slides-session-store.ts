@@ -1,9 +1,9 @@
-import type { SlidesLayout } from "../../lib/settings";
-import type { RunStart } from "./types";
+import type { SlidesLayout } from '../../lib/settings';
+import type { RunStart } from './types';
 
-type InputMode = "page" | "video";
+type InputMode = 'page' | 'video';
 
-export type SlidesSessionState = {
+export interface SlidesSessionState {
   slidesEnabled: boolean;
   slidesParallel: boolean;
   slidesOcrEnabled: boolean;
@@ -22,7 +22,7 @@ export type SlidesSessionState = {
   slidesSeededSourceId: string | null;
   slidesAppliedRunId: string | null;
   pendingRunForPlannedSlides: RunStart | null;
-};
+}
 
 export function createSlidesSessionStore(options: {
   slidesEnabled: boolean;
@@ -31,34 +31,34 @@ export function createSlidesSessionStore(options: {
   slidesLayout: SlidesLayout;
 }) {
   const state: SlidesSessionState = {
-    slidesEnabled: options.slidesEnabled,
-    slidesParallel: options.slidesParallel,
-    slidesOcrEnabled: options.slidesOcrEnabled,
-    inputMode: "page",
+    inputMode: 'page',
     inputModeOverride: null,
     mediaAvailable: false,
-    summarizeVideoLabel: "Video",
-    summarizePageWords: null,
-    summarizeVideoDurationSeconds: null,
+    pendingRunForPlannedSlides: null,
+    slidesAppliedRunId: null,
     slidesBusy: false,
+    slidesContextPending: false,
+    slidesContextRequestId: 0,
+    slidesContextUrl: null,
+    slidesEnabled: options.slidesEnabled,
     slidesExpanded: true,
     slidesLayout: options.slidesLayout,
-    slidesContextRequestId: 0,
-    slidesContextPending: false,
-    slidesContextUrl: null,
+    slidesOcrEnabled: options.slidesOcrEnabled,
+    slidesParallel: options.slidesParallel,
     slidesSeededSourceId: null,
-    slidesAppliedRunId: null,
-    pendingRunForPlannedSlides: null,
+    summarizePageWords: null,
+    summarizeVideoDurationSeconds: null,
+    summarizeVideoLabel: 'Video',
   };
 
   return {
-    state,
-    resolveInputMode(): InputMode {
-      return state.inputModeOverride ?? state.inputMode;
-    },
     nextSlidesContextRequestId(): number {
       state.slidesContextRequestId += 1;
       return state.slidesContextRequestId;
     },
+    resolveInputMode(): InputMode {
+      return state.inputModeOverride ?? state.inputMode;
+    },
+    state,
   };
 }

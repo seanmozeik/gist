@@ -2,25 +2,25 @@ import {
   formatCompactCount,
   formatDurationSecondsSmart,
   formatMinutesSmart,
-} from "../tty/format.js";
+} from '../tty/format.js';
 
-export type InputSummaryArgs = {
+export interface InputSummaryArgs {
   kindLabel: string | null;
   durationSeconds: number | null;
   words: number | null;
   characters: number | null;
   isDurationApproximate?: boolean;
-};
+}
 
 export function estimateDurationSecondsFromWords(words: number, { minSeconds = 60 } = {}): number {
-  const safe = typeof words === "number" && Number.isFinite(words) ? words : 0;
-  if (safe <= 0) return minSeconds;
+  const safe = typeof words === 'number' && Number.isFinite(words) ? words : 0;
+  if (safe <= 0) {return minSeconds;}
   return Math.max(minSeconds, (safe / 160) * 60);
 }
 
 export function countWords(text: string): number {
   const trimmed = text.trim();
-  if (!trimmed) return 0;
+  if (!trimmed) {return 0;}
   return trimmed.split(/\s+/).length;
 }
 
@@ -44,12 +44,12 @@ export function formatInputSummary({
     }
   }
 
-  if (typeof words === "number" && Number.isFinite(words) && words > 0) {
+  if (typeof words === 'number' && Number.isFinite(words) && words > 0) {
     parts.push(`${formatCompactCount(words)} words`);
   }
-  if (typeof characters === "number" && Number.isFinite(characters) && characters > 0) {
+  if (typeof characters === 'number' && Number.isFinite(characters) && characters > 0) {
     parts.push(`${formatCompactCount(characters)} chars`);
   }
 
-  return parts.length > 0 ? parts.join(" · ") : null;
+  return parts.length > 0 ? parts.join(' · ') : null;
 }

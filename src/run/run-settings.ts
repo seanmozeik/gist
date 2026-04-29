@@ -1,4 +1,4 @@
-import type { CliProvider } from "../config.js";
+import type { CliProvider } from '../config.js';
 import type {
   FirecrawlMode,
   LengthArg,
@@ -6,7 +6,7 @@ import type {
   PreprocessMode,
   VideoMode,
   YoutubeMode,
-} from "../flags.js";
+} from '../flags.js';
 import {
   parseDurationMs,
   parseFirecrawlMode,
@@ -17,18 +17,18 @@ import {
   parseRetriesArg,
   parseVideoMode,
   parseYoutubeMode,
-} from "../flags.js";
-import type { OutputLanguage } from "../language.js";
-import { resolveOutputLanguage } from "../language.js";
-import { formatPresetLengthGuidance, type SummaryLengthTarget } from "../prompts/index.js";
+} from '../flags.js';
+import type { OutputLanguage } from '../language.js';
+import { resolveOutputLanguage } from '../language.js';
+import { formatPresetLengthGuidance, type SummaryLengthTarget } from '../prompts/index.js';
 import {
   parseCliProvider,
   parseOptionalBoolean,
   parseOptionalCliProviderOrder,
   parseOptionalSetting,
-} from "./run-settings-parse.js";
+} from './run-settings-parse.js';
 
-export type ResolvedRunSettings = {
+export interface ResolvedRunSettings {
   lengthArg: LengthArg;
   firecrawlMode: FirecrawlMode;
   markdownMode: MarkdownMode;
@@ -37,9 +37,9 @@ export type ResolvedRunSettings = {
   timeoutMs: number;
   retries: number;
   maxOutputTokensArg: number | null;
-};
+}
 
-export type RunOverrides = {
+export interface RunOverrides {
   firecrawlMode: FirecrawlMode | null;
   markdownMode: MarkdownMode | null;
   preprocessMode: PreprocessMode | null;
@@ -50,12 +50,12 @@ export type RunOverrides = {
   timeoutMs: number | null;
   retries: number | null;
   maxOutputTokensArg: number | null;
-  transcriber: "auto" | "whisper" | "parakeet" | "canary" | null;
+  transcriber: 'auto' | 'whisper' | 'parakeet' | 'canary' | null;
   autoCliFallbackEnabled: boolean | null;
   autoCliOrder: CliProvider[] | null;
-};
+}
 
-export type RunOverridesInput = {
+export interface RunOverridesInput {
   firecrawl?: unknown;
   markdownMode?: unknown;
   preprocess?: unknown;
@@ -74,24 +74,21 @@ export type RunOverridesInput = {
   magicCliAuto?: unknown;
   magicCliOrder?: unknown;
   magicCliRememberLastSuccess?: unknown;
-};
+}
 
 export function resolveSummaryLength(
   raw: unknown,
-  fallback = "xl",
-): {
-  lengthArg: LengthArg;
-  summaryLength: SummaryLengthTarget;
-} {
-  const value = typeof raw === "string" ? raw.trim() : "";
+  fallback = 'xl',
+): { lengthArg: LengthArg; summaryLength: SummaryLengthTarget } {
+  const value = typeof raw === 'string' ? raw.trim() : '';
   const lengthArg = parseLengthArg(value || fallback);
   const summaryLength =
-    lengthArg.kind === "preset" ? lengthArg.preset : { maxCharacters: lengthArg.maxCharacters };
+    lengthArg.kind === 'preset' ? lengthArg.preset : { maxCharacters: lengthArg.maxCharacters };
   return { lengthArg, summaryLength };
 }
 
 export function buildPromptLengthInstruction(lengthArg: LengthArg): string {
-  return lengthArg.kind === "chars"
+  return lengthArg.kind === 'chars'
     ? `Output is ${lengthArg.maxCharacters.toLocaleString()} characters.`
     : formatPresetLengthGuidance(lengthArg.preset);
 }
@@ -103,8 +100,8 @@ export function resolveOutputLanguageSetting({
   raw: unknown;
   fallback: OutputLanguage;
 }): OutputLanguage {
-  const value = typeof raw === "string" ? raw.trim() : "";
-  if (!value) return fallback;
+  const value = typeof raw === 'string' ? raw.trim() : '';
+  if (!value) {return fallback;}
   return resolveOutputLanguage(value);
 }
 
@@ -124,7 +121,7 @@ export function resolveCliRunSettings({
   firecrawl: string;
   markdownMode?: string | undefined;
   markdown?: string | undefined;
-  format: "text" | "markdown";
+  format: 'text' | 'markdown';
   preprocess: string;
   youtube: string;
   timeout: string;
@@ -135,12 +132,12 @@ export function resolveCliRunSettings({
     {
       firecrawl,
       markdownMode:
-        format === "markdown" ? ((markdownMode ?? markdown ?? "readability") as string) : "off",
-      preprocess,
-      youtube,
-      timeout,
-      retries,
+        format === 'markdown' ? ((markdownMode ?? markdown ?? 'readability')) : 'off',
       maxOutputTokens,
+      preprocess,
+      retries,
+      timeout,
+      youtube,
     },
     { strict: true },
   );
@@ -152,14 +149,14 @@ export function resolveCliRunSettings({
   };
 
   return {
+    firecrawlMode: requireOverride(strictOverrides.firecrawlMode, '--firecrawl'),
     lengthArg: parseLengthArg(length),
-    firecrawlMode: requireOverride(strictOverrides.firecrawlMode, "--firecrawl"),
-    markdownMode: requireOverride(strictOverrides.markdownMode, "--markdown-mode"),
-    preprocessMode: requireOverride(strictOverrides.preprocessMode, "--preprocess"),
-    youtubeMode: requireOverride(strictOverrides.youtubeMode, "--youtube"),
-    timeoutMs: requireOverride(strictOverrides.timeoutMs, "--timeout"),
-    retries: requireOverride(strictOverrides.retries, "--retries"),
+    markdownMode: requireOverride(strictOverrides.markdownMode, '--markdown-mode'),
     maxOutputTokensArg: strictOverrides.maxOutputTokensArg,
+    preprocessMode: requireOverride(strictOverrides.preprocessMode, '--preprocess'),
+    retries: requireOverride(strictOverrides.retries, '--retries'),
+    timeoutMs: requireOverride(strictOverrides.timeoutMs, '--timeout'),
+    youtubeMode: requireOverride(strictOverrides.youtubeMode, '--youtube'),
   };
 }
 
@@ -187,7 +184,7 @@ export function resolveRunOverrides(
 ): RunOverrides {
   const strict = options.strict ?? false;
   const timeoutMs = (() => {
-    if (typeof timeout === "number") {
+    if (typeof timeout === 'number') {
       if (Number.isFinite(timeout) && timeout > 0) {
         return Math.floor(timeout);
       }
@@ -196,22 +193,22 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof timeout !== "string") return null;
+    if (typeof timeout !== 'string') {return null;}
     try {
       return parseDurationMs(timeout);
     } catch (error) {
-      if (strict) throw error;
+      if (strict) {throw error;}
       return null;
     }
   })();
 
   const retriesResolved = (() => {
-    if (typeof retries === "number") {
+    if (typeof retries === 'number') {
       if (Number.isFinite(retries) && Number.isInteger(retries)) {
         try {
           return parseRetriesArg(String(retries));
         } catch (error) {
-          if (strict) throw error;
+          if (strict) {throw error;}
           return null;
         }
       }
@@ -220,22 +217,22 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof retries !== "string") return null;
+    if (typeof retries !== 'string') {return null;}
     try {
       return parseRetriesArg(retries);
     } catch (error) {
-      if (strict) throw error;
+      if (strict) {throw error;}
       return null;
     }
   })();
 
   const maxOutputTokensArg = (() => {
-    if (typeof maxOutputTokens === "number") {
+    if (typeof maxOutputTokens === 'number') {
       if (Number.isFinite(maxOutputTokens) && maxOutputTokens > 0) {
         try {
           return parseMaxOutputTokensArg(String(maxOutputTokens));
         } catch (error) {
-          if (strict) throw error;
+          if (strict) {throw error;}
           return null;
         }
       }
@@ -244,23 +241,23 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof maxOutputTokens !== "string") return null;
+    if (typeof maxOutputTokens !== 'string') {return null;}
     try {
       return parseMaxOutputTokensArg(maxOutputTokens);
     } catch (error) {
-      if (strict) throw error;
+      if (strict) {throw error;}
       return null;
     }
   })();
 
   const transcriberOverride = (() => {
-    if (typeof transcriber !== "string") return null;
+    if (typeof transcriber !== 'string') {return null;}
     const normalized = transcriber.trim().toLowerCase();
     if (
-      normalized === "auto" ||
-      normalized === "whisper" ||
-      normalized === "parakeet" ||
-      normalized === "canary"
+      normalized === 'auto' ||
+      normalized === 'whisper' ||
+      normalized === 'parakeet' ||
+      normalized === 'canary'
     ) {
       return normalized;
     }
@@ -270,34 +267,34 @@ export function resolveRunOverrides(
     return null;
   })();
 
-  const forceSummaryResolved = parseOptionalBoolean(forceSummary, strict, "--force-summary");
+  const forceSummaryResolved = parseOptionalBoolean(forceSummary, strict, '--force-summary');
   const autoCliFallbackEnabled = parseOptionalBoolean(
-    typeof autoCliFallback !== "undefined" ? autoCliFallback : magicCliAuto,
+    autoCliFallback !== undefined ? autoCliFallback : magicCliAuto,
     strict,
-    "--auto-cli-fallback",
+    '--auto-cli-fallback',
   );
   // Kept for backward compatibility with older extension payloads. Ignored now.
   void autoCliRememberLastSuccess;
   // Kept for backward compatibility with older extension payloads. Ignored now.
   void magicCliRememberLastSuccess;
   const autoCliOrderResolved = parseOptionalCliProviderOrder(
-    typeof autoCliOrder !== "undefined" ? autoCliOrder : magicCliOrder,
+    autoCliOrder !== undefined ? autoCliOrder : magicCliOrder,
     strict,
   );
 
   return {
-    firecrawlMode: parseOptionalSetting(firecrawl, parseFirecrawlMode, strict),
-    markdownMode: parseOptionalSetting(markdownMode, parseMarkdownMode, strict),
-    preprocessMode: parseOptionalSetting(preprocess, parsePreprocessMode, strict),
-    youtubeMode: parseOptionalSetting(youtube, parseYoutubeMode, strict),
-    videoMode: parseOptionalSetting(videoMode, parseVideoMode, strict),
-    transcriptTimestamps: parseOptionalBoolean(timestamps, strict, "--timestamps"),
-    forceSummary: forceSummaryResolved,
-    timeoutMs,
-    retries: retriesResolved,
-    maxOutputTokensArg,
-    transcriber: transcriberOverride,
     autoCliFallbackEnabled,
     autoCliOrder: autoCliOrderResolved,
+    firecrawlMode: parseOptionalSetting(firecrawl, parseFirecrawlMode, strict),
+    forceSummary: forceSummaryResolved,
+    markdownMode: parseOptionalSetting(markdownMode, parseMarkdownMode, strict),
+    maxOutputTokensArg,
+    preprocessMode: parseOptionalSetting(preprocess, parsePreprocessMode, strict),
+    retries: retriesResolved,
+    timeoutMs,
+    transcriber: transcriberOverride,
+    transcriptTimestamps: parseOptionalBoolean(timestamps, strict, '--timestamps'),
+    videoMode: parseOptionalSetting(videoMode, parseVideoMode, strict),
+    youtubeMode: parseOptionalSetting(youtube, parseYoutubeMode, strict),
   };
 }

@@ -1,21 +1,22 @@
-import { isLocalFileUrl, resolveLocalFileMtime } from "@steipete/summarize-core/content/local-file";
-import { isDirectVideoInput } from "@steipete/summarize-core/content/url";
-import type { CacheMode, FetchLinkContentOptions } from "../../../content/index.js";
+import { isLocalFileUrl, resolveLocalFileMtime } from '@steipete/summarize-core/content/local-file';
+import { isDirectVideoInput } from '@steipete/summarize-core/content/url';
 
-type UrlFetchFlags = {
+import type { CacheMode, FetchLinkContentOptions } from '../../../content/index.js';
+
+interface UrlFetchFlags {
   timeoutMs: number;
   maxExtractCharacters?: number | null;
-  youtubeMode: "auto" | "web" | "apify" | "yt-dlp" | "no-auto";
-  videoMode: "auto" | "transcript" | "understand";
+  youtubeMode: 'auto' | 'web' | 'apify' | 'yt-dlp' | 'no-auto';
+  videoMode: 'auto' | 'transcript' | 'understand';
   transcriptTimestamps: boolean;
-  firecrawlMode: "off" | "auto" | "always";
+  firecrawlMode: 'off' | 'auto' | 'always';
   slides: object | null;
-};
+}
 
-type UrlMarkdownOptions = {
-  effectiveMarkdownMode: "off" | "auto" | "llm" | "readability";
+interface UrlMarkdownOptions {
+  effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   markdownRequested: boolean;
-};
+}
 
 export function shouldPreferTranscriptForTarget({
   targetUrl,
@@ -23,10 +24,10 @@ export function shouldPreferTranscriptForTarget({
   slides,
 }: {
   targetUrl: string;
-  videoMode: UrlFetchFlags["videoMode"];
-  slides: UrlFetchFlags["slides"];
+  videoMode: UrlFetchFlags['videoMode'];
+  slides: UrlFetchFlags['slides'];
 }): boolean {
-  return videoMode === "transcript" || (Boolean(slides) && isDirectVideoInput(targetUrl));
+  return videoMode === 'transcript' || (Boolean(slides) && isDirectVideoInput(targetUrl));
 }
 
 export function resolveUrlFetchOptions({
@@ -44,25 +45,25 @@ export function resolveUrlFetchOptions({
   return {
     localFile,
     options: {
-      timeoutMs: flags.timeoutMs,
+      cacheMode,
+      fileMtime: localFile ? resolveLocalFileMtime(targetUrl) : null,
+      firecrawl: flags.firecrawlMode,
+      format: markdown.markdownRequested ? 'markdown' : 'text',
+      markdownMode: markdown.markdownRequested ? markdown.effectiveMarkdownMode : undefined,
       maxCharacters:
-        typeof flags.maxExtractCharacters === "number" && flags.maxExtractCharacters > 0
+        typeof flags.maxExtractCharacters === 'number' && flags.maxExtractCharacters > 0
           ? flags.maxExtractCharacters
           : undefined,
-      youtubeTranscript: flags.youtubeMode,
       mediaTranscript: shouldPreferTranscriptForTarget({
         targetUrl,
         videoMode: flags.videoMode,
         slides: flags.slides,
       })
-        ? "prefer"
-        : "auto",
+        ? 'prefer'
+        : 'auto',
+      timeoutMs: flags.timeoutMs,
       transcriptTimestamps: flags.transcriptTimestamps,
-      firecrawl: flags.firecrawlMode,
-      format: markdown.markdownRequested ? "markdown" : "text",
-      markdownMode: markdown.markdownRequested ? markdown.effectiveMarkdownMode : undefined,
-      cacheMode,
-      fileMtime: localFile ? resolveLocalFileMtime(targetUrl) : null,
+      youtubeTranscript: flags.youtubeMode,
     },
   };
 }

@@ -1,38 +1,30 @@
-import { describe, expect, it } from "vitest";
-import { resolveAutoDaemonMode } from "../src/daemon/auto-mode.js";
+import { describe, expect, it } from 'vitest';
 
-describe("daemon/auto-mode", () => {
-  it("prefers url for media urls", () => {
-    expect(
-      resolveAutoDaemonMode({
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        hasText: true,
-      }),
-    ).toEqual({ primary: "url", fallback: "page" });
+import { resolveAutoDaemonMode } from '../src/daemon/auto-mode.js';
 
+describe('daemon/auto-mode', () => {
+  it('prefers url for media urls', () => {
     expect(
-      resolveAutoDaemonMode({
-        url: "https://example.com/video.mp4",
-        hasText: true,
-      }),
-    ).toEqual({ primary: "url", fallback: "page" });
+      resolveAutoDaemonMode({ hasText: true, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }),
+    ).toEqual({ fallback: 'page', primary: 'url' });
+
+    expect(resolveAutoDaemonMode({ hasText: true, url: 'https://example.com/video.mp4' })).toEqual({
+      fallback: 'page',
+      primary: 'url',
+    });
   });
 
-  it("prefers page when text is present and url is not media-like", () => {
-    expect(
-      resolveAutoDaemonMode({
-        url: "https://example.com/article",
-        hasText: true,
-      }),
-    ).toEqual({ primary: "page", fallback: "url" });
+  it('prefers page when text is present and url is not media-like', () => {
+    expect(resolveAutoDaemonMode({ hasText: true, url: 'https://example.com/article' })).toEqual({
+      fallback: 'url',
+      primary: 'page',
+    });
   });
 
-  it("prefers url when no text is present", () => {
-    expect(
-      resolveAutoDaemonMode({
-        url: "https://example.com/article",
-        hasText: false,
-      }),
-    ).toEqual({ primary: "url", fallback: null });
+  it('prefers url when no text is present', () => {
+    expect(resolveAutoDaemonMode({ hasText: false, url: 'https://example.com/article' })).toEqual({
+      fallback: null,
+      primary: 'url',
+    });
   });
 });

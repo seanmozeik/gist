@@ -1,151 +1,152 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
+
 import {
   buildFileTextSummaryPrompt,
   buildLinkSummaryPrompt,
   buildPathSummaryPrompt,
-} from "../packages/core/src/prompts/index.js";
-import { parseOutputLanguage } from "../src/language.js";
+} from '../packages/core/src/prompts/index.js';
+import { parseOutputLanguage } from '../src/language.js';
 
-describe("prompt overrides", () => {
-  it("replaces link instructions but keeps context/content tags", () => {
+describe('prompt overrides', () => {
+  it('replaces link instructions but keeps context/content tags', () => {
     const prompt = buildLinkSummaryPrompt({
-      url: "https://example.com",
-      title: "Hello",
-      siteName: "Example",
+      content: 'Body',
       description: null,
-      content: "Body",
-      truncated: false,
       hasTranscript: false,
-      outputLanguage: parseOutputLanguage("en"),
+      languageInstruction: 'Output should be English.',
+      lengthInstruction: 'Output is 120 characters.',
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Custom instruction.',
+      shares: [],
+      siteName: 'Example',
       summaryLength: { maxCharacters: 120 },
-      shares: [],
-      promptOverride: "Custom instruction.",
-      lengthInstruction: "Output is 120 characters.",
-      languageInstruction: "Output should be English.",
+      title: 'Hello',
+      truncated: false,
+      url: 'https://example.com',
     });
 
-    expect(prompt).toContain("<instructions>");
-    expect(prompt).toContain("Custom instruction.");
-    expect(prompt).toContain("Output is 120 characters.");
-    expect(prompt).toContain("Output should be English.");
-    expect(prompt).toContain("<context>");
-    expect(prompt).toContain("Source URL: https://example.com");
-    expect(prompt).toContain("<content>");
-    expect(prompt).toContain("Body");
-    expect(prompt).not.toContain("You summarize online articles");
+    expect(prompt).toContain('<instructions>');
+    expect(prompt).toContain('Custom instruction.');
+    expect(prompt).toContain('Output is 120 characters.');
+    expect(prompt).toContain('Output should be English.');
+    expect(prompt).toContain('<context>');
+    expect(prompt).toContain('Source URL: https://example.com');
+    expect(prompt).toContain('<content>');
+    expect(prompt).toContain('Body');
+    expect(prompt).not.toContain('You summarize online articles');
   });
 
-  it("replaces file-text instructions and keeps inline content", () => {
+  it('replaces file-text instructions and keeps inline content', () => {
     const prompt = buildFileTextSummaryPrompt({
-      filename: "notes.txt",
-      originalMediaType: "text/plain",
-      contentMediaType: "text/plain",
-      summaryLength: "short",
+      content: 'Hello world!',
       contentLength: 12,
-      outputLanguage: parseOutputLanguage("en"),
-      content: "Hello world!",
-      promptOverride: "Summarize in two bullets.",
+      contentMediaType: 'text/plain',
+      filename: 'notes.txt',
+      languageInstruction: 'Output should be English.',
       lengthInstruction: null,
-      languageInstruction: "Output should be English.",
+      originalMediaType: 'text/plain',
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Summarize in two bullets.',
+      summaryLength: 'short',
     });
 
-    expect(prompt).toContain("<instructions>");
-    expect(prompt).toContain("Summarize in two bullets.");
-    expect(prompt).toContain("Output should be English.");
-    expect(prompt).toContain("<content>");
-    expect(prompt).toContain("Hello world!");
-    expect(prompt).not.toContain("You summarize files");
+    expect(prompt).toContain('<instructions>');
+    expect(prompt).toContain('Summarize in two bullets.');
+    expect(prompt).toContain('Output should be English.');
+    expect(prompt).toContain('<content>');
+    expect(prompt).toContain('Hello world!');
+    expect(prompt).not.toContain('You summarize files');
   });
 
-  it("replaces path prompt instructions for CLI attachments", () => {
+  it('replaces path prompt instructions for CLI attachments', () => {
     const prompt = buildPathSummaryPrompt({
-      kindLabel: "file",
-      filePath: "/tmp/sample.pdf",
-      filename: "sample.pdf",
-      mediaType: "application/pdf",
+      filePath: '/tmp/sample.pdf',
+      filename: 'sample.pdf',
+      kindLabel: 'file',
+      languageInstruction: 'Output should be English.',
+      lengthInstruction: 'Output is 500 characters.',
+      mediaType: 'application/pdf',
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Custom file instructions.',
       summaryLength: { maxCharacters: 500 },
-      outputLanguage: parseOutputLanguage("en"),
-      promptOverride: "Custom file instructions.",
-      lengthInstruction: "Output is 500 characters.",
-      languageInstruction: "Output should be English.",
     });
 
-    expect(prompt).toContain("<instructions>");
-    expect(prompt).toContain("Custom file instructions.");
-    expect(prompt).toContain("Output is 500 characters.");
-    expect(prompt).toContain("<context>");
-    expect(prompt).toContain("Path: /tmp/sample.pdf");
-    expect(prompt).not.toContain("You summarize files");
+    expect(prompt).toContain('<instructions>');
+    expect(prompt).toContain('Custom file instructions.');
+    expect(prompt).toContain('Output is 500 characters.');
+    expect(prompt).toContain('<context>');
+    expect(prompt).toContain('Path: /tmp/sample.pdf');
+    expect(prompt).not.toContain('You summarize files');
   });
 
-  it("does not add length/language lines when instructions are null", () => {
+  it('does not add length/language lines when instructions are null', () => {
     const prompt = buildLinkSummaryPrompt({
-      url: "https://example.com/none",
-      title: "None",
-      siteName: "Example",
+      content: 'Body',
       description: null,
-      content: "Body",
-      truncated: false,
       hasTranscript: false,
-      outputLanguage: parseOutputLanguage("en"),
-      summaryLength: { maxCharacters: 200 },
+      languageInstruction: null,
+      lengthInstruction: null,
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Custom prompt only.',
       shares: [],
-      promptOverride: "Custom prompt only.",
-      lengthInstruction: null,
-      languageInstruction: null,
-    });
-
-    expect(prompt).toContain("Custom prompt only.");
-    expect(prompt).not.toContain("Output is");
-    expect(prompt).not.toContain("Output should be");
-  });
-
-  it("keeps file metadata in context with custom instructions", () => {
-    const prompt = buildPathSummaryPrompt({
-      kindLabel: "attachment",
-      filePath: "/Users/peter/Docs/report.md",
-      filename: "report.md",
-      mediaType: "text/markdown",
-      summaryLength: "short",
-      outputLanguage: parseOutputLanguage("en"),
-      promptOverride: "Summarize in one sentence.",
-      lengthInstruction: null,
-      languageInstruction: null,
-    });
-
-    expect(prompt).toContain("<context>");
-    expect(prompt).toContain("Path: /Users/peter/Docs/report.md");
-    expect(prompt).toContain("Filename: report.md");
-    expect(prompt).toContain("Media type: text/markdown");
-  });
-
-  it("keeps required slide marker instructions with custom link prompts", () => {
-    const prompt = buildLinkSummaryPrompt({
-      url: "https://example.com/video",
-      title: "Video",
-      siteName: "YouTube",
-      description: null,
-      content: "Transcript:\nhello",
+      siteName: 'Example',
+      summaryLength: { maxCharacters: 200 },
+      title: 'None',
       truncated: false,
+      url: 'https://example.com/none',
+    });
+
+    expect(prompt).toContain('Custom prompt only.');
+    expect(prompt).not.toContain('Output is');
+    expect(prompt).not.toContain('Output should be');
+  });
+
+  it('keeps file metadata in context with custom instructions', () => {
+    const prompt = buildPathSummaryPrompt({
+      filePath: '/Users/peter/Docs/report.md',
+      filename: 'report.md',
+      kindLabel: 'attachment',
+      languageInstruction: null,
+      lengthInstruction: null,
+      mediaType: 'text/markdown',
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Summarize in one sentence.',
+      summaryLength: 'short',
+    });
+
+    expect(prompt).toContain('<context>');
+    expect(prompt).toContain('Path: /Users/peter/Docs/report.md');
+    expect(prompt).toContain('Filename: report.md');
+    expect(prompt).toContain('Media type: text/markdown');
+  });
+
+  it('keeps required slide marker instructions with custom link prompts', () => {
+    const prompt = buildLinkSummaryPrompt({
+      content: 'Transcript:\nhello',
+      description: null,
       hasTranscript: true,
       hasTranscriptTimestamps: true,
-      slides: { count: 2, text: "[slide:1] [0:00-0:10]\nhello" },
-      outputLanguage: parseOutputLanguage("en"),
-      summaryLength: "short",
-      shares: [],
-      promptOverride: "Answer only what they say about Peter.",
-      lengthInstruction: null,
       languageInstruction: null,
+      lengthInstruction: null,
+      outputLanguage: parseOutputLanguage('en'),
+      promptOverride: 'Answer only what they say about Peter.',
+      shares: [],
+      siteName: 'YouTube',
+      slides: { count: 2, text: '[slide:1] [0:00-0:10]\nhello' },
+      summaryLength: 'short',
+      title: 'Video',
+      truncated: false,
+      url: 'https://example.com/video',
     });
 
-    expect(prompt).toContain("Answer only what they say about Peter.");
+    expect(prompt).toContain('Answer only what they say about Peter.');
     expect(prompt).toContain(
-      "Required markers (use each exactly once, in order): [slide:1] [slide:2]",
+      'Required markers (use each exactly once, in order): [slide:1] [slide:2]',
     );
     expect(prompt).toContain('Every slide must include a headline line that starts with "## ".');
     expect(prompt).toContain(
       'Final check for slides: every [slide:N] must be immediately followed by a line that starts with "## ".',
     );
-    expect(prompt).not.toContain("You summarize online videos");
+    expect(prompt).not.toContain('You summarize online videos');
   });
 });

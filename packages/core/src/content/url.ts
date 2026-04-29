@@ -4,19 +4,19 @@ import {
   isDirectMediaExtension,
   isDirectMediaUrl,
   isDirectVideoInput,
-} from "./direct-media.js";
-import { isPodcastHost } from "./link-preview/content/podcast-utils.js";
-import { isTwitterBroadcastUrl, isTwitterStatusUrl } from "./link-preview/content/twitter-utils.js";
+} from './direct-media.js';
+import { isPodcastHost } from './link-preview/content/podcast-utils.js';
+import { isTwitterBroadcastUrl, isTwitterStatusUrl } from './link-preview/content/twitter-utils.js';
 
 export const isYouTubeUrl = (rawUrl: string): boolean => {
   try {
     const hostname = new URL(rawUrl).hostname.toLowerCase();
     return (
-      hostname === "youtube.com" || hostname.endsWith(".youtube.com") || hostname === "youtu.be"
+      hostname === 'youtube.com' || hostname.endsWith('.youtube.com') || hostname === 'youtu.be'
     );
   } catch {
     const lower = rawUrl.toLowerCase();
-    return lower.includes("youtube.com") || lower.includes("youtu.be");
+    return lower.includes('youtube.com') || lower.includes('youtu.be');
   }
 };
 
@@ -27,23 +27,23 @@ export function isYouTubeVideoUrl(rawUrl: string): boolean {
     const url = new URL(rawUrl);
     const hostname = url.hostname.toLowerCase();
 
-    if (hostname === "youtu.be") {
-      return Boolean(url.pathname.split("/").filter(Boolean)[0]);
+    if (hostname === 'youtu.be') {
+      return Boolean(url.pathname.split('/').filter(Boolean)[0]);
     }
 
-    if (hostname !== "youtube.com" && !hostname.endsWith(".youtube.com")) {
+    if (hostname !== 'youtube.com' && !hostname.endsWith('.youtube.com')) {
       return false;
     }
 
-    if (url.pathname === "/watch") {
-      return Boolean(url.searchParams.get("v")?.trim());
+    if (url.pathname === '/watch') {
+      return Boolean(url.searchParams.get('v')?.trim());
     }
 
     return (
-      url.pathname.startsWith("/shorts/") ||
-      url.pathname.startsWith("/live/") ||
-      url.pathname.startsWith("/embed/") ||
-      url.pathname.startsWith("/v/")
+      url.pathname.startsWith('/shorts/') ||
+      url.pathname.startsWith('/live/') ||
+      url.pathname.startsWith('/embed/') ||
+      url.pathname.startsWith('/v/')
     );
   } catch {
     return false;
@@ -55,28 +55,28 @@ export function extractYouTubeVideoId(rawUrl: string): string | null {
     const url = new URL(rawUrl);
     const hostname = url.hostname.toLowerCase();
     let candidate: string | null = null;
-    if (hostname === "youtu.be") {
-      candidate = url.pathname.split("/")[1] ?? null;
+    if (hostname === 'youtu.be') {
+      candidate = url.pathname.split('/')[1] ?? null;
     }
-    if (hostname === "youtube.com" || hostname.endsWith(".youtube.com")) {
-      if (url.pathname.startsWith("/watch")) {
-        candidate = url.searchParams.get("v");
-      } else if (url.pathname.startsWith("/shorts/")) {
-        candidate = url.pathname.split("/")[2] ?? null;
-      } else if (url.pathname.startsWith("/embed/")) {
-        candidate = url.pathname.split("/")[2] ?? null;
-      } else if (url.pathname.startsWith("/v/")) {
-        candidate = url.pathname.split("/")[2] ?? null;
+    if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com')) {
+      if (url.pathname.startsWith('/watch')) {
+        candidate = url.searchParams.get('v');
+      } else if (url.pathname.startsWith('/shorts/')) {
+        candidate = url.pathname.split('/')[2] ?? null;
+      } else if (url.pathname.startsWith('/embed/')) {
+        candidate = url.pathname.split('/')[2] ?? null;
+      } else if (url.pathname.startsWith('/v/')) {
+        candidate = url.pathname.split('/')[2] ?? null;
       }
     }
 
-    const trimmed = candidate?.trim() ?? "";
+    const trimmed = candidate?.trim() ?? '';
     if (!trimmed) {
       return null;
     }
     return YOUTUBE_VIDEO_ID_PATTERN.test(trimmed) ? trimmed : null;
   } catch {
-    // ignore parsing errors
+    // Ignore parsing errors
   }
   return null;
 }

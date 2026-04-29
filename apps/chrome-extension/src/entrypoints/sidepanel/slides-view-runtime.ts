@@ -1,12 +1,13 @@
-import type MarkdownIt from "markdown-it";
-import type { SseSlidesData } from "../../lib/runtime-contracts";
-import type { SlidesLayout } from "../../lib/settings";
-import { createSlideImageLoader, normalizeSlideImageUrl } from "./slide-images";
-import { resolveSlidesPayload, slidesPayloadChanged } from "./slides-payload";
-import { createSlidesRenderer } from "./slides-renderer";
-import { formatSlideTimestamp } from "./slides-state";
-import { renderSummaryMarkdownDisplay } from "./summary-renderer";
-import type { PanelPhase, PanelState, UiState } from "./types";
+import type MarkdownIt from 'markdown-it';
+
+import type { SseSlidesData } from '../../lib/runtime-contracts';
+import type { SlidesLayout } from '../../lib/settings';
+import { createSlideImageLoader, normalizeSlideImageUrl } from './slide-images';
+import { resolveSlidesPayload, slidesPayloadChanged } from './slides-payload';
+import { createSlidesRenderer } from './slides-renderer';
+import { formatSlideTimestamp } from './slides-state';
+import { renderSummaryMarkdownDisplay } from './summary-renderer';
+import type { PanelPhase, PanelState, UiState } from './types';
 
 export function createSlidesViewRuntime({
   renderMarkdownHostEl,
@@ -45,20 +46,20 @@ export function createSlidesViewRuntime({
     hasSummaryTitles: () => boolean;
     updateSummaryFromMarkdown: (
       markdown: string,
-      opts?: { preserveIfEmpty?: boolean; source?: "summary" | "slides" },
+      opts?: { preserveIfEmpty?: boolean; source?: 'summary' | 'slides' },
     ) => boolean;
     rebuildDescriptions: () => void;
     syncTextState: () => void;
     getDescriptions: () => Map<number, string>;
     getTitles: () => Map<number, string>;
-    getDescriptionEntries: () => Array<[number, string]>;
+    getDescriptionEntries: () => [number, string][];
     getTranscriptTimedText: () => string | null;
   };
   panelCacheController: { scheduleSync: () => void };
   send: (
     message:
-      | { type: "panel:seek"; seconds: number }
-      | { type: "panel:slides-context"; requestId: string; url?: string },
+      | { type: 'panel:seek'; seconds: number }
+      | { type: 'panel:slides-context'; requestId: string; url?: string },
   ) => Promise<void>;
   refreshSummarizeControl: () => void;
   hideSlideNotice: () => void;
@@ -67,7 +68,7 @@ export function createSlidesViewRuntime({
     autoSummarize: boolean;
     currentSourceTitle: string | null;
     currentSourceUrl: string | null;
-    inputMode: "page" | "video";
+    inputMode: 'page' | 'video';
     panelState: PanelState;
     slidesEnabled: boolean;
     slidesLayout: SlidesLayout;
@@ -91,8 +92,8 @@ export function createSlidesViewRuntime({
   const slideImageLoader = createSlideImageLoader();
 
   const seekToSlideTimestamp = (seconds: number | null | undefined) => {
-    if (seconds == null || !Number.isFinite(seconds)) return;
-    void send({ type: "panel:seek", seconds: Math.floor(seconds) });
+    if (seconds == null || !Number.isFinite(seconds)) {return;}
+    void send({ seconds: Math.floor(seconds), type: 'panel:seek' });
   };
 
   const rebuildSlideDescriptions = () => {
@@ -115,14 +116,14 @@ export function createSlidesViewRuntime({
     imageUrl: string | null | undefined,
   ) => {
     if (imageUrl) {
-      thumb.classList.add("isPlaceholder");
+      thumb.classList.add('isPlaceholder');
       slideImageLoader.observe(img, imageUrl);
       return;
     }
-    thumb.classList.add("isPlaceholder");
-    img.removeAttribute("src");
-    img.dataset.loaded = "false";
-    img.dataset.slideImageUrl = "";
+    thumb.classList.add('isPlaceholder');
+    img.removeAttribute('src');
+    img.dataset.loaded = 'false';
+    img.dataset.slideImageUrl = '';
   };
 
   const updateSlideMeta = (
@@ -133,7 +134,7 @@ export function createSlidesViewRuntime({
     total?: number | null,
   ) => {
     const formatted = formatSlideTimestamp(timestamp);
-    const totalCount = typeof total === "number" && total > 0 ? total : null;
+    const totalCount = typeof total === 'number' && total > 0 ? total : null;
     const slideLabel = totalCount ? `Slide ${index}/${totalCount}` : `Slide ${index}`;
     if (title) {
       el.textContent = formatted ? `${title} · ${formatted}` : title;
@@ -147,8 +148,7 @@ export function createSlidesViewRuntime({
   };
 
   const slidesRenderer = createSlidesRenderer({
-    hostEl: renderSlidesHostEl,
-    markdownHostEl: renderMarkdownHostEl,
+    ensureDescriptions: rebuildSlideDescriptions,
     getState: () => {
       const state = getState();
       return {
@@ -161,11 +161,12 @@ export function createSlidesViewRuntime({
         titles: slidesTextController.getTitles(),
       };
     },
-    ensureDescriptions: rebuildSlideDescriptions,
+    hostEl: renderSlidesHostEl,
+    markdownHostEl: renderMarkdownHostEl,
     onSeek: seekToSlideTimestamp,
     setExpanded: setSlidesExpanded,
-    updateThumb: updateSlideThumb,
     updateMeta: updateSlideMeta,
+    updateThumb: updateSlideThumb,
   });
 
   const renderInlineSlides = (container: HTMLElement, opts?: { fallback?: boolean }) => {
@@ -183,7 +184,7 @@ export function createSlidesViewRuntime({
       headerSetStatus,
       hostEl: renderMarkdownHostEl,
       inputMode: state.inputMode,
-      markdown: state.panelState.summaryMarkdown ?? "",
+      markdown: state.panelState.summaryMarkdown ?? '',
       md,
       phase: state.panelState.phase,
       renderInlineSlides,
@@ -205,7 +206,7 @@ export function createSlidesViewRuntime({
       headerSetStatus,
       hostEl: renderMarkdownHostEl,
       inputMode: state.inputMode,
-      markdown: "",
+      markdown: '',
       md,
       phase: state.panelState.phase,
       renderInlineSlides,
@@ -218,10 +219,10 @@ export function createSlidesViewRuntime({
 
   const updateSlideSummaryFromMarkdown = (
     markdown: string,
-    opts?: { preserveIfEmpty?: boolean; source?: "summary" | "slides" },
+    opts?: { preserveIfEmpty?: boolean; source?: 'summary' | 'slides' },
   ) => {
     const changed = slidesTextController.updateSummaryFromMarkdown(markdown, opts);
-    if (!changed) return;
+    if (!changed) {return;}
     queueSlidesRender();
   };
 
@@ -230,18 +231,18 @@ export function createSlidesViewRuntime({
     state.panelState.summaryMarkdown = markdown;
     updateSlideSummaryFromMarkdown(markdown, {
       preserveIfEmpty: slidesTextController.hasSummaryTitles(),
-      source: "summary",
+      source: 'summary',
     });
     renderMarkdownDisplay();
     panelCacheController.scheduleSync();
   };
 
   const setSlidesBusy = (next: boolean) => {
-    if (getSlidesBusy() === next) return;
+    if (getSlidesBusy() === next) {return;}
     setSlidesBusyValue(next);
-    const toggle = document.querySelector<HTMLButtonElement>(".summarizeSlideToggle");
+    const toggle = document.querySelector<HTMLButtonElement>('.summarizeSlideToggle');
     if (toggle) {
-      toggle.dataset.busy = next ? "true" : "false";
+      toggle.dataset.busy = next ? 'true' : 'false';
     }
     headerSetProgressOverride(next);
     refreshSummarizeControl();
@@ -249,13 +250,13 @@ export function createSlidesViewRuntime({
 
   const requestSlidesContext = async () => {
     const state = getState();
-    if (!state.panelState.slides || getSlidesContextPending()) return;
+    if (!state.panelState.slides || getSlidesContextPending()) {return;}
     const sourceUrl = state.panelState.slides.sourceUrl || state.currentSourceUrl || null;
-    if (sourceUrl && getSlidesContextUrl() === sourceUrl) return;
+    if (sourceUrl && getSlidesContextUrl() === sourceUrl) {return;}
     setSlidesContextPending(true);
     const requestId = `slides-${nextSlidesContextRequestId()}`;
     setSlidesContextUrl(sourceUrl);
-    void send({ type: "panel:slides-context", requestId, url: sourceUrl ?? undefined });
+    void send({ requestId, type: 'panel:slides-context', url: sourceUrl ?? undefined });
   };
 
   const applySlidesPayload = (
@@ -276,9 +277,9 @@ export function createSlidesViewRuntime({
     };
     const shouldReplaceSeeded = getSlidesSeededSourceId() === data.sourceId;
     const merged = resolveSlidesPayload(state.panelState.slides, normalized, {
-      seededSourceId: getSlidesSeededSourceId(),
       activeSlidesRunId,
       appliedSlidesRunId: getSlidesAppliedRunId(),
+      seededSourceId: getSlidesSeededSourceId(),
     });
     if (shouldReplaceSeeded) {
       setSlidesSeededSourceId(null);
@@ -310,17 +311,17 @@ export function createSlidesViewRuntime({
   };
 
   return {
-    slidesRenderer,
-    renderEmptySummaryState,
-    renderMarkdownDisplay,
-    renderMarkdown,
-    updateSlideSummaryFromMarkdown,
-    setSlidesBusy,
     applySlidesPayload,
-    requestSlidesContext,
     queueSlidesRender,
-    renderInlineSlides,
     rebuildSlideDescriptions,
+    renderEmptySummaryState,
+    renderInlineSlides,
+    renderMarkdown,
+    renderMarkdownDisplay,
+    requestSlidesContext,
+    setSlidesBusy,
+    slidesRenderer,
+    updateSlideSummaryFromMarkdown,
     updateSlidesTextState,
   };
 }

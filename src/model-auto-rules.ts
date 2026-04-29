@@ -1,45 +1,45 @@
-import type { AutoRule, AutoRuleKind, SummarizeConfig } from "./config.js";
+import type { AutoRule, AutoRuleKind, SummarizeConfig } from './config.js';
 
 export const DEFAULT_RULES: AutoRule[] = [
   {
-    when: ["video"],
-    candidates: ["google/gemini-3-flash", "google/gemini-2.5-flash-lite-preview-09-2025"],
+    candidates: ['google/gemini-3-flash', 'google/gemini-2.5-flash-lite-preview-09-2025'],
+    when: ['video'],
   },
   {
-    when: ["image"],
-    candidates: ["google/gemini-3-flash", "openai/gpt-5-mini", "anthropic/claude-sonnet-4-5"],
+    candidates: ['google/gemini-3-flash', 'openai/gpt-5-mini', 'anthropic/claude-sonnet-4-5'],
+    when: ['image'],
   },
   {
-    when: ["website", "youtube", "text"],
     bands: [
       {
         token: { max: 50_000 },
-        candidates: ["google/gemini-3-flash", "openai/gpt-5-mini", "anthropic/claude-sonnet-4-5"],
+        candidates: ['google/gemini-3-flash', 'openai/gpt-5-mini', 'anthropic/claude-sonnet-4-5'],
       },
       {
         token: { max: 200_000 },
-        candidates: ["google/gemini-3-flash", "openai/gpt-5-mini", "anthropic/claude-sonnet-4-5"],
+        candidates: ['google/gemini-3-flash', 'openai/gpt-5-mini', 'anthropic/claude-sonnet-4-5'],
       },
       {
         candidates: [
-          "xai/grok-4-fast-non-reasoning",
-          "google/gemini-3-flash",
-          "openai/gpt-5-mini",
-          "anthropic/claude-sonnet-4-5",
+          'xai/grok-4-fast-non-reasoning',
+          'google/gemini-3-flash',
+          'openai/gpt-5-mini',
+          'anthropic/claude-sonnet-4-5',
         ],
       },
     ],
+    when: ['website', 'youtube', 'text'],
   },
   {
-    when: ["file"],
-    candidates: ["google/gemini-3-flash", "openai/gpt-5-mini", "anthropic/claude-sonnet-4-5"],
+    candidates: ['google/gemini-3-flash', 'openai/gpt-5-mini', 'anthropic/claude-sonnet-4-5'],
+    when: ['file'],
   },
   {
     candidates: [
-      "google/gemini-3-flash",
-      "openai/gpt-5-mini",
-      "anthropic/claude-sonnet-4-5",
-      "xai/grok-4-fast-non-reasoning",
+      'google/gemini-3-flash',
+      'openai/gpt-5-mini',
+      'anthropic/claude-sonnet-4-5',
+      'xai/grok-4-fast-non-reasoning',
     ],
   },
 ];
@@ -49,15 +49,15 @@ function tokenMatchesBand({
   band,
 }: {
   promptTokens: number | null;
-  band: NonNullable<AutoRule["bands"]>[number];
+  band: NonNullable<AutoRule['bands']>[number];
 }): boolean {
-  const token = band.token;
-  if (!token) return true;
-  if (typeof promptTokens !== "number" || !Number.isFinite(promptTokens)) {
-    return typeof token.min !== "number" && typeof token.max !== "number";
+  const {token} = band;
+  if (!token) {return true;}
+  if (typeof promptTokens !== 'number' || !Number.isFinite(promptTokens)) {
+    return typeof token.min !== 'number' && typeof token.max !== 'number';
   }
-  const min = typeof token.min === "number" ? token.min : 0;
-  const max = typeof token.max === "number" ? token.max : Number.POSITIVE_INFINITY;
+  const min = typeof token.min === 'number' ? token.min : 0;
+  const max = typeof token.max === 'number' ? token.max : Number.POSITIVE_INFINITY;
   return promptTokens >= min && promptTokens <= max;
 }
 
@@ -74,8 +74,8 @@ export function resolveRuleCandidates({
     const model = config?.model;
     if (
       model &&
-      "mode" in model &&
-      model.mode === "auto" &&
+      'mode' in model &&
+      model.mode === 'auto' &&
       Array.isArray(model.rules) &&
       model.rules.length > 0
     ) {
@@ -85,22 +85,22 @@ export function resolveRuleCandidates({
   })();
 
   for (const rule of rules) {
-    const when = rule.when;
-    if (Array.isArray(when) && when.length > 0 && !when.includes(kind)) continue;
+    const {when} = rule;
+    if (Array.isArray(when) && when.length > 0 && !when.includes(kind)) {continue;}
 
     if (Array.isArray(rule.candidates) && rule.candidates.length > 0) {
       return rule.candidates;
     }
 
-    const bands = rule.bands;
-    if (!Array.isArray(bands) || bands.length === 0) continue;
+    const {bands} = rule;
+    if (!Array.isArray(bands) || bands.length === 0) {continue;}
     for (const band of bands) {
-      if (tokenMatchesBand({ promptTokens, band })) {
+      if (tokenMatchesBand({ band, promptTokens })) {
         return band.candidates;
       }
     }
   }
 
-  const fallback = rules[rules.length - 1];
+  const fallback = rules.at(-1);
   return fallback?.candidates ?? [];
 }

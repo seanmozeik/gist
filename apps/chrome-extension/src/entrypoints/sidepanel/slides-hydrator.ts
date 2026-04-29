@@ -1,10 +1,10 @@
-import type { SseSlidesData } from "../../lib/runtime-contracts";
+import type { SseSlidesData } from '../../lib/runtime-contracts';
 import {
   createSlidesStreamController,
   type SlidesStreamController,
-} from "./slides-stream-controller";
+} from './slides-stream-controller';
 
-export type SlidesHydrator = {
+export interface SlidesHydrator {
   start: (runId: string, opts?: { silent?: boolean }) => Promise<void>;
   stop: () => void;
   isStreaming: () => boolean;
@@ -16,9 +16,9 @@ export type SlidesHydrator = {
     hasSlides: boolean;
   }) => void;
   hydrateSnapshot: (reason?: string) => Promise<void>;
-};
+}
 
-export type SlidesHydratorOptions = {
+export interface SlidesHydratorOptions {
   getToken: () => Promise<string>;
   onSlides: (slides: SseSlidesData) => void;
   onStatus?: ((text: string) => void) | null;
@@ -27,9 +27,9 @@ export type SlidesHydratorOptions = {
   onSnapshotError?: ((error: unknown) => void) | null;
   streamFetchImpl?: typeof fetch;
   snapshotFetchImpl?: typeof fetch;
-};
+}
 
-type SnapshotResponse = { ok?: boolean; slides?: SseSlidesData };
+interface SnapshotResponse { ok?: boolean; slides?: SseSlidesData }
 
 export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydrator {
   const {
@@ -58,7 +58,7 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
   };
 
   const handlePayload = (payload: SseSlidesData) => {
-    if (!activeRunId) return;
+    if (!activeRunId) {return;}
     if (payload.slides.length > 0) {
       hasSlidesPayload = true;
     }
@@ -66,22 +66,22 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
   };
 
   const hydrateSnapshot = async (_reason?: string) => {
-    if (!activeRunId) return;
-    if (snapshotInFlight) return;
+    if (!activeRunId) {return;}
+    if (snapshotInFlight) {return;}
     const runId = activeRunId;
     const requestId = ++snapshotRequestId;
     snapshotInFlight = true;
     try {
       const token = (await getToken()).trim();
-      if (!token) return;
+      if (!token) {return;}
       const res = await (snapshotFetchImpl ?? fetch)(
         `http://127.0.0.1:8787/v1/summarize/${runId}/slides`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (!res.ok) return;
+      if (!res.ok) {return;}
       const json = (await res.json()) as SnapshotResponse;
-      if (!json?.ok || !json.slides) return;
-      if (activeRunId !== runId || snapshotRequestId !== requestId) return;
+      if (!json?.ok || !json.slides) {return;}
+      if (activeRunId !== runId || snapshotRequestId !== requestId) {return;}
       handlePayload(json.slides);
     } catch (error) {
       onSnapshotError?.(error);
@@ -93,20 +93,20 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
   };
 
   const stream: SlidesStreamController = createSlidesStreamController({
+    fetchImpl: streamFetchImpl,
     getToken,
-    onSlides: handlePayload,
-    onStatus,
-    onError: (error) => {
-      if (suppressStreamErrors) return "";
-      return onError?.(error) ?? "";
-    },
     onDone: () => {
       if (!hasSlidesPayload) {
-        void hydrateSnapshot("stream-done");
+        void hydrateSnapshot('stream-done');
       }
       onDone?.();
     },
-    fetchImpl: streamFetchImpl,
+    onError: (error) => {
+      if (suppressStreamErrors) return '';
+      return onError?.(error) ?? '';
+    },
+    onSlides: handlePayload,
+    onStatus,
   });
 
   const start = async (runId: string, opts?: { silent?: boolean }) => {
@@ -131,9 +131,9 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
   };
 
   const handleSummaryFromCache = (value: boolean | null | undefined) => {
-    if (value == null) return;
+    if (value == null) {return;}
     if (value) {
-      void hydrateSnapshot("summary-cache");
+      void hydrateSnapshot('summary-cache');
     }
   };
 
@@ -146,7 +146,7 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
     summaryFromCache: boolean | null | undefined;
     hasSlides: boolean;
   }) => {
-    if (!runId) return;
+    if (!runId) {return;}
     if (activeRunId !== runId) {
       setActiveRunId(runId);
     }
@@ -158,17 +158,17 @@ export function createSlidesHydrator(options: SlidesHydratorOptions): SlidesHydr
       void start(runId, { silent: true });
     }
     if (summaryFromCache) {
-      void hydrateSnapshot("summary-cache");
+      void hydrateSnapshot('summary-cache');
     }
   };
 
   return {
-    start,
-    stop,
-    isStreaming: () => stream.isStreaming(),
     handlePayload,
     handleSummaryFromCache,
-    syncFromCache,
     hydrateSnapshot,
+    isStreaming: () => stream.isStreaming(),
+    start,
+    stop,
+    syncFromCache,
   };
 }

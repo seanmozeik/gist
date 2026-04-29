@@ -1,6 +1,6 @@
-import type { Extractor, ExtractorContext, ExtractorResult } from "./types";
+import type { Extractor, ExtractorContext, ExtractorResult } from './types';
 
-type UrlDaemonExtractResponse = {
+interface UrlDaemonExtractResponse {
   ok?: boolean;
   extracted?: {
     content?: string;
@@ -16,25 +16,20 @@ type UrlDaemonExtractResponse = {
     transcriptionProvider?: string | null;
     transcriptTimedText?: string | null;
     mediaDurationSeconds?: number | null;
-    diagnostics?: ExtractorResult["diagnostics"];
+    diagnostics?: ExtractorResult['diagnostics'];
   };
   error?: string;
-};
+}
 
 export const urlDaemonExtractor: Extractor = {
-  name: "url-daemon",
-  match: () => true,
   async extract(ctx: ExtractorContext): Promise<ExtractorResult | null> {
-    const res = await ctx.fetchImpl("http://127.0.0.1:8787/v1/summarize", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${ctx.token.trim()}`,
-        "content-type": "application/json",
-      },
+    const res = await ctx.fetchImpl('http://127.0.0.1:8787/v1/summarize', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${ctx.token.trim()}`, 'content-type': 'application/json' },
       body: JSON.stringify({
         url: ctx.url,
         title: ctx.title,
-        mode: "url",
+        mode: 'url',
         extractOnly: true,
         ...(ctx.noCache ? { noCache: true } : {}),
         maxCharacters: ctx.maxChars,
@@ -45,11 +40,11 @@ export const urlDaemonExtractor: Extractor = {
     const json = (await res.json()) as UrlDaemonExtractResponse;
     if (!res.ok || !json.ok || !json.extracted) return null;
 
-    const text = json.extracted.content?.trim() ?? "";
+    const text = json.extracted.content?.trim() ?? '';
     if (text.length < ctx.minTextChars) return null;
 
     return {
-      source: "url",
+      source: 'url',
       diagnostics: json.extracted.diagnostics ?? null,
       extracted: {
         ok: true,
@@ -62,4 +57,6 @@ export const urlDaemonExtractor: Extractor = {
       },
     };
   },
+  match: () => true,
+  name: 'url-daemon',
 };

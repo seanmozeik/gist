@@ -2,9 +2,9 @@ import {
   formatCompactCount,
   formatDurationSecondsSmart,
   formatMinutesSmart,
-} from "../tty/format.js";
+} from '../tty/format.js';
 
-export type ExtractedForLengths = {
+export interface ExtractedForLengths {
   url: string;
   siteName: string | null;
   totalCharacters: number;
@@ -15,41 +15,41 @@ export type ExtractedForLengths = {
   transcriptSource: string | null;
   transcriptionProvider: string | null;
   mediaDurationSeconds: number | null;
-  video: { kind: "youtube" | "direct"; url: string } | null;
+  video: { kind: 'youtube' | 'direct'; url: string } | null;
   isVideoOnly: boolean;
   diagnostics: { transcript: { cacheStatus: string } };
-};
+}
 
 function inferMediaKindLabelForFinishLine(
   extracted: ExtractedForLengths,
-): "audio" | "video" | null {
-  if (extracted.siteName === "YouTube" || /youtube\.com|youtu\.be/i.test(extracted.url)) {
-    return "video";
+): 'audio' | 'video' | null {
+  if (extracted.siteName === 'YouTube' || /youtube\.com|youtu\.be/i.test(extracted.url)) {
+    return 'video';
   }
   if (extracted.isVideoOnly || extracted.video) {
-    return "video";
+    return 'video';
   }
 
   const hasTranscript =
-    typeof extracted.transcriptCharacters === "number" && extracted.transcriptCharacters > 0;
-  if (!hasTranscript) return null;
-  return "audio";
+    typeof extracted.transcriptCharacters === 'number' && extracted.transcriptCharacters > 0;
+  if (!hasTranscript) {return null;}
+  return 'audio';
 }
 
 function buildCompactTranscriptPart(extracted: ExtractedForLengths): string | null {
   const isYouTube =
-    extracted.siteName === "YouTube" || /youtube\.com|youtu\.be/i.test(extracted.url);
-  if (!isYouTube && !extracted.transcriptCharacters) return null;
+    extracted.siteName === 'YouTube' || /youtube\.com|youtu\.be/i.test(extracted.url);
+  if (!isYouTube && !extracted.transcriptCharacters) {return null;}
 
   const transcriptChars = extracted.transcriptCharacters;
-  if (typeof transcriptChars !== "number" || transcriptChars <= 0) return null;
+  if (typeof transcriptChars !== 'number' || transcriptChars <= 0) {return null;}
 
   const wordEstimate = Math.max(0, Math.round(transcriptChars / 6));
   const transcriptWords = extracted.transcriptWordCount ?? wordEstimate;
   const minutesEstimate = Math.max(0.1, transcriptWords / 160);
 
   const exactDurationSeconds =
-    typeof extracted.mediaDurationSeconds === "number" && extracted.mediaDurationSeconds > 0
+    typeof extracted.mediaDurationSeconds === 'number' && extracted.mediaDurationSeconds > 0
       ? extracted.mediaDurationSeconds
       : null;
   const duration =
@@ -60,9 +60,9 @@ function buildCompactTranscriptPart(extracted: ExtractedForLengths): string | nu
   const wordLabel = `${formatCompactCount(transcriptWords)} words`;
   const mediaKind = inferMediaKindLabelForFinishLine(extracted);
   const kindLabel = (() => {
-    if (isYouTube) return "YouTube";
-    if (mediaKind === "audio") return "podcast";
-    if (mediaKind === "video") return "video";
+    if (isYouTube) {return 'YouTube';}
+    if (mediaKind === 'audio') {return 'podcast';}
+    if (mediaKind === 'video') {return 'video';}
     return null;
   })();
 
@@ -72,12 +72,12 @@ function buildCompactTranscriptPart(extracted: ExtractedForLengths): string | nu
 function buildDetailedLengthPartsForExtracted(extracted: ExtractedForLengths): string[] {
   const parts: string[] = [];
   const isYouTube =
-    extracted.siteName === "YouTube" || /youtube\.com|youtu\.be/i.test(extracted.url);
-  if (!isYouTube && !extracted.transcriptCharacters) return parts;
+    extracted.siteName === 'YouTube' || /youtube\.com|youtu\.be/i.test(extracted.url);
+  if (!isYouTube && !extracted.transcriptCharacters) {return parts;}
 
   const transcriptChars = extracted.transcriptCharacters;
   const shouldOmitInput =
-    typeof transcriptChars === "number" &&
+    typeof transcriptChars === 'number' &&
     transcriptChars > 0 &&
     extracted.totalCharacters > 0 &&
     transcriptChars / extracted.totalCharacters >= 0.95;
@@ -87,7 +87,7 @@ function buildDetailedLengthPartsForExtracted(extracted: ExtractedForLengths): s
     );
   }
 
-  if (typeof extracted.transcriptCharacters === "number" && extracted.transcriptCharacters > 0) {
+  if (typeof extracted.transcriptCharacters === 'number' && extracted.transcriptCharacters > 0) {
     const wordEstimate = Math.max(0, Math.round(extracted.transcriptCharacters / 6));
     const transcriptWords = extracted.transcriptWordCount ?? wordEstimate;
     const minutesEstimate = Math.max(0.1, transcriptWords / 160);
@@ -96,28 +96,28 @@ function buildDetailedLengthPartsForExtracted(extracted: ExtractedForLengths): s
       `${formatCompactCount(extracted.transcriptCharacters)} chars`,
     ];
     const durationPart =
-      typeof extracted.mediaDurationSeconds === "number" && extracted.mediaDurationSeconds > 0
+      typeof extracted.mediaDurationSeconds === 'number' && extracted.mediaDurationSeconds > 0
         ? formatDurationSecondsSmart(extracted.mediaDurationSeconds)
         : formatMinutesSmart(minutesEstimate);
 
-    parts.push(`transcript=${durationPart} (${details.join(" · ")})`);
+    parts.push(`transcript=${durationPart} (${details.join(' · ')})`);
   }
 
   const hasTranscript =
-    typeof extracted.transcriptCharacters === "number" && extracted.transcriptCharacters > 0;
+    typeof extracted.transcriptCharacters === 'number' && extracted.transcriptCharacters > 0;
   if (hasTranscript && extracted.transcriptSource) {
     const providerSuffix =
-      extracted.transcriptSource === "whisper" &&
+      extracted.transcriptSource === 'whisper' &&
       extracted.transcriptionProvider &&
       extracted.transcriptionProvider.trim().length > 0
         ? `/${extracted.transcriptionProvider.trim()}`
-        : "";
+        : '';
     const cacheStatus = extracted.diagnostics?.transcript?.cacheStatus;
     const cachePart =
-      typeof cacheStatus === "string" && cacheStatus !== "unknown" ? cacheStatus : null;
+      typeof cacheStatus === 'string' && cacheStatus !== 'unknown' ? cacheStatus : null;
     const txParts: string[] = [`tx=${extracted.transcriptSource}${providerSuffix}`];
-    if (cachePart) txParts.push(`cache=${cachePart}`);
-    parts.push(txParts.join(" "));
+    if (cachePart) {txParts.push(`cache=${cachePart}`);}
+    parts.push(txParts.join(' '));
   }
   return parts;
 }
@@ -127,10 +127,10 @@ export function buildLengthPartsForFinishLine(
   detailed: boolean,
 ): string[] | null {
   const compactTranscript = buildCompactTranscriptPart(extracted);
-  if (!detailed) return compactTranscript ? [`txc=${compactTranscript}`] : null;
+  if (!detailed) {return compactTranscript ? [`txc=${compactTranscript}`] : null;}
 
   const parts = buildDetailedLengthPartsForExtracted(extracted);
-  if (parts.length === 0 && !compactTranscript) return null;
-  if (compactTranscript) parts.unshift(`txc=${compactTranscript}`);
+  if (parts.length === 0 && !compactTranscript) {return null;}
+  if (compactTranscript) {parts.unshift(`txc=${compactTranscript}`);}
   return parts;
 }

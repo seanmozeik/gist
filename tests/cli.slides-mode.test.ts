@@ -1,9 +1,11 @@
-import { Writable } from "node:stream";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { Writable } from 'node:stream';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
 
 function collectStream({ isTTY }: { isTTY: boolean }) {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
@@ -12,158 +14,149 @@ function collectStream({ isTTY }: { isTTY: boolean }) {
   });
   (stream as unknown as { isTTY?: boolean }).isTTY = isTTY;
   (stream as unknown as { columns?: number }).columns = 120;
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 const mocks = vi.hoisted(() => {
   const slidesResult = {
-    sourceUrl: "https://example.com/video.mp4",
-    sourceKind: "direct",
-    sourceId: "video-123",
-    slidesDir: "/tmp/slides",
-    sceneThreshold: 0.3,
+    autoTune: { chosenThreshold: 0.3, confidence: 0, enabled: false, strategy: 'none' },
     autoTuneThreshold: true,
-    autoTune: { enabled: false, chosenThreshold: 0.3, confidence: 0, strategy: "none" },
     maxSlides: 100,
     minSlideDuration: 2,
-    ocrRequested: false,
     ocrAvailable: false,
-    slides: [
-      {
-        index: 1,
-        timestamp: 12.3,
-        imagePath: "/tmp/slides/slide_0001.png",
-      },
-    ],
+    ocrRequested: false,
+    sceneThreshold: 0.3,
+    slides: [{ index: 1, timestamp: 12.3, imagePath: '/tmp/slides/slide_0001.png' }],
+    slidesDir: '/tmp/slides',
+    sourceId: 'video-123',
+    sourceKind: 'direct',
+    sourceUrl: 'https://example.com/video.mp4',
     warnings: [],
   };
   return {
-    slidesResult,
+    extractSlidesForSource: vi.fn(async () => slidesResult),
     resolveSlideSourceFromUrl: vi.fn(() => ({
       url: slidesResult.sourceUrl,
-      kind: "direct",
+      kind: 'direct',
       sourceId: slidesResult.sourceId,
     })),
-    extractSlidesForSource: vi.fn(async () => slidesResult),
+    slidesResult,
   };
 });
 
 const renderMocks = vi.hoisted(() => ({
-  renderSlidesInline: vi.fn(async () => ({ rendered: 1, protocol: "kitty" })),
+  renderSlidesInline: vi.fn(async () => ({ protocol: 'kitty', rendered: 1 })),
 }));
 
-vi.mock("../src/slides/index.js", async () => {
+vi.mock('../src/slides/index.js', async () => {
   const actual =
-    await vi.importActual<typeof import("../src/slides/index.js")>("../src/slides/index.js");
+    await vi.importActual<typeof import('../src/slides/index.js')>('../src/slides/index.js');
   return {
     ...actual,
-    resolveSlideSourceFromUrl: mocks.resolveSlideSourceFromUrl,
     extractSlidesForSource: mocks.extractSlidesForSource,
+    resolveSlideSourceFromUrl: mocks.resolveSlideSourceFromUrl,
   };
 });
 
-vi.mock("../src/run/slides-render.js", async () => {
-  const actual = await vi.importActual<typeof import("../src/run/slides-render.js")>(
-    "../src/run/slides-render.js",
+vi.mock('../src/run/slides-render.js', async () => {
+  const actual = await vi.importActual<typeof import('../src/run/slides-render.js')>(
+    '../src/run/slides-render.js',
   );
-  return {
-    ...actual,
-    renderSlidesInline: renderMocks.renderSlidesInline,
-  };
+  return { ...actual, renderSlidesInline: renderMocks.renderSlidesInline };
 });
 
-describe("cli slides mode", () => {
+describe('cli slides mode', () => {
   afterEach(() => {
     renderMocks.renderSlidesInline.mockClear();
   });
 
-  it("prints slide paths in text mode", async () => {
+  it('prints slide paths in text mode', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: false });
-    await runCli(["slides", "https://example.com/video.mp4"], {
-      env: { HOME: "/tmp" },
+    await runCli(['slides', 'https://example.com/video.mp4'], {
+      env: { HOME: '/tmp' },
       fetch: globalThis.fetch.bind(globalThis),
-      stdout: stdout.stream,
       stderr: stderr.stream,
+      stdout: stdout.stream,
     });
     const text = stdout.getText();
-    expect(text).toContain("Slides extracted: 1");
-    expect(text).toContain("Slides dir: /tmp/slides");
-    expect(text).toContain("\t0:12\t/tmp/slides/slide_0001.png");
+    expect(text).toContain('Slides extracted: 1');
+    expect(text).toContain('Slides dir: /tmp/slides');
+    expect(text).toContain('\t0:12\t/tmp/slides/slide_0001.png');
   });
 
-  it("prints JSON when requested", async () => {
+  it('prints JSON when requested', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: false });
-    await runCli(["slides", "https://example.com/video.mp4", "--json"], {
-      env: { HOME: "/tmp" },
+    await runCli(['slides', 'https://example.com/video.mp4', '--json'], {
+      env: { HOME: '/tmp' },
       fetch: globalThis.fetch.bind(globalThis),
-      stdout: stdout.stream,
       stderr: stderr.stream,
+      stdout: stdout.stream,
     });
     const parsed = JSON.parse(stdout.getText());
     expect(parsed.ok).toBe(true);
     expect(parsed.slides?.slides?.length).toBe(1);
   });
 
-  it("fails to render inline when stdout is not a TTY", async () => {
+  it('fails to render inline when stdout is not a TTY', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: false });
     await expect(
-      runCli(["slides", "https://example.com/video.mp4", "--render", "kitty"], {
-        env: { HOME: "/tmp" },
+      runCli(['slides', 'https://example.com/video.mp4', '--render', 'kitty'], {
+        env: { HOME: '/tmp' },
         fetch: globalThis.fetch.bind(globalThis),
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
-    ).rejects.toThrow("--render requires a TTY stdout.");
+    ).rejects.toThrow('--render requires a TTY stdout.');
   });
 
-  it("rejects unknown render modes", async () => {
+  it('rejects unknown render modes', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: false });
     await expect(
-      runCli(["slides", "https://example.com/video.mp4", "--render", "nope"], {
-        env: { HOME: "/tmp" },
+      runCli(['slides', 'https://example.com/video.mp4', '--render', 'nope'], {
+        env: { HOME: '/tmp' },
         fetch: globalThis.fetch.bind(globalThis),
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
     ).rejects.toThrow("argument 'nope' is invalid");
   });
 
-  it("rejects render with JSON output", async () => {
+  it('rejects render with JSON output', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: false });
     await expect(
-      runCli(["slides", "https://example.com/video.mp4", "--json", "--render", "auto"], {
-        env: { HOME: "/tmp" },
+      runCli(['slides', 'https://example.com/video.mp4', '--json', '--render', 'auto'], {
+        env: { HOME: '/tmp' },
         fetch: globalThis.fetch.bind(globalThis),
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       }),
-    ).rejects.toThrow("--render is not supported with --json output.");
+    ).rejects.toThrow('--render is not supported with --json output.');
   });
 
-  it("renders inline when stdout is a TTY", async () => {
+  it('renders inline when stdout is a TTY', async () => {
     const stdout = collectStream({ isTTY: true });
     const stderr = collectStream({ isTTY: true });
-    await runCli(["slides", "https://example.com/video.mp4", "--render", "auto"], {
-      env: { HOME: "/tmp", TERM_PROGRAM: "iTerm.app" },
+    await runCli(['slides', 'https://example.com/video.mp4', '--render', 'auto'], {
+      env: { HOME: '/tmp', TERM_PROGRAM: 'iTerm.app' },
       fetch: globalThis.fetch.bind(globalThis),
-      stdout: stdout.stream,
       stderr: stderr.stream,
+      stdout: stdout.stream,
     });
 
     expect(renderMocks.renderSlidesInline).toHaveBeenCalledTimes(1);
     const call = renderMocks.renderSlidesInline.mock.calls[0]?.[0];
-    expect(call?.mode).toBe("auto");
+    expect(call?.mode).toBe('auto');
     expect(call?.slides?.length).toBe(1);
     const label = call?.labelForSlide?.({
+      imagePath: '/tmp/slides/slide_0002.png',
       index: 2,
       timestamp: 3661,
-      imagePath: "/tmp/slides/slide_0002.png",
     });
-    expect(label).toContain("01:01:01");
+    expect(label).toContain('01:01:01');
   });
 });

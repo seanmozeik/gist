@@ -1,55 +1,54 @@
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { Writable } from "node:stream";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { Writable } from 'node:stream';
 
-const mocks = vi.hoisted(() => ({
-  execFile: vi.fn(),
-}));
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("node:child_process", () => ({ execFile: mocks.execFile }));
+const mocks = vi.hoisted(() => ({ execFile: vi.fn() }));
 
-import { DAEMON_LAUNCH_AGENT_LABEL } from "../src/daemon/constants.js";
+vi.mock('node:child_process', () => ({ execFile: mocks.execFile }));
+
+import { DAEMON_LAUNCH_AGENT_LABEL } from '../src/daemon/constants.js';
 import {
   installLaunchAgent,
   resolveLaunchctlDomains,
   resolveLaunchctlTargetUid,
-} from "../src/daemon/launchd.js";
+} from '../src/daemon/launchd.js';
 
 function collectStream(): { stream: Writable; getText: () => string } {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
-describe("daemon/launchd domain resolution", () => {
-  it("resolves target uid with sudo fallback for root", () => {
+describe('daemon/launchd domain resolution', () => {
+  it('resolves target uid with sudo fallback for root', () => {
     expect(resolveLaunchctlTargetUid({ uid: 501 })).toBe(501);
-    expect(resolveLaunchctlTargetUid({ uid: 0, sudoUid: " 502 " })).toBe(502);
-    expect(resolveLaunchctlTargetUid({ uid: 0, sudoUid: "invalid" })).toBe(0);
-    expect(resolveLaunchctlTargetUid({ uid: 0, sudoUid: "" })).toBe(0);
+    expect(resolveLaunchctlTargetUid({ sudoUid: ' 502 ', uid: 0 })).toBe(502);
+    expect(resolveLaunchctlTargetUid({ sudoUid: 'invalid', uid: 0 })).toBe(0);
+    expect(resolveLaunchctlTargetUid({ sudoUid: '', uid: 0 })).toBe(0);
   });
 
-  it("builds launchctl domain candidates", () => {
-    expect(resolveLaunchctlDomains({ uid: 501 })).toEqual(["gui/501", "user/501"]);
+  it('builds launchctl domain candidates', () => {
+    expect(resolveLaunchctlDomains({ uid: 501 })).toEqual(['gui/501', 'user/501']);
   });
 });
 
-describe("daemon/launchd install", () => {
+describe('daemon/launchd install', () => {
   beforeEach(() => {
     mocks.execFile.mockReset();
   });
 
-  it("falls back to user domain when gui bootstrap fails", async () => {
+  it('falls back to user domain when gui bootstrap fails', async () => {
     let uidSpy: ReturnType<typeof vi.spyOn> | null = null;
-    if (typeof process.getuid === "function") {
-      uidSpy = vi.spyOn(process, "getuid").mockReturnValue(501);
+    if (typeof process.getuid === 'function') {
+      uidSpy = vi.spyOn(process, 'getuid').mockReturnValue(501);
     }
 
     try {
@@ -60,35 +59,35 @@ describe("daemon/launchd install", () => {
           _options: { encoding: string },
           callback: (error: NodeJS.ErrnoException | null, stdout: string, stderr: string) => void,
         ) => {
-          if (args[0] === "bootstrap" && args[1] === "gui/501") {
-            const error = Object.assign(new Error("Bootstrap failed: 5: Input/output error"), {
+          if (args[0] === 'bootstrap' && args[1] === 'gui/501') {
+            const error = Object.assign(new Error('Bootstrap failed: 5: Input/output error'), {
               code: 5,
-              stdout: "",
-              stderr: "Bootstrap failed: 5: Input/output error",
+              stderr: 'Bootstrap failed: 5: Input/output error',
+              stdout: '',
             }) as NodeJS.ErrnoException;
-            callback(error, "", "");
+            callback(error, '', '');
             return {} as never;
           }
-          callback(null, "", "");
+          callback(null, '', '');
           return {} as never;
         },
       );
 
-      const home = mkdtempSync(path.join(tmpdir(), "summarize-launchd-"));
+      const home = mkdtempSync(path.join(tmpdir(), 'summarize-launchd-'));
       const out = collectStream();
 
       const { plistPath } = await installLaunchAgent({
         env: { HOME: home },
+        programArguments: ['/usr/bin/node', '/tmp/cli.js', 'daemon', 'run'],
         stdout: out.stream,
-        programArguments: ["/usr/bin/node", "/tmp/cli.js", "daemon", "run"],
       });
 
-      const commands = mocks.execFile.mock.calls.map((call) => (call[1] as string[]).join(" "));
+      const commands = mocks.execFile.mock.calls.map((call) => (call[1] as string[]).join(' '));
       expect(commands).toContain(`bootstrap gui/501 ${plistPath}`);
       expect(commands).toContain(`bootstrap user/501 ${plistPath}`);
       expect(commands).toContain(`enable user/501/${DAEMON_LAUNCH_AGENT_LABEL}`);
       expect(commands).toContain(`kickstart -k user/501/${DAEMON_LAUNCH_AGENT_LABEL}`);
-      expect(out.getText()).toContain("Launch domain: user/501");
+      expect(out.getText()).toContain('Launch domain: user/501');
     } finally {
       uidSpy?.mockRestore();
     }

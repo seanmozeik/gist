@@ -1,18 +1,19 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { MediaCache } from "../content/index.js";
-import { isDirectMediaUrl } from "../content/index.js";
-import type { SlideSource } from "./types.js";
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import type { MediaCache } from '../content/index.js';
+import { isDirectMediaUrl } from '../content/index.js';
+import type { SlideSource } from './types.js';
 
 export type SlidesIngestProgress = (label: string, percent: number, detail?: string) => void;
 
 async function resolveLocalSlidesInputPath(url: string): Promise<string | null> {
   try {
     const parsed = new URL(url);
-    if (parsed.protocol !== "file:") return null;
-    parsed.search = "";
-    parsed.hash = "";
+    if (parsed.protocol !== 'file:') {return null;}
+    parsed.search = '';
+    parsed.hash = '';
     const filePath = fileURLToPath(parsed);
     const stat = await fs.stat(filePath);
     return stat.isFile() ? filePath : null;
@@ -71,19 +72,14 @@ export async function prepareSlidesInput({
 }): Promise<{
   inputPath: string;
   inputCleanup: (() => Promise<void>) | null;
-  cachedMedia: Awaited<ReturnType<NonNullable<MediaCache>["get"]>> | null;
+  cachedMedia: Awaited<ReturnType<NonNullable<MediaCache>['get']>> | null;
   warnings: string[];
 }> {
   const warnings: string[] = [];
   const localInputPath = await resolveLocalSlidesInputPath(source.url);
   if (localInputPath) {
-    reportSlidesProgress?.("using local video", 35);
-    return {
-      inputPath: localInputPath,
-      inputCleanup: null,
-      cachedMedia: null,
-      warnings,
-    };
+    reportSlidesProgress?.('using local video', 35);
+    return { cachedMedia: null, inputCleanup: null, inputPath: localInputPath, warnings };
   }
 
   const allowStreamFallback = resolveSlidesStreamFallback();
@@ -92,172 +88,152 @@ export async function prepareSlidesInput({
 
   if (cachedMedia) {
     const detail =
-      typeof cachedMedia.sizeBytes === "number"
+      typeof cachedMedia.sizeBytes === 'number'
         ? `(${formatBytes(cachedMedia.sizeBytes)})`
         : undefined;
-    reportSlidesProgress?.("using cached video", 35, detail);
-    return {
-      inputPath: cachedMedia.filePath,
-      inputCleanup: null,
-      cachedMedia,
-      warnings,
-    };
+    reportSlidesProgress?.('using cached video', 35, detail);
+    return { cachedMedia, inputCleanup: null, inputPath: cachedMedia.filePath, warnings };
   }
 
-  if (source.kind === "youtube") {
+  if (source.kind === 'youtube') {
     if (!ytDlpPath) {
-      throw new Error("Slides for YouTube require yt-dlp (set YT_DLP_PATH or install yt-dlp).");
+      throw new Error('Slides for YouTube require yt-dlp (set YT_DLP_PATH or install yt-dlp).');
     }
     const format = resolveSlidesYtDlpExtractFormat();
-    reportSlidesProgress?.("downloading video", 6);
+    reportSlidesProgress?.('downloading video', 6);
     const downloadStartedAt = Date.now();
     try {
       const downloaded = await downloadYoutubeVideo({
-        ytDlpPath,
-        url: source.url,
-        timeoutMs,
-        format,
         cookiesFromBrowser: ytDlpCookiesFromBrowser,
+        format,
         onProgress: (percent, detail) => {
           reportSlidesProgress?.(
-            "downloading video",
+            'downloading video',
             6 + (Math.max(0, Math.min(100, percent)) / 100) * 29,
             detail,
           );
         },
+        timeoutMs,
+        url: source.url,
+        ytDlpPath,
       });
       const cached = mediaCacheKey
         ? await mediaCache?.put({
-            url: mediaCacheKey,
             filePath: downloaded.filePath,
             filename: path.basename(downloaded.filePath),
+            url: mediaCacheKey,
           })
         : null;
       logSlidesTiming?.(`yt-dlp download (detect+extract, format=${format})`, downloadStartedAt);
       return {
-        inputPath: cached?.filePath ?? downloaded.filePath,
-        inputCleanup: downloaded.cleanup,
         cachedMedia: cached ?? null,
+        inputCleanup: downloaded.cleanup,
+        inputPath: cached?.filePath ?? downloaded.filePath,
         warnings,
       };
     } catch (error) {
-      if (!allowStreamFallback) throw error;
+      if (!allowStreamFallback) {throw error;}
       warnings.push(`Failed to download video; falling back to stream URL: ${String(error)}`);
-      reportSlidesProgress?.("fetching video", 6);
+      reportSlidesProgress?.('fetching video', 6);
       const streamStartedAt = Date.now();
       const streamUrl = await resolveYoutubeStreamUrl({
-        ytDlpPath,
-        url: source.url,
+        cookiesFromBrowser: ytDlpCookiesFromBrowser,
         format,
         timeoutMs,
-        cookiesFromBrowser: ytDlpCookiesFromBrowser,
+        url: source.url,
+        ytDlpPath,
       });
       logSlidesTiming?.(`yt-dlp stream url (detect+extract, format=${format})`, streamStartedAt);
-      return {
-        inputPath: streamUrl,
-        inputCleanup: null,
-        cachedMedia: null,
-        warnings,
-      };
+      return { cachedMedia: null, inputCleanup: null, inputPath: streamUrl, warnings };
     }
   }
 
   if (!isDirectMediaUrl(source.url)) {
     if (!ytDlpPath) {
       throw new Error(
-        "Slides for remote videos require yt-dlp (set YT_DLP_PATH or install yt-dlp).",
+        'Slides for remote videos require yt-dlp (set YT_DLP_PATH or install yt-dlp).',
       );
     }
     const format = resolveSlidesYtDlpExtractFormat();
-    reportSlidesProgress?.("downloading video", 6);
+    reportSlidesProgress?.('downloading video', 6);
     const downloadStartedAt = Date.now();
     try {
       const downloaded = await downloadYoutubeVideo({
-        ytDlpPath,
-        url: source.url,
-        timeoutMs,
-        format,
         cookiesFromBrowser: ytDlpCookiesFromBrowser,
+        format,
         onProgress: (percent, detail) => {
           reportSlidesProgress?.(
-            "downloading video",
+            'downloading video',
             6 + (Math.max(0, Math.min(100, percent)) / 100) * 29,
             detail,
           );
         },
+        timeoutMs,
+        url: source.url,
+        ytDlpPath,
       });
       const cached = mediaCacheKey
         ? await mediaCache?.put({
-            url: mediaCacheKey,
             filePath: downloaded.filePath,
             filename: path.basename(downloaded.filePath),
+            url: mediaCacheKey,
           })
         : null;
       logSlidesTiming?.(`yt-dlp download (direct source, format=${format})`, downloadStartedAt);
       return {
-        inputPath: cached?.filePath ?? downloaded.filePath,
-        inputCleanup: downloaded.cleanup,
         cachedMedia: cached ?? null,
+        inputCleanup: downloaded.cleanup,
+        inputPath: cached?.filePath ?? downloaded.filePath,
         warnings,
       };
     } catch (error) {
-      if (!allowStreamFallback) throw error;
+      if (!allowStreamFallback) {throw error;}
       warnings.push(`Failed to download video; falling back to stream URL: ${String(error)}`);
-      reportSlidesProgress?.("fetching video", 6);
+      reportSlidesProgress?.('fetching video', 6);
       const streamStartedAt = Date.now();
       const streamUrl = await resolveYoutubeStreamUrl({
-        ytDlpPath,
-        url: source.url,
+        cookiesFromBrowser: ytDlpCookiesFromBrowser,
         format,
         timeoutMs,
-        cookiesFromBrowser: ytDlpCookiesFromBrowser,
+        url: source.url,
+        ytDlpPath,
       });
       logSlidesTiming?.(`yt-dlp stream url (direct source, format=${format})`, streamStartedAt);
-      return {
-        inputPath: streamUrl,
-        inputCleanup: null,
-        cachedMedia: null,
-        warnings,
-      };
+      return { cachedMedia: null, inputCleanup: null, inputPath: streamUrl, warnings };
     }
   }
 
-  reportSlidesProgress?.("downloading video", 6);
+  reportSlidesProgress?.('downloading video', 6);
   const downloadStartedAt = Date.now();
   try {
     const downloaded = await downloadRemoteVideo({
-      url: source.url,
-      timeoutMs,
       onProgress: (percent, detail) => {
         reportSlidesProgress?.(
-          "downloading video",
+          'downloading video',
           6 + (Math.max(0, Math.min(100, percent)) / 100) * 29,
           detail,
         );
       },
+      timeoutMs,
+      url: source.url,
     });
     const cached = mediaCacheKey
       ? await mediaCache?.put({
-          url: mediaCacheKey,
           filePath: downloaded.filePath,
           filename: path.basename(downloaded.filePath),
+          url: mediaCacheKey,
         })
       : null;
-    logSlidesTiming?.("download direct video (detect+extract)", downloadStartedAt);
+    logSlidesTiming?.('download direct video (detect+extract)', downloadStartedAt);
     return {
-      inputPath: cached?.filePath ?? downloaded.filePath,
-      inputCleanup: downloaded.cleanup,
       cachedMedia: cached ?? null,
+      inputCleanup: downloaded.cleanup,
+      inputPath: cached?.filePath ?? downloaded.filePath,
       warnings,
     };
   } catch (error) {
-    if (!allowStreamFallback) throw error;
+    if (!allowStreamFallback) {throw error;}
     warnings.push(`Failed to download video; falling back to stream URL: ${String(error)}`);
-    return {
-      inputPath: source.url,
-      inputCleanup: null,
-      cachedMedia: null,
-      warnings,
-    };
+    return { cachedMedia: null, inputCleanup: null, inputPath: source.url, warnings };
   }
 }

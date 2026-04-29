@@ -7,7 +7,7 @@ export function buildIdleSubtitle({
   modelLabel?: string | null;
   model?: string | null;
 }): string {
-  const input = typeof inputSummary === "string" ? inputSummary.trim() : "";
+  const input = typeof inputSummary === 'string' ? inputSummary.trim() : '';
   void modelLabel;
   void model;
   return input;

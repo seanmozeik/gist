@@ -1,43 +1,45 @@
-import type { ChildProcess } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import type { ExecFileFn } from "../src/markitdown.js";
-import { runCli } from "../src/run.js";
+import type { ChildProcess } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import type { ExecFileFn } from '../src/markitdown.js';
+import { runCli } from '../src/run.js';
 
 function collectStream() {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 const mocks = vi.hoisted(() => ({
-  streamSimple: vi.fn(),
   completeSimple: vi.fn(),
   getModel: vi.fn(() => {
-    throw new Error("no model");
+    throw new Error('no model');
   }),
+  streamSimple: vi.fn(),
 }));
 
-vi.mock("@mariozechner/pi-ai", () => ({
-  streamSimple: mocks.streamSimple,
+vi.mock('@mariozechner/pi-ai', () => ({
   completeSimple: mocks.completeSimple,
   getModel: mocks.getModel,
+  streamSimple: mocks.streamSimple,
 }));
 
-describe("cli --extract with local PDF files", () => {
-  it("extracts text from a local PDF using markitdown without LLM", async () => {
-    const root = mkdtempSync(join(tmpdir(), "summarize-extract-pdf-"));
+describe('cli --extract with local PDF files', () => {
+  it('extracts text from a local PDF using markitdown without LLM', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-pdf-'));
     try {
-      const pdfPath = join(root, "test.pdf");
-      writeFileSync(pdfPath, Buffer.from("%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n", "utf8"));
+      const pdfPath = join(root, 'test.pdf');
+      writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
       const stdout = collectStream();
       const stderr = collectStream();
@@ -45,73 +47,73 @@ describe("cli --extract with local PDF files", () => {
       const execFileMock = vi.fn(((file, args, _options, callback) => {
         void file;
         void args;
-        callback(null, "# Extracted Heading\n\nExtracted PDF content.\n", "");
+        callback(null, '# Extracted Heading\n\nExtracted PDF content.\n', '');
         return { pid: 123 } as unknown as ChildProcess;
       }) as ExecFileFn);
 
-      await runCli(["--extract", "--plain", pdfPath], {
-        env: { HOME: root, UVX_PATH: "uvx" },
-        fetch: vi.fn(async () => {
-          throw new Error("unexpected fetch — extract mode should not hit network");
-        }) as unknown as typeof fetch,
+      await runCli(['--extract', '--plain', pdfPath], {
+        env: { HOME: root, UVX_PATH: 'uvx' },
         execFile: execFileMock,
-        stdout: stdout.stream,
+        fetch: vi.fn(async () => {
+          throw new Error('unexpected fetch — extract mode should not hit network');
+        }) as unknown as typeof fetch,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       });
 
-      expect(stdout.getText()).toContain("Extracted PDF content.");
+      expect(stdout.getText()).toContain('Extracted PDF content.');
       expect(execFileMock).toHaveBeenCalled();
       expect(mocks.streamSimple).not.toHaveBeenCalled();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(root, { force: true, recursive: true });
     }
   });
 
-  it("rejects --extract on a non-PDF local file with a helpful error", async () => {
-    const root = mkdtempSync(join(tmpdir(), "summarize-extract-txt-"));
+  it('rejects --extract on a non-PDF local file with a helpful error', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-txt-'));
     try {
-      const txtPath = join(root, "notes.txt");
-      writeFileSync(txtPath, "Hello world", "utf8");
+      const txtPath = join(root, 'notes.txt');
+      writeFileSync(txtPath, 'Hello world', 'utf8');
 
       await expect(
-        runCli(["--extract", "--plain", txtPath], {
+        runCli(['--extract', '--plain', txtPath], {
           env: { HOME: root },
           fetch: vi.fn(async () => {
-            throw new Error("unexpected fetch");
+            throw new Error('unexpected fetch');
           }) as unknown as typeof fetch,
-          stdout: collectStream().stream,
           stderr: collectStream().stream,
+          stdout: collectStream().stream,
         }),
       ).rejects.toThrow(/--extract for local files is only supported for media files/i);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(root, { force: true, recursive: true });
     }
   });
 
-  it("errors with a helpful message when uvx is not available", async () => {
-    const root = mkdtempSync(join(tmpdir(), "summarize-extract-pdf-no-uvx-"));
+  it('errors with a helpful message when uvx is not available', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-pdf-no-uvx-'));
     try {
-      const pdfPath = join(root, "test.pdf");
-      writeFileSync(pdfPath, Buffer.from("%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n", "utf8"));
+      const pdfPath = join(root, 'test.pdf');
+      writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
       const failingExecFile = vi.fn(((_file, _args, _options, callback) => {
-        callback(new Error("uvx not found"), "", "");
+        callback(new Error('uvx not found'), '', '');
         return { pid: 0 } as unknown as ChildProcess;
       }) as ExecFileFn);
 
       await expect(
-        runCli(["--extract", "--plain", pdfPath], {
+        runCli(['--extract', '--plain', pdfPath], {
           env: { HOME: root },
-          fetch: vi.fn(async () => {
-            throw new Error("unexpected fetch");
-          }) as unknown as typeof fetch,
           execFile: failingExecFile,
-          stdout: collectStream().stream,
+          fetch: vi.fn(async () => {
+            throw new Error('unexpected fetch');
+          }) as unknown as typeof fetch,
           stderr: collectStream().stream,
+          stdout: collectStream().stream,
         }),
       ).rejects.toThrow(/uvx|markitdown/i);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(root, { force: true, recursive: true });
     }
   });
 });

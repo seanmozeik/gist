@@ -2,9 +2,9 @@ import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
-} from "../tty/theme.js";
-import { VERBOSE_PREFIX } from "./constants.js";
-import { ansi } from "./terminal.js";
+} from '../tty/theme.js';
+import { VERBOSE_PREFIX } from './constants.js';
+import { ansi } from './terminal.js';
 
 export function writeVerbose(
   stderr: NodeJS.WritableStream,
@@ -19,12 +19,12 @@ export function writeVerbose(
   const theme =
     env && color
       ? createThemeRenderer({
-          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
           enabled: color,
+          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
           trueColor: resolveTrueColor(env),
         })
       : null;
-  const prefix = theme ? theme.accent(VERBOSE_PREFIX) : ansi("36", VERBOSE_PREFIX, color);
+  const prefix = theme ? theme.accent(VERBOSE_PREFIX) : ansi('36', VERBOSE_PREFIX, color);
   stderr.write(`${prefix} ${message}\n`);
 }
 
@@ -43,18 +43,18 @@ export function createRetryLogger({
 }) {
   return (notice: { attempt: number; maxRetries: number; delayMs: number; error?: unknown }) => {
     const message =
-      typeof notice.error === "string"
+      typeof notice.error === 'string'
         ? notice.error
         : notice.error instanceof Error
           ? notice.error.message
-          : typeof (notice.error as { message?: unknown } | null)?.message === "string"
+          : typeof (notice.error as { message?: unknown } | null)?.message === 'string'
             ? String((notice.error as { message?: unknown }).message)
-            : "";
+            : '';
     const reason = /empty summary/i.test(message)
-      ? "empty output"
-      : /timed out/i.test(message)
-        ? "timeout"
-        : "error";
+      ? 'empty output'
+      : (/timed out/i.test(message)
+        ? 'timeout'
+        : 'error');
     writeVerbose(
       stderr,
       verbose,

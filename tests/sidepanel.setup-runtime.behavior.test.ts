@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { UiState } from "../apps/chrome-extension/src/entrypoints/sidepanel/types";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { UiState } from '../apps/chrome-extension/src/entrypoints/sidepanel/types';
 
 const setupViewMocks = vi.hoisted(() => ({
   installStepsHtml: vi.fn(
@@ -14,14 +15,14 @@ const setupViewMocks = vi.hoisted(() => ({
       message?: string;
       showTroubleshooting?: boolean;
     }) =>
-      `headline=${headline};token=${token};message=${message ?? ""};troubleshooting=${
-        showTroubleshooting ? "yes" : "no"
+      `headline=${headline};token=${token};message=${message ?? ''};troubleshooting=${
+        showTroubleshooting ? 'yes' : 'no'
       }`,
   ),
   wireSetupButtons: vi.fn(),
 }));
 
-vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/setup-view", () => ({
+vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/setup-view', () => ({
   installStepsHtml: setupViewMocks.installStepsHtml,
   wireSetupButtons: setupViewMocks.wireSetupButtons,
 }));
@@ -29,10 +30,10 @@ vi.mock("../apps/chrome-extension/src/entrypoints/sidepanel/setup-view", () => (
 import {
   createSetupRuntime,
   friendlyFetchError,
-} from "../apps/chrome-extension/src/entrypoints/sidepanel/setup-runtime";
+} from '../apps/chrome-extension/src/entrypoints/sidepanel/setup-runtime';
 
 function stubNavigator(value: Partial<Navigator> & { userAgentData?: { platform?: string } }) {
-  vi.stubGlobal("navigator", value);
+  vi.stubGlobal('navigator', value);
 }
 
 function flushPromises() {
@@ -41,155 +42,139 @@ function flushPromises() {
 
 function makeUiState(overrides?: Partial<UiState>): UiState {
   return {
-    panelOpen: true,
-    daemon: { ok: true, authed: true },
-    tab: { id: 1, url: "https://example.com", title: "Example" },
+    daemon: { authed: true, ok: true },
     media: null,
-    stats: { pageWords: 10, videoDurationSeconds: null },
+    panelOpen: true,
     settings: {
       autoSummarize: true,
-      hoverSummaries: false,
-      chatEnabled: true,
       automationEnabled: false,
-      slidesEnabled: true,
-      slidesParallel: false,
-      slidesOcrEnabled: false,
-      slidesLayout: "strip",
+      chatEnabled: true,
       fontSize: 15,
+      hoverSummaries: false,
+      length: 'medium',
       lineHeight: 1.6,
-      model: "auto",
-      length: "medium",
+      model: 'auto',
+      slidesEnabled: true,
+      slidesLayout: 'strip',
+      slidesOcrEnabled: false,
+      slidesParallel: false,
       tokenPresent: true,
     },
-    status: "Ready",
+    stats: { pageWords: 10, videoDurationSeconds: null },
+    status: 'Ready',
+    tab: { id: 1, title: 'Example', url: 'https://example.com' },
     ...overrides,
   };
 }
 
 function makeSetupEl() {
   return {
-    innerHTML: "",
-    classList: {
-      add: vi.fn(),
-      remove: vi.fn(),
-    },
+    classList: { add: vi.fn(), remove: vi.fn() },
+    innerHTML: '',
   } as unknown as HTMLDivElement;
 }
 
-describe("sidepanel setup runtime behavior", () => {
+describe('sidepanel setup runtime behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllGlobals();
     stubNavigator({
-      platform: "MacIntel",
-      userAgent: "Mozilla/5.0",
-      userAgentData: { platform: "macOS" },
+      platform: 'MacIntel',
+      userAgent: 'Mozilla/5.0',
+      userAgentData: { platform: 'macOS' },
     } as Navigator & { userAgentData: { platform: string } });
   });
 
-  it("formats failed fetch guidance with daemon troubleshooting help", () => {
-    expect(friendlyFetchError(new Error("Failed to fetch"), "Connect")).toContain(
-      "daemon unreachable or blocked by Chrome",
+  it('formats failed fetch guidance with daemon troubleshooting help', () => {
+    expect(friendlyFetchError(new Error('Failed to fetch'), 'Connect')).toContain(
+      'daemon unreachable or blocked by Chrome',
     );
   });
 
-  it("formats non-fetch errors directly", () => {
-    expect(friendlyFetchError(new Error("boom"), "Connect")).toBe("Connect: boom");
+  it('formats non-fetch errors directly', () => {
+    expect(friendlyFetchError(new Error('boom'), 'Connect')).toBe('Connect: boom');
   });
 
-  it("renders setup immediately when the token is missing", async () => {
+  it('renders setup immediately when the token is missing', async () => {
     const setupEl = makeSetupEl();
-    const ensureToken = vi.fn(async () => "fresh-token");
-    const loadToken = vi.fn(async () => "unused-token");
+    const ensureToken = vi.fn(async () => 'fresh-token');
+    const loadToken = vi.fn(async () => 'unused-token');
 
     const runtime = createSetupRuntime({
-      setupEl,
       ensureToken,
+      generateToken: vi.fn() as never,
+      getStatusResetText: vi.fn(() => 'Ready'),
+      headerSetStatus: vi.fn(),
       loadToken,
       patchSettings: vi.fn() as never,
-      generateToken: vi.fn() as never,
-      headerSetStatus: vi.fn(),
-      getStatusResetText: vi.fn(() => "Ready"),
+      setupEl,
     });
 
     expect(
       runtime.maybeShowSetup(
-        makeUiState({
-          settings: { ...makeUiState().settings, tokenPresent: false },
-        }),
+        makeUiState({ settings: { ...makeUiState().settings, tokenPresent: false } }),
       ),
     ).toBe(true);
 
     await flushPromises();
 
     expect(ensureToken).toHaveBeenCalledOnce();
-    expect(setupEl.classList.remove).toHaveBeenCalledWith("hidden");
+    expect(setupEl.classList.remove).toHaveBeenCalledWith('hidden');
     expect(setupViewMocks.installStepsHtml).toHaveBeenCalledWith(
-      expect.objectContaining({
-        token: "fresh-token",
-        headline: "Setup",
-      }),
+      expect.objectContaining({ headline: 'Setup', token: 'fresh-token' }),
     );
     expect(setupViewMocks.wireSetupButtons).toHaveBeenCalledWith(
-      expect.objectContaining({
-        setupEl,
-        token: "fresh-token",
-        platformKind: "mac",
-      }),
+      expect.objectContaining({ platformKind: 'mac', setupEl, token: 'fresh-token' }),
     );
   });
 
-  it("renders troubleshooting setup when the daemon is not reachable", async () => {
+  it('renders troubleshooting setup when the daemon is not reachable', async () => {
     const setupEl = makeSetupEl();
-    const loadToken = vi.fn(async () => "saved-token");
+    const loadToken = vi.fn(async () => 'saved-token');
 
     const runtime = createSetupRuntime({
-      setupEl,
-      ensureToken: vi.fn(async () => "unused-token"),
+      ensureToken: vi.fn(async () => 'unused-token'),
+      generateToken: vi.fn() as never,
+      getStatusResetText: vi.fn(() => 'Ready'),
+      headerSetStatus: vi.fn(),
       loadToken,
       patchSettings: vi.fn() as never,
-      generateToken: vi.fn() as never,
-      headerSetStatus: vi.fn(),
-      getStatusResetText: vi.fn(() => "Ready"),
+      setupEl,
     });
 
-    expect(
-      runtime.maybeShowSetup(
-        makeUiState({
-          daemon: { ok: false, authed: false },
-        }),
-      ),
-    ).toBe(true);
+    expect(runtime.maybeShowSetup(makeUiState({ daemon: { authed: false, ok: false } }))).toBe(
+      true,
+    );
 
     await flushPromises();
 
     expect(loadToken).toHaveBeenCalledOnce();
-    expect(setupEl.classList.remove).toHaveBeenCalledWith("hidden");
-    expect(setupEl.innerHTML).toContain("headline=Daemon not reachable");
-    expect(setupEl.innerHTML).toContain("Check that the LaunchAgent is installed.");
+    expect(setupEl.classList.remove).toHaveBeenCalledWith('hidden');
+    expect(setupEl.innerHTML).toContain('headline=Daemon not reachable');
+    expect(setupEl.innerHTML).toContain('Check that the LaunchAgent is installed.');
     expect(setupViewMocks.installStepsHtml).toHaveBeenCalledWith(
       expect.objectContaining({
-        token: "saved-token",
-        headline: "Daemon not reachable",
+        headline: 'Daemon not reachable',
         showTroubleshooting: true,
+        token: 'saved-token',
       }),
     );
   });
 
-  it("hides setup when the daemon is healthy and authed", () => {
+  it('hides setup when the daemon is healthy and authed', () => {
     const setupEl = makeSetupEl();
 
     const runtime = createSetupRuntime({
-      setupEl,
-      ensureToken: vi.fn(async () => "unused-token"),
-      loadToken: vi.fn(async () => "unused-token"),
-      patchSettings: vi.fn() as never,
+      ensureToken: vi.fn(async () => 'unused-token'),
       generateToken: vi.fn() as never,
+      getStatusResetText: vi.fn(() => 'Ready'),
       headerSetStatus: vi.fn(),
-      getStatusResetText: vi.fn(() => "Ready"),
+      loadToken: vi.fn(async () => 'unused-token'),
+      patchSettings: vi.fn() as never,
+      setupEl,
     });
 
     expect(runtime.maybeShowSetup(makeUiState())).toBe(false);
-    expect(setupEl.classList.add).toHaveBeenCalledWith("hidden");
+    expect(setupEl.classList.add).toHaveBeenCalledWith('hidden');
   });
 });

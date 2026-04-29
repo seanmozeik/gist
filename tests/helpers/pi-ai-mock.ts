@@ -4,7 +4,7 @@ import type {
   AssistantMessageEvent,
   Provider,
   StopReason,
-} from "@mariozechner/pi-ai";
+} from '@mariozechner/pi-ai';
 
 type UsageOverrides = Partial<{
   input: number;
@@ -15,12 +15,12 @@ type UsageOverrides = Partial<{
 }>;
 
 export function makeAssistantMessage({
-  text = "OK",
-  provider = "openai",
-  model = "gpt-5.2",
-  api = "openai-responses",
+  text = 'OK',
+  provider = 'openai',
+  model = 'gpt-5.2',
+  api = 'openai-responses',
   usage,
-  stopReason = "stop",
+  stopReason = 'stop',
 }: {
   text?: string;
   provider?: Provider;
@@ -36,20 +36,20 @@ export function makeAssistantMessage({
   const totalTokens = usage?.totalTokens ?? input + output + cacheRead + cacheWrite;
 
   return {
-    role: "assistant" as const,
     api,
-    provider,
+    content: [{ type: 'text' as const, text }],
     model,
+    provider,
+    role: 'assistant' as const,
     stopReason,
     timestamp: Date.now(),
-    content: [{ type: "text" as const, text }],
     usage: {
-      input,
-      output,
       cacheRead,
       cacheWrite,
+      cost: { cacheRead: 0, cacheWrite: 0, input: 0, output: 0, total: 0 },
+      input,
+      output,
       totalTokens,
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
     },
   };
 }
@@ -57,34 +57,25 @@ export function makeAssistantMessage({
 export function makeTextDeltaStream(
   deltas: string[],
   finalMessage: ReturnType<typeof makeAssistantMessage>,
-  {
-    error,
-  }: {
-    error?: unknown;
-  } = {},
+  { error }: { error?: unknown } = {},
 ) {
   const stream = {
     async *[Symbol.asyncIterator]() {
       for (const delta of deltas) {
-        yield {
-          type: "text_delta" as const,
-          contentIndex: 0,
-          delta,
-          partial: finalMessage,
-        };
+        yield { contentIndex: 0, delta, partial: finalMessage, type: 'text_delta' as const };
       }
       if (error) {
         yield {
-          type: "error" as const,
-          reason: "error" as const,
           error: error as unknown as AssistantMessage,
+          reason: 'error' as const,
+          type: 'error' as const,
         };
         return;
       }
-      yield { type: "done" as const, reason: "stop" as const, message: finalMessage };
+      yield { message: finalMessage, reason: 'stop' as const, type: 'done' as const };
     },
     async result() {
-      if (error) throw error;
+      if (error) {throw error;}
       return finalMessage;
     },
   } satisfies AsyncIterable<AssistantMessageEvent> & { result: () => Promise<AssistantMessage> };

@@ -1,23 +1,25 @@
-import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
-import { runCli } from "../src/run.js";
+import { Writable } from 'node:stream';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === "1" && Boolean(process.env.OPENAI_API_KEY);
-const URL = "https://www.youtube.com/watch?v=9pUWFJgBc5Q";
+import { describe, expect, it } from 'vitest';
+
+import { runCli } from '../src/run.js';
+
+const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(process.env.OPENAI_API_KEY);
+const URL = 'https://www.youtube.com/watch?v=9pUWFJgBc5Q';
 
 function collectStream() {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 function parseKeyMomentSeconds(summary: string): number[] {
-  const lines = summary.split("\n");
+  const lines = summary.split('\n');
   const seconds: number[] = [];
   let inKeyMoments = false;
   for (const line of lines) {
@@ -26,50 +28,48 @@ function parseKeyMomentSeconds(summary: string): number[] {
       inKeyMoments = true;
       continue;
     }
-    if (inKeyMoments && /^#{1,6}\s+\S/.test(trimmed)) break;
-    if (!inKeyMoments) continue;
-    const match = trimmed.match(
-      /^(?:[-*+]\s+)?(?:\[(\d{1,2}:\d{2}(?::\d{2})?)\]|(\d{1,2}:\d{2}(?::\d{2})?))(?=\s|[-:–—])/,
-    );
+    if (inKeyMoments && /^#{1,6}\s+\S/.test(trimmed)) {break;}
+    if (!inKeyMoments) {continue;}
+    const match = /^(?:[-*+]\s+)?(?:\[(\d{1,2}:\d{2}(?::\d{2})?)\]|(\d{1,2}:\d{2}(?::\d{2})?))(?=\s|[-:–—])/.exec(trimmed);
     const raw = match?.[1] ?? match?.[2] ?? null;
-    if (!raw) continue;
-    const parts = raw.split(":").map(Number);
+    if (!raw) {continue;}
+    const parts = raw.split(':').map(Number);
     const value =
       parts.length === 2
         ? parts[0] * 60 + parts[1]
-        : parts.length === 3
+        : (parts.length === 3
           ? parts[0] * 3600 + parts[1] * 60 + parts[2]
-          : null;
-    if (value != null) seconds.push(value);
+          : null);
+    if (value != null) {seconds.push(value);}
   }
   return seconds;
 }
 
-describe("live YouTube summary timestamps", () => {
+describe('live YouTube summary timestamps', () => {
   const run = LIVE ? it : it.skip;
 
   run(
-    "does not emit impossible key moments for the Babylon 5 video",
+    'does not emit impossible key moments for the Babylon 5 video',
     async () => {
       const stdout = collectStream();
       const stderr = collectStream();
 
       await runCli(
         [
-          "--json",
-          "--no-cache",
-          "--timestamps",
-          "--model",
-          "openai/gpt-5.2",
-          "--timeout",
-          "120s",
+          '--json',
+          '--no-cache',
+          '--timestamps',
+          '--model',
+          'openai/gpt-5.2',
+          '--timeout',
+          '120s',
           URL,
         ],
         {
           env: process.env,
-          stdout: stdout.stream,
-          stderr: stderr.stream,
           fetch: globalThis.fetch.bind(globalThis),
+          stderr: stderr.stream,
+          stdout: stdout.stream,
         },
       );
 
@@ -84,7 +84,7 @@ describe("live YouTube summary timestamps", () => {
       expect(keyMomentSeconds.length).toBeGreaterThan(0);
       expect(Math.max(...keyMomentSeconds)).toBeLessThanOrEqual(maxSeconds);
       expect(payload.summary).not.toMatch(/\b(?:27:55|30:55|33:10)\b/);
-      expect(stderr.getText()).toContain("19m 33s YouTube");
+      expect(stderr.getText()).toContain('19m 33s YouTube');
     },
     180_000,
   );

@@ -1,30 +1,26 @@
-import { normalizeProps, useMachine } from "@zag-js/preact";
-import * as select from "@zag-js/select";
-import { useEffect, useMemo, useRef } from "preact/hooks";
+import { normalizeProps, useMachine } from '@zag-js/preact';
+import * as select from '@zag-js/select';
+import { useEffect, useMemo, useRef } from 'preact/hooks';
 
-const OPEN_EVENT = "summarize:select-open";
+const OPEN_EVENT = 'summarize:select-open';
 
-export type SelectItem = {
-  label: string;
-  value: string;
-  disabled?: boolean;
-};
+export interface SelectItem { label: string; value: string; disabled?: boolean }
 
-type UseZagSelectArgs = {
+interface UseZagSelectArgs {
   id: string;
   items: SelectItem[];
   value: string;
   onValueChange: (value: string) => void;
-};
+}
 
 export function useZagSelect({ id, items, value, onValueChange }: UseZagSelectArgs) {
   const collection = useMemo(
     () =>
       select.collection({
-        items,
-        itemToValue: (item) => item.value,
-        itemToString: (item) => item.label,
         isItemDisabled: (item) => Boolean(item.disabled),
+        itemToString: (item) => item.label,
+        itemToValue: (item) => item.value,
+        items,
       }),
     [items],
   );
@@ -32,22 +28,22 @@ export function useZagSelect({ id, items, value, onValueChange }: UseZagSelectAr
   const syncing = useRef(false);
 
   const service = useMachine(select.machine, {
-    id,
     collection,
-    positioning: {
-      placement: "bottom-start",
-      gutter: 6,
-      sameWidth: true,
-      strategy: "fixed",
-      fitViewport: true,
-      flip: true,
-      shift: 8,
-      overflowPadding: 8,
-    },
     defaultValue: value ? [value] : [],
+    id,
     onValueChange: ({ value: next }: select.ValueChangeDetails) => {
       if (syncing.current) return;
-      onValueChange(next[0] ?? "");
+      onValueChange(next[0] ?? '');
+    },
+    positioning: {
+      fitViewport: true,
+      flip: true,
+      gutter: 6,
+      overflowPadding: 8,
+      placement: 'bottom-start',
+      sameWidth: true,
+      shift: 8,
+      strategy: 'fixed',
     },
   });
 
@@ -57,8 +53,8 @@ export function useZagSelect({ id, items, value, onValueChange }: UseZagSelectAr
 
   useEffect(() => {
     const handler = (event: Event) => {
-      const detail = (event as CustomEvent<{ id?: string }>).detail;
-      if (!detail || detail.id === id) return;
+      const {detail} = (event as CustomEvent<{ id?: string }>);
+      if (!detail || detail.id === id) {return;}
       apiRef.current.setOpen(false);
     };
     window.addEventListener(OPEN_EVENT, handler as EventListener);
@@ -68,14 +64,14 @@ export function useZagSelect({ id, items, value, onValueChange }: UseZagSelectAr
   }, [id]);
 
   useEffect(() => {
-    if (!api.open) return;
+    if (!api.open) {return;}
     window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: { id } }));
   }, [api.open, id]);
 
   useEffect(() => {
     const nextValue = value ? [value] : [];
-    const current = apiRef.current.value[0] ?? "";
-    if (current === (nextValue[0] ?? "")) return;
+    const current = apiRef.current.value[0] ?? '';
+    if (current === (nextValue[0] ?? '')) {return;}
     syncing.current = true;
     apiRef.current.setValue(nextValue);
     queueMicrotask(() => {

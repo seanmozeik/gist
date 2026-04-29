@@ -1,46 +1,46 @@
-import type { SummaryLength } from "../../../shared/contracts.js";
+import type { SummaryLength } from '../../../shared/contracts.js';
 import {
   getTranscriptTextForSlide,
   parseTranscriptTimedText,
   resolveSlideTextBudget,
   resolveSlideWindowSeconds,
-} from "./slides-text-transcript.js";
-import type { SlideTimelineEntry } from "./slides-text-types.js";
+} from './slides-text-transcript.js';
+import type { SlideTimelineEntry } from './slides-text-types.js';
 
 const SLIDE_TAG_PATTERN = /^\[[^\]]*slide[^\d\]]*(\d+)[^\]]*\]\s*(.*)$/i;
 const SLIDE_LABEL_PATTERN =
-  /^(?:\[)?slide\s+(\d+)(?:\s*(?:\/|of)\s*\d+)?(?:\])?(?:\s*[\u00b7:-]\s*.*)?$/i;
+  /^(?:\[)?slide\s+(\d+)(?:\s*(?:\/|of)\s*\d+)?(?:\])?(?:\s*[\u00B7:-]\s*.*)?$/i;
 const TITLE_ONLY_MAX_CHARS = 80;
 
-const collapseLineWhitespace = (value: string): string => value.replace(/\s+/g, " ").trim();
+const collapseLineWhitespace = (value: string): string => value.replaceAll(/\s+/g, ' ').trim();
 
 const deriveHeadlineFromBody = (body: string): string | null => {
   const cleaned = collapseLineWhitespace(body);
-  if (!cleaned) return null;
-  const firstSentence = cleaned.split(/[.!?]/)[0] ?? "";
+  if (!cleaned) {return null;}
+  const firstSentence = cleaned.split(/[.!?]/)[0] ?? '';
   const clause = firstSentence.split(/[,;:\u2013\u2014-]/)[0] ?? firstSentence;
   const words = clause.trim().split(/\s+/).filter(Boolean);
-  if (words.length < 2) return null;
-  const title = words.slice(0, Math.min(6, words.length)).join(" ");
-  return title.replace(/[,:;-]+$/g, "").trim() || null;
+  if (words.length < 2) {return null;}
+  const title = words.slice(0, Math.min(6, words.length)).join(' ');
+  return title.replaceAll(/[,:;-]+$/g, '').trim() || null;
 };
 
 const isTitleOnlySlideText = (value: string): boolean => {
   const trimmed = value.trim();
-  if (!trimmed) return true;
+  if (!trimmed) {return true;}
   const lines = trimmed
-    .split("\n")
+    .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
-  if (lines.length !== 1) return false;
-  if (trimmed.length > TITLE_ONLY_MAX_CHARS) return false;
-  if (/[.!?]/.test(trimmed)) return false;
+  if (lines.length !== 1) {return false;}
+  if (trimmed.length > TITLE_ONLY_MAX_CHARS) {return false;}
+  if (/[.!?]/.test(trimmed)) {return false;}
   return true;
 };
 
 const stripSlideTitleList = (markdown: string): string => {
-  if (!markdown.trim()) return markdown;
-  const lines = markdown.split("\n");
+  if (!markdown.trim()) {return markdown;}
+  const lines = markdown.split('\n');
   const out: string[] = [];
   let skipNextTitle = false;
   for (const line of lines) {
@@ -50,7 +50,7 @@ const stripSlideTitleList = (markdown: string): string => {
       continue;
     }
     if (skipNextTitle) {
-      if (!trimmed) continue;
+      if (!trimmed) {continue;}
       if (isTitleOnlySlideText(trimmed)) {
         skipNextTitle = false;
         continue;
@@ -59,7 +59,7 @@ const stripSlideTitleList = (markdown: string): string => {
     }
     out.push(line);
   }
-  return out.join("\n");
+  return out.join('\n');
 };
 
 export const splitSlideTitleFromText = ({
@@ -70,42 +70,42 @@ export const splitSlideTitleFromText = ({
   total: number;
 }): { title: string | null; body: string } => {
   const trimmed = text.trim();
-  if (!trimmed) return { title: null, body: "" };
+  if (!trimmed) {return { title: null, body: '' };}
   const lines = trimmed
-    .split("\n")
+    .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
-  if (lines.length === 0) return { title: null, body: "" };
-  const cleaned = lines.slice();
+  if (lines.length === 0) {return { title: null, body: '' };}
+  const cleaned = [...lines];
   while (cleaned.length > 0) {
-    const first = cleaned[0] ?? "";
+    const first = cleaned[0] ?? '';
     if (SLIDE_LABEL_PATTERN.test(first) || SLIDE_TAG_PATTERN.test(first)) {
       cleaned.shift();
       continue;
     }
     break;
   }
-  if (cleaned.length === 0) return { title: null, body: "" };
+  if (cleaned.length === 0) {return { title: null, body: '' };}
   const filtered = cleaned.filter(
     (line) => !SLIDE_LABEL_PATTERN.test(line) && !SLIDE_TAG_PATTERN.test(line),
   );
-  if (filtered.length === 0) return { title: null, body: "" };
+  if (filtered.length === 0) {return { title: null, body: '' };}
 
   const labelPattern = /^(?:title|headline)\s*:\s*(.*)$/i;
   let title: string | null = null;
-  let bodyLines = filtered.slice();
+  let bodyLines = [...filtered];
 
   for (let i = 0; i < filtered.length; i += 1) {
-    const line = filtered[i] ?? "";
-    const labelMatch = line.match(labelPattern);
-    if (!labelMatch) continue;
-    const labelText = collapseLineWhitespace(labelMatch[1] ?? "").trim();
+    const line = filtered[i] ?? '';
+    const labelMatch = labelPattern.exec(line);
+    if (!labelMatch) {continue;}
+    const labelText = collapseLineWhitespace(labelMatch[1] ?? '').trim();
     if (labelText) {
       title = labelText;
       bodyLines = filtered.filter((_, idx) => idx !== i);
     } else {
-      const fallbackTitle = collapseLineWhitespace(filtered[i + 1] ?? "").trim();
-      if (fallbackTitle) title = fallbackTitle;
+      const fallbackTitle = collapseLineWhitespace(filtered[i + 1] ?? '').trim();
+      if (fallbackTitle) {title = fallbackTitle;}
       bodyLines = filtered.filter((_, idx) => idx !== i && idx !== i + 1);
     }
     break;
@@ -113,19 +113,19 @@ export const splitSlideTitleFromText = ({
 
   if (!title) {
     for (let i = 0; i < filtered.length; i += 1) {
-      const line = filtered[i] ?? "";
-      const headingMatch = line.match(/^#{1,6}\s+(.+)/);
-      if (!headingMatch) continue;
-      const headingText = collapseLineWhitespace(headingMatch[1] ?? "").trim();
-      const headingLabelMatch = headingText.match(labelPattern);
+      const line = filtered[i] ?? '';
+      const headingMatch = /^#{1,6}\s+(.+)/.exec(line);
+      if (!headingMatch) {continue;}
+      const headingText = collapseLineWhitespace(headingMatch[1] ?? '').trim();
+      const headingLabelMatch = labelPattern.exec(headingText);
       if (headingLabelMatch) {
-        const headingLabel = collapseLineWhitespace(headingLabelMatch[1] ?? "").trim();
+        const headingLabel = collapseLineWhitespace(headingLabelMatch[1] ?? '').trim();
         if (headingLabel) {
           title = headingLabel;
           bodyLines = filtered.filter((_, idx) => idx !== i);
         } else {
-          const fallbackTitle = collapseLineWhitespace(filtered[i + 1] ?? "").trim();
-          if (fallbackTitle) title = fallbackTitle;
+          const fallbackTitle = collapseLineWhitespace(filtered[i + 1] ?? '').trim();
+          if (fallbackTitle) {title = fallbackTitle;}
           bodyLines = filtered.filter((_, idx) => idx !== i && idx !== i + 1);
         }
       } else {
@@ -138,23 +138,23 @@ export const splitSlideTitleFromText = ({
 
   if (!title && filtered.length > 1) {
     const candidates = filtered
-      .map((line, idx) => ({ line, idx }))
+      .map((line, idx) => ({ idx, line }))
       .filter(({ line }) => isTitleOnlySlideText(line));
     if (candidates.length === 1) {
       const pick = candidates[0];
-      title = collapseLineWhitespace(pick?.line ?? "").trim() || null;
+      title = collapseLineWhitespace(pick?.line ?? '').trim() || null;
       bodyLines = filtered.filter((_, idx) => idx !== pick?.idx);
-    } else if (isTitleOnlySlideText(filtered[0] ?? "")) {
-      title = collapseLineWhitespace(filtered[0] ?? "").trim() || null;
+    } else if (isTitleOnlySlideText(filtered[0] ?? '')) {
+      title = collapseLineWhitespace(filtered[0] ?? '').trim() || null;
       bodyLines = filtered.slice(1);
     }
   }
 
-  const body = bodyLines.join("\n").trim();
+  const body = bodyLines.join('\n').trim();
   if (!title && body) {
     title = deriveHeadlineFromBody(body);
   }
-  return { title, body };
+  return { body, title };
 };
 
 export const ensureSlideTitleLine = ({
@@ -172,14 +172,14 @@ export const ensureSlideTitleLine = ({
 };
 
 export function findSlidesSectionStart(markdown: string): number | null {
-  if (!markdown) return null;
-  const heading = markdown.match(/^#{1,3}\s+Slides\b.*$/im);
-  const tag = markdown.match(/^\[slide:\d+\]/im);
-  const label = markdown.match(/^\s*slide\s+\d+(?:\s*(?:\/|of)\s*\d+)?(?:\s*[\u00b7:-].*)?$/im);
+  if (!markdown) {return null;}
+  const heading = /^#{1,3}\s+Slides\b.*$/im.exec(markdown);
+  const tag = /^\[slide:\d+\]/im.exec(markdown);
+  const label = /^\s*slide\s+\d+(?:\s*(?:\/|of)\s*\d+)?(?:\s*[\u00B7:-].*)?$/im.exec(markdown);
   const indexes = [heading?.index, tag?.index, label?.index].filter(
     (idx): idx is number => idx != null,
   );
-  if (indexes.length === 0) return null;
+  if (indexes.length === 0) {return null;}
   return Math.min(...indexes);
 }
 
@@ -188,22 +188,22 @@ export function splitSummaryFromSlides(markdown: string): {
   slidesSection: string | null;
 } {
   const start = findSlidesSectionStart(markdown);
-  if (start == null) return { summary: markdown.trim(), slidesSection: null };
+  if (start == null) {return { summary: markdown.trim(), slidesSection: null };}
   const summary = markdown.slice(0, start).trim();
   const slidesSection = markdown.slice(start);
-  return { summary, slidesSection };
+  return { slidesSection, summary };
 }
 
 export function parseSlideSummariesFromMarkdown(markdown: string): Map<number, string> {
   const result = new Map<number, string>();
-  if (!markdown.trim()) return result;
+  if (!markdown.trim()) {return result;}
   const start = findSlidesSectionStart(markdown);
   if (start == null) {
     const inline = parseInlineSlideSummaries(markdown);
     return inline.size > 0 ? inline : result;
   }
   const slice = markdown.slice(start);
-  const lines = slice.split("\n");
+  const lines = slice.split('\n');
   let currentIndex: number | null = null;
   let buffer: string[] = [];
   let sawBlankAfterTitle = false;
@@ -213,10 +213,10 @@ export function parseSlideSummariesFromMarkdown(markdown: string): Map<number, s
       return SLIDE_TAG_PATTERN.test(trimmed) || SLIDE_LABEL_PATTERN.test(trimmed);
     });
   const flush = () => {
-    if (currentIndex == null) return;
+    if (currentIndex == null) {return;}
     const text = buffer
       .map((line) => collapseLineWhitespace(line))
-      .join("\n")
+      .join('\n')
       .trim();
     result.set(currentIndex, text);
     currentIndex = null;
@@ -225,36 +225,36 @@ export function parseSlideSummariesFromMarkdown(markdown: string): Map<number, s
   };
 
   for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i] ?? "";
+    const line = lines[i] ?? '';
     const trimmed = line.trim();
-    const heading = trimmed.match(/^#{1,3}\s+\S/);
-    if (heading && !trimmed.toLowerCase().startsWith("### slides")) {
+    const heading = /^#{1,3}\s+\S/.exec(trimmed);
+    if (heading && !trimmed.toLowerCase().startsWith('### slides')) {
       flush();
       break;
     }
-    const match = trimmed.match(SLIDE_TAG_PATTERN);
+    const match = SLIDE_TAG_PATTERN.exec(trimmed);
     if (match) {
       flush();
-      const index = Number.parseInt(match[1] ?? "", 10);
-      if (!Number.isFinite(index) || index <= 0) continue;
+      const index = Number.parseInt(match[1] ?? '', 10);
+      if (!Number.isFinite(index) || index <= 0) {continue;}
       currentIndex = index;
       sawBlankAfterTitle = false;
-      const rest = (match[2] ?? "").trim();
-      if (rest) buffer.push(rest);
+      const rest = (match[2] ?? '').trim();
+      if (rest) {buffer.push(rest);}
       continue;
     }
-    const label = trimmed.match(SLIDE_LABEL_PATTERN);
+    const label = SLIDE_LABEL_PATTERN.exec(trimmed);
     if (label) {
       flush();
-      const index = Number.parseInt(label[1] ?? "", 10);
-      if (!Number.isFinite(index) || index <= 0) continue;
+      const index = Number.parseInt(label[1] ?? '', 10);
+      if (!Number.isFinite(index) || index <= 0) {continue;}
       currentIndex = index;
       sawBlankAfterTitle = false;
       continue;
     }
-    if (currentIndex == null) continue;
+    if (currentIndex == null) {continue;}
     if (!trimmed) {
-      if (buffer.length === 1 && isTitleOnlySlideText(buffer[0] ?? "")) {
+      if (buffer.length === 1 && isTitleOnlySlideText(buffer[0] ?? '')) {
         sawBlankAfterTitle = true;
       }
       continue;
@@ -262,7 +262,7 @@ export function parseSlideSummariesFromMarkdown(markdown: string): Map<number, s
     if (
       sawBlankAfterTitle &&
       buffer.length === 1 &&
-      isTitleOnlySlideText(buffer[0] ?? "") &&
+      isTitleOnlySlideText(buffer[0] ?? '') &&
       !isTitleOnlySlideText(trimmed) &&
       !hasFutureMarker(i)
     ) {
@@ -278,22 +278,22 @@ export function parseSlideSummariesFromMarkdown(markdown: string): Map<number, s
 
 function parseInlineSlideSummaries(markdown: string): Map<number, string> {
   const result = new Map<number, string>();
-  const matches = Array.from(markdown.matchAll(/\[slide:(\d+)\]/gi));
-  if (matches.length === 0) return result;
+  const matches = [...markdown.matchAll(/\[slide:(\d+)\]/gi)];
+  if (matches.length === 0) {return result;}
   for (let i = 0; i < matches.length; i += 1) {
     const match = matches[i];
-    const index = Number.parseInt(match?.[1] ?? "", 10);
-    if (!Number.isFinite(index) || index <= 0) continue;
+    const index = Number.parseInt(match?.[1] ?? '', 10);
+    if (!Number.isFinite(index) || index <= 0) {continue;}
     const start = (match.index ?? 0) + match[0].length;
     const next = i + 1 < matches.length ? matches[i + 1] : null;
     const end = next?.index ?? markdown.length;
     if (end <= start) {
-      result.set(index, "");
+      result.set(index, '');
       continue;
     }
     const segment = markdown
       .slice(start, end)
-      .replace(/^\s*[:\-\u2013\u2014]?\s*/, "")
+      .replace(/^\s*[:\-\u2013\u2014]?\s*/, '')
       .trim();
     result.set(index, segment);
   }
@@ -301,13 +301,13 @@ function parseInlineSlideSummaries(markdown: string): Map<number, string> {
 }
 
 export function extractSlideMarkers(markdown: string): number[] {
-  if (!markdown.trim()) return [];
+  if (!markdown.trim()) {return [];}
   const indexes: number[] = [];
   const regex = /\[[^\]]*slide[^\d\]]*(\d+)[^\]]*\]/gi;
   let match = regex.exec(markdown);
   while (match) {
-    const index = Number.parseInt(match[1] ?? "", 10);
-    if (!Number.isFinite(index) || index <= 0) continue;
+    const index = Number.parseInt(match[1] ?? '', 10);
+    if (!Number.isFinite(index) || index <= 0) {continue;}
     indexes.push(index);
     match = regex.exec(markdown);
   }
@@ -315,30 +315,30 @@ export function extractSlideMarkers(markdown: string): number[] {
 }
 
 export function normalizeSummarySlideHeadings(markdown: string): string {
-  if (!markdown.trim()) return markdown;
-  if (!/\[slide:\d+\]/i.test(markdown)) return markdown;
-  const deleteMarker = "__SUMMARIZE_DELETE__";
-  const lines = markdown.split("\n");
+  if (!markdown.trim()) {return markdown;}
+  if (!/\[slide:\d+\]/i.test(markdown)) {return markdown;}
+  const deleteMarker = '__SUMMARIZE_DELETE__';
+  const lines = markdown.split('\n');
   for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i] ?? "";
-    if (!SLIDE_TAG_PATTERN.test(line.trim())) continue;
+    const line = lines[i] ?? '';
+    if (!SLIDE_TAG_PATTERN.test(line.trim())) {continue;}
     for (let k = i + 1; k < lines.length; k += 1) {
-      const candidate = lines[k] ?? "";
+      const candidate = lines[k] ?? '';
       const trimmed = candidate.trim();
-      if (!trimmed) continue;
+      if (!trimmed) {continue;}
       if (SLIDE_LABEL_PATTERN.test(trimmed)) {
         lines[k] = deleteMarker;
         continue;
       }
-      const labelMatch = trimmed.match(/^(?:title|headline)\s*:\s*(.*)$/i);
+      const labelMatch = /^(?:title|headline)\s*:\s*(.*)$/i.exec(trimmed);
       if (labelMatch) {
-        const labelText = collapseLineWhitespace(labelMatch[1] ?? "").trim();
+        const labelText = collapseLineWhitespace(labelMatch[1] ?? '').trim();
         lines[k] = labelText ? `## ${labelText}` : deleteMarker;
       }
       break;
     }
   }
-  return lines.filter((line) => line !== deleteMarker).join("\n");
+  return lines.filter((line) => line !== deleteMarker).join('\n');
 }
 
 function splitMarkdownParagraphs(markdown: string): string[] {
@@ -350,13 +350,13 @@ function splitMarkdownParagraphs(markdown: string): string[] {
 
 function pickIntroParagraph(markdown: string): string {
   const paragraphs = splitMarkdownParagraphs(markdown);
-  if (paragraphs.length === 0) return "";
+  if (paragraphs.length === 0) {return '';}
   const firstNonHeading =
     paragraphs.find((paragraph) => !/^#{1,6}\s+\S/.test(paragraph.trim())) ?? paragraphs[0];
-  if (!firstNonHeading) return "";
+  if (!firstNonHeading) {return '';}
   const sentences = firstNonHeading.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [firstNonHeading];
-  if (sentences.length <= 3) return firstNonHeading.trim();
-  return sentences.slice(0, 3).join(" ").trim();
+  if (sentences.length <= 3) {return firstNonHeading.trim();}
+  return sentences.slice(0, 3).join(' ').trim();
 }
 
 export function buildSlideTextFallback({
@@ -366,28 +366,22 @@ export function buildSlideTextFallback({
 }: {
   slides: SlideTimelineEntry[];
   transcriptTimedText: string | null | undefined;
-  lengthArg: { kind: "preset"; preset: SummaryLength } | { kind: "chars"; maxCharacters: number };
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number };
 }): Map<number, string> {
   const map = new Map<number, string>();
-  if (!transcriptTimedText || !transcriptTimedText.trim()) return map;
-  if (slides.length === 0) return map;
+  if (!transcriptTimedText?.trim()) {return map;}
+  if (slides.length === 0) {return map;}
   const segments = parseTranscriptTimedText(transcriptTimedText);
-  if (segments.length === 0) return map;
-  const ordered = slides.slice().sort((a, b) => a.index - b.index);
+  if (segments.length === 0) {return map;}
+  const ordered = [...slides].toSorted((a, b) => a.index - b.index);
   const budget = resolveSlideTextBudget({ lengthArg, slideCount: ordered.length });
   const windowSeconds = resolveSlideWindowSeconds({ lengthArg });
   for (let i = 0; i < ordered.length; i += 1) {
     const slide = ordered[i];
-    if (!slide) continue;
+    if (!slide) {continue;}
     const nextSlide = i + 1 < ordered.length ? (ordered[i + 1] ?? null) : null;
-    const text = getTranscriptTextForSlide({
-      slide,
-      nextSlide,
-      segments,
-      budget,
-      windowSeconds,
-    });
-    if (text) map.set(slide.index, text);
+    const text = getTranscriptTextForSlide({ budget, nextSlide, segments, slide, windowSeconds });
+    if (text) {map.set(slide.index, text);}
   }
   return map;
 }
@@ -401,59 +395,59 @@ export function coerceSummaryWithSlides({
   markdown: string;
   slides: SlideTimelineEntry[];
   transcriptTimedText?: string | null;
-  lengthArg: { kind: "preset"; preset: SummaryLength } | { kind: "chars"; maxCharacters: number };
+  lengthArg: { kind: 'preset'; preset: SummaryLength } | { kind: 'chars'; maxCharacters: number };
 }): string {
-  if (!markdown.trim() || slides.length === 0) return markdown;
-  const ordered = slides.slice().sort((a, b) => a.index - b.index);
+  if (!markdown.trim() || slides.length === 0) {return markdown;}
+  const ordered = [...slides].toSorted((a, b) => a.index - b.index);
   const { summary, slidesSection } = splitSummaryFromSlides(markdown);
   const intro = pickIntroParagraph(summary);
   const slideSummaries = slidesSection ? parseSlideSummariesFromMarkdown(markdown) : new Map();
   const titleOnlySlideSummaries =
     slideSummaries.size > 0 &&
-    Array.from(slideSummaries.values()).every((text) => isTitleOnlySlideText(text));
+    [...slideSummaries.values()].every((text) => isTitleOnlySlideText(text));
   const distributionMarkdown = titleOnlySlideSummaries ? stripSlideTitleList(markdown) : markdown;
   const fallbackSummaries = buildSlideTextFallback({
+    lengthArg,
     slides: ordered,
     transcriptTimedText,
-    lengthArg,
   });
 
   if (slideSummaries.size > 0 && !titleOnlySlideSummaries) {
     const parts: string[] = [];
-    if (intro) parts.push(intro);
+    if (intro) {parts.push(intro);}
     for (const slide of ordered) {
-      const text = slideSummaries.get(slide.index) ?? fallbackSummaries.get(slide.index) ?? "";
-      const withTitle = text ? ensureSlideTitleLine({ text, slide, total: ordered.length }) : "";
+      const text = slideSummaries.get(slide.index) ?? fallbackSummaries.get(slide.index) ?? '';
+      const withTitle = text ? ensureSlideTitleLine({ slide, text, total: ordered.length }) : '';
       parts.push(withTitle ? `[slide:${slide.index}]\n${withTitle}` : `[slide:${slide.index}]`);
     }
-    return parts.join("\n\n");
+    return parts.join('\n\n');
   }
 
   const paragraphs = splitMarkdownParagraphs(distributionMarkdown);
-  if (paragraphs.length === 0) return markdown;
-  const introParagraph = intro || paragraphs[0] || "";
+  if (paragraphs.length === 0) {return markdown;}
+  const introParagraph = intro || paragraphs[0] || '';
   const introIndex = paragraphs.indexOf(introParagraph);
   const remaining =
-    introIndex >= 0 ? paragraphs.filter((_, index) => index !== introIndex) : paragraphs.slice(1);
+    introIndex !== -1 ? paragraphs.filter((_, index) => index !== introIndex) : paragraphs.slice(1);
   const parts: string[] = [];
-  if (introParagraph) parts.push(introParagraph.trim());
+  if (introParagraph) {parts.push(introParagraph.trim());}
   if (remaining.length === 0) {
     for (const slide of ordered) {
       parts.push(`[slide:${slide.index}]`);
     }
-    return parts.join("\n\n");
+    return parts.join('\n\n');
   }
   const total = ordered.length;
   for (let i = 0; i < total; i += 1) {
     const start = Math.round((i * remaining.length) / total);
     const end = Math.round(((i + 1) * remaining.length) / total);
-    const segment = remaining.slice(start, end).join("\n\n").trim();
+    const segment = remaining.slice(start, end).join('\n\n').trim();
     const slideIndex = ordered[i]?.index ?? i + 1;
-    const fallback = fallbackSummaries.get(slideIndex) ?? "";
+    const fallback = fallbackSummaries.get(slideIndex) ?? '';
     const text = segment || fallback;
     const slide = ordered[i] ?? { index: slideIndex, timestamp: Number.NaN };
-    const withTitle = text ? ensureSlideTitleLine({ text, slide, total }) : "";
+    const withTitle = text ? ensureSlideTitleLine({ slide, text, total }) : '';
     parts.push(withTitle ? `[slide:${slideIndex}]\n${withTitle}` : `[slide:${slideIndex}]`);
   }
-  return parts.join("\n\n");
+  return parts.join('\n\n');
 }

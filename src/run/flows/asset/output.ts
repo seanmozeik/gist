@@ -1,10 +1,11 @@
-import { render as renderMarkdownAnsi } from "markdansi";
-import type { RunMetricsReport } from "../../../costs.js";
-import type { AssetAttachment } from "../../attachments.js";
-import { buildExtractFinishLabel, writeFinishLine } from "../../finish-line.js";
-import { prepareMarkdownForTerminal } from "../../markdown.js";
-import { isRichTty, markdownRenderWidth, supportsColor } from "../../terminal.js";
-import type { AssetExtractResult } from "./extract.js";
+import { render as renderMarkdownAnsi } from 'markdansi';
+
+import type { RunMetricsReport } from '../../../costs.js';
+import type { AssetAttachment } from '../../attachments.js';
+import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
+import { prepareMarkdownForTerminal } from '../../markdown.js';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
+import type { AssetExtractResult } from './extract.js';
 
 export async function outputExtractedAsset({
   io,
@@ -24,8 +25,8 @@ export async function outputExtractedAsset({
   };
   flags: {
     timeoutMs: number;
-    preprocessMode: "off" | "auto" | "always";
-    format: "text" | "markdown";
+    preprocessMode: 'off' | 'auto' | 'always';
+    format: 'text' | 'markdown';
     plain: boolean;
     json: boolean;
     metricsEnabled: boolean;
@@ -58,39 +59,39 @@ export async function outputExtractedAsset({
   const finishLabel = buildExtractFinishLabel({
     extracted: { diagnostics: extracted.diagnostics },
     format: flags.format,
-    markdownMode: "off",
     hasMarkdownLlmCall: false,
+    markdownMode: 'off',
   });
 
   if (flags.json) {
     const finishReport = flags.shouldComputeReport ? await hooks.buildReport() : null;
     const payload = {
-      input: {
-        kind: "asset-url" as const,
-        url,
-        timeoutMs: flags.timeoutMs,
-        format: flags.format,
-        preprocess: flags.preprocessMode,
-      },
       env: {
-        hasXaiKey: Boolean(apiStatus.xaiApiKey),
-        hasOpenAIKey: Boolean(apiStatus.apiKey),
-        hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
+        hasAnthropicKey: apiStatus.anthropicConfigured,
         hasApifyToken: Boolean(apiStatus.apifyToken),
         hasFirecrawlKey: apiStatus.firecrawlConfigured,
         hasGoogleKey: apiStatus.googleConfigured,
-        hasAnthropicKey: apiStatus.anthropicConfigured,
+        hasOpenAIKey: Boolean(apiStatus.apiKey),
+        hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
+        hasXaiKey: Boolean(apiStatus.xaiApiKey),
       },
       extracted: {
-        kind: "asset" as const,
-        source: sourceLabel,
-        mediaType: attachment.mediaType,
-        filename: attachment.filename,
         content: extracted.content,
+        filename: attachment.filename,
+        kind: 'asset' as const,
+        mediaType: attachment.mediaType,
+        source: sourceLabel,
       },
-      prompt: null,
+      input: {
+        format: flags.format,
+        kind: 'asset-url' as const,
+        preprocess: flags.preprocessMode,
+        timeoutMs: flags.timeoutMs,
+        url,
+      },
       llm: null,
       metrics: flags.metricsEnabled ? finishReport : null,
+      prompt: null,
       summary: null,
     };
     io.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -98,38 +99,38 @@ export async function outputExtractedAsset({
     if (flags.metricsEnabled && finishReport) {
       const costUsd = await hooks.estimateCostUsd();
       writeFinishLine({
-        stderr: io.stderr,
-        env: io.envForRun,
+        color: flags.verboseColor,
+        costUsd,
+        detailed: flags.metricsDetailed,
         elapsedMs: Date.now() - flags.runStartedAtMs,
+        env: io.envForRun,
+        extraParts: null,
         label: finishLabel,
         model: null,
         report: finishReport,
-        costUsd,
-        detailed: flags.metricsDetailed,
-        extraParts: null,
-        color: flags.verboseColor,
+        stderr: io.stderr,
       });
     }
     return;
   }
 
   const rendered =
-    flags.format === "markdown" && !flags.plain && isRichTty(io.stdout)
+    flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)
       ? renderMarkdownAnsi(prepareMarkdownForTerminal(extracted.content), {
-          width: markdownRenderWidth(io.stdout, io.env),
-          wrap: true,
           color: supportsColor(io.stdout, io.envForRun),
           hyperlinks: true,
+          width: markdownRenderWidth(io.stdout, io.env),
+          wrap: true,
         })
       : extracted.content;
 
-  if (flags.format === "markdown" && !flags.plain && isRichTty(io.stdout)) {
-    io.stdout.write(`\n${rendered.replace(/^\n+/, "")}`);
+  if (flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)) {
+    io.stdout.write(`\n${rendered.replace(/^\n+/, '')}`);
   } else {
     io.stdout.write(rendered);
   }
-  if (!rendered.endsWith("\n")) {
-    io.stdout.write("\n");
+  if (!rendered.endsWith('\n')) {
+    io.stdout.write('\n');
   }
   hooks.restoreProgressAfterStdout?.();
 
@@ -137,16 +138,16 @@ export async function outputExtractedAsset({
   if (flags.metricsEnabled && report) {
     const costUsd = await hooks.estimateCostUsd();
     writeFinishLine({
-      stderr: io.stderr,
-      env: io.envForRun,
+      color: flags.verboseColor,
+      costUsd,
+      detailed: flags.metricsDetailed,
       elapsedMs: Date.now() - flags.runStartedAtMs,
+      env: io.envForRun,
+      extraParts: null,
       label: finishLabel,
       model: null,
       report,
-      costUsd,
-      detailed: flags.metricsDetailed,
-      extraParts: null,
-      color: flags.verboseColor,
+      stderr: io.stderr,
     });
   }
 }

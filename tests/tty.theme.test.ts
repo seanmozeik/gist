@@ -1,89 +1,75 @@
-import { describe, expect, it } from "vitest";
-import type { CliThemeName } from "../src/tty/theme.js";
+import { describe, expect, it } from 'vitest';
+
+import type { CliThemeName } from '../src/tty/theme.js';
 import {
   createThemeRenderer,
   parseCliThemeName,
   resolveThemeNameFromSources,
   resolveThemePalette,
   resolveTrueColor,
-} from "../src/tty/theme.js";
+} from '../src/tty/theme.js';
 
-describe("cli theme helpers", () => {
-  it("parses theme names and rejects invalid values", () => {
-    expect(parseCliThemeName("", "test")).toBeNull();
-    expect(parseCliThemeName("moss", "test")).toBe("moss");
-    expect(() => parseCliThemeName(123 as unknown as string, "test")).toThrow(/Unsupported/);
-    expect(() => parseCliThemeName("nope", "test")).toThrow(/Unsupported/);
+describe('cli theme helpers', () => {
+  it('parses theme names and rejects invalid values', () => {
+    expect(parseCliThemeName('', 'test')).toBeNull();
+    expect(parseCliThemeName('moss', 'test')).toBe('moss');
+    expect(() => parseCliThemeName(123 as unknown as string, 'test')).toThrow(/Unsupported/);
+    expect(() => parseCliThemeName('nope', 'test')).toThrow(/Unsupported/);
   });
 
-  it("resolves theme names by precedence", () => {
+  it('resolves theme names by precedence', () => {
     expect(
       resolveThemeNameFromSources({
-        cli: "moss",
-        env: "ember",
-        config: "mono",
-        fallback: "aurora",
+        cli: 'moss',
+        config: 'mono',
+        env: 'ember',
+        fallback: 'aurora',
       }),
-    ).toBe("moss");
+    ).toBe('moss');
     expect(
-      resolveThemeNameFromSources({
-        cli: null,
-        env: "ember",
-        config: "mono",
-        fallback: "aurora",
-      }),
-    ).toBe("ember");
+      resolveThemeNameFromSources({ cli: null, config: 'mono', env: 'ember', fallback: 'aurora' }),
+    ).toBe('ember');
     expect(
-      resolveThemeNameFromSources({
-        cli: null,
-        env: null,
-        config: "mono",
-        fallback: "aurora",
-      }),
-    ).toBe("mono");
+      resolveThemeNameFromSources({ cli: null, config: 'mono', env: null, fallback: 'aurora' }),
+    ).toBe('mono');
     expect(
-      resolveThemeNameFromSources({
-        cli: null,
-        env: null,
-        config: null,
-        fallback: "ember",
-      }),
-    ).toBe("ember");
+      resolveThemeNameFromSources({ cli: null, config: null, env: null, fallback: 'ember' }),
+    ).toBe('ember');
   });
 
-  it("resolves truecolor preferences", () => {
-    expect(resolveTrueColor({ SUMMARIZE_TRUECOLOR: "1" })).toBe(true);
-    expect(resolveTrueColor({ SUMMARIZE_NO_TRUECOLOR: "1" })).toBe(false);
-    expect(resolveTrueColor({ COLORTERM: "truecolor" })).toBe(true);
-    expect(resolveTrueColor({ TERM_PROGRAM: "iTerm.app" })).toBe(true);
-    expect(resolveTrueColor({ TERM: "xterm-256color" })).toBe(true);
+  it('resolves truecolor preferences', () => {
+    expect(resolveTrueColor({ SUMMARIZE_TRUECOLOR: '1' })).toBe(true);
+    expect(resolveTrueColor({ SUMMARIZE_NO_TRUECOLOR: '1' })).toBe(false);
+    expect(resolveTrueColor({ COLORTERM: 'truecolor' })).toBe(true);
+    expect(resolveTrueColor({ TERM_PROGRAM: 'iTerm.app' })).toBe(true);
+    expect(resolveTrueColor({ TERM: 'xterm-256color' })).toBe(true);
   });
 
-  it("renders ANSI colors when enabled", () => {
-    const trueColor = createThemeRenderer({ themeName: "moss", enabled: true, trueColor: true });
-    const ansi = createThemeRenderer({ themeName: "mono", enabled: true, trueColor: false });
-    const off = createThemeRenderer({ themeName: "mono", enabled: false, trueColor: false });
+  it('renders ANSI colors when enabled', () => {
+    const trueColor = createThemeRenderer({ enabled: true, themeName: 'moss', trueColor: true });
+    const ansi = createThemeRenderer({ enabled: true, themeName: 'mono', trueColor: false });
+    const off = createThemeRenderer({ enabled: false, themeName: 'mono', trueColor: false });
 
-    expect(trueColor.heading("Hi")).toContain("\u001b[1;38;2;");
-    expect(trueColor.muted("Hi")).toContain("\u001b[");
-    expect(trueColor.warning("Hi")).toContain("\u001b[");
-    expect(trueColor.error("Hi")).toContain("\u001b[");
-    expect(ansi.heading("Hi")).toContain("\u001b[");
-    expect(ansi.accent("Hi")).toContain("\u001b[");
-    expect(off.heading("Hi")).toBe("Hi");
+    expect(trueColor.heading('Hi')).toContain('\u001B[1;38;2;');
+    expect(trueColor.muted('Hi')).toContain('\u001B[');
+    expect(trueColor.warning('Hi')).toContain('\u001B[');
+    expect(trueColor.error('Hi')).toContain('\u001B[');
+    expect(ansi.heading('Hi')).toContain('\u001B[');
+    expect(ansi.accent('Hi')).toContain('\u001B[');
+    expect(off.heading('Hi')).toBe('Hi');
   });
 
-  it("resolves theme palettes with fallback", () => {
-    expect(resolveThemePalette("moss").name).toBe("moss");
-    expect(resolveThemePalette("nope" as unknown as CliThemeName).name).toBe("aurora");
+  it('resolves theme palettes with fallback', () => {
+    expect(resolveThemePalette('moss').name).toBe('moss');
+    expect(resolveThemePalette('nope' as unknown as CliThemeName).name).toBe('aurora');
   });
 
-  it("falls back to the default theme renderer", () => {
+  it('falls back to the default theme renderer', () => {
     const renderer = createThemeRenderer({
-      themeName: "nope" as CliThemeName,
       enabled: true,
+      themeName: 'nope' as CliThemeName,
       trueColor: false,
     });
-    expect(renderer.name).toBe("aurora");
+    expect(renderer.name).toBe('aurora');
   });
 });

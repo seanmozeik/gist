@@ -1,13 +1,8 @@
-import type { PanelSession } from "./panel-session-store";
+import type { PanelSession } from './panel-session-store';
 
 export function handlePanelReady<Recovery, Status>(
-  session: PanelSession<Recovery, Status> & {
-    daemonRecovery: { clearPending: () => void };
-  },
-  options: {
-    emitState: () => void;
-    summarizeActiveTab: (reason: string) => void;
-  },
+  session: PanelSession<Recovery, Status> & { daemonRecovery: { clearPending: () => void } },
+  options: { emitState: () => void; summarizeActiveTab: (reason: string) => void },
 ) {
   session.panelOpen = true;
   session.panelLastPingAt = Date.now();
@@ -19,16 +14,12 @@ export function handlePanelReady<Recovery, Status>(
   session.agentController = null;
   session.daemonRecovery.clearPending();
   options.emitState();
-  options.summarizeActiveTab("panel-open");
+  options.summarizeActiveTab('panel-open');
 }
 
 export function handlePanelClosed<Recovery, Status>(
-  session: PanelSession<Recovery, Status> & {
-    daemonRecovery: { clearPending: () => void };
-  },
-  options: {
-    clearCachedExtractsForWindow: (windowId: number) => Promise<void>;
-  },
+  session: PanelSession<Recovery, Status> & { daemonRecovery: { clearPending: () => void } },
+  options: { clearCachedExtractsForWindow: (windowId: number) => Promise<void> },
 ) {
   session.panelOpen = false;
   session.panelLastPingAt = 0;
@@ -44,25 +35,25 @@ export function handlePanelClosed<Recovery, Status>(
 
 export async function handlePanelSetAuto(options: {
   value: boolean;
-  patchSettings: typeof import("../../lib/settings").patchSettings;
+  patchSettings: typeof import('../../lib/settings').patchSettings;
   emitState: () => void;
   summarizeActiveTab: (reason: string) => void;
 }) {
   await options.patchSettings({ autoSummarize: options.value });
   options.emitState();
-  if (options.value) options.summarizeActiveTab("auto-enabled");
+  if (options.value) {options.summarizeActiveTab('auto-enabled');}
 }
 
 export async function handlePanelSetLength(options: {
   value: string;
-  loadSettings: typeof import("../../lib/settings").loadSettings;
-  patchSettings: typeof import("../../lib/settings").patchSettings;
+  loadSettings: typeof import('../../lib/settings').loadSettings;
+  patchSettings: typeof import('../../lib/settings').patchSettings;
   emitState: () => void;
   summarizeActiveTab: (reason: string) => void;
 }) {
   const current = await options.loadSettings();
-  if (current.length === options.value) return;
+  if (current.length === options.value) {return;}
   await options.patchSettings({ length: options.value });
   options.emitState();
-  options.summarizeActiveTab("length-change");
+  options.summarizeActiveTab('length-change');
 }

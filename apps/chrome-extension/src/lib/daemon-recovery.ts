@@ -1,26 +1,15 @@
-type RecoveryCheck = {
-  isReady: boolean;
-  currentUrlMatches: boolean;
-  isIdle: boolean;
-};
+interface RecoveryCheck { isReady: boolean; currentUrlMatches: boolean; isIdle: boolean }
 
 export function createDaemonRecovery() {
   let lastReady: boolean | null = null;
   let pendingUrl: string | null = null;
 
   return {
-    recordFailure(url: string) {
-      lastReady = false;
-      pendingUrl = url;
-    },
-    getPendingUrl() {
-      return pendingUrl;
-    },
     clearPending() {
       pendingUrl = null;
     },
-    updateStatus(isReady: boolean) {
-      lastReady = isReady;
+    getPendingUrl() {
+      return pendingUrl;
     },
     maybeRecover({ isReady, currentUrlMatches, isIdle }: RecoveryCheck) {
       const prev = lastReady;
@@ -40,6 +29,13 @@ export function createDaemonRecovery() {
 
       return false;
     },
+    recordFailure(url: string) {
+      lastReady = false;
+      pendingUrl = url;
+    },
+    updateStatus(isReady: boolean) {
+      lastReady = isReady;
+    },
   };
 }
 
@@ -47,8 +43,8 @@ export function isDaemonUnreachableError(err: unknown): boolean {
   const message = err instanceof Error ? err.message : String(err);
   const normalized = message.toLowerCase();
   return (
-    normalized.includes("failed to fetch") ||
-    normalized.includes("networkerror") ||
-    normalized.includes("econnrefused")
+    normalized.includes('failed to fetch') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('econnrefused')
   );
 }

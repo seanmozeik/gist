@@ -1,7 +1,7 @@
 export function normalizePanelUrl(value: string) {
   try {
     const url = new URL(value);
-    url.hash = "";
+    url.hash = '';
     return url.toString();
   } catch {
     return value;
@@ -11,24 +11,24 @@ export function normalizePanelUrl(value: string) {
 export function panelUrlsMatch(a: string, b: string) {
   const left = normalizePanelUrl(a);
   const right = normalizePanelUrl(b);
-  if (left === right) return true;
+  if (left === right) {return true;}
   const boundaryMatch = (longer: string, shorter: string) => {
-    if (!longer.startsWith(shorter)) return false;
-    if (longer.length === shorter.length) return true;
+    if (!longer.startsWith(shorter)) {return false;}
+    if (longer.length === shorter.length) {return true;}
     const next = longer[shorter.length];
-    return next === "/" || next === "?" || next === "&";
+    return next === '/' || next === '?' || next === '&';
   };
   return boundaryMatch(left, right) || boundaryMatch(right, left);
 }
 
 export function isMatchablePanelUrl(value: string | null) {
-  if (!value) return false;
+  if (!value) {return false;}
   return !(
-    value.startsWith("chrome://") ||
-    value.startsWith("chrome-extension://") ||
-    value.startsWith("moz-extension://") ||
-    value.startsWith("edge://") ||
-    value.startsWith("about:")
+    value.startsWith('chrome://') ||
+    value.startsWith('chrome-extension://') ||
+    value.startsWith('moz-extension://') ||
+    value.startsWith('edge://') ||
+    value.startsWith('about:')
   );
 }
 
@@ -41,19 +41,19 @@ export function shouldIgnoreTransientPanelTabState({
   activeTabUrl: string | null;
   currentSourceUrl: string | null;
 }) {
-  if (isMatchablePanelUrl(nextTabUrl)) return false;
+  if (isMatchablePanelUrl(nextTabUrl)) {return false;}
   return isMatchablePanelUrl(currentSourceUrl) || isMatchablePanelUrl(activeTabUrl);
 }
 
-export type PanelNavigationDecision = {
-  kind: "none" | "tab" | "url";
+export interface PanelNavigationDecision {
+  kind: 'none' | 'tab' | 'url';
   preserveChat: boolean;
   shouldAbortChatStream: boolean;
   shouldClearChat: boolean;
   shouldMigrateChat: boolean;
-  nextInputMode: "page" | "video" | null;
+  nextInputMode: 'page' | 'video' | null;
   resetInputModeOverride: boolean;
-};
+}
 
 export function resolvePanelNavigationDecision({
   activeTabId,
@@ -74,7 +74,7 @@ export function resolvePanelNavigationDecision({
   chatEnabled: boolean;
   preserveChat: boolean;
   preferUrlMode: boolean;
-  inputModeOverride: "page" | "video" | null;
+  inputModeOverride: 'page' | 'video' | null;
 }): PanelNavigationDecision {
   const tabChanged = nextTabId !== activeTabId;
   const urlChanged =
@@ -82,36 +82,36 @@ export function resolvePanelNavigationDecision({
 
   if (!tabChanged && !urlChanged) {
     return {
-      kind: "none",
+      kind: 'none',
+      nextInputMode: null,
       preserveChat,
+      resetInputModeOverride: false,
       shouldAbortChatStream: false,
       shouldClearChat: false,
       shouldMigrateChat: false,
-      nextInputMode: null,
-      resetInputModeOverride: false,
     };
   }
 
   if (tabChanged) {
     return {
-      kind: "tab",
+      kind: 'tab',
+      nextInputMode: preferUrlMode ? 'video' : 'page',
       preserveChat,
+      resetInputModeOverride: true,
       shouldAbortChatStream: !preserveChat,
       shouldClearChat: !preserveChat,
       shouldMigrateChat: preserveChat,
-      nextInputMode: preferUrlMode ? "video" : "page",
-      resetInputModeOverride: true,
     };
   }
 
   return {
-    kind: "url",
+    kind: 'url',
+    nextInputMode: inputModeOverride ? null : preferUrlMode ? 'video' : 'page',
     preserveChat,
+    resetInputModeOverride: false,
     shouldAbortChatStream: false,
     shouldClearChat: !preserveChat && chatEnabled && hasActiveChat,
     shouldMigrateChat: false,
-    nextInputMode: inputModeOverride ? null : preferUrlMode ? "video" : "page",
-    resetInputModeOverride: false,
   };
 }
 
@@ -125,7 +125,7 @@ export function shouldAcceptRunForCurrentPage({
   currentSourceUrl: string | null;
 }) {
   const expectedUrl = currentSourceUrl ?? (isMatchablePanelUrl(activeTabUrl) ? activeTabUrl : null);
-  if (!expectedUrl) return true;
+  if (!expectedUrl) {return true;}
   return panelUrlsMatch(runUrl, expectedUrl);
 }
 
@@ -138,9 +138,9 @@ export function shouldAcceptSlidesForCurrentPage({
   activeTabUrl: string | null;
   currentSourceUrl: string | null;
 }) {
-  if (!targetUrl) return true;
+  if (!targetUrl) {return true;}
   const expectedUrl = currentSourceUrl ?? (isMatchablePanelUrl(activeTabUrl) ? activeTabUrl : null);
-  if (!expectedUrl) return true;
+  if (!expectedUrl) {return true;}
   return panelUrlsMatch(targetUrl, expectedUrl);
 }
 
@@ -151,6 +151,6 @@ export function shouldInvalidateCurrentSource({
   stateTabUrl: string | null;
   currentSourceUrl: string | null;
 }) {
-  if (!stateTabUrl || !currentSourceUrl) return false;
+  if (!stateTabUrl || !currentSourceUrl) {return false;}
   return !panelUrlsMatch(stateTabUrl, currentSourceUrl);
 }

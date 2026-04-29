@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { stripHiddenHtml } from "../packages/core/src/content/link-preview/content/visibility.js";
+import { describe, expect, it } from 'vitest';
 
-describe("hidden content stripping", () => {
-  it("removes common hidden element patterns", () => {
+import { stripHiddenHtml } from '../packages/core/src/content/link-preview/content/visibility.js';
+
+describe('hidden content stripping', () => {
+  it('removes common hidden element patterns', () => {
     const html = `
       <html><body>
         <p>Visible</p>
@@ -27,27 +28,27 @@ describe("hidden content stripping", () => {
     `;
 
     const cleaned = stripHiddenHtml(html);
-    expect(cleaned).toContain("Visible");
-    expect(cleaned).not.toContain("Hidden display");
-    expect(cleaned).not.toContain("Hidden visibility");
-    expect(cleaned).not.toContain("Hidden opacity");
-    expect(cleaned).not.toContain("Hidden font");
-    expect(cleaned).not.toContain("Hidden clip");
-    expect(cleaned).not.toContain("Hidden clip-path");
-    expect(cleaned).not.toContain("Hidden indent");
-    expect(cleaned).not.toContain("Hidden scale");
-    expect(cleaned).not.toContain("Hidden left");
-    expect(cleaned).not.toContain("Hidden top");
-    expect(cleaned).not.toContain("Hidden size");
-    expect(cleaned).not.toContain("Hidden attribute");
-    expect(cleaned).not.toContain("Hidden aria");
-    expect(cleaned).not.toContain("Hidden input");
-    expect(cleaned).not.toContain("Hidden template");
-    expect(cleaned).not.toContain("Hidden script");
-    expect(cleaned).not.toContain("Hidden comment");
+    expect(cleaned).toContain('Visible');
+    expect(cleaned).not.toContain('Hidden display');
+    expect(cleaned).not.toContain('Hidden visibility');
+    expect(cleaned).not.toContain('Hidden opacity');
+    expect(cleaned).not.toContain('Hidden font');
+    expect(cleaned).not.toContain('Hidden clip');
+    expect(cleaned).not.toContain('Hidden clip-path');
+    expect(cleaned).not.toContain('Hidden indent');
+    expect(cleaned).not.toContain('Hidden scale');
+    expect(cleaned).not.toContain('Hidden left');
+    expect(cleaned).not.toContain('Hidden top');
+    expect(cleaned).not.toContain('Hidden size');
+    expect(cleaned).not.toContain('Hidden attribute');
+    expect(cleaned).not.toContain('Hidden aria');
+    expect(cleaned).not.toContain('Hidden input');
+    expect(cleaned).not.toContain('Hidden template');
+    expect(cleaned).not.toContain('Hidden script');
+    expect(cleaned).not.toContain('Hidden comment');
   });
 
-  it("keeps visible content without hidden markers", () => {
+  it('keeps visible content without hidden markers', () => {
     const html = `
       <html><body>
         <div style="opacity:0.5">Visible alpha</div>
@@ -56,7 +57,7 @@ describe("hidden content stripping", () => {
     `;
 
     const cleaned = stripHiddenHtml(html);
-    expect(cleaned).toContain("Visible alpha");
-    expect(cleaned).toContain("Visible positioned");
+    expect(cleaned).toContain('Visible alpha');
+    expect(cleaned).toContain('Visible positioned');
   });
 });

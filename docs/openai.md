@@ -1,7 +1,7 @@
 ---
-summary: "OpenAI model usage and flags."
+summary: 'OpenAI model usage and flags.'
 read_when:
-  - "When changing OpenAI integration."
+  - 'When changing OpenAI integration.'
 ---
 
 # OpenAI models
@@ -43,12 +43,7 @@ Compatibility aliases:
 ## Config
 
 ```json
-{
-  "openai": {
-    "serviceTier": "fast",
-    "thinking": "medium"
-  }
-}
+{ "openai": { "serviceTier": "fast", "thinking": "medium" } }
 ```
 
 `openai.reasoningEffort` is the long-form alias for `openai.thinking`. Model presets can also set `serviceTier`, `thinking` / `reasoningEffort`, and `textVerbosity`.

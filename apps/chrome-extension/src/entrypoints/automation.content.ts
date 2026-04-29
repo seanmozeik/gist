@@ -1,7 +1,8 @@
-import { defineContentScript } from "wxt/utils/define-content-script";
-import { META_SITE_EXCLUDE_MATCHES } from "../lib/content-script-matches";
+import { defineContentScript } from 'wxt/utils/define-content-script';
 
-export type ElementInfo = {
+import { META_SITE_EXCLUDE_MATCHES } from '../lib/content-script-matches';
+
+export interface ElementInfo {
   selector: string;
   xpath: string;
   html: string;
@@ -9,7 +10,7 @@ export type ElementInfo = {
   attributes: Record<string, string>;
   text: string;
   boundingBox: { x: number; y: number; width: number; height: number };
-};
+}
 
 declare global {
   interface Window {
@@ -19,22 +20,22 @@ declare global {
 }
 
 function generateSelector(element: Element): string {
-  if (element.id) return `#${CSS.escape(element.id)}`;
+  if (element.id) {return `#${CSS.escape(element.id)}`;}
   const path: string[] = [];
   let current: Element | null = element;
   while (current && current !== document.body) {
     let selector = current.tagName.toLowerCase();
-    if (current.className && typeof current.className === "string") {
+    if (current.className && typeof current.className === 'string') {
       const classes = current.className
         .split(/\s+/)
-        .filter((c) => c && !c.startsWith("summarize-"));
+        .filter((c) => c && !c.startsWith('summarize-'));
       if (classes.length > 0) {
-        selector += `.${classes.map((c) => CSS.escape(c)).join(".")}`;
+        selector += `.${classes.map((c) => CSS.escape(c)).join('.')}`;
       }
     }
     if (current.parentElement) {
-      const tagName = current.tagName;
-      const siblings = Array.from(current.parentElement.children).filter(
+      const {tagName} = current;
+      const siblings = [...current.parentElement.children].filter(
         (el) => el.tagName === tagName,
       );
       if (siblings.length > 1) {
@@ -45,59 +46,59 @@ function generateSelector(element: Element): string {
     path.unshift(selector);
     current = current.parentElement;
   }
-  return path.join(" > ");
+  return path.join(' > ');
 }
 
 function generateXPath(element: Element): string {
-  if (element.id) return `//*[@id="${element.id}"]`;
+  if (element.id) {return `//*[@id="${element.id}"]`;}
   const path: string[] = [];
   let current: Element | null = element;
   while (current && current !== document.documentElement) {
     let index = 0;
     let sibling = current.previousElementSibling;
     while (sibling) {
-      if (sibling.tagName === current.tagName) index++;
+      if (sibling.tagName === current.tagName) {index++;}
       sibling = sibling.previousElementSibling;
     }
     const tag = current.tagName.toLowerCase();
-    const position = index > 0 ? `[${index + 1}]` : "";
+    const position = index > 0 ? `[${index + 1}]` : '';
     path.unshift(`${tag}${position}`);
     current = current.parentElement;
   }
-  return `/${path.join("/")}`;
+  return `/${path.join('/')}`;
 }
 
 function getElementInfo(element: Element): ElementInfo {
   const rect = element.getBoundingClientRect();
   const attributes: Record<string, string> = {};
-  for (const attr of Array.from(element.attributes)) {
+  for (const attr of [...element.attributes]) {
     attributes[attr.name] = attr.value;
   }
   return {
-    selector: generateSelector(element),
-    xpath: generateXPath(element),
-    html: element.outerHTML.slice(0, 2000),
-    tagName: element.tagName.toLowerCase(),
     attributes,
-    text: element.textContent?.trim() ?? "",
     boundingBox: {
+      height: Math.round(rect.height),
+      width: Math.round(rect.width),
       x: Math.round(rect.x),
       y: Math.round(rect.y),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height),
     },
+    html: element.outerHTML.slice(0, 2000),
+    selector: generateSelector(element),
+    tagName: element.tagName.toLowerCase(),
+    text: element.textContent?.trim() ?? '',
+    xpath: generateXPath(element),
   };
 }
 
 async function createElementPicker(message?: string): Promise<ElementInfo> {
   if (window.__summarizeElementPicker) {
-    throw new Error("Element picker already active");
+    throw new Error('Element picker already active');
   }
   window.__summarizeElementPicker = true;
 
   return new Promise((resolve, reject) => {
-    const overlay = document.createElement("div");
-    overlay.id = "__summarize_element_picker__";
+    const overlay = document.createElement('div');
+    overlay.id = '__summarize_element_picker__';
     overlay.style.cssText = `
       position: fixed;
       inset: 0;
@@ -105,7 +106,7 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
       pointer-events: none;
     `;
 
-    const highlight = document.createElement("div");
+    const highlight = document.createElement('div');
     highlight.style.cssText = `
       position: absolute;
       pointer-events: none;
@@ -114,9 +115,9 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
       box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
       transition: all 0.08s ease;
     `;
-    overlay.appendChild(highlight);
+    overlay.append(highlight);
 
-    const banner = document.createElement("div");
+    const banner = document.createElement('div');
     banner.style.cssText = `
       position: fixed;
       top: 16px;
@@ -135,12 +136,12 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
       pointer-events: auto;
     `;
 
-    const bannerText = document.createElement("span");
-    bannerText.textContent = message || "Click an element to select • ↑↓ to change depth";
-    banner.appendChild(bannerText);
+    const bannerText = document.createElement('span');
+    bannerText.textContent = message || 'Click an element to select • ↑↓ to change depth';
+    banner.append(bannerText);
 
-    const cancelButton = document.createElement("button");
-    cancelButton.textContent = "Cancel (Esc)";
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel (Esc)';
     cancelButton.style.cssText = `
       background: #1f2937;
       border: none;
@@ -150,10 +151,10 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
       cursor: pointer;
       font-size: 12px;
     `;
-    banner.appendChild(cancelButton);
+    banner.append(cancelButton);
 
-    document.body.appendChild(overlay);
-    document.body.appendChild(banner);
+    document.body.append(overlay);
+    document.body.append(banner);
 
     let currentElement: Element | null = null;
     let ancestorIndex = 0;
@@ -161,15 +162,15 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
     const cleanup = () => {
       overlay.remove();
       banner.remove();
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("click", onClick, true);
-      window.removeEventListener("keydown", onKey);
-      cancelButton.removeEventListener("click", onCancel);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('click', onClick, true);
+      window.removeEventListener('keydown', onKey);
+      cancelButton.removeEventListener('click', onCancel);
       window.__summarizeElementPicker = false;
     };
 
     const updateHighlight = (element: Element | null) => {
-      if (!element) return;
+      if (!element) {return;}
       const rect = element.getBoundingClientRect();
       highlight.style.left = `${rect.left}px`;
       highlight.style.top = `${rect.top}px`;
@@ -178,65 +179,65 @@ async function createElementPicker(message?: string): Promise<ElementInfo> {
     };
 
     const resolveCurrent = () => {
-      if (!currentElement) return null;
+      if (!currentElement) {return null;}
       let el: Element | null = currentElement;
       for (let i = 0; i < ancestorIndex; i += 1) {
-        if (el?.parentElement) el = el.parentElement;
+        if (el?.parentElement) {el = el.parentElement;}
       }
       return el;
     };
 
     const onMove = (event: MouseEvent) => {
       const target = event.target as Element | null;
-      if (!target || target === overlay || target === banner) return;
+      if (!target || target === overlay || target === banner) {return;}
       currentElement = target;
       const resolved = resolveCurrent();
-      if (resolved) updateHighlight(resolved);
+      if (resolved) {updateHighlight(resolved);}
     };
 
     const onClick = (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
       const resolved = resolveCurrent();
-      if (!resolved) return;
+      if (!resolved) {return;}
       cleanup();
       resolve(getElementInfo(resolved));
     };
 
     const onCancel = () => {
       cleanup();
-      reject(new Error("Selection cancelled"));
+      reject(new Error('Selection cancelled'));
     };
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onCancel();
         return;
       }
-      if (event.key === "ArrowUp") {
+      if (event.key === 'ArrowUp') {
         ancestorIndex += 1;
       }
-      if (event.key === "ArrowDown") {
+      if (event.key === 'ArrowDown') {
         ancestorIndex = Math.max(0, ancestorIndex - 1);
       }
       const resolved = resolveCurrent();
-      if (resolved) updateHighlight(resolved);
+      if (resolved) {updateHighlight(resolved);}
     };
 
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("click", onClick, true);
-    window.addEventListener("keydown", onKey);
-    cancelButton.addEventListener("click", onCancel);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('click', onClick, true);
+    window.addEventListener('keydown', onKey);
+    cancelButton.addEventListener('click', onCancel);
   });
 }
 
 function showReplOverlay(message?: string) {
-  if (window.__summarizeReplOverlay) return;
+  if (window.__summarizeReplOverlay) {return;}
   window.__summarizeReplOverlay = true;
 
-  const styleId = "__summarize_repl_overlay_style__";
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement("style");
+  const styleId = '__summarize_repl_overlay_style__';
+  if (!document.querySelector(`#${styleId}`)) {
+    const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
       @keyframes summarize-repl-pulse {
@@ -245,11 +246,11 @@ function showReplOverlay(message?: string) {
         100% { opacity: 0.3; }
       }
     `;
-    document.head.appendChild(style);
+    document.head.append(style);
   }
 
-  const overlay = document.createElement("div");
-  overlay.id = "__summarize_repl_overlay__";
+  const overlay = document.createElement('div');
+  overlay.id = '__summarize_repl_overlay__';
   overlay.style.cssText = `
     position: fixed;
     inset: 0;
@@ -257,7 +258,7 @@ function showReplOverlay(message?: string) {
     pointer-events: none;
   `;
 
-  const card = document.createElement("div");
+  const card = document.createElement('div');
   card.style.cssText = `
     position: fixed;
     top: 16px;
@@ -276,22 +277,22 @@ function showReplOverlay(message?: string) {
     pointer-events: auto;
   `;
 
-  const spinner = document.createElement("span");
-  spinner.textContent = "● ● ●";
+  const spinner = document.createElement('span');
+  spinner.textContent = '● ● ●';
   spinner.style.cssText = `
     font-size: 10px;
     letter-spacing: 2px;
     animation: summarize-repl-pulse 1.4s ease-in-out infinite;
     opacity: 0.6;
   `;
-  card.appendChild(spinner);
+  card.append(spinner);
 
-  const text = document.createElement("span");
-  text.textContent = message ? `Running: ${message}` : "Running automation…";
-  card.appendChild(text);
+  const text = document.createElement('span');
+  text.textContent = message ? `Running: ${message}` : 'Running automation…';
+  card.append(text);
 
-  const abortBtn = document.createElement("button");
-  abortBtn.textContent = "Abort (Esc)";
+  const abortBtn = document.createElement('button');
+  abortBtn.textContent = 'Abort (Esc)';
   abortBtn.style.cssText = `
     background: #1f2937;
     border: none;
@@ -301,36 +302,36 @@ function showReplOverlay(message?: string) {
     cursor: pointer;
     font-size: 12px;
   `;
-  card.appendChild(abortBtn);
+  card.append(abortBtn);
 
-  overlay.appendChild(card);
-  document.body.appendChild(overlay);
+  overlay.append(card);
+  document.body.append(overlay);
 
   const requestAbort = () => {
-    void chrome.runtime.sendMessage({ type: "automation:abort-repl" });
-    void chrome.runtime.sendMessage({ type: "automation:abort-agent" });
+    void chrome.runtime.sendMessage({ type: 'automation:abort-repl' });
+    void chrome.runtime.sendMessage({ type: 'automation:abort-agent' });
     hideReplOverlay();
   };
 
   const onKey = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       event.preventDefault();
       requestAbort();
     }
   };
 
-  abortBtn.addEventListener("click", requestAbort);
-  window.addEventListener("keydown", onKey, true);
+  abortBtn.addEventListener('click', requestAbort);
+  window.addEventListener('keydown', onKey, true);
 
-  (overlay as HTMLElement).dataset.cleanup = "true";
+  (overlay as HTMLElement).dataset.cleanup = 'true';
   (overlay as unknown as { __cleanup?: () => void }).__cleanup = () => {
-    window.removeEventListener("keydown", onKey, true);
-    abortBtn.removeEventListener("click", requestAbort);
+    window.removeEventListener('keydown', onKey, true);
+    abortBtn.removeEventListener('click', requestAbort);
   };
 }
 
 function hideReplOverlay() {
-  const overlay = document.getElementById("__summarize_repl_overlay__");
+  const overlay = document.querySelector('#__summarize_repl_overlay__');
   if (overlay) {
     (overlay as unknown as { __cleanup?: () => void }).__cleanup?.();
     overlay.remove();
@@ -339,22 +340,22 @@ function hideReplOverlay() {
 }
 
 function handleNativeInputBridge() {
-  window.addEventListener("message", (event) => {
-    if (event.source !== window) return;
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) {return;}
     const data = event.data as { source?: string; requestId?: string; payload?: unknown };
-    if (data?.source !== "summarize-native-input" || !data.requestId) return;
+    if (data?.source !== 'summarize-native-input' || !data.requestId) {return;}
     const payload = data.payload as { action?: string };
     chrome.runtime.sendMessage(
-      { type: "automation:native-input", payload },
+      { payload, type: 'automation:native-input' },
       (response: { ok: boolean; error?: string } | undefined) => {
         window.postMessage(
           {
-            source: "summarize-native-input",
-            requestId: data.requestId,
-            ok: response?.ok ?? false,
             error: response?.error,
+            ok: response?.ok ?? false,
+            requestId: data.requestId,
+            source: 'summarize-native-input',
           },
-          "*",
+          '*',
         );
       },
     );
@@ -363,32 +364,32 @@ function handleNativeInputBridge() {
 
 // Bridge artifact RPC calls from userScripts (page world) to the extension.
 function handleArtifactsBridge() {
-  window.addEventListener("message", (event) => {
-    if (event.source !== window) return;
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) {return;}
     const data = event.data as {
       source?: string;
       requestId?: string;
       action?: string;
       payload?: unknown;
     };
-    if (data?.source !== "summarize-artifacts" || !data.requestId) return;
+    if (data?.source !== 'summarize-artifacts' || !data.requestId) {return;}
     chrome.runtime.sendMessage(
       {
-        type: "automation:artifacts",
-        requestId: data.requestId,
         action: data.action,
         payload: data.payload,
+        requestId: data.requestId,
+        type: 'automation:artifacts',
       },
       (response: { ok: boolean; result?: unknown; error?: string } | undefined) => {
         window.postMessage(
           {
-            source: "summarize-artifacts",
-            requestId: data.requestId,
-            ok: response?.ok ?? false,
-            result: response?.result,
             error: response?.error,
+            ok: response?.ok ?? false,
+            requestId: data.requestId,
+            result: response?.result,
+            source: 'summarize-artifacts',
           },
-          "*",
+          '*',
         );
       },
     );
@@ -396,9 +397,7 @@ function handleArtifactsBridge() {
 }
 
 export default defineContentScript({
-  matches: ["<all_urls>"],
   excludeMatches: META_SITE_EXCLUDE_MATCHES,
-  runAt: "document_idle",
   main() {
     handleNativeInputBridge();
     handleArtifactsBridge();
@@ -409,7 +408,7 @@ export default defineContentScript({
         _sender,
         sendResponse: (response: { ok: boolean; result?: ElementInfo; error?: string }) => void,
       ) => {
-        if (raw?.type === "automation:pick-element") {
+        if (raw?.type === 'automation:pick-element') {
           void (async () => {
             try {
               const result = await createElementPicker(raw.message ?? undefined);
@@ -421,10 +420,10 @@ export default defineContentScript({
           })();
           return true;
         }
-        if (raw?.type === "automation:repl-overlay") {
-          if (raw.action === "show") {
+        if (raw?.type === 'automation:repl-overlay') {
+          if (raw.action === 'show') {
             showReplOverlay(raw.message ?? undefined);
-          } else if (raw.action === "hide") {
+          } else if (raw.action === 'hide') {
             hideReplOverlay();
           }
           sendResponse({ ok: true });
@@ -433,4 +432,6 @@ export default defineContentScript({
       },
     );
   },
+  matches: ['<all_urls>'],
+  runAt: 'document_idle',
 });

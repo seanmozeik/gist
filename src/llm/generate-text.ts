@@ -1,6 +1,7 @@
-import type { Context } from "@mariozechner/pi-ai";
-import { completeSimple } from "@mariozechner/pi-ai";
-import { maybeGenerateDocumentText } from "./generate-text-document.js";
+import type { Context } from '@mariozechner/pi-ai';
+import { completeSimple } from '@mariozechner/pi-ai';
+
+import { maybeGenerateDocumentText } from './generate-text-document.js';
 import {
   computeRetryDelayMs,
   isGoogleEmptySummaryError,
@@ -10,18 +11,18 @@ import {
   resolveGoogleEmptyResponseFallbackModelId,
   shouldRetryGpt5WithoutTokenCap,
   sleep,
-} from "./generate-text-shared.js";
-import { streamTextWithContext } from "./generate-text-stream.js";
-import { parseGatewayStyleModelId } from "./model-id.js";
-import type { LlmProvider } from "./model-id.js";
-import type { ModelRequestOptions } from "./model-options.js";
-import type { Prompt } from "./prompt.js";
-import { resolveOpenAiCompatibleClientConfigForProvider } from "./provider-capabilities.js";
+} from './generate-text-shared.js';
+import { streamTextWithContext } from './generate-text-stream.js';
+import { parseGatewayStyleModelId } from './model-id.js';
+import type { LlmProvider } from './model-id.js';
+import type { ModelRequestOptions } from './model-options.js';
+import type { Prompt } from './prompt.js';
+import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities.js';
 import {
   completeAnthropicText,
   normalizeAnthropicModelAccessError,
-} from "./providers/anthropic.js";
-import { completeGoogleText } from "./providers/google.js";
+} from './providers/anthropic.js';
+import { completeGoogleText } from './providers/google.js';
 import {
   resolveAnthropicModel,
   resolveGoogleModel,
@@ -29,34 +30,27 @@ import {
   resolveNvidiaModel,
   resolveXaiModel,
   resolveZaiModel,
-} from "./providers/models.js";
-import { completeOpenAiText, resolveOpenAiClientConfig } from "./providers/openai.js";
-import { extractText } from "./providers/shared.js";
-import type { OpenAiClientConfig } from "./providers/types.js";
-import type { LlmTokenUsage } from "./types.js";
-import { normalizeTokenUsage } from "./usage.js";
-export { streamTextWithContext } from "./generate-text-stream.js";
+} from './providers/models.js';
+import { completeOpenAiText, resolveOpenAiClientConfig } from './providers/openai.js';
+import { extractText } from './providers/shared.js';
+import type { OpenAiClientConfig } from './providers/types.js';
+import type { LlmTokenUsage } from './types.js';
+import { normalizeTokenUsage } from './usage.js';
+export { streamTextWithContext } from './generate-text-stream.js';
 
-export type LlmApiKeys = {
+export interface LlmApiKeys {
   xaiApiKey: string | null;
   openaiApiKey: string | null;
   googleApiKey: string | null;
   anthropicApiKey: string | null;
   openrouterApiKey: string | null;
-};
+}
 
-export type OpenRouterOptions = {
-  providers: string[] | null;
-};
+export interface OpenRouterOptions { providers: string[] | null }
 
-export type { LlmTokenUsage } from "./types.js";
+export type { LlmTokenUsage } from './types.js';
 
-type RetryNotice = {
-  attempt: number;
-  maxRetries: number;
-  delayMs: number;
-  error: unknown;
-};
+interface RetryNotice { attempt: number; maxRetries: number; delayMs: number; error: unknown }
 
 export async function generateTextWithModelId({
   modelId,
@@ -102,24 +96,22 @@ export async function generateTextWithModelId({
 }> {
   const parsed = parseGatewayStyleModelId(modelId);
   const effectiveTemperature = resolveEffectiveTemperature({
-    provider: parsed.provider,
     model: parsed.model,
+    provider: parsed.provider,
     temperature,
   });
 
   const documentResult = await maybeGenerateDocumentText({
-    parsed,
-    apiKeys,
-    prompt,
-    maxOutputTokens,
-    temperature: effectiveTemperature,
-    timeoutMs,
-    fetchImpl,
-    forceOpenRouter,
-    openaiBaseUrlOverride,
     anthropicBaseUrlOverride,
-    googleBaseUrlOverride,
+    apiKeys,
+    fetchImpl,
     forceChatCompletions,
+    forceOpenRouter,
+    googleBaseUrlOverride,
+    maxOutputTokens,
+    openaiBaseUrlOverride,
+    parsed,
+    prompt,
     requestOptions,
     retryWithModelId: (fallbackModelId) =>
       generateTextWithModelId({
@@ -141,6 +133,8 @@ export async function generateTextWithModelId({
         retries,
         onRetry,
       }),
+    temperature: effectiveTemperature,
+    timeoutMs,
   });
   if (documentResult) {
     return documentResult;
@@ -149,15 +143,15 @@ export async function generateTextWithModelId({
   const context = promptToContext(prompt);
 
   const resolveOpenAiConfig = (
-    provider: "openai" | "github-copilot" = "openai",
+    provider: 'openai' | 'github-copilot' = 'openai',
   ): OpenAiClientConfig =>
     resolveOpenAiCompatibleClientConfigForProvider({
-      provider,
-      openaiApiKey: apiKeys.openaiApiKey,
-      openrouterApiKey: apiKeys.openrouterApiKey,
-      forceOpenRouter,
-      openaiBaseUrlOverride,
       forceChatCompletions,
+      forceOpenRouter,
+      openaiApiKey: apiKeys.openaiApiKey,
+      openaiBaseUrlOverride,
+      openrouterApiKey: apiKeys.openrouterApiKey,
+      provider,
       requestOptions,
     });
 
@@ -171,13 +165,13 @@ export async function generateTextWithModelId({
     signal: AbortSignal;
   }): Promise<{ text: string; usage: LlmTokenUsage | null }> => {
     const result = await completeSimple(model, context, {
-      ...(typeof effectiveTemperature === "number" ? { temperature: effectiveTemperature } : {}),
-      ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+      ...(typeof effectiveTemperature === 'number' ? { temperature: effectiveTemperature } : {}),
+      ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
       apiKey,
       signal,
     });
     const text = extractText(result);
-    if (!text) throw new Error(`LLM returned an empty summary (model ${parsed.canonical}).`);
+    if (!text) {throw new Error(`LLM returned an empty summary (model ${parsed.canonical}).`);}
     return { text, usage: normalizeTokenUsage(result.usage) };
   };
 
@@ -186,216 +180,212 @@ export async function generateTextWithModelId({
 
   while (attempt <= maxRetries) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
     try {
-      if (parsed.provider === "xai") {
+      if (parsed.provider === 'xai') {
         const apiKey = apiKeys.xaiApiKey;
-        if (!apiKey) throw new Error("Missing XAI_API_KEY for xai/... model");
-        const model = resolveXaiModel({
-          modelId: parsed.model,
-          context,
-          xaiBaseUrlOverride,
-        });
+        if (!apiKey) {throw new Error('Missing XAI_API_KEY for xai/... model');}
+        const model = resolveXaiModel({ context, modelId: parsed.model, xaiBaseUrlOverride });
         const result = await completeSimple(model, context, {
-          ...(typeof effectiveTemperature === "number"
+          ...(typeof effectiveTemperature === 'number'
             ? { temperature: effectiveTemperature }
             : {}),
-          ...(typeof maxOutputTokens === "number" ? { maxTokens: maxOutputTokens } : {}),
+          ...(typeof maxOutputTokens === 'number' ? { maxTokens: maxOutputTokens } : {}),
           apiKey,
           signal: controller.signal,
         });
         const text = extractText(result);
-        if (!text) throw new Error(`LLM returned an empty summary (model ${parsed.canonical}).`);
+        if (!text) {throw new Error(`LLM returned an empty summary (model ${parsed.canonical}).`);}
         return {
-          text,
           canonicalModelId: parsed.canonical,
           provider: parsed.provider,
+          text,
           usage: normalizeTokenUsage(result.usage),
         };
       }
 
-      if (parsed.provider === "google") {
+      if (parsed.provider === 'google') {
         const apiKey = apiKeys.googleApiKey;
         if (!apiKey)
-          throw new Error(
-            "Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model",
-          );
+          {throw new Error(
+            'Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model',
+          );}
         const result = await completeGoogleText({
-          modelId: parsed.model,
           apiKey,
           context,
-          temperature: effectiveTemperature,
-          maxOutputTokens,
-          signal: controller.signal,
           googleBaseUrlOverride,
+          maxOutputTokens,
+          modelId: parsed.model,
+          signal: controller.signal,
+          temperature: effectiveTemperature,
         });
         return {
-          text: result.text,
           canonicalModelId: parsed.canonical,
           provider: parsed.provider,
+          text: result.text,
           usage: result.usage,
         };
       }
 
-      if (parsed.provider === "anthropic") {
+      if (parsed.provider === 'anthropic') {
         const apiKey = apiKeys.anthropicApiKey;
-        if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY for anthropic/... model");
+        if (!apiKey) {throw new Error('Missing ANTHROPIC_API_KEY for anthropic/... model');}
         const result = await completeAnthropicText({
-          modelId: parsed.model,
+          anthropicBaseUrlOverride,
           apiKey,
           context,
-          temperature: effectiveTemperature,
           maxOutputTokens,
+          modelId: parsed.model,
           signal: controller.signal,
-          anthropicBaseUrlOverride,
+          temperature: effectiveTemperature,
         });
         return {
-          text: result.text,
           canonicalModelId: parsed.canonical,
           provider: parsed.provider,
+          text: result.text,
           usage: result.usage,
         };
       }
 
-      if (parsed.provider === "zai") {
+      if (parsed.provider === 'zai') {
         const openaiConfig = resolveOpenAiCompatibleClientConfigForProvider({
-          provider: "zai",
           openaiApiKey: apiKeys.openaiApiKey,
-          openrouterApiKey: apiKeys.openrouterApiKey,
           openaiBaseUrlOverride: zaiBaseUrlOverride ?? openaiBaseUrlOverride,
+          openrouterApiKey: apiKeys.openrouterApiKey,
+          provider: 'zai',
           requestOptions,
         });
         const model = resolveZaiModel({
-          modelId: parsed.model,
           context,
+          modelId: parsed.model,
           openaiBaseUrlOverride: openaiConfig.baseURL,
         });
         const result = await completeSimpleText({
-          model,
           apiKey: openaiConfig.apiKey,
+          model,
           signal: controller.signal,
         });
         return {
-          text: result.text,
           canonicalModelId: parsed.canonical,
           provider: parsed.provider,
+          text: result.text,
           usage: result.usage,
         };
       }
 
-      if (parsed.provider === "nvidia") {
+      if (parsed.provider === 'nvidia') {
         const openaiConfig = resolveOpenAiCompatibleClientConfigForProvider({
-          provider: "nvidia",
           openaiApiKey: apiKeys.openaiApiKey,
-          openrouterApiKey: apiKeys.openrouterApiKey,
           openaiBaseUrlOverride,
+          openrouterApiKey: apiKeys.openrouterApiKey,
+          provider: 'nvidia',
           requestOptions,
         });
         const model = resolveNvidiaModel({
-          modelId: parsed.model,
           context,
+          modelId: parsed.model,
           openaiBaseUrlOverride: openaiConfig.baseURL,
         });
         const result = await completeSimpleText({
-          model,
           apiKey: openaiConfig.apiKey,
+          model,
           signal: controller.signal,
         });
         return {
-          text: result.text,
           canonicalModelId: parsed.canonical,
           provider: parsed.provider,
+          text: result.text,
           usage: result.usage,
         };
       }
 
-      if (parsed.provider === "openai" || parsed.provider === "github-copilot") {
+      if (parsed.provider === 'openai' || parsed.provider === 'github-copilot') {
         const openaiConfig = resolveOpenAiConfig(parsed.provider);
         const result = await completeOpenAiText({
+          context,
+          fetchImpl,
+          maxOutputTokens,
           modelId: parsed.model,
           openaiConfig,
-          context,
-          temperature: effectiveTemperature,
-          maxOutputTokens,
           signal: controller.signal,
-          fetchImpl,
+          temperature: effectiveTemperature,
         });
         return {
-          text: result.text,
           canonicalModelId: result.resolvedModelId
             ? `${parsed.provider}/${result.resolvedModelId}`
             : parsed.canonical,
           provider: parsed.provider,
+          text: result.text,
           usage: result.usage,
         };
       }
 
-      /* v8 ignore next */
+      /* V8 ignore next */
       throw new Error(`Unknown provider ${parsed.provider}`);
     } catch (error) {
       const normalizedError =
-        error instanceof DOMException && error.name === "AbortError"
+        error instanceof DOMException && error.name === 'AbortError'
           ? new Error(`LLM request timed out after ${timeoutMs}ms (model ${parsed.canonical}).`)
           : error;
       const googleFallbackModelId =
-        parsed.provider === "google" &&
+        parsed.provider === 'google' &&
         isGoogleEmptySummaryError(normalizedError) &&
         resolveGoogleEmptyResponseFallbackModelId(parsed.canonical);
       if (
         shouldRetryGpt5WithoutTokenCap({
-          provider: parsed.provider,
-          model: parsed.model,
-          maxOutputTokens,
           error: normalizedError,
+          maxOutputTokens,
+          model: parsed.model,
+          provider: parsed.provider,
         })
       ) {
         return generateTextWithModelId({
-          modelId: parsed.canonical,
-          apiKeys,
-          prompt,
-          temperature,
-          timeoutMs,
-          fetchImpl,
-          forceOpenRouter,
-          openaiBaseUrlOverride,
           anthropicBaseUrlOverride,
-          googleBaseUrlOverride,
-          xaiBaseUrlOverride,
-          zaiBaseUrlOverride,
+          apiKeys,
+          fetchImpl,
           forceChatCompletions,
+          forceOpenRouter,
+          googleBaseUrlOverride,
+          modelId: parsed.canonical,
+          onRetry,
+          openaiBaseUrlOverride,
+          prompt,
           requestOptions,
           retries: Math.max(0, maxRetries - attempt),
-          onRetry,
+          temperature,
+          timeoutMs,
+          xaiBaseUrlOverride,
+          zaiBaseUrlOverride,
         });
       }
       if (googleFallbackModelId) {
         return generateTextWithModelId({
-          modelId: googleFallbackModelId,
-          apiKeys,
-          prompt,
-          temperature,
-          maxOutputTokens,
-          timeoutMs,
-          fetchImpl,
-          forceOpenRouter,
-          openaiBaseUrlOverride,
           anthropicBaseUrlOverride,
-          googleBaseUrlOverride,
-          xaiBaseUrlOverride,
-          zaiBaseUrlOverride,
+          apiKeys,
+          fetchImpl,
           forceChatCompletions,
+          forceOpenRouter,
+          googleBaseUrlOverride,
+          maxOutputTokens,
+          modelId: googleFallbackModelId,
+          onRetry,
+          openaiBaseUrlOverride,
+          prompt,
           requestOptions,
           retries: Math.max(0, maxRetries - attempt),
-          onRetry,
+          temperature,
+          timeoutMs,
+          xaiBaseUrlOverride,
+          zaiBaseUrlOverride,
         });
       }
-      if (parsed.provider === "anthropic") {
+      if (parsed.provider === 'anthropic') {
         const normalized = normalizeAnthropicModelAccessError(normalizedError, parsed.model);
-        if (normalized) throw normalized;
+        if (normalized) {throw normalized;}
       }
       if (isRetryableTimeoutError(normalizedError) && attempt < maxRetries) {
         const delayMs = computeRetryDelayMs(attempt);
-        onRetry?.({ attempt: attempt + 1, maxRetries, delayMs, error: normalizedError });
+        onRetry?.({ attempt: attempt + 1, delayMs, error: normalizedError, maxRetries });
         await sleep(delayMs);
         attempt += 1;
         continue;
@@ -448,19 +438,19 @@ export async function streamTextWithModelId({
 }> {
   const context = promptToContext(prompt);
   return streamTextWithContext({
-    modelId,
+    anthropicBaseUrlOverride,
     apiKeys,
     context,
-    temperature,
-    maxOutputTokens,
-    timeoutMs,
     fetchImpl,
-    forceOpenRouter,
-    openaiBaseUrlOverride,
-    anthropicBaseUrlOverride,
-    googleBaseUrlOverride,
-    xaiBaseUrlOverride,
     forceChatCompletions,
+    forceOpenRouter,
+    googleBaseUrlOverride,
+    maxOutputTokens,
+    modelId,
+    openaiBaseUrlOverride,
     requestOptions,
+    temperature,
+    timeoutMs,
+    xaiBaseUrlOverride,
   });
 }

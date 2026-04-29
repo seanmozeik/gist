@@ -1,4 +1,4 @@
-export type PanelSession<Recovery, Status> = {
+export interface PanelSession<Recovery, Status> {
   windowId: number;
   port: chrome.runtime.Port;
   panelOpen: boolean;
@@ -10,7 +10,7 @@ export type PanelSession<Recovery, Status> = {
   lastNavAt: number;
   daemonRecovery: Recovery;
   daemonStatus: Status;
-};
+}
 
 export function createPanelSessionStore<
   CachedExtract extends { url: string },
@@ -40,16 +40,55 @@ export function createPanelSessionStore<
   };
 
   return {
-    isPanelOpen(session: PanelSession<Recovery, Status>) {
-      if (!session.panelOpen) return false;
-      if (session.panelLastPingAt === 0) return true;
-      return Date.now() - session.panelLastPingAt < 45_000;
+    async clearCachedExtractsForWindow(windowId: number) {
+      try {
+        const tabs = await chrome.tabs.query({ windowId });
+        for (const tab of tabs) {
+          if (!tab.id) continue;
+          cachedExtracts.delete(tab.id);
+          lastMediaProbeByTab.delete(tab.id);
+        }
+      } catch {
+        // ignore
+      }
+    },
+    clearTab(tabId: number) {
+      cachedExtracts.delete(tabId);
+      lastMediaProbeByTab.delete(tabId);
+      panelCacheByTabId.delete(tabId);
+    },
+    deletePanelSession(windowId: number) {
+      panelSessions.delete(windowId);
+      getPanelPortMap().delete(windowId);
+    },
+    getCachedExtract(tabId: number, url?: string | null) {
+      const cached = cachedExtracts.get(tabId) ?? null;
+      if (!cached) return null;
+      if (url && cached.url !== url) {
+        cachedExtracts.delete(tabId);
+        return null;
+      }
+      return cached;
+    },
+    getLastMediaProbe(tabId: number) {
+      return lastMediaProbeByTab.get(tabId) ?? null;
+    },
+    getPanelCache(tabId: number, url?: string | null) {
+      const cached = panelCacheByTabId.get(tabId) ?? null;
+      if (!cached) return null;
+      if (url && cached.url !== url) return null;
+      return cached;
     },
     getPanelSession(windowId: number) {
       return panelSessions.get(windowId) ?? null;
     },
     getPanelSessions() {
       return panelSessions.values();
+    },
+    isPanelOpen(session: PanelSession<Recovery, Status>) {
+      if (!session.panelOpen) return false;
+      if (session.panelLastPingAt === 0) return true;
+      return Date.now() - session.panelLastPingAt < 45_000;
     },
     registerPanelSession(windowId: number, port: chrome.runtime.Port) {
       const existing = panelSessions.get(windowId);
@@ -75,53 +114,14 @@ export function createPanelSessionStore<
       getPanelPortMap().set(windowId, port);
       return session;
     },
-    deletePanelSession(windowId: number) {
-      panelSessions.delete(windowId);
-      getPanelPortMap().delete(windowId);
-    },
-    getCachedExtract(tabId: number, url?: string | null) {
-      const cached = cachedExtracts.get(tabId) ?? null;
-      if (!cached) return null;
-      if (url && cached.url !== url) {
-        cachedExtracts.delete(tabId);
-        return null;
-      }
-      return cached;
+    rememberMediaProbe(tabId: number, url: string) {
+      lastMediaProbeByTab.set(tabId, url);
     },
     setCachedExtract(tabId: number, payload: CachedExtract) {
       cachedExtracts.set(tabId, payload);
     },
-    rememberMediaProbe(tabId: number, url: string) {
-      lastMediaProbeByTab.set(tabId, url);
-    },
-    getLastMediaProbe(tabId: number) {
-      return lastMediaProbeByTab.get(tabId) ?? null;
-    },
     storePanelCache(payload: PanelCachePayload) {
       panelCacheByTabId.set(payload.tabId, payload);
-    },
-    getPanelCache(tabId: number, url?: string | null) {
-      const cached = panelCacheByTabId.get(tabId) ?? null;
-      if (!cached) return null;
-      if (url && cached.url !== url) return null;
-      return cached;
-    },
-    async clearCachedExtractsForWindow(windowId: number) {
-      try {
-        const tabs = await chrome.tabs.query({ windowId });
-        for (const tab of tabs) {
-          if (!tab.id) continue;
-          cachedExtracts.delete(tab.id);
-          lastMediaProbeByTab.delete(tab.id);
-        }
-      } catch {
-        // ignore
-      }
-    },
-    clearTab(tabId: number) {
-      cachedExtracts.delete(tabId);
-      lastMediaProbeByTab.delete(tabId);
-      panelCacheByTabId.delete(tabId);
     },
   };
 }

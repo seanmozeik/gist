@@ -1,25 +1,25 @@
-import type { SlideImage, SlideExtractionResult } from "../../../slides/index.js";
-import type { SlideTimelineEntry } from "./slides-text.js";
+import type { SlideImage, SlideExtractionResult } from '../../../slides/index.js';
+import type { SlideTimelineEntry } from './slides-text.js';
 
 export type SlideState = SlideTimelineEntry & { imagePath: string | null };
 
 export function createSlideOutputState(initialSlides: SlideExtractionResult | null | undefined) {
   const slidesByIndex = new Map<number, SlideState>();
-  const pending = new Map<number, Array<(value: SlideState | null) => void>>();
+  const pending = new Map<number, ((value: SlideState | null) => void)[]>();
   let order: number[] = [];
-  let slidesDir = initialSlides?.slidesDir ?? "";
-  let sourceUrl = initialSlides?.sourceUrl ?? "";
+  let slidesDir = initialSlides?.slidesDir ?? '';
+  let sourceUrl = initialSlides?.sourceUrl ?? '';
   let done = false;
 
   const updateSlideEntry = (slide: SlideImage) => {
     const existing = slidesByIndex.get(slide.index);
     const next: SlideState = {
+      imagePath: slide.imagePath ? slide.imagePath : (existing?.imagePath ?? null),
       index: slide.index,
       timestamp:
         Number.isFinite(slide.timestamp) && slide.timestamp >= 0
           ? slide.timestamp
           : (existing?.timestamp ?? 0),
-      imagePath: slide.imagePath ? slide.imagePath : (existing?.imagePath ?? null),
     };
     slidesByIndex.set(slide.index, next);
     if (slide.imagePath) {
@@ -34,27 +34,27 @@ export function createSlideOutputState(initialSlides: SlideExtractionResult | nu
   };
 
   const setMeta = (meta: { slidesDir?: string | null; sourceUrl?: string | null }) => {
-    if (meta.slidesDir) slidesDir = meta.slidesDir;
-    if (meta.sourceUrl) sourceUrl = meta.sourceUrl;
+    if (meta.slidesDir) ({ slidesDir } = meta);
+    if (meta.sourceUrl) ({ sourceUrl } = meta);
   };
 
   const updateFromSlides = (slides: SlideExtractionResult) => {
-    slidesDir = slides.slidesDir;
-    sourceUrl = slides.sourceUrl;
+    ({ slidesDir } = slides);
+    ({ sourceUrl } = slides);
     const ordered = slides.slides
       .filter((slide) => Number.isFinite(slide.timestamp))
       .map((slide) => ({ index: slide.index, timestamp: slide.timestamp }))
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .toSorted((a, b) => a.timestamp - b.timestamp);
     order = ordered.map((slide) => slide.index);
     for (const slide of slides.slides) {
       updateSlideEntry(slide);
     }
   };
 
-  if (initialSlides) updateFromSlides(initialSlides);
+  if (initialSlides) {updateFromSlides(initialSlides);}
 
   const markDone = () => {
-    if (done) return;
+    if (done) {return;}
     done = true;
     for (const [index, waiters] of pending.entries()) {
       const entry = slidesByIndex.get(index) ?? null;
@@ -67,8 +67,8 @@ export function createSlideOutputState(initialSlides: SlideExtractionResult | nu
 
   const waitForSlide = (index: number): Promise<SlideState | null> => {
     const existing = slidesByIndex.get(index);
-    if (existing?.imagePath) return Promise.resolve(existing);
-    if (done) return Promise.resolve(existing ?? null);
+    if (existing?.imagePath) {return Promise.resolve(existing);}
+    if (done) {return Promise.resolve(existing ?? null);}
     return new Promise((resolve) => {
       const list = pending.get(index) ?? [];
       list.push(resolve);
@@ -77,16 +77,16 @@ export function createSlideOutputState(initialSlides: SlideExtractionResult | nu
   };
 
   return {
+    getOrder: () => order.slice(),
+    getSlide: (index: number) => slidesByIndex.get(index) ?? null,
+    getSlides: () => order.map((index) => slidesByIndex.get(index)).filter(Boolean) as SlideState[],
+    getSlidesDir: () => slidesDir,
+    getSourceUrl: () => sourceUrl,
+    isDone: () => done,
+    markDone,
     setMeta,
     updateFromSlides,
     updateSlideEntry,
     waitForSlide,
-    markDone,
-    getSlides: () => order.map((index) => slidesByIndex.get(index)).filter(Boolean) as SlideState[],
-    getSlide: (index: number) => slidesByIndex.get(index) ?? null,
-    getOrder: () => order.slice(),
-    getSlidesDir: () => slidesDir,
-    getSourceUrl: () => sourceUrl,
-    isDone: () => done,
   };
 }

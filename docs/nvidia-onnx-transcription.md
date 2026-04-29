@@ -1,7 +1,7 @@
 ---
-summary: "Local Parakeet/Canary ONNX transcription via external CLI."
+summary: 'Local Parakeet/Canary ONNX transcription via external CLI.'
 read_when:
-  - "When configuring or changing local ONNX transcription (parakeet/canary)."
+  - 'When configuring or changing local ONNX transcription (parakeet/canary).'
 ---
 
 # NVIDIA Parakeet/Canary ONNX transcription

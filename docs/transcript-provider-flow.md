@@ -1,8 +1,8 @@
 ---
-summary: "Map of transcript provider selection and transcription fallback flow."
+summary: 'Map of transcript provider selection and transcription fallback flow.'
 read_when:
-  - "When changing podcast, YouTube, or generic transcript provider order."
-  - "When changing remote transcription fallbacks or provider setup errors."
+  - 'When changing podcast, YouTube, or generic transcript provider order.'
+  - 'When changing remote transcription fallbacks or provider setup errors.'
 ---
 
 # Transcript Provider Flow

@@ -1,17 +1,17 @@
-import { withBunCompressionHeaders } from "../../../bun.js";
-import { fetchWithTimeout } from "../../../link-preview/fetch-with-timeout.js";
-import type { TranscriptSegment } from "../../../link-preview/types.js";
-import { parseTimestampToMs } from "../../timestamps.js";
-import { extractYoutubeBootstrapConfig, isRecord } from "../../utils.js";
+import { withBunCompressionHeaders } from '../../../bun.js';
+import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout.js';
+import type { TranscriptSegment } from '../../../link-preview/types.js';
+import { parseTimestampToMs } from '../../timestamps.js';
+import { extractYoutubeBootstrapConfig, isRecord } from '../../utils.js';
 
 const REQUEST_HEADERS: Record<string, string> = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
   Accept:
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Cache-Control": "no-cache",
-  Pragma: "no-cache",
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+  Pragma: 'no-cache',
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
 };
 
 export interface YoutubeTranscriptConfig {
@@ -39,10 +39,7 @@ type YoutubeBootstrapConfig = Record<string, unknown> & {
 type TranscriptRunRecord = Record<string, unknown> & { text?: unknown };
 const GET_TRANSCRIPT_ENDPOINT_REGEX = /"getTranscriptEndpoint":\{"params":"([^"]+)"\}/;
 
-export type YoutubeTranscriptPayload = {
-  text: string;
-  segments: TranscriptSegment[] | null;
-};
+export interface YoutubeTranscriptPayload { text: string; segments: TranscriptSegment[] | null }
 
 export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscriptConfig | null => {
   try {
@@ -51,7 +48,7 @@ export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscript
       return null;
     }
 
-    const parametersMatch = html.match(GET_TRANSCRIPT_ENDPOINT_REGEX);
+    const parametersMatch = GET_TRANSCRIPT_ENDPOINT_REGEX.exec(html);
     if (!parametersMatch) {
       return null;
     }
@@ -63,7 +60,7 @@ export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscript
 
     const typedBootstrap = bootstrapConfig as YoutubeBootstrapConfig;
     const apiKeyCandidate = typedBootstrap.INNERTUBE_API_KEY;
-    const apiKey = typeof apiKeyCandidate === "string" ? apiKeyCandidate : null;
+    const apiKey = typeof apiKeyCandidate === 'string' ? apiKeyCandidate : null;
     const contextCandidate = typedBootstrap.INNERTUBE_CONTEXT;
     const context = isRecord(contextCandidate) ? contextCandidate : null;
 
@@ -73,36 +70,36 @@ export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscript
 
     const visitorDataCandidate = typedBootstrap.VISITOR_DATA;
     const visitorDataFromBootstrap =
-      typeof visitorDataCandidate === "string" ? visitorDataCandidate : null;
-    const contextClientCandidate = (context as Record<string, unknown>).client;
+      typeof visitorDataCandidate === 'string' ? visitorDataCandidate : null;
+    const contextClientCandidate = (context).client;
     const contextClient = isRecord(contextClientCandidate) ? contextClientCandidate : null;
     const visitorDataFromContext =
-      typeof contextClient?.visitorData === "string" ? (contextClient.visitorData as string) : null;
+      typeof contextClient?.visitorData === 'string' ? (contextClient.visitorData) : null;
     const visitorData = visitorDataFromBootstrap ?? visitorDataFromContext;
     const clientNameCandidate = typedBootstrap.INNERTUBE_CONTEXT_CLIENT_NAME;
     const clientName =
-      typeof clientNameCandidate === "number"
+      typeof clientNameCandidate === 'number'
         ? String(clientNameCandidate)
-        : typeof clientNameCandidate === "string"
+        : (typeof clientNameCandidate === 'string'
           ? clientNameCandidate
-          : null;
+          : null);
     const clientVersionCandidate = typedBootstrap.INNERTUBE_CONTEXT_CLIENT_VERSION;
     const clientVersion =
-      typeof clientVersionCandidate === "string" ? clientVersionCandidate : null;
+      typeof clientVersionCandidate === 'string' ? clientVersionCandidate : null;
     const pageClCandidate = typedBootstrap.PAGE_CL;
-    const pageCl = typeof pageClCandidate === "number" ? pageClCandidate : null;
+    const pageCl = typeof pageClCandidate === 'number' ? pageClCandidate : null;
     const pageLabelCandidate = typedBootstrap.PAGE_BUILD_LABEL;
-    const pageLabel = typeof pageLabelCandidate === "string" ? pageLabelCandidate : null;
+    const pageLabel = typeof pageLabelCandidate === 'string' ? pageLabelCandidate : null;
 
     return {
       apiKey,
-      context,
-      params: parameters,
-      visitorData,
       clientName,
       clientVersion,
+      context,
       pageCl,
       pageLabel,
+      params: parameters,
+      visitorData,
     };
   } catch {
     return null;
@@ -111,69 +108,53 @@ export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscript
 
 export const fetchTranscriptFromTranscriptEndpoint = async (
   fetchImpl: typeof fetch,
-  {
-    config,
-    originalUrl,
-  }: {
-    config: YoutubeTranscriptConfig;
-    originalUrl: string;
-  },
+  { config, originalUrl }: { config: YoutubeTranscriptConfig; originalUrl: string },
 ): Promise<YoutubeTranscriptPayload | null> => {
   type YoutubeClientContext = Record<string, unknown> & { client?: unknown };
   const contextRecord = config.context as YoutubeClientContext;
   const existingClient = isRecord(contextRecord.client)
-    ? (contextRecord.client as Record<string, unknown>)
+    ? (contextRecord.client)
     : {};
 
   const payload = {
-    context: {
-      ...contextRecord,
-      client: {
-        ...existingClient,
-        originalUrl,
-      },
-    },
+    context: { ...contextRecord, client: { ...existingClient, originalUrl } },
     params: config.params,
   };
 
   try {
     const userAgent =
-      REQUEST_HEADERS["User-Agent"] ??
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+      REQUEST_HEADERS['User-Agent'] ??
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
     const headers: Record<string, string> = withBunCompressionHeaders({
-      "Content-Type": "application/json",
-      "User-Agent": userAgent,
-      Accept: "application/json",
-      Origin: "https://www.youtube.com",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Origin: 'https://www.youtube.com',
       Referer: originalUrl,
-      "X-Goog-AuthUser": "0",
-      "X-Youtube-Bootstrap-Logged-In": "false",
+      'User-Agent': userAgent,
+      'X-Goog-AuthUser': '0',
+      'X-Youtube-Bootstrap-Logged-In': 'false',
     });
 
     if (config.clientName) {
-      headers["X-Youtube-Client-Name"] = config.clientName;
+      headers['X-Youtube-Client-Name'] = config.clientName;
     }
     if (config.clientVersion) {
-      headers["X-Youtube-Client-Version"] = config.clientVersion;
+      headers['X-Youtube-Client-Version'] = config.clientVersion;
     }
     if (config.visitorData) {
-      headers["X-Goog-Visitor-Id"] = config.visitorData;
+      headers['X-Goog-Visitor-Id'] = config.visitorData;
     }
-    if (typeof config.pageCl === "number" && Number.isFinite(config.pageCl)) {
-      headers["X-Youtube-Page-CL"] = String(config.pageCl);
+    if (typeof config.pageCl === 'number' && Number.isFinite(config.pageCl)) {
+      headers['X-Youtube-Page-CL'] = String(config.pageCl);
     }
     if (config.pageLabel) {
-      headers["X-Youtube-Page-Label"] = config.pageLabel;
+      headers['X-Youtube-Page-Label'] = config.pageLabel;
     }
 
     const response = await fetchWithTimeout(
       fetchImpl,
       `https://www.youtube.com/youtubei/v1/get_transcript?key=${config.apiKey}`,
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      },
+      { body: JSON.stringify(payload), headers, method: 'POST' },
     );
 
     if (!response.ok) {
@@ -210,47 +191,47 @@ export const extractTranscriptFromTranscriptEndpoint = (
     return null;
   }
 
-  const actions = getArrayProperty(data, ["actions"]);
+  const actions = getArrayProperty(data, ['actions']);
   if (!actions || actions.length === 0) {
     return null;
   }
 
-  const updatePanel = getNestedProperty(actions[0], ["updateEngagementPanelAction"]);
+  const updatePanel = getNestedProperty(actions[0], ['updateEngagementPanelAction']);
   if (!updatePanel) {
     return null;
   }
 
-  const transcriptContent = getNestedProperty(updatePanel, ["content"]);
+  const transcriptContent = getNestedProperty(updatePanel, ['content']);
   if (!transcriptContent) {
     return null;
   }
 
-  const searchPanel = getNestedProperty(transcriptContent, ["transcriptRenderer"]);
+  const searchPanel = getNestedProperty(transcriptContent, ['transcriptRenderer']);
   if (!searchPanel) {
     return null;
   }
 
-  const segmentListNode = getNestedProperty(searchPanel, ["content"]);
+  const segmentListNode = getNestedProperty(searchPanel, ['content']);
   if (!segmentListNode) {
     return null;
   }
 
-  const listRenderer = getNestedProperty(segmentListNode, ["transcriptSearchPanelRenderer"]);
+  const listRenderer = getNestedProperty(segmentListNode, ['transcriptSearchPanelRenderer']);
   if (!listRenderer) {
     return null;
   }
 
-  const body = getNestedProperty(listRenderer, ["body"]);
+  const body = getNestedProperty(listRenderer, ['body']);
   if (!body) {
     return null;
   }
 
-  const segmentBody = getNestedProperty(body, ["transcriptSegmentListRenderer"]);
+  const segmentBody = getNestedProperty(body, ['transcriptSegmentListRenderer']);
   if (!segmentBody) {
     return null;
   }
 
-  const segmentList = getArrayProperty(segmentBody, ["initialSegments"]);
+  const segmentList = getArrayProperty(segmentBody, ['initialSegments']);
   if (!segmentList || segmentList.length === 0) {
     return null;
   }
@@ -258,29 +239,29 @@ export const extractTranscriptFromTranscriptEndpoint = (
   const lines: string[] = [];
   const segments: TranscriptSegment[] = [];
   for (const segment of segmentList) {
-    const renderer = getNestedProperty(segment, ["transcriptSegmentRenderer"]);
+    const renderer = getNestedProperty(segment, ['transcriptSegmentRenderer']);
     if (!renderer) {
       continue;
     }
 
-    const snippet = getNestedProperty(renderer, ["snippet"]);
+    const snippet = getNestedProperty(renderer, ['snippet']);
     if (!snippet) {
       continue;
     }
 
-    const runs = getArrayProperty(snippet, ["runs"]);
+    const runs = getArrayProperty(snippet, ['runs']);
     if (!runs) {
       continue;
     }
     const text = runs
       .map((value) => {
         if (!isRecord(value)) {
-          return "";
+          return '';
         }
         const runRecord = value as TranscriptRunRecord;
-        return typeof runRecord.text === "string" ? runRecord.text : "";
+        return typeof runRecord.text === 'string' ? runRecord.text : '';
       })
-      .join("")
+      .join('')
       .trim();
     if (text.length > 0) {
       lines.push(text);
@@ -290,11 +271,7 @@ export const extractTranscriptFromTranscriptEndpoint = (
       const durationMs = parseTimestampToMs(durationCandidate, false);
       if (startMs != null) {
         const endMs = durationMs != null ? startMs + durationMs : null;
-        segments.push({
-          startMs,
-          endMs,
-          text: text.replace(/\s+/g, " ").trim(),
-        });
+        segments.push({ endMs, startMs, text: text.replace(/\s+/g, ' ').trim() });
       }
     }
   }
@@ -303,10 +280,7 @@ export const extractTranscriptFromTranscriptEndpoint = (
     return null;
   }
 
-  return {
-    text: lines.join("\n"),
-    segments: segments.length > 0 ? segments : null,
-  };
+  return { segments: segments.length > 0 ? segments : null, text: lines.join('\n') };
 };
 
 export const extractYoutubeiBootstrap = (
@@ -328,40 +302,40 @@ export const extractYoutubeiBootstrap = (
     }
     const typedBootstrap = bootstrapConfig as YoutubeBootstrapConfig;
     const apiKeyCandidate = typedBootstrap.INNERTUBE_API_KEY;
-    const apiKey = typeof apiKeyCandidate === "string" ? apiKeyCandidate : null;
+    const apiKey = typeof apiKeyCandidate === 'string' ? apiKeyCandidate : null;
     const contextCandidate = typedBootstrap.INNERTUBE_CONTEXT;
     const context = isRecord(contextCandidate) ? contextCandidate : null;
     const clientVersionCandidate = typedBootstrap.INNERTUBE_CLIENT_VERSION;
     const clientVersion =
-      typeof clientVersionCandidate === "string" ? clientVersionCandidate : null;
+      typeof clientVersionCandidate === 'string' ? clientVersionCandidate : null;
     const clientNameCandidate = typedBootstrap.INNERTUBE_CONTEXT_CLIENT_NAME;
     const clientName =
-      typeof clientNameCandidate === "number"
+      typeof clientNameCandidate === 'number'
         ? String(clientNameCandidate)
-        : typeof clientNameCandidate === "string"
+        : (typeof clientNameCandidate === 'string'
           ? clientNameCandidate
-          : null;
-    const contextClientCandidate = (context as Record<string, unknown>).client;
+          : null);
+    const contextClientCandidate = (context!).client;
     const contextClient = isRecord(contextClientCandidate) ? contextClientCandidate : null;
     const visitorDataCandidate = contextClient?.visitorData;
-    const visitorData = typeof visitorDataCandidate === "string" ? visitorDataCandidate : null;
+    const visitorData = typeof visitorDataCandidate === 'string' ? visitorDataCandidate : null;
     const pageClCandidate = typedBootstrap.PAGE_CL;
-    const pageCl = typeof pageClCandidate === "number" ? pageClCandidate : null;
+    const pageCl = typeof pageClCandidate === 'number' ? pageClCandidate : null;
     const pageLabelCandidate = typedBootstrap.PAGE_BUILD_LABEL;
-    const pageLabel = typeof pageLabelCandidate === "string" ? pageLabelCandidate : null;
-    const xsrfCandidate = (bootstrapConfig as Record<string, unknown>).XSRF_TOKEN;
-    const xsrfToken = typeof xsrfCandidate === "string" ? xsrfCandidate : null;
+    const pageLabel = typeof pageLabelCandidate === 'string' ? pageLabelCandidate : null;
+    const xsrfCandidate = (bootstrapConfig).XSRF_TOKEN;
+    const xsrfToken = typeof xsrfCandidate === 'string' ? xsrfCandidate : null;
     if (!context) {
       return null;
     }
     return {
       apiKey,
-      context,
-      clientVersion,
       clientName,
-      visitorData,
+      clientVersion,
+      context,
       pageCl,
       pageLabel,
+      visitorData,
       xsrfToken,
     };
   } catch {

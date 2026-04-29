@@ -1,6 +1,6 @@
-import { createSlidesHydrator } from "./slides-hydrator";
-import { createSlidesRunRuntime } from "./slides-run-runtime";
-import { createSlidesSummaryController } from "./slides-summary-controller";
+import { createSlidesHydrator } from './slides-hydrator';
+import { createSlidesRunRuntime } from './slides-run-runtime';
+import { createSlidesSummaryController } from './slides-summary-controller';
 
 export function createSidepanelSlidesRuntime({
   applySlidesPayload,
@@ -34,32 +34,32 @@ export function createSidepanelSlidesRuntime({
   updateSlideSummaryFromMarkdown,
 }: {
   applySlidesPayload: (
-    data: Parameters<typeof createSlidesHydrator>[0]["onSlides"] extends (value: infer T) => void
+    data: Parameters<typeof createSlidesHydrator>[0]['onSlides'] extends (value: infer T) => void
       ? T
       : never,
   ) => void;
   clearSummarySource: () => void;
   friendlyFetchError: (error: unknown, fallback: string) => string;
   getActiveTabUrl: () => string | null;
-  getInputMode: () => "page" | "video";
-  getInputModeOverride: () => "page" | "video" | null;
+  getInputMode: () => 'page' | 'video';
+  getInputModeOverride: () => 'page' | 'video' | null;
   getLengthValue: () => string;
-  getPanelPhase: () => "idle" | "connecting" | "streaming" | "error" | "setup";
-  getPanelState: Parameters<typeof createSlidesSummaryController>[0]["getPanelState"];
+  getPanelPhase: () => 'idle' | 'connecting' | 'streaming' | 'error' | 'setup';
+  getPanelState: Parameters<typeof createSlidesSummaryController>[0]['getPanelState'];
   getSlidesEnabled: () => boolean;
   getToken: () => Promise<string>;
   getTranscriptTimedText: () => string | null;
-  getUiState: Parameters<typeof createSlidesSummaryController>[0]["getUiState"];
+  getUiState: Parameters<typeof createSlidesSummaryController>[0]['getUiState'];
   headerSetStatus: (text: string) => void;
   hideSlideNotice: () => void;
   isStreaming: () => boolean;
-  panelUrlsMatch: Parameters<typeof createSlidesSummaryController>[0]["panelUrlsMatch"];
+  panelUrlsMatch: Parameters<typeof createSlidesSummaryController>[0]['panelUrlsMatch'];
   refreshSummarizeControl: () => void;
   renderInlineSlidesFallback: () => void;
   renderMarkdown: (markdown: string) => void;
   schedulePanelCacheSync: () => void;
-  setInputMode: (value: "page" | "video") => void;
-  setInputModeOverride: (value: "page" | "video" | null) => void;
+  setInputMode: (value: 'page' | 'video') => void;
+  setInputModeOverride: (value: 'page' | 'video' | null) => void;
   setSlidesBusy: (value: boolean) => void;
   setSlidesRunId: (value: string | null) => void;
   showSlideNotice: (message: string, opts?: { allowRetry?: boolean }) => void;
@@ -67,24 +67,24 @@ export function createSidepanelSlidesRuntime({
   stopSlidesSummaryStream: () => void;
   updateSlideSummaryFromMarkdown: Parameters<
     typeof createSlidesSummaryController
-  >[0]["updateSlideSummaryFromMarkdown"];
+  >[0]['updateSlideSummaryFromMarkdown'];
 }) {
   const slidesSummaryController = createSlidesSummaryController({
-    getToken,
+    clearSummarySource,
     friendlyFetchError,
-    panelUrlsMatch,
-    getPanelState,
-    getUiState,
     getActiveTabUrl,
     getInputMode,
     getInputModeOverride,
-    getSlidesEnabled,
     getLengthValue,
+    getPanelState,
+    getSlidesEnabled,
+    getToken,
     getTranscriptTimedText,
-    clearSummarySource,
-    updateSlideSummaryFromMarkdown,
-    renderMarkdown,
+    getUiState,
+    panelUrlsMatch,
     renderInlineSlidesFallback,
+    renderMarkdown,
+    updateSlideSummaryFromMarkdown,
   });
 
   const applySlidesSummaryMarkdown = (markdown: string) => {
@@ -97,71 +97,71 @@ export function createSidepanelSlidesRuntime({
 
   const slidesHydrator = createSlidesHydrator({
     getToken,
+    onDone: () => {
+      setSlidesBusy(false);
+      if (getPanelPhase() === 'idle') {
+        headerSetStatus('');
+      }
+    },
+    onError: (err) => {
+      const message = friendlyFetchError(err, 'Slides stream failed');
+      showSlideNotice(message, { allowRetry: true });
+      setSlidesBusy(false);
+      if (!isStreaming()) {
+        headerSetStatus('');
+      }
+      void slidesHydrator.hydrateSnapshot('timeout');
+      return message;
+    },
     onSlides: (data) => {
       applySlidesPayload(data);
+    },
+    onSnapshotError: (err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      console.debug('[summarize] slides snapshot failed', message);
     },
     onStatus: (text) => {
       slidesRunRuntime.handleSlidesStatus(text);
     },
-    onError: (err) => {
-      const message = friendlyFetchError(err, "Slides stream failed");
-      showSlideNotice(message, { allowRetry: true });
-      setSlidesBusy(false);
-      if (!isStreaming()) {
-        headerSetStatus("");
-      }
-      void slidesHydrator.hydrateSnapshot("timeout");
-      return message;
-    },
-    onSnapshotError: (err) => {
-      const message = err instanceof Error ? err.message : String(err);
-      console.debug("[summarize] slides snapshot failed", message);
-    },
-    onDone: () => {
-      setSlidesBusy(false);
-      if (getPanelPhase() === "idle") {
-        headerSetStatus("");
-      }
-    },
   });
 
   const slidesRunRuntime = createSlidesRunRuntime({
-    getPanelPhase,
-    getPanelState,
-    getUiState,
     getActiveTabUrl,
     getInputMode,
-    setInputMode,
     getInputModeOverride,
-    setInputModeOverride,
+    getPanelPhase,
+    getPanelState,
     getSlidesEnabled,
-    refreshSummarizeControl,
-    stopSlidesStream,
-    stopSlidesSummaryStream,
-    hideSlideNotice,
-    setSlidesBusy,
-    schedulePanelCacheSync,
-    startSlidesHydrator: (runId) => {
-      void slidesHydrator.start(runId);
-    },
-    startSlidesSummaryController: (payload) => {
-      void slidesSummaryController.start(payload);
-    },
     getSlidesSummaryRunId: () => slidesSummaryController.getRunId(),
+    getUiState,
+    headerSetStatus,
+    hideSlideNotice,
+    refreshSummarizeControl,
+    resetSlidesSummaryState: () => {
+      slidesSummaryController.resetSummaryState();
+    },
+    schedulePanelCacheSync,
+    setInputMode,
+    setInputModeOverride,
+    setSlidesBusy,
+    setSlidesRunId,
+    setSlidesSummaryModel: (value) => {
+      slidesSummaryController.setModel(value);
+    },
     setSlidesSummaryRunId: (value) => {
       slidesSummaryController.setRunId(value);
     },
     setSlidesSummaryUrl: (value) => {
       slidesSummaryController.setUrl(value);
     },
-    resetSlidesSummaryState: () => {
-      slidesSummaryController.resetSummaryState();
+    startSlidesHydrator: (runId) => {
+      void slidesHydrator.start(runId);
     },
-    setSlidesSummaryModel: (value) => {
-      slidesSummaryController.setModel(value);
+    startSlidesSummaryController: (payload) => {
+      void slidesSummaryController.start(payload);
     },
-    setSlidesRunId,
-    headerSetStatus,
+    stopSlidesStream,
+    stopSlidesSummaryStream,
   });
 
   return {

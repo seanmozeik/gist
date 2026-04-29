@@ -1,8 +1,9 @@
-import type { ConvertHtmlToMarkdown } from "@steipete/summarize-core/content";
-import type { LlmTokenUsage } from "./generate-text.js";
-import { generateTextWithModelId } from "./generate-text.js";
-import type { LlmProvider } from "./model-id.js";
-import type { ModelRequestOptions } from "./model-options.js";
+import type { ConvertHtmlToMarkdown } from '@steipete/summarize-core/content';
+
+import type { LlmTokenUsage } from './generate-text.js';
+import { generateTextWithModelId } from './generate-text.js';
+import type { LlmProvider } from './model-id.js';
+import type { ModelRequestOptions } from './model-options.js';
 
 const MAX_HTML_INPUT_CHARACTERS = 200_000;
 
@@ -27,8 +28,8 @@ Rules:
 - Do not invent content.`;
 
   const prompt = `URL: ${url}
-Site: ${siteName ?? "unknown"}
-Title: ${title ?? "unknown"}
+Site: ${siteName ?? 'unknown'}
+Title: ${title ?? 'unknown'}
 
 HTML:
 """
@@ -36,7 +37,7 @@ ${html}
 """
 `;
 
-  return { system, prompt };
+  return { prompt, system };
 }
 
 export function createHtmlToMarkdownConverter({
@@ -85,27 +86,27 @@ export function createHtmlToMarkdownConverter({
     const trimmedHtml =
       html.length > MAX_HTML_INPUT_CHARACTERS ? html.slice(0, MAX_HTML_INPUT_CHARACTERS) : html;
     const { system, prompt } = buildHtmlToMarkdownPrompt({
-      url,
-      title,
-      siteName,
       html: trimmedHtml,
+      siteName,
+      title,
+      url,
     });
 
     const result = await generateTextWithModelId({
-      modelId,
-      apiKeys: { xaiApiKey, googleApiKey, openaiApiKey, anthropicApiKey, openrouterApiKey },
-      forceOpenRouter,
-      openaiBaseUrlOverride,
       anthropicBaseUrlOverride,
-      googleBaseUrlOverride,
-      xaiBaseUrlOverride,
-      forceChatCompletions,
-      requestOptions,
-      prompt: { system, userText: prompt },
-      timeoutMs,
+      apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey, openrouterApiKey, xaiApiKey },
       fetchImpl,
-      retries,
+      forceChatCompletions,
+      forceOpenRouter,
+      googleBaseUrlOverride,
+      modelId,
       onRetry,
+      openaiBaseUrlOverride,
+      prompt: { system, userText: prompt },
+      requestOptions,
+      retries,
+      timeoutMs,
+      xaiBaseUrlOverride,
     });
     onUsage?.({ model: result.canonicalModelId, provider: result.provider, usage: result.usage });
     return result.text;

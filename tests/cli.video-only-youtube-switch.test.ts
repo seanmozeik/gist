@@ -1,8 +1,9 @@
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
 
 function collectStream({ isTTY }: { isTTY: boolean }) {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
@@ -11,35 +12,35 @@ function collectStream({ isTTY }: { isTTY: boolean }) {
   });
   (stream as unknown as { isTTY?: boolean }).isTTY = isTTY;
   (stream as unknown as { columns?: number }).columns = 120;
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 // Deterministic spinner: start writes once, updates are no-ops.
-vi.mock("ora", () => {
-  type MockSpinner = {
+vi.mock('ora', () => {
+  interface MockSpinner {
     isSpinning: boolean;
     text: string;
     stop: () => void;
     clear: () => void;
     start: () => MockSpinner;
     setText: (text: string) => void;
-  };
+  }
 
   const ora = (opts: { text: string; stream: NodeJS.WritableStream }) => {
     const spinner: MockSpinner = {
-      isSpinning: true,
-      text: opts.text,
-      stop() {
-        spinner.isSpinning = false;
-      },
       clear() {},
+      isSpinning: true,
+      setText(text: string) {
+        spinner.text = text;
+      },
       start() {
         opts.stream.write(`- ${spinner.text}`);
         return spinner;
       },
-      setText(text: string) {
-        spinner.text = text;
+      stop() {
+        spinner.isSpinning = false;
       },
+      text: opts.text,
     };
     return spinner;
   };
@@ -48,81 +49,81 @@ vi.mock("ora", () => {
 
 const mocks = vi.hoisted(() => {
   const fetchLinkContent = vi.fn(async (url: string) => {
-    if (url === "https://example.com/video-only") {
+    if (url === 'https://example.com/video-only') {
       return {
-        url,
-        title: "Video Only",
+        content: 'placeholder',
         description: null,
-        siteName: "Example",
-        content: "placeholder",
-        truncated: false,
-        totalCharacters: 11,
-        wordCount: 1,
-        transcriptCharacters: null,
-        transcriptLines: null,
-        transcriptWordCount: null,
-        transcriptSource: null,
-        transcriptMetadata: null,
-        transcriptionProvider: null,
-        transcriptSegments: null,
-        transcriptTimedText: null,
-        mediaDurationSeconds: null,
-        video: { kind: "youtube", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
-        isVideoOnly: true,
         diagnostics: {
-          strategy: "html",
-          cacheMode: "default",
-          cacheStatus: "miss",
-          firecrawl: { attempted: false, used: false, notes: null },
-          markdown: { requested: false, used: false, provider: null, notes: null },
+          cacheMode: 'default',
+          cacheStatus: 'miss',
+          firecrawl: { attempted: false, notes: null, used: false },
+          markdown: { notes: null, provider: null, requested: false, used: false },
+          strategy: 'html',
           transcript: {
-            cacheMode: "default",
-            cacheStatus: "miss",
-            textProvided: false,
-            provider: null,
             attemptedProviders: [],
+            cacheMode: 'default',
+            cacheStatus: 'miss',
             notes: null,
+            provider: null,
+            textProvided: false,
           },
         },
+        isVideoOnly: true,
+        mediaDurationSeconds: null,
+        siteName: 'Example',
+        title: 'Video Only',
+        totalCharacters: 11,
+        transcriptCharacters: null,
+        transcriptLines: null,
+        transcriptMetadata: null,
+        transcriptSegments: null,
+        transcriptSource: null,
+        transcriptTimedText: null,
+        transcriptWordCount: null,
+        transcriptionProvider: null,
+        truncated: false,
+        url,
+        video: { kind: 'youtube', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        wordCount: 1,
       };
     }
 
-    if (url === "https://www.youtube.com/watch?v=dQw4w9WgXcQ") {
+    if (url === 'https://www.youtube.com/watch?v=dQw4w9WgXcQ') {
       return {
-        url,
-        title: "YouTube",
+        content: 'Transcript: hello',
         description: null,
-        siteName: "YouTube",
-        content: "Transcript: hello",
-        truncated: false,
-        totalCharacters: 17,
-        wordCount: 2,
-        transcriptCharacters: 11,
-        transcriptLines: null,
-        transcriptWordCount: 1,
-        transcriptSource: "youtube",
-        transcriptMetadata: null,
-        transcriptionProvider: null,
-        transcriptSegments: null,
-        transcriptTimedText: null,
-        mediaDurationSeconds: null,
-        video: null,
-        isVideoOnly: false,
         diagnostics: {
-          strategy: "youtube",
-          cacheMode: "default",
-          cacheStatus: "miss",
-          firecrawl: { attempted: false, used: false, notes: null },
-          markdown: { requested: false, used: false, provider: null, notes: null },
+          cacheMode: 'default',
+          cacheStatus: 'miss',
+          firecrawl: { attempted: false, notes: null, used: false },
+          markdown: { notes: null, provider: null, requested: false, used: false },
+          strategy: 'youtube',
           transcript: {
-            cacheMode: "default",
-            cacheStatus: "miss",
-            textProvided: true,
-            provider: "youtube",
-            attemptedProviders: ["youtube"],
+            attemptedProviders: ['youtube'],
+            cacheMode: 'default',
+            cacheStatus: 'miss',
             notes: null,
+            provider: 'youtube',
+            textProvided: true,
           },
         },
+        isVideoOnly: false,
+        mediaDurationSeconds: null,
+        siteName: 'YouTube',
+        title: 'YouTube',
+        totalCharacters: 17,
+        transcriptCharacters: 11,
+        transcriptLines: null,
+        transcriptMetadata: null,
+        transcriptSegments: null,
+        transcriptSource: 'youtube',
+        transcriptTimedText: null,
+        transcriptWordCount: 1,
+        transcriptionProvider: null,
+        truncated: false,
+        url,
+        video: null,
+        wordCount: 2,
       };
     }
 
@@ -134,32 +135,32 @@ const mocks = vi.hoisted(() => {
   return { createLinkPreviewClient, fetchLinkContent };
 });
 
-vi.mock("../src/content/index.js", () => ({
+vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runCli } from "../src/run.js";
+import { runCli } from '../src/run.js';
 
-describe("cli video-only pages", () => {
-  it("switches to YouTube transcript when a page is video-only", async () => {
+describe('cli video-only pages', () => {
+  it('switches to YouTube transcript when a page is video-only', async () => {
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: true });
 
     await runCli(
-      ["--extract", "--metrics", "off", "--timeout", "2s", "https://example.com/video-only"],
+      ['--extract', '--metrics', 'off', '--timeout', '2s', 'https://example.com/video-only'],
       {
         env: {},
         fetch: vi.fn() as unknown as typeof fetch,
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       },
     );
 
     expect(mocks.fetchLinkContent).toHaveBeenCalledTimes(2);
-    expect(mocks.fetchLinkContent.mock.calls[0]?.[0]).toBe("https://example.com/video-only");
+    expect(mocks.fetchLinkContent.mock.calls[0]?.[0]).toBe('https://example.com/video-only');
     expect(mocks.fetchLinkContent.mock.calls[1]?.[0]).toBe(
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     );
-    expect(stdout.getText()).toContain("Transcript: hello");
+    expect(stdout.getText()).toContain('Transcript: hello');
   });
 });

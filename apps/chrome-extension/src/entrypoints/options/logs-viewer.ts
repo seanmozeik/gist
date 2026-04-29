@@ -1,17 +1,17 @@
-import { readExtensionLogs } from "../../lib/extension-logs";
+import { readExtensionLogs } from '../../lib/extension-logs';
 
-type LogLevel = "info" | "warn" | "error" | "verbose";
+type LogLevel = 'info' | 'warn' | 'error' | 'verbose';
 
-type LogEntry = {
+interface LogEntry {
   raw: string;
   level: LogLevel;
   time: string;
   event: string;
   details: string;
   isJson: boolean;
-};
+}
 
-export type LogsViewerElements = {
+export interface LogsViewerElements {
   sourceEl: HTMLSelectElement;
   tailEl: HTMLInputElement;
   refreshBtn: HTMLButtonElement;
@@ -22,9 +22,9 @@ export type LogsViewerElements = {
   parsedEl: HTMLInputElement;
   metaEl: HTMLDivElement;
   levelInputs: HTMLInputElement[];
-};
+}
 
-export type LogsViewer = {
+export interface LogsViewer {
   refresh: (opts?: { auto?: boolean }) => Promise<void>;
   render: () => void;
   startAuto: () => void;
@@ -32,50 +32,50 @@ export type LogsViewer = {
   handleTabActivated: () => void;
   handleTabDeactivated: () => void;
   handleTokenChanged: () => void;
-};
+}
 
-export type LogsViewerOptions = {
+export interface LogsViewerOptions {
   elements: LogsViewerElements;
   getToken: () => string;
   isActive: () => boolean;
   fetchImpl?: typeof fetch;
-};
+}
 
-const LOG_LEVELS: LogLevel[] = ["info", "warn", "error", "verbose"];
+const LOG_LEVELS: LogLevel[] = ['info', 'warn', 'error', 'verbose'];
 const LOG_LEVEL_LABELS: Record<LogLevel, string> = {
-  info: "INFO",
-  warn: "WARN",
-  error: "ERROR",
-  verbose: "VERBOSE",
+  error: 'ERROR',
+  info: 'INFO',
+  verbose: 'VERBOSE',
+  warn: 'WARN',
 };
 const LOG_LEVEL_ALIASES: Record<string, LogLevel> = {
-  info: "info",
-  warn: "warn",
-  warning: "warn",
-  error: "error",
-  err: "error",
-  debug: "verbose",
-  trace: "verbose",
-  verbose: "verbose",
+  debug: 'verbose',
+  err: 'error',
+  error: 'error',
+  info: 'info',
+  trace: 'verbose',
+  verbose: 'verbose',
+  warn: 'warn',
+  warning: 'warn',
 };
 const LOG_DETAIL_IGNORE = new Set([
-  "date",
-  "event",
-  "level",
-  "loglevel",
-  "loglevelname",
-  "meta",
-  "name",
-  "hostname",
-  "parentNames",
-  "pid",
-  "runtime",
-  "runtimeVersion",
+  'date',
+  'event',
+  'level',
+  'loglevel',
+  'loglevelname',
+  'meta',
+  'name',
+  'hostname',
+  'parentNames',
+  'pid',
+  'runtime',
+  'runtimeVersion',
 ]);
 
 const formatBytes = (bytes: number): string => {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB", "TB"];
+  if (!Number.isFinite(bytes) || bytes <= 0) {return '0 B';}
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let value = bytes;
   let unitIndex = 0;
   while (value >= 1024 && unitIndex < units.length - 1) {
@@ -87,91 +87,84 @@ const formatBytes = (bytes: number): string => {
 };
 
 const formatRelativeTime = (timeMs: number): string => {
-  if (!Number.isFinite(timeMs)) return "";
+  if (!Number.isFinite(timeMs)) {return '';}
   const diffMs = Date.now() - timeMs;
-  if (!Number.isFinite(diffMs)) return "";
+  if (!Number.isFinite(diffMs)) {return '';}
   const diffSeconds = Math.max(0, Math.round(diffMs / 1000));
-  if (diffSeconds < 10) return "just now";
-  if (diffSeconds < 60) return `${diffSeconds}s ago`;
+  if (diffSeconds < 10) {return 'just now';}
+  if (diffSeconds < 60) {return `${diffSeconds}s ago`;}
   const diffMinutes = Math.round(diffSeconds / 60);
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffMinutes < 60) {return `${diffMinutes}m ago`;}
   const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffHours < 24) {return `${diffHours}h ago`;}
   const diffDays = Math.round(diffHours / 24);
   return `${diffDays}d ago`;
 };
 
 const formatLogTime = (value: unknown): string => {
-  if (typeof value !== "string") return "";
+  if (typeof value !== 'string') {return '';}
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "";
-  return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  if (Number.isNaN(parsed.getTime())) {return '';}
+  return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
 
 const normalizeLogLevel = (value: unknown): LogLevel => {
-  const raw = typeof value === "string" ? value.toLowerCase().trim() : "";
-  return LOG_LEVEL_ALIASES[raw] ?? "info";
+  const raw = typeof value === 'string' ? value.toLowerCase().trim() : '';
+  return LOG_LEVEL_ALIASES[raw] ?? 'info';
 };
 
 const formatDetailValue = (value: unknown): string => {
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === 'string') {return value;}
+  if (typeof value === 'number' || typeof value === 'boolean') {return String(value);}
   if (Array.isArray(value)) {
-    if (value.length === 0) return "[]";
+    if (value.length === 0) {return '[]';}
     const preview = value.slice(0, 3).map((item) => String(item));
-    return value.length > 3 ? `${preview.join(", ")} …` : preview.join(", ");
+    return value.length > 3 ? `${preview.join(', ')} …` : preview.join(', ');
   }
-  return "";
+  return '';
 };
 
 const buildLogDetails = (obj: Record<string, unknown>): string => {
   const details: string[] = [];
   for (const [key, value] of Object.entries(obj)) {
     const normalized = key.toLowerCase();
-    if (LOG_DETAIL_IGNORE.has(normalized)) continue;
-    if (value == null) continue;
-    if (typeof value === "object" && !Array.isArray(value)) continue;
+    if (LOG_DETAIL_IGNORE.has(normalized)) {continue;}
+    if (value == null) {continue;}
+    if (typeof value === 'object' && !Array.isArray(value)) {continue;}
     const formatted = formatDetailValue(value);
-    if (!formatted) continue;
+    if (!formatted) {continue;}
     details.push(`${key}=${formatted}`);
   }
-  return details.join(" · ");
+  return details.join(' · ');
 };
 
 const parseLogLine = (line: string): LogEntry | null => {
   const trimmed = line.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+  if (!trimmed) {return null;}
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
     try {
       const obj = JSON.parse(trimmed) as Record<string, unknown>;
-      const level = normalizeLogLevel(obj.logLevelName ?? obj.level ?? obj.logLevel) ?? "info";
+      const level = normalizeLogLevel(obj.logLevelName ?? obj.level ?? obj.logLevel) ?? 'info';
       return {
-        raw: trimmed,
-        level,
-        time: formatLogTime(obj.date),
-        event: typeof obj.event === "string" ? obj.event : "",
         details: buildLogDetails(obj),
+        event: typeof obj.event === 'string' ? obj.event : '',
         isJson: true,
+        level,
+        raw: trimmed,
+        time: formatLogTime(obj.date),
       };
     } catch {
-      // fall through to raw handling
+      // Fall through to raw handling
     }
   }
   const lower = trimmed.toLowerCase();
   const level =
-    lower.includes("error") || lower.startsWith("err")
-      ? "error"
-      : lower.includes("warn")
-        ? "warn"
-        : "info";
-  return {
-    raw: trimmed,
-    level,
-    time: "",
-    event: "",
-    details: "",
-    isJson: false,
-  };
+    lower.includes('error') || lower.startsWith('err')
+      ? 'error'
+      : (lower.includes('warn')
+        ? 'warn'
+        : 'info');
+  return { details: '', event: '', isJson: false, level, raw: trimmed, time: '' };
 };
 
 const isAtBottom = (el: HTMLElement) => el.scrollTop + el.clientHeight >= el.scrollHeight - 6;
@@ -182,7 +175,7 @@ const scrollToBottom = (el: HTMLElement) => {
 
 const normalizeTailCount = (value: string) => {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 800;
+  if (!Number.isFinite(parsed)) {return 800;}
   return Math.max(100, Math.min(5000, Math.round(parsed)));
 };
 
@@ -209,7 +202,7 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
 
   const setMeta = (text: string) => {
     metaEl.textContent = text;
-    metaEl.title = "";
+    metaEl.title = '';
   };
 
   const setMetaInfo = (info: {
@@ -219,19 +212,19 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
     warning?: string;
   }) => {
     const summaryParts: string[] = [];
-    if (typeof info.sizeBytes === "number") {
+    if (typeof info.sizeBytes === 'number') {
       summaryParts.push(`size ${formatBytes(info.sizeBytes)}`);
     }
-    if (typeof info.mtimeMs === "number") {
+    if (typeof info.mtimeMs === 'number') {
       const relative = formatRelativeTime(info.mtimeMs);
-      if (relative) summaryParts.push(`updated ${relative}`);
+      if (relative) {summaryParts.push(`updated ${relative}`);}
       metaEl.title = new Date(info.mtimeMs).toLocaleString();
     } else {
-      metaEl.title = "";
+      metaEl.title = '';
     }
-    if (info.truncated) summaryParts.push("tail truncated");
-    if (info.warning) summaryParts.push(info.warning);
-    setMeta(summaryParts.join(" · "));
+    if (info.truncated) {summaryParts.push('tail truncated');}
+    if (info.warning) {summaryParts.push(info.warning);}
+    setMeta(summaryParts.join(' · '));
   };
 
   const render = () => {
@@ -248,8 +241,8 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
     if (!parsedEnabled) {
       tableEl.hidden = true;
       rawEl.hidden = false;
-      rawEl.textContent = lines.join("\n");
-      if (stickToBottom) scrollToBottom(outputEl);
+      rawEl.textContent = lines.join('\n');
+      if (stickToBottom) {scrollToBottom(outputEl);}
       return;
     }
 
@@ -259,40 +252,40 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
     const rows = document.createDocumentFragment();
     let rendered = 0;
     for (const entry of entries) {
-      if (!activeLevels.has(entry.level)) continue;
-      const row = document.createElement("tr");
-      const timeCell = document.createElement("td");
-      timeCell.textContent = entry.time || "—";
-      const levelCell = document.createElement("td");
+      if (!activeLevels.has(entry.level)) {continue;}
+      const row = document.createElement('tr');
+      const timeCell = document.createElement('td');
+      timeCell.textContent = entry.time || '—';
+      const levelCell = document.createElement('td');
       levelCell.textContent = LOG_LEVEL_LABELS[entry.level];
       levelCell.className = `level ${entry.level}`;
-      const eventCell = document.createElement("td");
-      eventCell.textContent = entry.event || (entry.isJson ? "log" : "raw");
-      const detailCell = document.createElement("td");
+      const eventCell = document.createElement('td');
+      eventCell.textContent = entry.event || (entry.isJson ? 'log' : 'raw');
+      const detailCell = document.createElement('td');
       detailCell.textContent = entry.details || entry.raw;
-      detailCell.className = "details";
+      detailCell.className = 'details';
       row.append(timeCell, levelCell, eventCell, detailCell);
       rows.append(row);
       rendered += 1;
     }
     if (rendered === 0) {
-      const row = document.createElement("tr");
-      const cell = document.createElement("td");
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
       cell.colSpan = 4;
-      cell.textContent = "No matching log entries.";
-      cell.className = "details";
+      cell.textContent = 'No matching log entries.';
+      cell.className = 'details';
       row.append(cell);
       rows.append(row);
     }
     body.replaceChildren(rows);
-    if (stickToBottom) scrollToBottom(outputEl);
+    if (stickToBottom) {scrollToBottom(outputEl);}
   };
 
   const setLines = (nextLines: string[]) => {
     lines = nextLines;
     entries = nextLines
       .map((line) => parseLogLine(line))
-      .filter((entry): entry is LogEntry => !!entry);
+      .filter((entry): entry is LogEntry => Boolean(entry));
     render();
   };
 
@@ -301,12 +294,12 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
       needsRefresh = true;
       return;
     }
-    if (!isActive()) return;
-    const source = sourceEl.value.trim() || "daemon";
-    const isExtensionSource = source === "extension";
+    if (!isActive()) {return;}
+    const source = sourceEl.value.trim() || 'daemon';
+    const isExtensionSource = source === 'extension';
     const token = getToken().trim();
     if (!isExtensionSource && !token) {
-      setMeta("Add token to load daemon logs.");
+      setMeta('Add token to load daemon logs.');
       setLines([]);
       needsRefresh = true;
       return;
@@ -316,18 +309,18 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
     const tail = normalizeTailCount(tailEl.value);
     tailEl.value = String(tail);
     if (!opts.auto) {
-      setMeta("Loading logs…");
+      setMeta('Loading logs…');
     }
     try {
       if (isExtensionSource) {
         const result = await readExtensionLogs(tail);
         if (!result.ok) {
-          setMeta("Extension logs unavailable.");
+          setMeta('Extension logs unavailable.');
           setLines([]);
           return;
         }
         if (!result.lines.length) {
-          setMeta("No logs returned.");
+          setMeta('No logs returned.');
           setLines([]);
           return;
         }
@@ -336,9 +329,9 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
         return;
       }
 
-      const url = new URL("http://127.0.0.1:8787/v1/logs");
-      url.searchParams.set("source", source);
-      url.searchParams.set("tail", String(tail));
+      const url = new URL('http://127.0.0.1:8787/v1/logs');
+      url.searchParams.set('source', source);
+      url.searchParams.set('tail', String(tail));
       const res = await (fetchImpl ?? fetch)(url.toString(), {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -358,7 +351,7 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
         warning?: string;
       };
       if (!json?.ok || !Array.isArray(json.lines)) {
-        setMeta("No logs returned.");
+        setMeta('No logs returned.');
         setLines([]);
         return;
       }
@@ -378,21 +371,21 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
   };
 
   const stopAuto = () => {
-    if (autoTimer) window.clearInterval(autoTimer);
+    if (autoTimer) {window.clearInterval(autoTimer);}
     autoTimer = 0;
   };
 
   const startAuto = () => {
     stopAuto();
     autoTimer = window.setInterval(() => {
-      if (!isActive()) return;
+      if (!isActive()) {return;}
       void refresh({ auto: true });
     }, 2000);
   };
 
   const handleTabActivated = () => {
     void refresh();
-    if (autoEl.checked) startAuto();
+    if (autoEl.checked) {startAuto();}
   };
 
   const handleTabDeactivated = () => {
@@ -407,17 +400,17 @@ export function createLogsViewer(options: LogsViewerOptions): LogsViewer {
     }
   };
 
-  refreshBtn.addEventListener("click", () => {
+  refreshBtn.addEventListener('click', () => {
     void refresh();
   });
 
   return {
+    handleTabActivated,
+    handleTabDeactivated,
+    handleTokenChanged,
     refresh,
     render,
     startAuto,
     stopAuto,
-    handleTabActivated,
-    handleTabDeactivated,
-    handleTokenChanged,
   };
 }

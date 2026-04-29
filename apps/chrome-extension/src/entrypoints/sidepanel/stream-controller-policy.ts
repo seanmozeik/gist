@@ -1,4 +1,4 @@
-import { mergeStreamingChunk } from "../../lib/runtime-contracts";
+import { mergeStreamingChunk } from '../../lib/runtime-contracts';
 
 export function accumulateSummarizeChunk(markdown: string, chunk: string): string {
   return mergeStreamingChunk(markdown, chunk).next;
@@ -17,7 +17,7 @@ export function shouldSurfaceStreamingStatus({
 }): boolean {
   const trimmed = statusText.trim().toLowerCase();
   const allowDuringStreaming =
-    trimmed.startsWith("slides:") || trimmed.startsWith("slides ") || trimmed.startsWith("slide:");
+    trimmed.startsWith('slides:') || trimmed.startsWith('slides ') || trimmed.startsWith('slide:');
   return !streamedAnyNonWhitespace || allowDuringStreaming;
 }
 
@@ -26,10 +26,10 @@ export function getTerminalStreamError(args: {
   streamedAnyNonWhitespace: boolean;
 }): Error | null {
   if (!args.sawDone) {
-    return new Error("Stream ended unexpectedly. The daemon may have stopped.");
+    return new Error('Stream ended unexpectedly. The daemon may have stopped.');
   }
   if (!args.streamedAnyNonWhitespace) {
-    return new Error("Model returned no output.");
+    return new Error('Model returned no output.');
   }
   return null;
 }

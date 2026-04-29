@@ -1,77 +1,78 @@
-import { describe, expect, it } from "vitest";
-import { buildUrlJsonEnv, buildUrlJsonInput } from "../src/run/flows/url/summary-json.js";
+import { describe, expect, it } from 'vitest';
 
-describe("run url summary json", () => {
-  it("builds preset-length input payloads", () => {
+import { buildUrlJsonEnv, buildUrlJsonInput } from '../src/run/flows/url/summary-json.js';
+
+describe('run url summary json', () => {
+  it('builds preset-length input payloads', () => {
     const input = buildUrlJsonInput({
-      url: "https://example.com",
-      effectiveMarkdownMode: "readability",
-      modelLabel: "openai/gpt-5.4",
+      effectiveMarkdownMode: 'readability',
       flags: {
-        timeoutMs: 42_000,
-        youtubeMode: "captions",
-        firecrawlMode: "auto",
-        format: "markdown",
-        transcriptTimestamps: true,
-        lengthArg: { kind: "preset", preset: "medium" },
+        firecrawlMode: 'auto',
+        format: 'markdown',
+        lengthArg: { kind: 'preset', preset: 'medium' },
         maxOutputTokensArg: 512,
-        outputLanguage: { kind: "code", value: "de" },
+        outputLanguage: { kind: 'code', value: 'de' },
+        timeoutMs: 42_000,
+        transcriptTimestamps: true,
+        youtubeMode: 'captions',
       },
+      modelLabel: 'openai/gpt-5.4',
+      url: 'https://example.com',
     } as never);
 
     expect(input).toEqual({
-      kind: "url",
-      url: "https://example.com",
-      timeoutMs: 42_000,
-      youtube: "captions",
-      firecrawl: "auto",
-      format: "markdown",
-      markdown: "readability",
-      timestamps: true,
-      length: { kind: "preset", preset: "medium" },
+      firecrawl: 'auto',
+      format: 'markdown',
+      kind: 'url',
+      language: { label: undefined, mode: 'fixed', tag: undefined },
+      length: { kind: 'preset', preset: 'medium' },
+      markdown: 'readability',
       maxOutputTokens: 512,
-      model: "openai/gpt-5.4",
-      language: { mode: "fixed", label: undefined, tag: undefined },
+      model: 'openai/gpt-5.4',
+      timeoutMs: 42_000,
+      timestamps: true,
+      url: 'https://example.com',
+      youtube: 'captions',
     });
   });
 
-  it("builds char-length input payloads and env booleans", () => {
+  it('builds char-length input payloads and env booleans', () => {
     const input = buildUrlJsonInput({
-      url: "https://example.com/page",
-      effectiveMarkdownMode: "off",
-      modelLabel: null,
+      effectiveMarkdownMode: 'off',
       flags: {
-        timeoutMs: 1_000,
-        youtubeMode: "auto",
-        firecrawlMode: "off",
-        format: "text",
-        transcriptTimestamps: false,
-        lengthArg: { kind: "chars", maxCharacters: 9000 },
+        firecrawlMode: 'off',
+        format: 'text',
+        lengthArg: { kind: 'chars', maxCharacters: 9000 },
         maxOutputTokensArg: null,
-        outputLanguage: { kind: "auto" },
+        outputLanguage: { kind: 'auto' },
+        timeoutMs: 1_000,
+        transcriptTimestamps: false,
+        youtubeMode: 'auto',
       },
+      modelLabel: null,
+      url: 'https://example.com/page',
     } as never);
-    expect(input.length).toEqual({ kind: "chars", maxCharacters: 9000 });
-    expect(input.language).toEqual({ mode: "auto" });
+    expect(input.length).toEqual({ kind: 'chars', maxCharacters: 9000 });
+    expect(input.language).toEqual({ mode: 'auto' });
 
     expect(
       buildUrlJsonEnv({
-        xaiApiKey: "x",
+        anthropicConfigured: true,
         apiKey: null,
-        openrouterApiKey: "or",
         apifyToken: null,
         firecrawlConfigured: true,
         googleConfigured: false,
-        anthropicConfigured: true,
+        openrouterApiKey: 'or',
+        xaiApiKey: 'x',
       }),
     ).toEqual({
-      hasXaiKey: true,
-      hasOpenAIKey: false,
-      hasOpenRouterKey: true,
+      hasAnthropicKey: true,
       hasApifyToken: false,
       hasFirecrawlKey: true,
       hasGoogleKey: false,
-      hasAnthropicKey: true,
+      hasOpenAIKey: false,
+      hasOpenRouterKey: true,
+      hasXaiKey: true,
     });
   });
 });

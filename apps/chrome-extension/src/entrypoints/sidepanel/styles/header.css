@@ -77,7 +77,7 @@ header {
   position: relative;
 }
 
-.summarizeButton[data-busy="true"] {
+.summarizeButton[data-busy='true'] {
   pointer-events: none;
 }
 
@@ -86,7 +86,7 @@ header {
 }
 
 .summarizeButton.isDropdown::after {
-  content: "";
+  content: '';
   width: 6px;
   height: 6px;
   border-right: 2px solid currentColor;
@@ -129,7 +129,7 @@ header {
   background: transparent;
 }
 
-.summarizeSlidesToggle button[data-active="true"] {
+.summarizeSlidesToggle button[data-active='true'] {
   color: var(--text);
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
@@ -152,12 +152,12 @@ header {
   stroke-width: 1.6;
 }
 
-.summarizeSlideToggle[data-active="true"] {
+.summarizeSlideToggle[data-active='true'] {
   border-color: color-mix(in srgb, var(--accent) 65%, var(--btn-border));
   background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
-.summarizeSlideToggle[data-busy="true"] {
+.summarizeSlideToggle[data-busy='true'] {
   position: relative;
 }
 

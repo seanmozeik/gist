@@ -2,20 +2,20 @@ export type SeekResponse = { ok: true } | { ok: false; error: string };
 
 export function seekToSecondsInDocument(doc: Document, seconds: number): SeekResponse {
   if (!Number.isFinite(seconds) || seconds < 0) {
-    return { ok: false, error: "Invalid timestamp" };
+    return { error: 'Invalid timestamp', ok: false };
   }
-  const media = doc.querySelector("video, audio") as HTMLMediaElement | null;
+  const media = doc.querySelector('video, audio') as HTMLMediaElement | null;
   if (media) {
     try {
       media.currentTime = seconds;
       void media.play().catch(() => {});
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : "Seek failed" };
+      return { error: error instanceof Error ? error.message : 'Seek failed', ok: false };
     }
   }
 
-  const player = doc.getElementById("movie_player") as
+  const player = doc.querySelector('#movie_player') as
     | ((HTMLElement & { seekTo?: (time: number, allowSeekAhead?: boolean) => void }) & {
         getPlayerState?: () => number;
         pauseVideo?: () => void;
@@ -25,14 +25,14 @@ export function seekToSecondsInDocument(doc: Document, seconds: number): SeekRes
   if (player?.seekTo) {
     try {
       player.seekTo(seconds, true);
-      if (typeof player.playVideo === "function") {
+      if (typeof player.playVideo === 'function') {
         player.playVideo();
       }
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : "Seek failed" };
+      return { error: error instanceof Error ? error.message : 'Seek failed', ok: false };
     }
   }
 
-  return { ok: false, error: "No media element found" };
+  return { error: 'No media element found', ok: false };
 }

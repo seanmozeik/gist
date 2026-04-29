@@ -1,5 +1,5 @@
 ---
-summary: "Release checklist + Homebrew/core verify step."
+summary: 'Release checklist + Homebrew/core verify step.'
 ---
 
 # Releasing

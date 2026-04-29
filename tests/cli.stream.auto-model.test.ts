@@ -1,88 +1,85 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { Writable } from "node:stream";
-import { describe, expect, it, vi } from "vitest";
-import { runCli } from "../src/run.js";
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import { runCli } from '../src/run.js';
 
 const htmlResponse = (html: string, status = 200) =>
-  new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html" },
-  });
+  new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 function collectStream() {
-  let text = "";
+  let text = '';
   const stream = new Writable({
     write(chunk, _encoding, callback) {
       text += chunk.toString();
       callback();
     },
   });
-  return { stream, getText: () => text };
+  return { getText: () => text, stream };
 }
 
 function createTextStream(chunks: string[]): AsyncIterable<string> {
   return {
     async *[Symbol.asyncIterator]() {
-      for (const chunk of chunks) yield chunk;
+      for (const chunk of chunks) {yield chunk;}
     },
   };
 }
 
-vi.mock("../src/llm/generate-text.js", () => ({
+vi.mock('../src/llm/generate-text.js', () => ({
   generateTextWithModelId: vi.fn(async () => {
-    throw new Error("unexpected non-streaming call");
+    throw new Error('unexpected non-streaming call');
   }),
   streamTextWithModelId: vi.fn(async () => ({
-    textStream: createTextStream(["O", "K"]),
-    canonicalModelId: "openai/gpt-5.2",
-    provider: "openai",
-    usage: Promise.resolve({ promptTokens: 1, completionTokens: 2, totalTokens: 3 }),
+    canonicalModelId: 'openai/gpt-5.2',
     lastError: () => null,
+    provider: 'openai',
+    textStream: createTextStream(['O', 'K']),
+    usage: Promise.resolve({ promptTokens: 1, completionTokens: 2, totalTokens: 3 }),
   })),
 }));
 
-describe("cli streaming with auto model selection", () => {
-  it("streams when using an auto preset and --stream on", async () => {
-    const root = mkdtempSync(join(tmpdir(), "summarize-stream-auto-"));
-    mkdirSync(join(root, ".summarize"), { recursive: true });
-    mkdirSync(join(root, ".summarize", "cache"), { recursive: true });
+describe('cli streaming with auto model selection', () => {
+  it('streams when using an auto preset and --stream on', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'summarize-stream-auto-'));
+    mkdirSync(join(root, '.summarize'), { recursive: true });
+    mkdirSync(join(root, '.summarize', 'cache'), { recursive: true });
 
     writeFileSync(
-      join(root, ".summarize", "cache", "litellm-model_prices_and_context_window.json"),
+      join(root, '.summarize', 'cache', 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
-        "gpt-5.2": { input_cost_per_token: 0.00000175, output_cost_per_token: 0.000014 },
+        'gpt-5.2': { input_cost_per_token: 0.000_001_75, output_cost_per_token: 0.000_014 },
       }),
-      "utf8",
+      'utf8',
     );
     writeFileSync(
-      join(root, ".summarize", "cache", "litellm-model_prices_and_context_window.meta.json"),
+      join(root, '.summarize', 'cache', 'litellm-model_prices_and_context_window.meta.json'),
       JSON.stringify({ fetchedAtMs: Date.now() }),
-      "utf8",
+      'utf8',
     );
 
     writeFileSync(
-      join(root, ".summarize", "config.json"),
+      join(root, '.summarize', 'config.json'),
       JSON.stringify({
-        models: {
-          free: { mode: "auto", rules: [{ candidates: ["openai/gpt-5.2"] }] },
-        },
+        models: { free: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'] }] } },
       }),
-      "utf8",
+      'utf8',
     );
 
-    const globalFetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
-      throw new Error("unexpected LiteLLM catalog fetch");
+    const globalFetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('unexpected LiteLLM catalog fetch');
     });
 
     const html =
-      "<!doctype html><html><head><title>Hello</title></head>" +
-      "<body><article><p>Hi</p></article></body></html>";
+      '<!doctype html><html><head><title>Hello</title></head>' +
+      '<body><article><p>Hi</p></article></body></html>';
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === "https://example.com") return htmlResponse(html);
+      const url = typeof input === 'string' ? input : input.url;
+      if (url === 'https://example.com') {return htmlResponse(html);}
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -90,18 +87,18 @@ describe("cli streaming with auto model selection", () => {
     const stderr = collectStream();
 
     await runCli(
-      ["--model", "free", "--timeout", "2s", "--stream", "on", "--plain", "https://example.com"],
+      ['--model', 'free', '--timeout', '2s', '--stream', 'on', '--plain', 'https://example.com'],
       {
-        env: { HOME: root, OPENAI_API_KEY: "test" },
+        env: { HOME: root, OPENAI_API_KEY: 'test' },
         fetch: fetchMock as unknown as typeof fetch,
-        stdout: stdout.stream,
         stderr: stderr.stream,
+        stdout: stdout.stream,
       },
     );
 
-    expect(stdout.getText()).toContain("OK");
+    expect(stdout.getText()).toContain('OK');
 
-    const { streamTextWithModelId } = await import("../src/llm/generate-text.js");
+    const { streamTextWithModelId } = await import('../src/llm/generate-text.js');
     const streamMock = streamTextWithModelId as unknown as ReturnType<typeof vi.fn>;
     expect(streamMock).toHaveBeenCalled();
 

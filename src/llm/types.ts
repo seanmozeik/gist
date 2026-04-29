@@ -1,5 +1,5 @@
-export type LlmTokenUsage = {
+export interface LlmTokenUsage {
   promptTokens: number | null;
   completionTokens: number | null;
   totalTokens: number | null;
-};
+}
