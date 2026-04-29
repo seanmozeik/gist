@@ -49,7 +49,8 @@ export function buildAutoModelAttempts(options: {
   // Add local sidecar attempt if configured
   const localBaseUrl =
     (globalThis as unknown as { __SIDECAR_BASE_URL?: string }).__SIDECAR_BASE_URL ??
-    options.env?.SUMMARIZE_LOCAL_BASE_URL;
+    options.env?.SUMMARIZE_LOCAL_BASE_URL ??
+    options.config?.local?.baseUrl;
   if (localBaseUrl) {
     attempts.push({
       forceOpenRouter: false,

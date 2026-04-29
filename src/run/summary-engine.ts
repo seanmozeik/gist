@@ -103,7 +103,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     }
 
     if (attempt.requiredEnv === null) {
-      return `Local sidecar not configured for model ${attempt.userModelId}. Set SUMMARIZE_LOCAL_BASE_URL.`;
+      return `Local sidecar not configured for model ${attempt.userModelId}. Set SUMMARIZE_LOCAL_BASE_URL or ~/.summarize/config.json local.baseUrl.`;
     }
 
     return `Missing ${attempt.requiredEnv} for model ${attempt.userModelId}. Set the env var or choose a different --model.`;

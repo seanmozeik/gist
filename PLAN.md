@@ -177,6 +177,7 @@ Files: `extract.ts`, `fetch-options.ts`, `flow.ts`, `markdown.ts`, `summary.ts`,
 - Display help text, accept model selection via `--model`
 
 **Local sidecar tested end-to-end:** `local/qwen-smol` completes successfully with reasoning models. Key fixes applied:
+
 - Wired `localBaseUrl` through runner-plan → summary-engine → generate-text (was missing)
 - Removed max_tokens cap for local models (prevented runaway thinking but also cut off responses)
 - Removed hardcoded `reasoningEffort: 'medium'` from local model defaults (let model use built-in level)
