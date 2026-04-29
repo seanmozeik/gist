@@ -108,7 +108,9 @@ describe('cli main wiring', async () => {
     expect(handler).toBeTypeOf('function');
 
     const error = Object.assign(new Error('nope'), { code: 'NOPE' });
-    expect(() =>{  (handler as (error: unknown) => void)(error); }).toThrow(error);
+    expect(() => {
+      (handler as (error: unknown) => void)(error);
+    }).toThrow(error);
   });
 
   it('prints stack and cause when verbose', async () => {
@@ -252,8 +254,11 @@ describe('cli main wiring', async () => {
       expect(process.env.DOTENV_ONLY).toBeUndefined();
     } finally {
       cwdSpy.mockRestore();
-      if (typeof previous === 'string') {process.env.SUMMARIZE_DOTENV_TEST_KEY = previous;}
-      else {delete process.env.SUMMARIZE_DOTENV_TEST_KEY;}
+      if (typeof previous === 'string') {
+        process.env.SUMMARIZE_DOTENV_TEST_KEY = previous;
+      } else {
+        delete process.env.SUMMARIZE_DOTENV_TEST_KEY;
+      }
     }
   });
 });

@@ -12,7 +12,11 @@ async function importPodcastProvider({ spawnPlan }: { spawnPlan: SpawnPlan }) {
         const proc = {
           on(event: string, handler: (value?: unknown) => void) {
             handlers.set(event, handler);
-            if (event === 'error') {queueMicrotask(() =>{  handler(new Error('spawn ENOENT')); });}
+            if (event === 'error') {
+              queueMicrotask(() => {
+                handler(new Error('spawn ENOENT'));
+              });
+            }
             return proc;
           },
           stdout: { on: () => proc, setEncoding: () => proc },
@@ -29,13 +33,19 @@ async function importPodcastProvider({ spawnPlan }: { spawnPlan: SpawnPlan }) {
         on(event: string, handler: (value?: unknown) => void) {
           handlers.set(event, handler);
           if (spawnPlan === 'ffmpeg-missing' && event === 'error') {
-            queueMicrotask(() =>{  handler(new Error('spawn ENOENT')); });
+            queueMicrotask(() => {
+              handler(new Error('spawn ENOENT'));
+            });
           }
           if (spawnPlan === 'ffmpeg-ok' && event === 'close') {
-            queueMicrotask(() =>{  handler(0); });
+            queueMicrotask(() => {
+              handler(0);
+            });
           }
           if (spawnPlan === 'ffmpeg-missing' && event === 'close') {
-            queueMicrotask(() =>{  handler(1); });
+            queueMicrotask(() => {
+              handler(1);
+            });
           }
           return proc;
         },

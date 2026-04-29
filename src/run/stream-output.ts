@@ -17,9 +17,13 @@ export function createStreamOutputGate({
   let plainFlushedLen = 0;
 
   const ensureCleared = () => {
-    if (cleared) {return;}
+    if (cleared) {
+      return;
+    }
     clearProgressForStdout();
-    if (richTty) {stdout.write('\n');}
+    if (richTty) {
+      stdout.write('\n');
+    }
     cleared = true;
   };
 
@@ -32,7 +36,9 @@ export function createStreamOutputGate({
   const handleChunk = (streamed: string, prevStreamed: string) => {
     if (plainFlushedLen === 0) {
       const match = /^\n+/.exec(streamed);
-      if (match) {plainFlushedLen = match[0].length;}
+      if (match) {
+        plainFlushedLen = match[0].length;
+      }
     }
 
     if (outputMode === 'line') {

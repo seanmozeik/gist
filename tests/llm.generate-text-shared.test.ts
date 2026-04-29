@@ -11,7 +11,7 @@ import {
 describe('generate-text shared helpers', () => {
   it('builds image prompt contexts and rejects unsupported attachments', () => {
     const imageContext = promptToContext({
-      attachments: [{ kind: 'image', mediaType: 'image/png', bytes: new Uint8Array([1, 2, 3]) }],
+      attachments: [{ bytes: new Uint8Array([1, 2, 3]), kind: 'image', mediaType: 'image/png' }],
       userText: 'look',
     });
 
@@ -20,8 +20,8 @@ describe('generate-text shared helpers', () => {
     expect(() =>
       promptToContext({
         attachments: [
-          { kind: 'image', mediaType: 'image/png', bytes: new Uint8Array([1]) },
-          { kind: 'image', mediaType: 'image/png', bytes: new Uint8Array([2]) },
+          { bytes: new Uint8Array([1]), kind: 'image', mediaType: 'image/png' },
+          { bytes: new Uint8Array([2]), kind: 'image', mediaType: 'image/png' },
         ],
         userText: 'bad',
       }),

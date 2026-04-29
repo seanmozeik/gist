@@ -7,11 +7,19 @@ export function supportsColor(
   env: Record<string, string | undefined>,
 ): boolean {
   // Explicit override always wins.
-  if (env.FORCE_COLOR) {return env.FORCE_COLOR !== '0';}
-  if (env.NO_COLOR) {return false;}
-  if (!isRichTty(stream)) {return false;}
+  if (env.FORCE_COLOR) {
+    return env.FORCE_COLOR !== '0';
+  }
+  if (env.NO_COLOR) {
+    return false;
+  }
+  if (!isRichTty(stream)) {
+    return false;
+  }
   const term = env.TERM?.toLowerCase();
-  if (!term || term === 'dumb') {return false;}
+  if (!term || term === 'dumb') {
+    return false;
+  }
   return true;
 }
 
@@ -34,7 +42,7 @@ export function terminalHeight(
   stream: NodeJS.WritableStream,
   env: Record<string, string | undefined>,
 ): number {
-  const {rows} = (stream as unknown as { rows?: unknown });
+  const { rows } = stream as unknown as { rows?: unknown };
   if (typeof rows === 'number' && Number.isFinite(rows) && rows > 0) {
     return Math.floor(rows);
   }
@@ -60,6 +68,8 @@ export function markdownRenderWidth(
 }
 
 export function ansi(code: string, input: string, enabled: boolean): string {
-  if (!enabled) {return input;}
+  if (!enabled) {
+    return input;
+  }
   return `\u001B[${code}m${input}\u001B[0m`;
 }

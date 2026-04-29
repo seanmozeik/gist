@@ -318,7 +318,10 @@ describe('slides text helpers', () => {
       resolveSlideTextBudget({ lengthArg: { kind: 'chars', maxCharacters: 50 }, slideCount: 1 }),
     ).toBe(80);
     expect(
-      resolveSlideTextBudget({ lengthArg: { kind: 'chars', maxCharacters: 20_000 }, slideCount: 1 }),
+      resolveSlideTextBudget({
+        lengthArg: { kind: 'chars', maxCharacters: 20_000 },
+        slideCount: 1,
+      }),
     ).toBe(900);
   });
 

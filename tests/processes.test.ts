@@ -17,7 +17,7 @@ const createObserver = (capture: {
   register: (info: ProcessRegistration) => {
     capture.registrations.push(info);
     return {
-      appendOutput: (stream, line) => capture.outputs.push({ stream, line }),
+      appendOutput: (stream, line) => capture.outputs.push({ line, stream }),
       finish: () => {},
       id: info.command,
       setPid: () => {},
@@ -51,7 +51,7 @@ describe('process tracking', () => {
 
   it('captures execFile output', async () => {
     const capture = {
-      outputs: [] as Array<{ stream: 'stdout' | 'stderr'; line: string }>,
+      outputs: [] as { stream: 'stdout' | 'stderr'; line: string }[],
       registrations: [] as ProcessRegistration[],
     };
     setProcessObserver(createObserver(capture));
@@ -65,7 +65,7 @@ describe('process tracking', () => {
 
   it('supports execFile callback signatures', async () => {
     const capture = {
-      outputs: [] as Array<{ stream: 'stdout' | 'stderr'; line: string }>,
+      outputs: [] as { stream: 'stdout' | 'stderr'; line: string }[],
       registrations: [] as ProcessRegistration[],
     };
     setProcessObserver(createObserver(capture));
@@ -121,7 +121,7 @@ describe('process tracking', () => {
 
   it('flushes final output and skips empty lines', async () => {
     const capture = {
-      outputs: [] as Array<{ stream: 'stdout' | 'stderr'; line: string }>,
+      outputs: [] as { stream: 'stdout' | 'stderr'; line: string }[],
       registrations: [] as ProcessRegistration[],
     };
     setProcessObserver(createObserver(capture));
@@ -140,7 +140,7 @@ describe('process tracking', () => {
 
   it('supports captureOutput=false', async () => {
     const capture = {
-      outputs: [] as Array<{ stream: 'stdout' | 'stderr'; line: string }>,
+      outputs: [] as { stream: 'stdout' | 'stderr'; line: string }[],
       registrations: [] as ProcessRegistration[],
     };
     setProcessObserver(createObserver(capture));

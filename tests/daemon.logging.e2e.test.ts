@@ -8,17 +8,21 @@ import { describe, expect, it } from 'vitest';
 import { runDaemonServer } from '../src/daemon/server.js';
 
 const findFreePort = async (): Promise<number> =>
-   new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     const server = createServer();
     server.on('error', reject);
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
       if (!address || typeof address === 'string') {
-        server.close(() =>{  reject(new Error('Failed to resolve port')); });
+        server.close(() => {
+          reject(new Error('Failed to resolve port'));
+        });
         return;
       }
       const { port } = address;
-      server.close((err) =>{ err ? reject(err) : resolve(port); });
+      server.close((err) => {
+        err ? reject(err) : resolve(port);
+      });
     });
   });
 
@@ -82,7 +86,7 @@ describe('daemon logging', () => {
     const doneSessions = new Set<string>();
     const errorSessions = new Map<string, string>();
 
-    const waitForDone = async (sessionId: string) =>{ 
+    const waitForDone = async (sessionId: string) => {
       await new Promise<void>((resolve, reject) => {
         const error = errorSessions.get(sessionId);
         if (error) {
@@ -94,7 +98,8 @@ describe('daemon logging', () => {
           return;
         }
         pendingDone.set(sessionId, { reject, resolve });
-      }); };
+      });
+    };
 
     let resolveReady: (() => void) | null = null;
     const ready = new Promise<void>((resolve) => {
@@ -130,13 +135,13 @@ describe('daemon logging', () => {
       const run = async (includeContent: boolean) => {
         const res = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
           body: JSON.stringify({
-            url: 'https://example.com/article',
-            title: 'Example',
-            model: 'cli/codex',
-            length: 'short',
-            language: 'auto',
-            mode: 'url',
             diagnostics: includeContent ? { includeContent: true } : undefined,
+            language: 'auto',
+            length: 'short',
+            mode: 'url',
+            model: 'cli/codex',
+            title: 'Example',
+            url: 'https://example.com/article',
           }),
           headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
           method: 'POST',
@@ -172,7 +177,9 @@ describe('daemon logging', () => {
           const entry = lines.find(
             (line) => line.event === 'summarize.done' && line.requestId === requestId,
           );
-          if (entry) {return entry;}
+          if (entry) {
+            return entry;
+          }
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
         return null;

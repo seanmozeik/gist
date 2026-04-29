@@ -67,7 +67,7 @@ describe('sidepanel chat history runtime', () => {
     const requestChatHistory = vi
       .fn()
       .mockResolvedValueOnce({
-        messages: [{ role: 'user', content: 'remote', timestamp: 1 }],
+        messages: [{ content: 'remote', role: 'user', timestamp: 1 }],
         ok: true,
       })
       .mockResolvedValueOnce({ messages: ['bad'], ok: true });

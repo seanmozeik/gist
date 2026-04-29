@@ -18,13 +18,13 @@ describe('sidepanel chat session', () => {
     const requestId = vi.mocked(send).mock.calls[0]?.[0]?.requestId;
     session.handleAgentChunk({ requestId, text: 'Hello' });
     session.handleAgentResponse({
-      assistant: { role: 'assistant', content: [{ type: 'text', text: 'Done' }] } as never,
+      assistant: { content: [{ type: 'text', text: 'Done' }], role: 'assistant' } as never,
       ok: true,
       requestId,
     });
 
     await expect(request).resolves.toEqual({
-      assistant: { content: [{ type: 'text', text: 'Done' }], role: 'assistant' },
+      assistant: { content: [{ text: 'Done', type: 'text' }], role: 'assistant' },
       error: undefined,
       ok: true,
     });
@@ -59,13 +59,13 @@ describe('sidepanel chat session', () => {
     const requestId = vi.mocked(send).mock.calls[0]?.[0]?.requestId;
 
     session.handleChatHistoryResponse({
-      messages: [{ role: 'user', content: 'hi' }] as never,
+      messages: [{ content: 'hi', role: 'user' }] as never,
       ok: true,
       requestId,
     });
     await expect(request).resolves.toEqual({
       error: undefined,
-      messages: [{ role: 'user', content: 'hi' }],
+      messages: [{ content: 'hi', role: 'user' }],
       ok: true,
     });
 

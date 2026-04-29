@@ -41,7 +41,7 @@ describe('runUrlFlow', () => {
       },
       languageRaw: 'auto',
       lengthRaw: 'xl',
-      maxExtractCharacters: 9_000,
+      maxExtractCharacters: 9000,
       modelOverride: 'openai/gpt-5.2',
       promptOverride: null,
       runStartedAtMs: Date.now(),

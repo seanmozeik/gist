@@ -50,7 +50,7 @@ describe('tty spinner', () => {
     oraMock.mockReset();
     const stopSpy = vi.fn();
     const clearSpy = vi.fn();
-    const startSpy = vi.fn(function  startSpy(this: { isSpinning: boolean }) {
+    const startSpy = vi.fn(function startSpy(this: { isSpinning: boolean }) {
       this.isSpinning = true;
       return this;
     });

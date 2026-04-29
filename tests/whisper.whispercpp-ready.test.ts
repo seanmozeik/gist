@@ -49,8 +49,11 @@ function snapshotEnv(): Record<string, string | undefined> {
 function restoreEnv(snapshot: Record<string, string | undefined>) {
   for (const k of ENV_KEYS) {
     const v = snapshot[k];
-    if (v === undefined) {delete process.env[k];}
-    else {process.env[k] = v;}
+    if (v === undefined) {
+      delete process.env[k];
+    } else {
+      process.env[k] = v;
+    }
   }
 }
 

@@ -15,14 +15,20 @@ const isLikelyVideoUrl = (url: string): boolean =>
   url.includes('video.twimg.com') || url.includes('/i/broadcasts/') || url.endsWith('.m3u8');
 
 const addUrl = (set: Set<string>, value: string | null) => {
-  if (!value) {return;}
-  if (!URL_PREFIX_PATTERN.test(value)) {return;}
+  if (!value) {
+    return;
+  }
+  if (!URL_PREFIX_PATTERN.test(value)) {
+    return;
+  }
   set.add(value);
 };
 
 export function extractMediaFromBirdRaw(raw: unknown): BirdTweetMedia | null {
   const root = asRecord(raw);
-  if (!root) {return null;}
+  if (!root) {
+    return null;
+  }
 
   const legacy = asRecord(root.legacy);
   const extended = asRecord(legacy?.extended_entities);
@@ -44,23 +50,27 @@ export function extractMediaFromBirdRaw(raw: unknown): BirdTweetMedia | null {
       }
       const videoInfo = asRecord(media?.video_info);
       const variants = asArray(videoInfo?.variants);
-      if (!variants) {continue;}
+      if (!variants) {
+        continue;
+      }
       for (const variant of variants) {
         const variantRecord = asRecord(variant);
         const url = asString(variantRecord?.url);
-        if (!url) {continue;}
+        if (!url) {
+          continue;
+        }
         addUrl(urls, url);
         const contentType = asString(variantRecord?.content_type) ?? '';
         const bitrate = asNumber(variantRecord?.bitrate) ?? -1;
         if (contentType.includes('video/mp4') && bitrate >= preferredBitrate) {
           preferredBitrate = bitrate;
           preferredUrl = url;
-        } else preferredUrl ??= url;
+        } else {preferredUrl ??= url;}
       }
     }
 
     if (urls.size > 0) {
-      return { kind, preferredUrl, source: 'extended_entities', urls: Array.from(urls) };
+      return { kind, preferredUrl, source: 'extended_entities', urls: [...urls] };
     }
   }
 
@@ -72,14 +82,16 @@ export function extractMediaFromBirdRaw(raw: unknown): BirdTweetMedia | null {
     for (const binding of bindings) {
       const record = asRecord(binding);
       const key = asString(record?.key);
-      if (key !== 'broadcast_url') {continue;}
+      if (key !== 'broadcast_url') {
+        continue;
+      }
       const value = asRecord(record?.value);
       const url = asString(value?.string_value);
       addUrl(urls, url);
     }
     if (urls.size > 0) {
       const preferredUrl = urls.values().next().value ?? null;
-      return { kind: 'video', preferredUrl, source: 'card', urls: Array.from(urls) };
+      return { kind: 'video', preferredUrl, source: 'card', urls: [...urls] };
     }
   }
 
@@ -90,67 +102,16 @@ export function extractMediaFromBirdRaw(raw: unknown): BirdTweetMedia | null {
     for (const entity of entityUrls) {
       const record = asRecord(entity);
       const expanded = asString(record?.expanded_url);
-      if (!expanded || !isLikelyVideoUrl(expanded)) {continue;}
+      if (!expanded || !isLikelyVideoUrl(expanded)) {
+        continue;
+      }
       addUrl(urls, expanded);
     }
     if (urls.size > 0) {
       const preferredUrl = urls.values().next().value ?? null;
-      return { kind: 'video', preferredUrl, source: 'entities', urls: Array.from(urls) };
+      return { kind: 'video', preferredUrl, source: 'entities', urls: [...urls] };
     }
   }
 
   return null;
-}
-
-export function extractMediaFromXurlRaw(raw: unknown): BirdTweetMedia | null {
-  const root = asRecord(raw);
-  if (!root) {return null;}
-
-  const data = asRecord(root.data);
-  const includes = asRecord(root.includes);
-  const attachments = asRecord(data?.attachments);
-  const mediaKeys = new Set(
-    (asArray(attachments?.media_keys) ?? [])
-      .map((value) => asString(value))
-      .filter((value): value is string => Boolean(value)),
-  );
-  const mediaEntries = asArray(includes?.media) ?? [];
-  if (mediaEntries.length === 0) {return null;}
-
-  const urls = new Set<string>();
-  let preferredUrl: string | null = null;
-  let preferredBitrate = -1;
-  let kind: BirdTweetMedia['kind'] = 'video';
-
-  for (const entry of mediaEntries) {
-    const media = asRecord(entry);
-    const mediaKey = asString(media?.media_key);
-    if (mediaKeys.size > 0 && mediaKey && !mediaKeys.has(mediaKey)) {continue;}
-
-    const mediaType = asString(media?.type);
-    if (mediaType !== 'video' && mediaType !== 'animated_gif' && mediaType !== 'audio') {continue;}
-    if (mediaType === 'audio') {kind = 'audio';}
-
-    for (const variant of asArray(media?.variants) ?? []) {
-      const record = asRecord(variant);
-      const url = asString(record?.url);
-      if (!url) {continue;}
-      addUrl(urls, url);
-      const contentType = asString(record?.content_type) ?? '';
-      const bitrate = asNumber(record?.bit_rate) ?? -1;
-      if (contentType.includes('video/mp4') && bitrate >= preferredBitrate) {
-        preferredBitrate = bitrate;
-        preferredUrl = url;
-      } else preferredUrl ??= url;
-    }
-
-    const directUrl = asString(media?.url);
-    if (directUrl) {
-      addUrl(urls, directUrl);
-      preferredUrl ??= directUrl;
-    }
-  }
-
-  if (urls.size === 0) {return null;}
-  return { kind, preferredUrl, source: 'xurl', urls: Array.from(urls) };
 }

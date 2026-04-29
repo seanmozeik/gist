@@ -8,7 +8,9 @@ const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY ?? null;
 
 const resolveYtDlpPath = (): string | null => {
   const explicit = process.env.YT_DLP_PATH?.trim();
-  if (explicit) {return explicit;}
+  if (explicit) {
+    return explicit;
+  }
   const probe = spawnSync('yt-dlp', ['--version'], { stdio: 'ignore' });
   return probe.status === 0 ? 'yt-dlp' : null;
 };

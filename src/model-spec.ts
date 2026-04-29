@@ -63,16 +63,22 @@ export function resolveOpenAiFastModelId(
 ): { modelId: string; options: ModelRequestOptions } | null {
   const normalized = modelId.trim();
   const match = /^(gpt-5\.[45](?:[-.][a-z0-9]+)*)-fast$/i.exec(normalized);
-  if (!match) {return null;}
+  if (!match) {
+    return null;
+  }
   return { modelId: match[1] ?? normalized, options: { serviceTier: 'fast' } };
 }
 
 export function parseRequestedModelId(raw: string): RequestedModel {
   const trimmed = raw.trim();
-  if (trimmed.length === 0) {throw new Error('Missing model id');}
+  if (trimmed.length === 0) {
+    throw new Error('Missing model id');
+  }
 
   const lower = trimmed.toLowerCase();
-  if (lower === 'auto') {return { kind: 'auto' };}
+  if (lower === 'auto') {
+    return { kind: 'auto' };
+  }
 
   if (lower.startsWith('openrouter/')) {
     const openrouterModelId = trimmed.slice('openrouter/'.length).trim();

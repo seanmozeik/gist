@@ -93,7 +93,7 @@ describe('asset summary attempts', () => {
   it('throws when a fixed spec is required but missing', async () => {
     await expect(
       buildAssetModelAttempts({
-        ctx: createContext({ isFallbackModel: false, fixedModelSpec: null }) as never,
+        ctx: createContext({ fixedModelSpec: null, isFallbackModel: false }) as never,
         kind: 'file',
         lastSuccessfulCliProvider: null,
         promptTokensForAuto: null,
@@ -105,14 +105,14 @@ describe('asset summary attempts', () => {
   it('returns fixed cli attempts directly', async () => {
     const attempts = await buildAssetModelAttempts({
       ctx: createContext({
-        isFallbackModel: false,
         fixedModelSpec: {
+          cliModel: 'gemini-3-flash',
+          cliProvider: 'gemini',
+          requiredEnv: 'GEMINI_API_KEY',
           transport: 'cli',
           userModelId: 'gemini/gemini-3-flash',
-          cliProvider: 'gemini',
-          cliModel: 'gemini-3-flash',
-          requiredEnv: 'GEMINI_API_KEY',
         },
+        isFallbackModel: false,
       }) as never,
       kind: 'image',
       lastSuccessfulCliProvider: null,
@@ -137,15 +137,15 @@ describe('asset summary attempts', () => {
   it('adds gateway overrides for fixed Z.ai and NVIDIA specs', async () => {
     const zaiAttempts = await buildAssetModelAttempts({
       ctx: createContext({
-        isFallbackModel: false,
         fixedModelSpec: {
-          transport: 'native',
-          userModelId: 'openai/gpt-oss',
+          forceOpenRouter: false,
           llmModelId: 'gpt-oss',
           openrouterProviders: null,
-          forceOpenRouter: false,
           requiredEnv: 'Z_AI_API_KEY',
+          transport: 'native',
+          userModelId: 'openai/gpt-oss',
         },
+        isFallbackModel: false,
       }) as never,
       kind: 'file',
       lastSuccessfulCliProvider: null,
@@ -160,15 +160,15 @@ describe('asset summary attempts', () => {
 
     const nvidiaAttempts = await buildAssetModelAttempts({
       ctx: createContext({
-        isFallbackModel: false,
         fixedModelSpec: {
-          transport: 'native',
-          userModelId: 'openai/llama',
+          forceOpenRouter: false,
           llmModelId: 'llama',
           openrouterProviders: null,
-          forceOpenRouter: false,
           requiredEnv: 'NVIDIA_API_KEY',
+          transport: 'native',
+          userModelId: 'openai/llama',
         },
+        isFallbackModel: false,
       }) as never,
       kind: 'file',
       lastSuccessfulCliProvider: null,
@@ -233,14 +233,14 @@ describe('asset summary attempts', () => {
 
     const result = await buildAssetCliContext({
       args: {
+        attachment: {
+          bytes: new Uint8Array([1]),
+          filename: 'file.png',
+          kind: 'image',
+          mediaType: 'image/png',
+        },
         sourceKind: 'file',
         sourceLabel: '/tmp/file.png',
-        attachment: {
-          kind: 'image',
-          filename: 'file.png',
-          mediaType: 'image/png',
-          bytes: new Uint8Array([1]),
-        },
       } as never,
       attachmentsCount: 1,
       attempts: [{ transport: 'cli' }] as never,
@@ -271,14 +271,14 @@ describe('asset summary attempts', () => {
   it('omits codex image args for non-image file attachments', async () => {
     const result = await buildAssetCliContext({
       args: {
+        attachment: {
+          bytes: new Uint8Array([1]),
+          filename: 'file.pdf',
+          kind: 'file',
+          mediaType: 'application/pdf',
+        },
         sourceKind: 'file',
         sourceLabel: '/tmp/file.pdf',
-        attachment: {
-          kind: 'file',
-          filename: 'file.pdf',
-          mediaType: 'application/pdf',
-          bytes: new Uint8Array([1]),
-        },
       } as never,
       attachmentsCount: 1,
       attempts: [{ transport: 'cli' }] as never,

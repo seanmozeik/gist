@@ -21,7 +21,7 @@ describe('sidepanel chat agent loop', () => {
       requestAgent: vi.fn(async (_messages, _tools, _summary, opts) => {
         opts?.onChunk?.('Hello');
         return {
-          assistant: { content: [{ type: 'text', text: 'Hello' }], role: 'assistant' },
+          assistant: { content: [{ text: 'Hello', type: 'text' }], role: 'assistant' },
           ok: true,
         };
       }),
@@ -32,7 +32,7 @@ describe('sidepanel chat agent loop', () => {
       chatController: controller as never,
       chatSession,
       createStreamingAssistantMessage: () =>
-        ({ id: 'stream', role: 'assistant', content: [] }) as never,
+        ({ content: [], id: 'stream', role: 'assistant' }) as never,
       executeToolCall: vi.fn(),
       getAutomationToolNames: () => ['debugger', 'navigate'],
       hasDebuggerPermission: async () => false,
@@ -66,11 +66,11 @@ describe('sidepanel chat agent loop', () => {
       .fn()
       .mockResolvedValueOnce({ assistant: { content: [toolCall], role: 'assistant' }, ok: true })
       .mockResolvedValueOnce({
-        assistant: { content: [{ type: 'text', text: 'done' }], role: 'assistant' },
+        assistant: { content: [{ text: 'done', type: 'text' }], role: 'assistant' },
         ok: true,
       });
     const executeToolCall = vi.fn(async () => ({
-      content: [{ type: 'text', text: 'navigated' }],
+      content: [{ text: 'navigated', type: 'text' }],
       details: { ok: true },
       isError: false,
       role: 'toolResult',
@@ -85,7 +85,7 @@ describe('sidepanel chat agent loop', () => {
       chatController: controller as never,
       chatSession: { isAbortRequested: vi.fn(() => false), requestAgent },
       createStreamingAssistantMessage: () =>
-        ({ id: crypto.randomUUID(), role: 'assistant', content: [] }) as never,
+        ({ content: [], id: crypto.randomUUID(), role: 'assistant' }) as never,
       executeToolCall,
       getAutomationToolNames: () => ['navigate'],
       hasDebuggerPermission: async () => true,
@@ -121,7 +121,7 @@ describe('sidepanel chat agent loop', () => {
       chatController: controller as never,
       chatSession,
       createStreamingAssistantMessage: () =>
-        ({ id: 'stream', role: 'assistant', content: [] }) as never,
+        ({ content: [], id: 'stream', role: 'assistant' }) as never,
       executeToolCall,
       getAutomationToolNames: () => ['navigate'],
       hasDebuggerPermission: async () => true,
@@ -154,7 +154,7 @@ describe('sidepanel chat agent loop', () => {
         chatController: controller as never,
         chatSession,
         createStreamingAssistantMessage: () =>
-          ({ id: 'stream', role: 'assistant', content: [] }) as never,
+          ({ content: [], id: 'stream', role: 'assistant' }) as never,
         executeToolCall: vi.fn(),
         getAutomationToolNames: () => [],
         hasDebuggerPermission: async () => true,

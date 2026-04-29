@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { createMediaCache } from '../src/media-cache.js';
 
 const makeTempDir = async (prefix: string) => {
-  return await mkdtemp(join(tmpdir(), prefix));
+  return  mkdtemp(join(tmpdir(), prefix));
 };
 
 describe('media cache', () => {
@@ -31,7 +31,9 @@ describe('media cache', () => {
         url: 'https://example.com/media.mp4',
       });
       expect(stored).not.toBeNull();
-      if (!stored) {return;}
+      if (!stored) {
+        return;
+      }
       const storedStat = await stat(stored.filePath);
       expect(storedStat.size).toBe(bytes.length);
 
@@ -148,7 +150,9 @@ describe('media cache', () => {
         url: 'https://example.com/expired',
       });
       expect(stored).not.toBeNull();
-      if (!stored) {return;}
+      if (!stored) {
+        return;
+      }
 
       const indexPath = join(cacheDir, 'index.json');
       const raw = await readFile(indexPath, 'utf8');
@@ -213,7 +217,9 @@ describe('media cache', () => {
         url: 'https://example.com/size',
       });
       expect(stored).not.toBeNull();
-      if (!stored) {return;}
+      if (!stored) {
+        return;
+      }
 
       await writeFile(stored.filePath, new Uint8Array([1, 1]));
       const cached = await cache.get({ url: 'https://example.com/size' });
@@ -243,7 +249,9 @@ describe('media cache', () => {
         url: 'https://example.com/hash',
       });
       expect(stored).not.toBeNull();
-      if (!stored) {return;}
+      if (!stored) {
+        return;
+      }
 
       await writeFile(stored.filePath, new Uint8Array([1, 1, 1]));
       const cached = await cache.get({ url: 'https://example.com/hash' });
@@ -272,7 +280,9 @@ describe('media cache', () => {
         url: 'https://example.com/none',
       });
       expect(stored).not.toBeNull();
-      if (!stored) {return;}
+      if (!stored) {
+        return;
+      }
 
       await writeFile(stored.filePath, new Uint8Array([4, 4, 4, 4, 4]));
       const cached = await cache.get({ url: 'https://example.com/none' });

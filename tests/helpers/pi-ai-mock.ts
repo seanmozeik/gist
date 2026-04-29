@@ -37,7 +37,7 @@ export function makeAssistantMessage({
 
   return {
     api,
-    content: [{ type: 'text' as const, text }],
+    content: [{ text, type: 'text' as const }],
     model,
     provider,
     role: 'assistant' as const,
@@ -75,7 +75,9 @@ export function makeTextDeltaStream(
       yield { message: finalMessage, reason: 'stop' as const, type: 'done' as const };
     },
     async result() {
-      if (error) {throw error;}
+      if (error) {
+        throw error;
+      }
       return finalMessage;
     },
   } satisfies AsyncIterable<AssistantMessageEvent> & { result: () => Promise<AssistantMessage> };

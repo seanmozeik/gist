@@ -8,7 +8,9 @@ export function prepareMarkdownLineForTerminal(line: string): string {
   return line.replaceAll(/(?<!!)\[([^\]]+)\]\((\S+?)\)/g, (_full, label, url) => {
     const safeLabel = String(label ?? '').trim();
     const safeUrl = String(url ?? '').trim();
-    if (!safeLabel || !safeUrl) {return _full;}
+    if (!safeLabel || !safeUrl) {
+      return _full;
+    }
     return `${safeLabel}: ${safeUrl}`;
   });
 }

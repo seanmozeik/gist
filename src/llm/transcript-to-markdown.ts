@@ -54,14 +54,8 @@ export type ConvertTranscriptToMarkdown = (args: {
 export function createTranscriptToMarkdownConverter({
   modelId,
   forceOpenRouter,
-  xaiApiKey,
-  googleApiKey,
-  openaiApiKey,
   openaiBaseUrlOverride,
-  anthropicBaseUrlOverride,
-  googleBaseUrlOverride,
-  xaiBaseUrlOverride,
-  anthropicApiKey,
+
   openrouterApiKey,
   fetchImpl,
   forceChatCompletions,
@@ -106,12 +100,11 @@ export function createTranscriptToMarkdownConverter({
     });
 
     const result = await generateTextWithModelId({
-      anthropicBaseUrlOverride,
-      apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey, openrouterApiKey, xaiApiKey },
+      apiKeys: { openrouterApiKey },
       fetchImpl,
       forceChatCompletions,
       forceOpenRouter,
-      googleBaseUrlOverride,
+
       modelId,
       onRetry,
       openaiBaseUrlOverride,
@@ -119,7 +112,6 @@ export function createTranscriptToMarkdownConverter({
       requestOptions,
       retries,
       timeoutMs,
-      xaiBaseUrlOverride,
     });
     onUsage?.({
       model: result.canonicalModelId,

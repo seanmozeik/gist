@@ -85,8 +85,8 @@ describe('daemon config', () => {
     expect(cfg?.port).toBe(9999);
     expect(cfg?.env).toEqual({ OPENAI_API_KEY: 'key' });
     expect(typeof cfg?.installedAt).toBe('string');
-    expect(daemonConfigPrimaryToken(cfg!)).toBe('1234567890abcdef');
-    expect(daemonConfigTokens(cfg!)).toEqual(['1234567890abcdef']);
+    expect(daemonConfigPrimaryToken(cfg)).toBe('1234567890abcdef');
+    expect(daemonConfigTokens(cfg)).toEqual(['1234567890abcdef']);
   });
 
   it('parses v2 tokens and keeps the primary token', async () => {
@@ -145,9 +145,9 @@ describe('daemon config', () => {
           OPENAI_API_KEY: ' k ',
           OPENAI_WHISPER_BASE_URL: ' http://127.0.0.1:8080/v1 ',
           PATH: '',
-          SUMMARIZE_TRANSCRIBER: ' parakeet ',
-          SUMMARIZE_ONNX_PARAKEET_CMD: ' run-parakeet {input} ',
           SUMMARIZE_ONNX_CANARY_CMD: ' run-canary {input}  ',
+          SUMMARIZE_ONNX_PARAKEET_CMD: ' run-parakeet {input} ',
+          SUMMARIZE_TRANSCRIBER: ' parakeet ',
         }),
         installedAt: '2025-12-27T00:00:00.000Z',
         port: 2222.2,

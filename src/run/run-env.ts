@@ -1,7 +1,6 @@
-import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from '@steipete/summarize-core';
-
 import type { CliProvider, SummarizeConfig } from '../config.js';
 import { resolveCliAvailability, resolveExecutableInPath } from './env.js';
+import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from './index.js';
 
 export interface EnvState {
   apiKey: string | null;
@@ -71,9 +70,9 @@ export function resolveEnvState({
     envValue:
       typeof envForRun.Z_AI_BASE_URL === 'string'
         ? envForRun.Z_AI_BASE_URL
-        : typeof envForRun.ZAI_BASE_URL === 'string'
+        : (typeof envForRun.ZAI_BASE_URL === 'string'
           ? envForRun.ZAI_BASE_URL
-          : null,
+          : null),
   });
   const zaiKeyRaw =
     typeof envForRun.Z_AI_API_KEY === 'string'
@@ -99,7 +98,9 @@ export function resolveEnvState({
     typeof envForRun.APIFY_API_TOKEN === 'string' ? envForRun.APIFY_API_TOKEN : null;
   const ytDlpPath = (() => {
     const explicit = typeof envForRun.YT_DLP_PATH === 'string' ? envForRun.YT_DLP_PATH.trim() : '';
-    if (explicit.length > 0) {return explicit;}
+    if (explicit.length > 0) {
+      return explicit;
+    }
     return resolveExecutableInPath('yt-dlp', envForRun);
   })();
   const ytDlpCookiesFromBrowser = (() => {
@@ -136,15 +137,17 @@ export function resolveEnvState({
   const firecrawlConfigured = firecrawlApiKey !== null;
   const xaiApiKey = xaiKeyRaw?.trim() ?? null;
   const zaiApiKey = zaiKeyRaw?.trim() ?? null;
-  const zaiBaseUrlEffective = (zaiBaseUrl?.trim() ?? '') ?? 'https://api.z.ai/api/paas/v4';
+  const zaiBaseUrlEffective = zaiBaseUrl?.trim() ?? '' ?? 'https://api.z.ai/api/paas/v4';
   const nvidiaApiKey = nvidiaKeyRaw?.trim() ?? null;
   const nvidiaBaseUrlEffective =
-    (nvidiaBaseUrl?.trim() ?? '') ?? 'https://integrate.api.nvidia.com/v1';
+    nvidiaBaseUrl?.trim() ?? '' ?? 'https://integrate.api.nvidia.com/v1';
   const googleApiKey = googleKeyRaw?.trim() ?? null;
   const anthropicApiKey = anthropicKeyRaw?.trim() ?? null;
   const openrouterApiKey = (() => {
     const explicit = openRouterKeyRaw?.trim() ?? '';
-    if (explicit.length > 0) {return explicit;}
+    if (explicit.length > 0) {
+      return explicit;
+    }
     const baseUrl = openaiBaseUrl ?? '';
     const openaiKey = openaiKeyRaw?.trim() ?? '';
     if (baseUrl.length > 0 && isOpenRouterBaseUrl(baseUrl) && openaiKey.length > 0) {

@@ -15,5 +15,7 @@ const TRANSCRIPTION_ENV_VARS = [
 
 export function stubMissingTranscriptionEnv(): void {
   vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
-  for (const name of TRANSCRIPTION_ENV_VARS) {vi.stubEnv(name, '');}
+  for (const name of TRANSCRIPTION_ENV_VARS) {
+    vi.stubEnv(name, '');
+  }
 }

@@ -22,9 +22,13 @@ export function extractTaggedBlock(
   const open = `<${tag}>`;
   const close = `</${tag}>`;
   const start = prompt.indexOf(open);
-  if (start === -1) {return null;}
+  if (start === -1) {
+    return null;
+  }
   const end = prompt.indexOf(close, start + open.length);
-  if (end === -1) {return null;}
+  if (end === -1) {
+    return null;
+  }
   return prompt.slice(start + open.length, end).trim();
 }
 
@@ -51,7 +55,9 @@ export function buildPromptContentHash({
   fallbackContent?: string | null;
 }): string | null {
   const content = extractTaggedBlock(prompt, 'content') ?? fallbackContent ?? null;
-  if (!content || content.trim().length === 0) {return null;}
+  if (!content || content.trim().length === 0) {
+    return null;
+  }
   return hashString(normalizeContentForHash(content));
 }
 

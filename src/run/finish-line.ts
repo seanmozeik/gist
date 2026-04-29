@@ -12,13 +12,21 @@ export {
 export { buildLengthPartsForFinishLine, type ExtractedForLengths } from './finish-line-lengths.js';
 import { formatUSD, sumNumbersOrNull } from './format.js';
 
-export interface FinishLineText { line: string; details: string | null }
+export interface FinishLineText {
+  line: string;
+  details: string | null;
+}
 
-export interface FinishLineModel { lineParts: string[]; detailParts: string[] }
+export interface FinishLineModel {
+  lineParts: string[];
+  detailParts: string[];
+}
 
 export function formatModelLabelForDisplay(model: string): string {
   const trimmed = model.trim();
-  if (!trimmed) {return trimmed;}
+  if (!trimmed) {
+    return trimmed;
+  }
 
   // Tricky UX: OpenRouter models routed via the OpenAI-compatible API often appear as
   // `openai/<publisher>/<model>` in the "model" field, which reads like we're using OpenAI.
@@ -182,7 +190,9 @@ export function buildFinishLineVariants({
 
 export function formatFinishLineText(model: FinishLineModel, detailed: boolean): FinishLineText {
   const line = model.lineParts.join(' · ');
-  if (!detailed || model.detailParts.length === 0) {return { line, details: null };}
+  if (!detailed || model.detailParts.length === 0) {
+    return { details: null, line };
+  }
   return { details: model.detailParts.join(' | '), line };
 }
 
@@ -238,24 +248,40 @@ export function buildFinishLineModel({
     // - "2.9k words" => null
     // - "2.9k words via firecrawl" => "via firecrawl"
     const match = /^~?\d[\d.]*[kmb]?\s+words(?:\s+via\s+(.+))?$/i.exec(input.trim());
-    if (!match) {return input;}
+    if (!match) {
+      return input;
+    }
     const via = match[1]?.trim();
     return via ? `via ${via}` : null;
   };
 
   const effectiveLabel = (() => {
-    if (!label) {return null;}
-    if (!compactTranscriptLabel?.toLowerCase().includes('words')) {return label;}
+    if (!label) {
+      return null;
+    }
+    if (!compactTranscriptLabel?.toLowerCase().includes('words')) {
+      return label;
+    }
 
     const txLower = compactTranscriptLabel.toLowerCase();
-    if (txLower.includes('podcast')) {return null;}
-    if (txLower.includes('youtube') && /youtube|youtu\.be/i.test(label)) {return null;}
+    if (txLower.includes('podcast')) {
+      return null;
+    }
+    if (txLower.includes('youtube') && /youtube|youtu\.be/i.test(label)) {
+      return null;
+    }
 
     const stripped = stripWordPrefix(label);
-    if (stripped === null) {return null;}
-    if (stripped !== label) {return stripped;}
+    if (stripped === null) {
+      return null;
+    }
+    if (stripped !== label) {
+      return stripped;
+    }
     // If we still have a "… words" label here, drop it to avoid duplicated word counts.
-    if (/\bwords\b/i.test(label)) {return null;}
+    if (/\bwords\b/i.test(label)) {
+      return null;
+    }
     return label;
   })();
   const filteredExtraParts =
@@ -286,7 +312,9 @@ export function buildFinishLineModel({
   if (lenParts.length > 0) {
     line2Segments.push(`len ${lenParts.join(' ')}`);
   }
-  if (totalCalls > 1) {line2Segments.push(`calls=${formatCompactCount(totalCalls)}`);}
+  if (totalCalls > 1) {
+    line2Segments.push(`calls=${formatCompactCount(totalCalls)}`);
+  }
   if (report.services.firecrawl.requests > 0 || report.services.apify.requests > 0) {
     const svcParts: string[] = [];
     if (report.services.firecrawl.requests > 0) {

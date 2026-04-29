@@ -1,5 +1,4 @@
-import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
-
+import type { LinkPreviewProgressEvent } from '../../../content/index.js';
 import {
   formatBytes,
   formatBytesPerSecond,
@@ -62,7 +61,9 @@ export function applyTranscriptProgressEvent(
     state.mediaKind = event.mediaKind ?? state.mediaKind;
     state.downloadedBytes = event.downloadedBytes;
     state.totalBytes = event.totalBytes;
-    if (enteringPhase || state.startedAtMs == null) {state.startedAtMs = nowMs;}
+    if (enteringPhase || state.startedAtMs == null) {
+      state.startedAtMs = nowMs;
+    }
     return;
   }
 
@@ -73,7 +74,9 @@ export function applyTranscriptProgressEvent(
     state.mediaKind = event.mediaKind ?? state.mediaKind;
     state.downloadedBytes = event.downloadedBytes;
     state.totalBytes = event.totalBytes;
-    if (enteringPhase || state.startedAtMs == null) {state.startedAtMs = nowMs;}
+    if (enteringPhase || state.startedAtMs == null) {
+      state.startedAtMs = nowMs;
+    }
     return;
   }
 
@@ -98,7 +101,9 @@ export function applyTranscriptProgressEvent(
     state.whisperTotalSeconds = event.totalDurationSeconds;
     state.whisperPartIndex = event.partIndex;
     state.whisperParts = event.parts;
-    if (enteringPhase || state.startedAtMs == null) {state.startedAtMs = nowMs;}
+    if (enteringPhase || state.startedAtMs == null) {
+      state.startedAtMs = nowMs;
+    }
   }
 }
 
@@ -106,8 +111,12 @@ export function renderTranscriptSimple(
   state: TranscriptProgressState,
   theme?: ThemeRenderer | null,
 ): string | null {
-  if (state.phase === 'download') {return renderSimple(downloadTitle(state), theme);}
-  if (state.phase === 'whisper') {return renderSimple('Transcribing', theme);}
+  if (state.phase === 'download') {
+    return renderSimple(downloadTitle(state), theme);
+  }
+  if (state.phase === 'whisper') {
+    return renderSimple('Transcribing', theme);
+  }
   return null;
 }
 
@@ -115,8 +124,12 @@ export function renderTranscriptLine(
   state: TranscriptProgressState,
   { nowMs, theme }: { nowMs: number; theme?: ThemeRenderer | null },
 ): string | null {
-  if (state.phase === 'download') {return renderDownloadLine(state, nowMs, theme);}
-  if (state.phase === 'whisper') {return renderWhisperLine(state, nowMs, theme);}
+  if (state.phase === 'download') {
+    return renderDownloadLine(state, nowMs, theme);
+  }
+  if (state.phase === 'whisper') {
+    return renderWhisperLine(state, nowMs, theme);
+  }
   return null;
 }
 
@@ -215,7 +228,9 @@ function renderLine(
   percentLabel: string | null,
   theme?: ThemeRenderer | null,
 ): string {
-  if (!theme) {return `${label}${percentLabel ? ` ${percentLabel}` : ''}${detail}`;}
+  if (!theme) {
+    return `${label}${percentLabel ? ` ${percentLabel}` : ''}${detail}`;
+  }
   const percent = percentLabel ? ` ${theme.value(percentLabel)}` : '';
   return `${theme.label(label)}${percent}${theme.dim(detail)}`;
 }
@@ -229,8 +244,12 @@ function downloadTitle(state: TranscriptProgressState): string {
 }
 
 function resolveDownloadPercent(state: TranscriptProgressState): number | null {
-  if (typeof state.totalBytes !== 'number' || state.totalBytes <= 0) {return null;}
-  if (state.downloadedBytes <= 0) {return 0;}
+  if (typeof state.totalBytes !== 'number' || state.totalBytes <= 0) {
+    return null;
+  }
+  if (state.downloadedBytes <= 0) {
+    return 0;
+  }
   return (state.downloadedBytes / state.totalBytes) * 100;
 }
 
@@ -248,21 +267,45 @@ function resolveWhisperPercent(state: TranscriptProgressState): number | null {
 }
 
 function formatProvider(hint: string): string {
-  if (hint === 'cpp') {return 'Whisper.cpp';}
-  if (hint === 'onnx') {return 'ONNX (Parakeet/Canary)';}
+  if (hint === 'cpp') {
+    return 'Whisper.cpp';
+  }
+  if (hint === 'onnx') {
+    return 'ONNX (Parakeet/Canary)';
+  }
   const labelForPart = (part: string, chained: boolean) => {
-    if (part === 'groq') {return 'Whisper/Groq';}
-    if (part === 'assemblyai') {return 'AssemblyAI';}
-    if (part === 'gemini') {return 'Gemini';}
-    if (part === 'openai') {return 'Whisper/OpenAI';}
-    if (part === 'fal') {return chained ? 'FAL' : 'Whisper/FAL';}
+    if (part === 'groq') {
+      return 'Whisper/Groq';
+    }
+    if (part === 'assemblyai') {
+      return 'AssemblyAI';
+    }
+    if (part === 'gemini') {
+      return 'Gemini';
+    }
+    if (part === 'openai') {
+      return 'Whisper/OpenAI';
+    }
+    if (part === 'fal') {
+      return chained ? 'FAL' : 'Whisper/FAL';
+    }
     return part;
   };
-  if (hint === 'groq') {return 'Whisper/Groq';}
-  if (hint === 'assemblyai') {return 'AssemblyAI';}
-  if (hint === 'gemini') {return 'Gemini';}
-  if (hint === 'openai') {return 'Whisper/OpenAI';}
-  if (hint === 'fal') {return 'Whisper/FAL';}
+  if (hint === 'groq') {
+    return 'Whisper/Groq';
+  }
+  if (hint === 'assemblyai') {
+    return 'AssemblyAI';
+  }
+  if (hint === 'gemini') {
+    return 'Gemini';
+  }
+  if (hint === 'openai') {
+    return 'Whisper/OpenAI';
+  }
+  if (hint === 'fal') {
+    return 'Whisper/FAL';
+  }
   return 'Whisper';
 }
 

@@ -99,9 +99,7 @@ describe('--language / config.language', () => {
       },
     );
 
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     expect(String(context.messages?.[0]?.content ?? '')).toContain('Write the answer in German.');
 
     globalFetchSpy.mockRestore();
@@ -171,9 +169,7 @@ describe('--language / config.language', () => {
       },
     );
 
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     expect(String(context.messages?.[0]?.content ?? '')).toContain('Write the answer in English.');
 
     globalFetchSpy.mockRestore();

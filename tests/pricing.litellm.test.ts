@@ -14,15 +14,15 @@ import {
 describe('LiteLLM pricing catalog', () => {
   it('resolves pricing for common gateway-style ids', () => {
     const catalog = {
-      'claude-sonnet-4-5': { input_cost_per_token: 0.000003, output_cost_per_token: 0.000015 },
+      'claude-sonnet-4-5': { input_cost_per_token: 0.000_003, output_cost_per_token: 0.000_015 },
       'gemini-3-flash-preview': {
-        input_cost_per_token: 0.0000001,
-        output_cost_per_token: 0.0000002,
+        input_cost_per_token: 0.000_000_1,
+        output_cost_per_token: 0.000_000_2,
       },
-      'gpt-5.2': { input_cost_per_token: 0.00000175, output_cost_per_token: 0.000014 },
+      'gpt-5.2': { input_cost_per_token: 0.000_001_75, output_cost_per_token: 0.000_014 },
       'xai/grok-4-fast-non-reasoning': {
-        input_cost_per_token: 0.0000002,
-        output_cost_per_token: 0.0000005,
+        input_cost_per_token: 0.000_000_2,
+        output_cost_per_token: 0.000_000_5,
       },
     };
 
@@ -70,7 +70,7 @@ describe('LiteLLM pricing catalog', () => {
     const catalog = {
       'claude-opus-4-5': { max_tokens: 8192 },
       'gemini-3-flash-preview': { max_output_tokens: '32768' },
-      'gpt-5.2': { max_output_tokens: 16384 },
+      'gpt-5.2': { max_output_tokens: 16_384 },
       'grok-4-fast-non-reasoning': { max_output_tokens: 4096 },
     };
 
@@ -91,7 +91,7 @@ describe('LiteLLM pricing catalog', () => {
       'claude-opus-4-5': { max_input_tokens: '200000' },
       'gemini-3-flash-preview': { max_input_tokens: 1_000_000 },
       'gpt-5.2': { max_input_tokens: 128_000 },
-      'grok-4-fast-non-reasoning': { max_input_tokens: 131072 },
+      'grok-4-fast-non-reasoning': { max_input_tokens: 131_072 },
     };
 
     expect(resolveLiteLlmMaxInputTokensForModelId(catalog, 'openai/gpt-5.2')).toBe(128_000);

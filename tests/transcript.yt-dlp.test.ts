@@ -37,7 +37,9 @@ const mockSpawnSuccess = () => {
     proc.stdout = new PassThrough();
     proc.stderr = new PassThrough();
     proc.kill = vi.fn();
-    process.nextTick(() =>{  proc.emit('close', 0, null); });
+    process.nextTick(() => {
+      proc.emit('close', 0, null);
+    });
     return proc;
   });
 };
@@ -145,7 +147,9 @@ describe('yt-dlp transcript helper', () => {
       stderr.write('download failed');
       proc.stderr = stderr;
       proc.kill = vi.fn();
-      process.nextTick(() =>{  proc.emit('close', 1, null); });
+      process.nextTick(() => {
+        proc.emit('close', 1, null);
+      });
       return proc;
     });
 
@@ -230,8 +234,7 @@ describe('yt-dlp transcript helper', () => {
       new Response(JSON.stringify({ text: 'OpenAI transcript' }), { status: 200 }),
     );
 
-    const events: { kind: string; downloadedBytes?: number; totalBytes?: number | null }[] =
-      [];
+    const events: { kind: string; downloadedBytes?: number; totalBytes?: number | null }[] = [];
     await fetchTranscriptWithYtDlp({
       falApiKey: null,
       groqApiKey: null,

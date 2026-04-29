@@ -38,11 +38,11 @@ export function resolveConfigState({
   const { config, path: configPath } = loadSummarizeConfig({ env: envForRun });
   const cliLanguageRaw =
     typeof programOpts.language === 'string'
-      ? (programOpts.language)
+      ? programOpts.language
       : (typeof programOpts.lang === 'string'
-        ? (programOpts.lang)
+        ? programOpts.lang
         : null);
-  const defaultLanguageRaw = (config?.output?.language ?? config?.language ?? 'auto');
+  const defaultLanguageRaw = config?.output?.language ?? config?.language ?? 'auto';
   const outputLanguage: OutputLanguage = parseOutputLanguage(
     languageExplicitlySet && typeof cliLanguageRaw === 'string' && cliLanguageRaw.trim().length > 0
       ? cliLanguageRaw
@@ -59,8 +59,12 @@ export function resolveConfigState({
   );
 
   const cliEnabledOverride: CliProvider[] | null = (() => {
-    if (!cliFlagPresent || cliProviderArg) {return null;}
-    if (Array.isArray(config?.cli?.enabled)) {return config.cli.enabled;}
+    if (!cliFlagPresent || cliProviderArg) {
+      return null;
+    }
+    if (Array.isArray(config?.cli?.enabled)) {
+      return config.cli.enabled;
+    }
     return ['claude', 'gemini', 'codex', 'agent', 'openclaw', 'opencode'];
   })();
   const cliConfigForRun = cliEnabledOverride
@@ -77,7 +81,9 @@ export function resolveConfigState({
         ? envForRun.OPENAI_USE_CHAT_COMPLETIONS
         : null,
     );
-    if (envValue !== null) {return envValue;}
+    if (envValue !== null) {
+      return envValue;
+    }
     const configValue = config?.openai?.useChatCompletions;
     return typeof configValue === 'boolean' ? configValue : false;
   })();
@@ -119,10 +125,18 @@ export function resolveConfigState({
 
   const configModelLabel = (() => {
     const model = config?.model;
-    if (!model) {return null;}
-    if ('id' in model) {return model.id;}
-    if ('name' in model) {return model.name;}
-    if ('mode' in model && model.mode === 'auto') {return 'auto';}
+    if (!model) {
+      return null;
+    }
+    if ('id' in model) {
+      return model.id;
+    }
+    if ('name' in model) {
+      return model.name;
+    }
+    if ('mode' in model && model.mode === 'auto') {
+      return 'auto';
+    }
     return null;
   })();
 

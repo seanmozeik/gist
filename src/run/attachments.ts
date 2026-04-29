@@ -13,18 +13,26 @@ export type AssetAttachment = Awaited<ReturnType<typeof loadLocalAsset>>['attach
 export const MAX_DOCUMENT_BYTES_DEFAULT = 50 * 1024 * 1024;
 
 export function isUnsupportedAttachmentError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') {return false;}
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
   const err = error as { name?: unknown; message?: unknown };
   const name = typeof err.name === 'string' ? err.name : '';
   const message = typeof err.message === 'string' ? err.message : '';
-  if (name.toLowerCase().includes('unsupportedfunctionality')) {return true;}
-  if (message.toLowerCase().includes('functionality not supported')) {return true;}
+  if (name.toLowerCase().includes('unsupportedfunctionality')) {
+    return true;
+  }
+  if (message.toLowerCase().includes('functionality not supported')) {
+    return true;
+  }
   return false;
 }
 
 export function isTextLikeMediaType(mediaType: string): boolean {
   const mt = mediaType.toLowerCase();
-  if (mt.startsWith('text/')) {return true;}
+  if (mt.startsWith('text/')) {
+    return true;
+  }
   // Common “text but not text/*” types we want to inline instead of attaching as a file part.
   return (
     mt === 'application/json' ||
@@ -60,7 +68,9 @@ export function assertAssetMediaTypeSupported({
   attachment: AssetAttachment;
   sizeLabel: string | null;
 }) {
-  if (!isArchiveMediaType(attachment.mediaType)) {return;}
+  if (!isArchiveMediaType(attachment.mediaType)) {
+    return;
+  }
 
   const name = attachment.filename ?? 'file';
   const bytes = attachmentByteLength(attachment);
@@ -87,7 +97,9 @@ export function getTextContentFromAttachment(
 }
 
 export function getFileBytesFromAttachment(attachment: AssetAttachment): Uint8Array | null {
-  if (attachment.kind !== 'file') {return null;}
+  if (attachment.kind !== 'file') {
+    return null;
+  }
   return attachment.bytes;
 }
 
@@ -104,7 +116,9 @@ export async function ensureCliAttachmentPath({
   sourceLabel: string;
   attachment: AssetAttachment;
 }): Promise<string> {
-  if (sourceKind === 'file') {return sourceLabel;}
+  if (sourceKind === 'file') {
+    return sourceLabel;
+  }
   const bytes = getAttachmentBytes(attachment);
   if (!bytes) {
     throw new Error('CLI attachment missing bytes');
@@ -124,13 +138,27 @@ export async function ensureCliAttachmentPath({
 
 export function shouldMarkitdownConvertMediaType(mediaType: string): boolean {
   const mt = mediaType.toLowerCase();
-  if (mt === 'application/pdf') {return true;}
-  if (mt === 'application/rtf') {return true;}
-  if (mt === 'text/html' || mt === 'application/xhtml+xml') {return true;}
-  if (mt === 'application/msword') {return true;}
-  if (mt.startsWith('application/vnd.openxmlformats-officedocument.')) {return true;}
-  if (mt === 'application/vnd.ms-excel') {return true;}
-  if (mt === 'application/vnd.ms-powerpoint') {return true;}
+  if (mt === 'application/pdf') {
+    return true;
+  }
+  if (mt === 'application/rtf') {
+    return true;
+  }
+  if (mt === 'text/html' || mt === 'application/xhtml+xml') {
+    return true;
+  }
+  if (mt === 'application/msword') {
+    return true;
+  }
+  if (mt.startsWith('application/vnd.openxmlformats-officedocument.')) {
+    return true;
+  }
+  if (mt === 'application/vnd.ms-excel') {
+    return true;
+  }
+  if (mt === 'application/vnd.ms-powerpoint') {
+    return true;
+  }
   return false;
 }
 
@@ -141,8 +169,12 @@ export function supportsNativeFileAttachment({
   provider: LlmProvider;
   attachment: { kind: 'image' | 'file'; mediaType: string };
 }): boolean {
-  if (attachment.kind !== 'file') {return false;}
-  if (provider !== 'anthropic' && provider !== 'openai' && provider !== 'google') {return false;}
+  if (attachment.kind !== 'file') {
+    return false;
+  }
+  if (provider === 'openrouter') {
+    return false;
+  }
   return attachment.mediaType.toLowerCase() === 'application/pdf';
 }
 

@@ -1,8 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { isDirectMediaExtension, isDirectMediaUrl } from '@steipete/summarize-core/content/url';
-
 import {
   classifyUrl,
   type InputTarget,
@@ -18,6 +16,7 @@ import {
   resolveTrueColor,
 } from '../../../tty/theme.js';
 import { assertAssetMediaTypeSupported } from '../../attachments.js';
+import { isDirectMediaExtension, isDirectMediaUrl } from '../../content/url.js';
 import type { SummarizeAssetArgs } from './summary.js';
 
 /**
@@ -67,7 +66,9 @@ function normalizePathForExtension(value: string): string {
  * which has a higher size limit (2GB vs 50MB).
  */
 export function isTranscribableExtension(filePath: string): boolean {
-  if (isDirectMediaUrl(filePath)) {return true;}
+  if (isDirectMediaUrl(filePath)) {
+    return true;
+  }
   const ext = path.extname(normalizePathForExtension(filePath));
   return isDirectMediaExtension(ext);
 }
@@ -85,7 +86,7 @@ function formatTranscriptionMeta({
   sizeLabel: string | null;
   dim: (value: string) => string;
 }): string {
-  const details = sizeLabel ? sizeLabel : '';
+  const details = sizeLabel ?? '';
   return details ? `${filename} ${dim('(')}${details}${dim(')')}` : filename;
 }
 
@@ -135,8 +136,8 @@ async function runMediaTranscription({
       bytes: new Uint8Array(0), // Placeholder - summarizeMediaFile reads from path directly
     },
     onModelChosen: (modelId) => {
-      if (!ctx.progressEnabled) return;
-      setTranscribingSpinnerText({ spinner, theme, meta, modelId });
+      if (!ctx.progressEnabled) {return;}
+      setTranscribingSpinnerText({ meta, modelId, spinner, theme });
     },
     sourceKind,
     sourceLabel,
@@ -166,7 +167,9 @@ export async function handleFileInput(
   ctx: AssetInputContext,
   inputTarget: InputTarget,
 ): Promise<boolean> {
-  if (inputTarget.kind !== 'file') {return false;}
+  if (inputTarget.kind !== 'file') {
+    return false;
+  }
 
   let sizeLabel: string | null = null;
   const theme = createProgressTheme(ctx.envForRun, ctx.progressEnabled);
@@ -194,14 +197,18 @@ export async function handleFileInput(
   });
   let stopped = false;
   const stopProgress = () => {
-    if (stopped) {return;}
+    if (stopped) {
+      return;
+    }
     stopped = true;
     spinner.stopAndClear();
     stopOscProgress();
   };
   const pauseProgressLine = () => {
     spinner.pause();
-    return () =>{  spinner.resume(); };
+    return () => {
+      spinner.resume();
+    };
   };
   ctx.setClearProgressBeforeStdout(pauseProgressLine);
   try {
@@ -242,7 +249,7 @@ export async function handleFileInput(
     await handler({
       attachment: loaded.attachment,
       onModelChosen: (modelId) => {
-        if (!ctx.progressEnabled) return;
+        if (!ctx.progressEnabled) {return;}
         const mt = loaded.attachment.mediaType;
         const name = loaded.attachment.filename;
         const details = sizeLabel ? `${mt}, ${sizeLabel}` : mt;
@@ -266,7 +273,9 @@ export async function withUrlAsset(
   isYoutubeUrl: boolean,
   handler: UrlAssetHandler,
 ): Promise<boolean> {
-  if (!url || isYoutubeUrl) {return false;}
+  if (!url || isYoutubeUrl) {
+    return false;
+  }
 
   // For remote media URLs (by extension), route directly to summarizeMediaFile.
   // This avoids the 50MB limit in loadRemoteAsset - yt-dlp handles streaming download.
@@ -294,14 +303,18 @@ export async function withUrlAsset(
     });
     let stopped = false;
     const stopProgress = () => {
-      if (stopped) {return;}
+      if (stopped) {
+        return;
+      }
       stopped = true;
       spinner.stopAndClear();
       stopOscProgress();
     };
     const pauseProgressLine = () => {
       spinner.pause();
-      return () =>{  spinner.resume(); };
+      return () => {
+        spinner.resume();
+      };
     };
     ctx.setClearProgressBeforeStdout(pauseProgressLine);
     try {
@@ -321,7 +334,9 @@ export async function withUrlAsset(
   }
 
   const kind = await classifyUrl({ fetchImpl: ctx.trackedFetch, timeoutMs: ctx.timeoutMs, url });
-  if (kind.kind !== 'asset') {return false;}
+  if (kind.kind !== 'asset') {
+    return false;
+  }
 
   const theme = createProgressTheme(ctx.envForRun, ctx.progressEnabled);
   const stopOscProgress = startOscProgress({
@@ -339,14 +354,18 @@ export async function withUrlAsset(
   });
   let stopped = false;
   const stopProgress = () => {
-    if (stopped) {return;}
+    if (stopped) {
+      return;
+    }
     stopped = true;
     spinner.stopAndClear();
     stopOscProgress();
   };
   const pauseProgressLine = () => {
     spinner.pause();
-    return () =>{  spinner.resume(); };
+    return () => {
+      spinner.resume();
+    };
   };
   ctx.setClearProgressBeforeStdout(pauseProgressLine);
   try {
@@ -365,7 +384,9 @@ export async function withUrlAsset(
       }
     })();
 
-    if (!loaded) {return false;}
+    if (!loaded) {
+      return false;
+    }
     assertAssetMediaTypeSupported({ attachment: loaded.attachment, sizeLabel: null });
     await handler({ clearProgressLine: pauseProgressLine, loaded, spinner });
     return true;
@@ -390,7 +411,7 @@ export async function handleUrlAsset(
     await ctx.summarizeAsset({
       attachment: loaded.attachment,
       onModelChosen: (modelId) => {
-        if (!ctx.progressEnabled) return;
+        if (!ctx.progressEnabled) {return;}
         const modelLabel = renderModelSuffix(theme, modelId);
         spinner.setText(renderStatusWithMeta(theme, 'Summarizing', `${dim('file')}${modelLabel}`));
       },

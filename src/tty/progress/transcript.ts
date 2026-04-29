@@ -1,5 +1,4 @@
-import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
-
+import type { LinkPreviewProgressEvent } from '../../../content/index.js';
 import type { OscProgressController } from '../osc-progress.js';
 import type { ThemeRenderer } from '../theme.js';
 import {
@@ -25,7 +24,9 @@ export function createTranscriptProgressRenderer({
 
   const updateSpinner = (text: string, options?: { force?: boolean }) => {
     const now = Date.now();
-    if (!options?.force && now - lastSpinnerUpdateAtMs < 100) {return;}
+    if (!options?.force && now - lastSpinnerUpdateAtMs < 100) {
+      return;
+    }
     lastSpinnerUpdateAtMs = now;
     spinner.setText(text);
   };
@@ -34,7 +35,9 @@ export function createTranscriptProgressRenderer({
   };
 
   const stopTicker = () => {
-    if (!ticker) {return;}
+    if (!ticker) {
+      return;
+    }
     clearInterval(ticker);
     ticker = null;
   };
@@ -42,9 +45,13 @@ export function createTranscriptProgressRenderer({
   const renderActiveLine = () => renderTranscriptLine(state, { nowMs: Date.now(), theme }) ?? '';
 
   const updateOsc = () => {
-    if (!oscProgress) {return;}
+    if (!oscProgress) {
+      return;
+    }
     const payload = resolveTranscriptOscPayload(state);
-    if (!payload) {return;}
+    if (!payload) {
+      return;
+    }
     if (typeof payload.percent === 'number') {
       oscProgress.setPercent(payload.label, payload.percent);
     } else {
@@ -65,7 +72,9 @@ export function createTranscriptProgressRenderer({
     options?: { force?: boolean; stopTicker?: boolean },
   ) => {
     applyTranscriptProgressEvent(state, event, Date.now());
-    if (options?.stopTicker) {stopTicker();}
+    if (options?.stopTicker) {
+      stopTicker();
+    }
     updateSpinner(renderActiveLine(), { force: options?.force });
     updateOsc();
   };

@@ -23,10 +23,10 @@ vi.mock('../src/llm/generate-text.js', () => {
       canonicalModelId: 'openai/gpt-5-mini',
       lastError: () => null,
       provider: 'openai',
-      textStream: (async function* () {
+      textStream: (async function*  textStream() {
         yield 'hello';
       })(),
-      usage: Promise.resolve({ promptTokens: 1, completionTokens: 1, totalTokens: 2 }),
+      usage: Promise.resolve({ completionTokens: 1, promptTokens: 1, totalTokens: 2 }),
     })),
   };
 });
@@ -53,7 +53,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -65,7 +65,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     expect(calls.length).toBe(1);
     const args = calls[0]?.[0] as { modelId: string; forceOpenRouter?: boolean };
     expect(args.modelId).toBe('openai/gpt-5-mini');
@@ -82,7 +82,7 @@ describe('daemon/chat', () => {
       emitMeta: () => {},
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-4.1',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -94,7 +94,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls[0]?.[0] as { forceChatCompletions?: boolean };
     expect(args.forceChatCompletions).toBe(true);
   });
@@ -107,7 +107,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { GITHUB_TOKEN: 'gh-token', HOME: home },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'github-copilot/gpt-5.4',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -119,7 +119,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls.at(-1)?.[0] as {
       modelId: string;
       openaiBaseUrlOverride?: string | null;
@@ -142,7 +142,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'cli/codex/gpt-5.2',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -174,7 +174,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'cli/opencode',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -200,7 +200,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home, OPENROUTER_API_KEY: 'test' },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openrouter/anthropic/claude-sonnet-4-5',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -212,7 +212,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls.at(-1)?.[0] as { modelId: string; forceOpenRouter?: boolean };
     expect(args.modelId).toBe('openai/anthropic/claude-sonnet-4-5');
     expect(args.forceOpenRouter).toBe(true);
@@ -241,7 +241,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: null,
       pageContent: 'Hello world',
       pageTitle: null,
@@ -253,7 +253,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls.at(-1)?.[0] as { modelId: string; forceOpenRouter?: boolean };
     expect(args.modelId).toBe('openai/gpt-5-mini');
     expect(args.forceOpenRouter).toBe(false);
@@ -280,7 +280,7 @@ describe('daemon/chat', () => {
       emitMeta: () => {},
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: null,
       pageContent: 'Hello world',
       pageTitle: null,
@@ -292,7 +292,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls.at(-1)?.[0] as { forceChatCompletions?: boolean };
     expect(args.forceChatCompletions).toBe(true);
   });
@@ -323,7 +323,7 @@ describe('daemon/chat', () => {
         OPENAI_BASE_URL: 'https://openrouter.ai/api/v1',
       },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: null,
       pageContent: 'Hello world',
       pageTitle: null,
@@ -335,7 +335,7 @@ describe('daemon/chat', () => {
       },
     });
 
-    const {calls} = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
+    const { calls } = (streamTextWithContext as unknown as { mock: { calls: unknown[][] } }).mock;
     const args = calls.at(-1)?.[0] as { modelId: string; forceOpenRouter?: boolean };
     expect(args.modelId).toBe('openai/openai/gpt-5-mini');
     expect(args.forceOpenRouter).toBe(true);
@@ -363,7 +363,7 @@ describe('daemon/chat', () => {
       emitMeta: (patch) => meta.push(patch),
       env: { HOME: home },
       fetchImpl: fetch,
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: null,
       pageContent: 'Hello world',
       pageTitle: null,

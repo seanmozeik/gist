@@ -168,7 +168,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
-      if (url === embedUrl && method === 'GET') {return new Response(embedHtml, { status: 200 });}
+      if (url === embedUrl && method === 'GET') {
+        return new Response(embedHtml, { status: 200 });
+      }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
         return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
@@ -177,7 +179,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         });
       }
 
-      if (url === feedUrl && method === 'GET') {return new Response(rss, { status: 200 });}
+      if (url === feedUrl && method === 'GET') {
+        return new Response(rss, { status: 200 });
+      }
 
       if (url === enclosureUrl && method === 'HEAD') {
         return new Response(null, {
@@ -237,7 +241,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
-      if (url === embedUrl && method === 'GET') {return new Response(embedHtml, { status: 200 });}
+      if (url === embedUrl && method === 'GET') {
+        return new Response(embedHtml, { status: 200 });
+      }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
         return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
@@ -246,7 +252,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         });
       }
 
-      if (url === feedUrl && method === 'GET') {return new Response(rss, { status: 200 });}
+      if (url === feedUrl && method === 'GET') {
+        return new Response(rss, { status: 200 });
+      }
 
       if ((url === embedAudioUrl || url === enclosureUrl) && method === 'HEAD') {
         return new Response(null, {
@@ -306,7 +314,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
-      if (url === embedUrl && method === 'GET') {return new Response(embedHtml, { status: 200 });}
+      if (url === embedUrl && method === 'GET') {
+        return new Response(embedHtml, { status: 200 });
+      }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
         return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
@@ -315,7 +325,9 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
         });
       }
 
-      if (url === feedUrl && method === 'GET') {return new Response(rss, { status: 200 });}
+      if (url === feedUrl && method === 'GET') {
+        return new Response(rss, { status: 200 });
+      }
 
       if (url === enclosureUrl && method === 'HEAD') {
         return new Response(null, {

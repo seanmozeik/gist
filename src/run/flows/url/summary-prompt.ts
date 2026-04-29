@@ -10,14 +10,17 @@ type SlidesResult = Awaited<
   ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
 >;
 
-interface TranscriptSegment { startSeconds: number; text: string }
+interface TranscriptSegment {
+  startSeconds: number;
+  text: string;
+}
 
 const MAX_SLIDE_TRANSCRIPT_CHARS_BY_PRESET = {
   long: 9000,
   medium: 5000,
   short: 2500,
-  xl: 15000,
-  xxl: 24000,
+  xl: 15_000,
+  xxl: 24_000,
 } as const;
 
 const SLIDE_TRANSCRIPT_DEFAULT_EDGE_SECONDS = 30;
@@ -25,24 +28,40 @@ const SLIDE_TRANSCRIPT_LEEWAY_SECONDS = 10;
 
 function parseTimestampSeconds(value: string): number | null {
   const parts = value.split(':').map((item) => Number(item));
-  if (parts.some((item) => !Number.isFinite(item))) {return null;}
-  if (parts.length === 2) {return parts[0] * 60 + parts[1];}
-  if (parts.length === 3) {return parts[0] * 3600 + parts[1] * 60 + parts[2];}
+  if (parts.some((item) => !Number.isFinite(item))) {
+    return null;
+  }
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
   return null;
 }
 
 function parseTranscriptTimedText(input: string | null | undefined): TranscriptSegment[] {
-  if (!input) {return [];}
+  if (!input) {
+    return [];
+  }
   const segments: TranscriptSegment[] = [];
   for (const line of input.split('\n')) {
     const trimmed = line.trim();
-    if (!trimmed.startsWith('[')) {continue;}
+    if (!trimmed.startsWith('[')) {
+      continue;
+    }
     const match = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/.exec(trimmed);
-    if (!match) {continue;}
+    if (!match) {
+      continue;
+    }
     const seconds = parseTimestampSeconds(match[1]);
-    if (seconds == null) {continue;}
+    if (seconds == null) {
+      continue;
+    }
     const text = (match[2] ?? '').trim();
-    if (!text) {continue;}
+    if (!text) {
+      continue;
+    }
     segments.push({ startSeconds: seconds, text });
   }
   return segments.toSorted((a, b) => a.startSeconds - b.startSeconds);
@@ -53,14 +72,18 @@ function formatTimestamp(seconds: number): string {
   const hours = Math.floor(clamped / 3600);
   const minutes = Math.floor((clamped % 3600) / 60);
   const secs = clamped % 60;
-  if (hours <= 0) {return `${minutes}:${String(secs).padStart(2, '0')}`;}
+  if (hours <= 0) {
+    return `${minutes}:${String(secs).padStart(2, '0')}`;
+  }
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(
     secs,
   ).padStart(2, '0')}`;
 }
 
 function truncateTranscript(value: string, limit: number): string {
-  if (value.length <= limit) {return value;}
+  if (value.length <= limit) {
+    return value;
+  }
   const truncated = value.slice(0, limit).trimEnd();
   const clean = truncated.replace(/\s+\S*$/, '').trim();
   const result = clean.length > 0 ? clean : truncated.trim();
@@ -76,13 +99,17 @@ function buildSlidesPromptText({
   transcriptTimedText: string | null | undefined;
   preset: 'short' | 'medium' | 'long' | 'xl' | 'xxl';
 }): string | null {
-  if (!slides || slides.slides.length === 0) {return null;}
+  if (!slides || slides.slides.length === 0) {
+    return null;
+  }
   const segments = parseTranscriptTimedText(transcriptTimedText);
   const slidesWithTimestamps = slides.slides
     .filter((slide) => Number.isFinite(slide.timestamp))
     .map((slide) => ({ index: slide.index, timestamp: Math.max(0, Math.floor(slide.timestamp)) }))
     .toSorted((a, b) => a.timestamp - b.timestamp);
-  if (slidesWithTimestamps.length === 0) {return null;}
+  if (slidesWithTimestamps.length === 0) {
+    return null;
+  }
 
   const totalBudget = Number(MAX_SLIDE_TRANSCRIPT_CHARS_BY_PRESET[preset]);
   const perSlideBudget = Math.max(
@@ -94,7 +121,9 @@ function buildSlidesPromptText({
 
   for (let i = 0; i < slidesWithTimestamps.length; i += 1) {
     const slide = slidesWithTimestamps[i];
-    if (!slide) {continue;}
+    if (!slide) {
+      continue;
+    }
     const prev = slidesWithTimestamps[i - 1];
     const next = slidesWithTimestamps[i + 1];
     const startBase = prev ? Math.floor((prev.timestamp + slide.timestamp) / 2) : slide.timestamp;
@@ -141,13 +170,23 @@ export function shouldBypassShortContentSummary({
   json: boolean;
   countTokens: (value: string) => number;
 }): boolean {
-  if (forceSummary) {return false;}
-  if (!extracted.content || extracted.content.length === 0) {return false;}
+  if (forceSummary) {
+    return false;
+  }
+  if (!extracted.content || extracted.content.length === 0) {
+    return false;
+  }
   const targetCharacters = resolveTargetCharacters(lengthArg, SUMMARY_LENGTH_TARGET_CHARACTERS);
-  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) {return false;}
-  if (extracted.content.length > targetCharacters) {return false;}
+  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) {
+    return false;
+  }
+  if (extracted.content.length > targetCharacters) {
+    return false;
+  }
   if (!json && typeof maxOutputTokensArg === 'number') {
-    if (countTokens(extracted.content) > maxOutputTokensArg) {return false;}
+    if (countTokens(extracted.content) > maxOutputTokensArg) {
+      return false;
+    }
   }
   return true;
 }

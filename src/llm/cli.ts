@@ -10,7 +10,6 @@ import {
   parseCodexOutputFromJsonl,
   isJsonCliProvider,
   parseCodexUsageFromJsonl,
-  parseOpenCodeOutputFromJsonl,
   parseJsonProviderOutput,
   type JsonCliProvider,
 } from './cli-provider-output.js';
@@ -21,11 +20,8 @@ const DEFAULT_BINARIES: Record<CliProvider, string> = {
   claude: 'claude',
   codex: 'codex',
   gemini: 'gemini',
-  openclaw: 'openclaw',
-  opencode: 'opencode',
 };
 
-const OPENCLAW_MAX_MESSAGE_ARG_BYTES = 120 * 1024;
 const CODEX_GPT_FAST_MODEL = 'gpt-5.5';
 const CODEX_GPT_FAST_ALIASES = new Set(['gpt-fast', 'gpt-5.5-fast']);
 
@@ -34,8 +30,6 @@ const PROVIDER_PATH_ENV: Record<CliProvider, string> = {
   claude: 'CLAUDE_PATH',
   codex: 'CODEX_PATH',
   gemini: 'GEMINI_PATH',
-  openclaw: 'OPENCLAW_PATH',
-  opencode: 'OPENCODE_PATH',
 };
 
 interface RunCliModelOptions {
@@ -51,7 +45,11 @@ interface RunCliModelOptions {
   extraArgs?: string[];
 }
 
-interface CliRunResult { text: string; usage: LlmTokenUsage | null; costUsd: number | null }
+interface CliRunResult {
+  text: string;
+  usage: LlmTokenUsage | null;
+  costUsd: number | null;
+}
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -60,21 +58,34 @@ function getCliProviderConfig(
   provider: CliProvider,
   config: CliConfig | null | undefined,
 ): CliConfig[CliProvider] | undefined {
-  if (!config) {return undefined;}
-  if (provider === 'claude') {return config.claude;}
-  if (provider === 'codex') {return config.codex;}
-  if (provider === 'gemini') {return config.gemini;}
-  if (provider === 'agent') {return config.agent;}
-  if (provider === 'openclaw') {return config.openclaw;}
-  return config.opencode;
+  if (!config) {
+    return undefined;
+  }
+  if (provider === 'claude') {
+    return config.claude;
+  }
+  if (provider === 'codex') {
+    return config.codex;
+  }
+  if (provider === 'gemini') {
+    return config.gemini;
+  }
+  if (provider === 'agent') {
+    return config.agent;
+  }
+  return undefined;
 }
 
 export function isCliDisabled(
   provider: CliProvider,
   config: CliConfig | null | undefined,
 ): boolean {
-  if (!config) {return false;}
-  if (Array.isArray(config.enabled) && !config.enabled.includes(provider)) {return true;}
+  if (!config) {
+    return false;
+  }
+  if (Array.isArray(config.enabled) && !config.enabled.includes(provider)) {
+    return true;
+  }
   return false;
 }
 
@@ -84,19 +95,29 @@ export function resolveCliBinary(
   env: Record<string, string | undefined>,
 ): string {
   const providerConfig = getCliProviderConfig(provider, config);
-  if (isNonEmptyString(providerConfig?.binary)) {return providerConfig.binary.trim();}
+  if (isNonEmptyString(providerConfig?.binary)) {
+    return providerConfig.binary.trim();
+  }
   const pathKey = PROVIDER_PATH_ENV[provider];
-  if (isNonEmptyString(env[pathKey])) {return env[pathKey].trim();}
+  if (isNonEmptyString(env[pathKey])) {
+    return env[pathKey].trim();
+  }
   const envKey = `SUMMARIZE_CLI_${provider.toUpperCase()}`;
-  if (isNonEmptyString(env[envKey])) {return env[envKey].trim();}
+  if (isNonEmptyString(env[envKey])) {
+    return env[envKey].trim();
+  }
   return DEFAULT_BINARIES[provider];
 }
 
 function hasCodexConfigOverride(args: string[], key: string): boolean {
   for (let i = 0; i < args.length; i += 1) {
-    if (args[i] !== '-c' && args[i] !== '--config') {continue;}
+    if (args[i] !== '-c' && args[i] !== '--config') {
+      continue;
+    }
     const next = args[i + 1] ?? '';
-    if (next.trim().startsWith(`${key}=`)) {return true;}
+    if (next.trim().startsWith(`${key}=`)) {
+      return true;
+    }
   }
   return false;
 }
@@ -192,74 +213,6 @@ export async function runCliModel({
   }
   if (extraArgs?.length) {
     providerExtraArgs.push(...extraArgs);
-  }
-  if (provider === 'openclaw') {
-    const promptBytes = Buffer.byteLength(prompt, 'utf8');
-    if (promptBytes > OPENCLAW_MAX_MESSAGE_ARG_BYTES) {
-      throw new Error(
-        `OpenClaw CLI requires --message and cannot safely receive large prompts over argv (${promptBytes} bytes). ` +
-          'Use a different CLI provider for this input, reduce extracted content, or update OpenClaw to support stdin/file input.',
-      );
-    }
-    const openclawArgs = [
-      ...providerExtraArgs,
-      'agent',
-      '--agent',
-      requestedModel ?? 'main',
-      '-m',
-      prompt,
-      '--json',
-      '--timeout',
-      String(Math.max(1, Math.ceil(timeoutMs / 1000))),
-    ];
-    const { stdout } = await execCliWithInput({
-      args: openclawArgs,
-      cmd: binary,
-      cwd,
-      env: effectiveEnv,
-      execFileImpl: execFileFn,
-      input: '',
-      timeoutMs,
-    });
-    const parsed = JSON.parse(stdout);
-    const payloads = parsed?.result?.payloads;
-    const text = Array.isArray(payloads)
-      ? payloads
-          .map((p) => (typeof p?.text === 'string' ? p.text : ''))
-          .filter(Boolean)
-          .join('\n\n')
-      : '';
-    if (!text.trim()) {throw new Error('OpenClaw CLI returned empty output');}
-    const usage =
-      parsed?.result?.meta?.agentMeta?.lastCallUsage ??
-      parsed?.result?.meta?.agentMeta?.usage ??
-      null;
-    return { costUsd: null, text: text.trim(), usage };
-  }
-
-  if (provider === 'opencode') {
-    const isolatedCwd =
-      !allowTools && !cwd ? await fs.mkdtemp(path.join(tmpdir(), 'summarize-opencode-')) : null;
-    try {
-      args.push('run', ...providerExtraArgs, '--format', 'json');
-      if (requestedModel) {
-        args.push('--model', requestedModel);
-      }
-      const { stdout } = await execCliWithInput({
-        args,
-        cmd: binary,
-        cwd: isolatedCwd ?? cwd,
-        env: effectiveEnv,
-        execFileImpl: execFileFn,
-        input: prompt,
-        timeoutMs,
-      });
-      return parseOpenCodeOutputFromJsonl(stdout);
-    } finally {
-      if (isolatedCwd) {
-        await fs.rm(isolatedCwd, { force: true, recursive: true }).catch(() => {});
-      }
-    }
   }
 
   if (provider === 'codex') {

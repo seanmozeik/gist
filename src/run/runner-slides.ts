@@ -54,7 +54,9 @@ export function resolveRunnerSlidesSettings(options: {
       slidesSceneThresholdExplicitlySet || typeof slidesConfig?.sceneThreshold === 'number',
   });
 
-  if (!slidesSettings) {return null;}
+  if (!slidesSettings) {
+    return null;
+  }
 
   if (inputTarget.kind === 'stdin') {
     throw new Error('--slides is only supported for URLs or local video files');

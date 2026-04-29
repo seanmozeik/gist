@@ -6,19 +6,21 @@ import type { ChatMessage } from '../apps/chrome-extension/src/entrypoints/sidep
 function createMemoryStorage(): chrome.storage.StorageArea {
   const values = new Map<string, unknown>();
   return {
-    clear: async () =>{  values.clear(); },
+    clear: async () => {
+      values.clear();
+    },
     get: async (keys?: string | string[] | Record<string, unknown> | null) => {
-      if (typeof keys === 'string') return { [keys]: values.get(keys) };
+      if (typeof keys === 'string') {return { [keys]: values.get(keys) };}
       if (Array.isArray(keys)) {
         return Object.fromEntries(keys.map((key) => [key, values.get(key)]));
       }
       return Object.fromEntries(values.entries());
     },
     remove: async (keys: string | string[]) => {
-      for (const key of Array.isArray(keys) ? keys : [keys]) values.delete(key);
+      for (const key of Array.isArray(keys) ? keys : [keys]) {values.delete(key);}
     },
     set: async (items: Record<string, unknown>) => {
-      for (const [key, value] of Object.entries(items)) values.set(key, value);
+      for (const [key, value] of Object.entries(items)) {values.set(key, value);}
     },
   } as chrome.storage.StorageArea;
 }
@@ -27,7 +29,7 @@ describe('sidepanel chat history store', () => {
   it('isolates cached history by tab and normalized URL', async () => {
     const storage = createMemoryStorage();
     const store = createChatHistoryStore({
-      chatLimits: { maxChars: 1_000, maxMessages: 10 },
+      chatLimits: { maxChars: 1000, maxMessages: 10 },
       getStorage: () => storage,
     });
     const pageA: ChatMessage = { content: 'page a', id: 'a', role: 'user', timestamp: 1 };
@@ -43,7 +45,7 @@ describe('sidepanel chat history store', () => {
   it('clears only the current URL history for a tab', async () => {
     const storage = createMemoryStorage();
     const store = createChatHistoryStore({
-      chatLimits: { maxChars: 1_000, maxMessages: 10 },
+      chatLimits: { maxChars: 1000, maxMessages: 10 },
       getStorage: () => storage,
     });
     const pageA: ChatMessage = { content: 'page a', id: 'a', role: 'user', timestamp: 1 };

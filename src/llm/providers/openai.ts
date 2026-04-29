@@ -1,7 +1,7 @@
 import type { Context } from '@mariozechner/pi-ai';
 import { completeSimple } from '@mariozechner/pi-ai';
-import { isOpenRouterBaseUrl, normalizeBaseUrl } from '@steipete/summarize-core';
 
+import { isOpenRouterBaseUrl, normalizeBaseUrl } from '../../index.js';
 import type { Attachment } from '../attachments.js';
 import { createUnsupportedFunctionalityError } from '../errors.js';
 import { toOpenAiServiceTierParam, type ModelRequestOptions } from '../model-options.js';
@@ -26,7 +26,9 @@ interface OpenAiTextCompletionResult {
 }
 
 function isGitHubModelsBaseUrl(baseUrl: string | undefined): boolean {
-  if (!baseUrl) {return false;}
+  if (!baseUrl) {
+    return false;
+  }
   try {
     return new URL(baseUrl).host === 'models.github.ai';
   } catch {
@@ -35,7 +37,9 @@ function isGitHubModelsBaseUrl(baseUrl: string | undefined): boolean {
 }
 
 function isApiOpenAiBaseUrl(baseUrl: string | undefined): boolean {
-  if (!baseUrl) {return true;}
+  if (!baseUrl) {
+    return true;
+  }
   try {
     return new URL(baseUrl).host === 'api.openai.com';
   } catch {
@@ -58,7 +62,7 @@ export function resolveOpenAiClientConfig({
   const hasOpenRouterKey = apiKeys.openrouterApiKey != null;
   const hasOpenAiKey = apiKeys.openaiApiKey != null;
   const isOpenRouter =
-    Boolean(forceOpenRouter) ||
+    Boolean(forceOpenRouter) ??
     isOpenRouterViaBaseUrl ??
     (hasOpenRouterKey && !baseUrl && !hasOpenAiKey);
 
@@ -78,7 +82,9 @@ export function resolveOpenAiClientConfig({
     : (baseUrl ?? (isOpenRouter ? 'https://openrouter.ai/api/v1' : undefined));
 
   const isCustomBaseURL = (() => {
-    if (!baseURL) {return false;}
+    if (!baseURL) {
+      return false;
+    }
     try {
       const url = new URL(baseURL);
       return url.host !== 'api.openai.com' && url.host !== 'openrouter.ai';
@@ -87,7 +93,7 @@ export function resolveOpenAiClientConfig({
     }
   })();
 
-  const useChatCompletions = Boolean(forceChatCompletions) || isOpenRouter ?? isCustomBaseURL;
+  const useChatCompletions = Boolean(forceChatCompletions) ?? isOpenRouter ?? isCustomBaseURL;
   return {
     apiKey,
     baseURL: baseURL ?? undefined,
@@ -147,7 +153,9 @@ function isOpenAiResponsesTextModelId(modelId: string): boolean {
 function buildOpenAiResponsesRequestOptions(
   requestOptions: ModelRequestOptions | undefined,
 ): Record<string, unknown> {
-  if (!requestOptions) {return {};}
+  if (!requestOptions) {
+    return {};
+  }
   const serviceTier = toOpenAiServiceTierParam(requestOptions.serviceTier);
   return {
     ...(serviceTier ? { service_tier: serviceTier } : {}),
@@ -161,7 +169,9 @@ function buildOpenAiResponsesRequestOptions(
 function buildOpenAiChatRequestOptions(
   requestOptions: ModelRequestOptions | undefined,
 ): Record<string, unknown> {
-  if (!requestOptions) {return {};}
+  if (!requestOptions) {
+    return {};
+  }
   const serviceTier = toOpenAiServiceTierParam(requestOptions.serviceTier);
   return {
     ...(serviceTier ? { service_tier: serviceTier } : {}),
@@ -188,9 +198,11 @@ function shouldRetryGitHubModelsCompat(error: unknown): boolean {
 
 function extractOpenAiResponseText(payload: {
   output_text?: unknown;
-  output?: { content?: Array<{ text?: string }> }[];
+  output?: { content?: { text?: string }[] }[];
 }): string {
-  if (typeof payload.output_text === 'string') {return payload.output_text.trim();}
+  if (typeof payload.output_text === 'string') {
+    return payload.output_text.trim();
+  }
   const output = Array.isArray(payload.output) ? payload.output : [];
   const text = output
     .flatMap((item) => (Array.isArray(item.content) ? item.content : []))
@@ -205,11 +217,17 @@ function extractChatCompletionText(payload: {
 }): string {
   const choices = Array.isArray(payload.choices) ? payload.choices : [];
   const content = choices[0]?.message?.content;
-  if (typeof content === 'string') {return content.trim();}
-  if (!Array.isArray(content)) {return '';}
+  if (typeof content === 'string') {
+    return content.trim();
+  }
+  if (!Array.isArray(content)) {
+    return '';
+  }
   return content
     .map((part) => {
-      if (!part || typeof part !== 'object') {return '';}
+      if (!part || typeof part !== 'object') {
+        return '';
+      }
       const record = part as Record<string, unknown>;
       return typeof record.text === 'string' ? record.text : '';
     })
@@ -217,9 +235,7 @@ function extractChatCompletionText(payload: {
     .trim();
 }
 
-function contextToChatCompletionMessages(
-  context: Context,
-): { role: string; content: string }[] {
+function contextToChatCompletionMessages(context: Context): { role: string; content: string }[] {
   const messages: { role: string; content: string }[] = [];
   const systemPrompt = context.systemPrompt?.trim();
   if (systemPrompt) {
@@ -235,7 +251,9 @@ function contextToChatCompletionMessages(
               .join('')
               .trim()
           : '');
-    if (!content) {continue;}
+    if (!content) {
+      continue;
+    }
     messages.push({ content, role: message.role });
   }
   return messages;
@@ -243,12 +261,12 @@ function contextToChatCompletionMessages(
 
 function contextToResponsesInput(
   context: Context,
-): { role: string; content: Array<{ type: 'input_text'; text: string }> }[] {
+): { role: string; content: { type: 'input_text'; text: string }[] }[] {
   return contextToChatCompletionMessages({
     messages: context.messages,
     systemPrompt: undefined,
   }).map((message) => ({
-    content: [{ type: 'input_text', text: message.content }],
+    content: [{ text: message.content, type: 'input_text' }],
     role: message.role,
   }));
 }
@@ -303,8 +321,8 @@ async function completeOpenAiChatText({
   const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
   const response = await fetchImpl(String(resolveOpenAiChatCompletionsUrl(baseUrl)), {
     body: JSON.stringify({
-      model: modelId,
       messages: contextToChatCompletionMessages(context),
+      model: modelId,
       ...buildOpenAiChatRequestOptions(openaiConfig.requestOptions),
       ...(typeof maxOutputTokens === 'number' ? { max_tokens: maxOutputTokens } : {}),
       ...(typeof temperature === 'number' ? { temperature } : {}),
@@ -324,7 +342,9 @@ async function completeOpenAiChatText({
     usage?: unknown;
   };
   const text = extractChatCompletionText(data);
-  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
+  if (!text) {
+    throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
+  }
   return { resolvedModelId: modelId, text, usage: normalizeOpenAiUsage(data.usage) };
 }
 
@@ -348,8 +368,8 @@ async function completeOpenAiResponsesText({
   const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
   const response = await fetchImpl(String(resolveOpenAiResponsesUrl(baseUrl)), {
     body: JSON.stringify({
-      model: modelId,
       input: contextToResponsesInput(context),
+      model: modelId,
       ...(context.systemPrompt?.trim() ? { instructions: context.systemPrompt.trim() } : {}),
       ...buildOpenAiResponsesRequestOptions(openaiConfig.requestOptions),
       ...(typeof maxOutputTokens === 'number' ? { max_output_tokens: maxOutputTokens } : {}),
@@ -367,11 +387,13 @@ async function completeOpenAiResponsesText({
 
   const data = JSON.parse(bodyText) as {
     output_text?: unknown;
-    output?: { content?: Array<{ text?: string }> }[];
+    output?: { content?: { text?: string }[] }[];
     usage?: unknown;
   };
   const text = extractOpenAiResponseText(data);
-  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
+  if (!text) {
+    throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
+  }
   return { resolvedModelId: modelId, text, usage: normalizeOpenAiUsage(data.usage) };
 }
 
@@ -501,7 +523,9 @@ export async function completeOpenAiText({
     .map((c) => c.text)
     .join('')
     .trim();
-  if (!text) {throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);}
+  if (!text) {
+    throw new Error(`LLM returned an empty summary (model openai/${modelId}).`);
+  }
   return { text, usage: normalizeTokenUsage(result.usage) };
 }
 
@@ -533,7 +557,7 @@ export async function completeOpenAiDocument({
     );
   }
   const baseUrl = openaiConfig.baseURL ?? 'https://api.openai.com/v1';
-  const {host} = new URL(baseUrl);
+  const { host } = new URL(baseUrl);
   if (host !== 'api.openai.com') {
     throw createUnsupportedFunctionalityError(
       `Document attachments require api.openai.com; got ${host}`,
@@ -542,12 +566,13 @@ export async function completeOpenAiDocument({
 
   const url = resolveOpenAiResponsesUrl(baseUrl);
   const controller = new AbortController();
-  const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
   const filename = document.filename?.trim() ?? 'document.pdf';
   const payload = {
     input: [
       {
-        role: 'user',
         content: [
           {
             type: 'input_file',
@@ -556,6 +581,7 @@ export async function completeOpenAiDocument({
           },
           { type: 'input_text', text: promptText },
         ],
+        role: 'user',
       },
     ],
     model: modelId,
@@ -582,7 +608,7 @@ export async function completeOpenAiDocument({
 
     const data = JSON.parse(bodyText) as {
       output_text?: unknown;
-      output?: { content?: Array<{ text?: string }> }[];
+      output?: { content?: { text?: string }[] }[];
       usage?: unknown;
     };
     const text = extractOpenAiResponseText(data);

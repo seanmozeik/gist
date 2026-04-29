@@ -43,8 +43,8 @@ const extracted: ExtractedLinkContent = {
   transcriptLines: 2,
   transcriptMetadata: null,
   transcriptSegments: [
-    { startMs: 0, endMs: 4_000, text: 'hello' },
-    { startMs: 772_000, endMs: 775_000, text: 'final line' },
+    { endMs: 4_000, startMs: 0, text: 'hello' },
+    { endMs: 775_000, startMs: 772_000, text: 'final line' },
   ],
   transcriptSource: 'captionTracks',
   transcriptTimedText: '[0:00] hello\n[12:54] midpoint\n[19:32] final line',
@@ -112,7 +112,7 @@ describe('summarizeExtractedUrl timestamp guard', () => {
         streamMode: 'on',
         streamingEnabled: true,
         summaryCacheBypass: false,
-        timeoutMs: 2_000,
+        timeoutMs: 2000,
         transcriptTimestamps: true,
         verbose: false,
         verboseColor: false,
@@ -120,7 +120,7 @@ describe('summarizeExtractedUrl timestamp guard', () => {
         youtubeMode: 'auto',
       },
       hooks: {
-        buildReport: async () => ({ tokens: 0, calls: 0, durationMs: 0 }),
+        buildReport: async () => ({ calls: 0, durationMs: 0, tokens: 0 }),
         clearProgressForStdout: () => {},
         clearProgressIfCurrent: () => {},
         estimateCostUsd: async () => null,
@@ -201,6 +201,8 @@ describe('summarizeExtractedUrl timestamp guard', () => {
           runSummaryAttempt: async ({ allowStreaming }) => {
             allowStreamingSeen = allowStreaming;
             return {
+              maxOutputTokensForCall: null,
+              modelMeta: { canonical: 'openai/gpt-5.2', provider: 'openai' },
               summary: [
                 'Summary paragraph.',
                 '',
@@ -210,8 +212,6 @@ describe('summarizeExtractedUrl timestamp guard', () => {
                 '[33:10] Impossible ending',
               ].join('\n'),
               summaryAlreadyPrinted: false,
-              modelMeta: { provider: 'openai', canonical: 'openai/gpt-5.2' },
-              maxOutputTokensForCall: null,
             };
           },
         } as UrlFlowContext['model']['summaryEngine'],

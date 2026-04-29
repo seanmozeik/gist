@@ -20,7 +20,7 @@ describe('chrome panel utils', () => {
       tabs: { query: vi.fn(async () => [{ id: 1, url: 'https://example.com' }]) },
       windows: {
         create: vi.fn(async () => {}),
-        getCurrent: vi.fn(async () => ({ width: 900, height: 620 })),
+        getCurrent: vi.fn(async () => ({ height: 620, width: 900 })),
       },
     });
   });
@@ -42,8 +42,8 @@ describe('chrome panel utils', () => {
         {
           ocrAvailable: true,
           slides: [
-            { index: 1, timestamp: 2, ocrText: 'Opening slide' },
-            { index: 2, timestamp: 65, ocrText: 'Second slide' },
+            { index: 1, ocrText: 'Opening slide', timestamp: 2 },
+            { index: 2, ocrText: 'Second slide', timestamp: 65 },
           ],
           sourceId: 'video',
           sourceKind: 'url',
@@ -62,7 +62,7 @@ describe('chrome panel utils', () => {
       buildSlidesText(
         {
           ocrAvailable: true,
-          slides: [{ index: 1, timestamp: 2, ocrText: 'Opening slide' }],
+          slides: [{ index: 1, ocrText: 'Opening slide', timestamp: 2 }],
           sourceId: 'video',
           sourceKind: 'url',
           sourceUrl: 'https://example.com/video',
@@ -78,9 +78,9 @@ describe('chrome panel utils', () => {
         {
           ocrAvailable: true,
           slides: [
-            { index: 1, timestamp: 3723, ocrText: 'First slide' },
-            { index: 2, timestamp: 3728, ocrText: '   ' },
-            { index: 3, timestamp: Number.NaN, ocrText: 'x'.repeat(9000) },
+            { index: 1, ocrText: 'First slide', timestamp: 3723 },
+            { index: 2, ocrText: '   ', timestamp: 3728 },
+            { index: 3, ocrText: 'x'.repeat(9000), timestamp: Number.NaN },
           ],
           sourceId: 'video',
           sourceKind: 'url',

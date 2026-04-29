@@ -49,7 +49,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
       );
       expect(openrouterCatalog.has(openrouterModelId.toLowerCase())).toBe(true);
 
-      if (!openrouterAttempt?.llmModelId) {return;}
+      if (!openrouterAttempt?.llmModelId) {
+        return;
+      }
 
       try {
         const result = await generateTextWithModelId({
@@ -70,7 +72,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },

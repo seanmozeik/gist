@@ -239,10 +239,15 @@ describe('refresh-free', () => {
     llmMocks.generateTextWithModelId
       .mockReset()
       .mockImplementation(async ({ modelId }: { modelId: string }) => {
-        if (modelId.includes('a/model:free'))
-          {throw new Error('Rate limit exceeded: per-day free-models-per-day');}
-        if (modelId.includes('b/model:free')) {throw new Error('No allowed providers are available');}
-        if (modelId.includes('c/model:free')) {return { text: 'OK' };}
+        if (modelId.includes('a/model:free')) {
+          throw new Error('Rate limit exceeded: per-day free-models-per-day');
+        }
+        if (modelId.includes('b/model:free')) {
+          throw new Error('No allowed providers are available');
+        }
+        if (modelId.includes('c/model:free')) {
+          return { text: 'OK' };
+        }
         throw new Error('unexpected');
       });
 
@@ -303,7 +308,9 @@ describe('refresh-free', () => {
       .mockImplementation(async ({ modelId }: { modelId: string }) => {
         seen += 1;
         // Fail one of the refine runs for b/model.
-        if (modelId.includes('b/model:free') && seen > 2) {throw new Error('provider error');}
+        if (modelId.includes('b/model:free') && seen > 2) {
+          throw new Error('provider error');
+        }
         return { text: 'OK' };
       });
 
@@ -465,7 +472,9 @@ describe('refresh-free', () => {
       let calls = 0;
       llmMocks.generateTextWithModelId.mockImplementation(async () => {
         calls += 1;
-        if (calls === 1) {throw new Error('Rate limit exceeded');}
+        if (calls === 1) {
+          throw new Error('Rate limit exceeded');
+        }
         return { text: 'OK' };
       });
 

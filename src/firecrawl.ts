@@ -1,4 +1,4 @@
-import type { FirecrawlScrapeResult, ScrapeWithFirecrawl } from '@steipete/summarize-core/content';
+import type { FirecrawlScrapeResult, ScrapeWithFirecrawl } from './content/index.js';
 
 interface FirecrawlResponse {
   success: boolean;
@@ -24,16 +24,20 @@ export function createFirecrawlScraper({
     const controller = new AbortController();
     const timeoutMs = options?.timeoutMs;
     const hasTimeout = typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0;
-    const timeout = hasTimeout ? setTimeout(() =>{  controller.abort(); }, timeoutMs) : null;
+    const timeout = hasTimeout
+      ? setTimeout(() => {
+          controller.abort();
+        }, timeoutMs)
+      : null;
 
     try {
       const response = await fetchImpl('https://api.firecrawl.dev/v1/scrape', {
         body: JSON.stringify({
-          url,
           formats: ['markdown', 'html'],
+          maxAge: 0,
           onlyMainContent: true,
           proxy: 'auto',
-          maxAge: 0,
+          url,
         }),
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         method: 'POST',
@@ -51,7 +55,7 @@ export function createFirecrawlScraper({
         throw new Error(payload?.error ?? 'Firecrawl response was not successful');
       }
 
-      const {data} = payload;
+      const { data } = payload;
       const markdown = data?.markdown ?? null;
       if (typeof markdown !== 'string' || markdown.trim().length === 0) {
         return null;
@@ -68,7 +72,9 @@ export function createFirecrawlScraper({
       }
       throw error;
     } finally {
-      if (timeout) {clearTimeout(timeout);}
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     }
   };
 }

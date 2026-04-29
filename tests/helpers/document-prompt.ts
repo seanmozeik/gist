@@ -11,5 +11,5 @@ export function buildDocumentPrompt({
   mediaType?: string;
   filename?: string;
 }): Prompt {
-  return { attachments: [{ kind: 'document', bytes, mediaType, filename }], userText: text };
+  return { attachments: [{ bytes, filename, kind: 'document', mediaType }], userText: text };
 }

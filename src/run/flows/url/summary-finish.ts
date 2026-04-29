@@ -27,19 +27,27 @@ export function pickModelForFinishLine(
   const findLastModel = (purpose: (typeof llmCalls)[number]['purpose']): string | null => {
     for (let i = llmCalls.length - 1; i >= 0; i -= 1) {
       const call = llmCalls[i];
-      if (call?.purpose === purpose) {return call.model;}
+      if (call?.purpose === purpose) {
+        return call.model;
+      }
     }
     return null;
   };
 
   const summaryModel = findLastModel('summary');
-  if (summaryModel) {return summaryModel;}
+  if (summaryModel) {
+    return summaryModel;
+  }
 
   const markdownModel = findLastModel('markdown');
-  if (markdownModel) {return markdownModel;}
+  if (markdownModel) {
+    return markdownModel;
+  }
 
   const lastCall = llmCalls.at(-1);
-  if (lastCall?.model) {return lastCall.model;}
+  if (lastCall?.model) {
+    return lastCall.model;
+  }
 
   return fallback;
 }

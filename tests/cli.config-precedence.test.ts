@@ -9,7 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/run.js';
 import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -52,8 +56,12 @@ function captureStream() {
 }
 
 function resolveFetchUrl(input: RequestInfo | URL): string {
-  if (typeof input === 'string') {return input;}
-  if (input instanceof URL) {return input.toString();}
+  if (typeof input === 'string') {
+    return input;
+  }
+  if (input instanceof URL) {
+    return input.toString();
+  }
   return input.url;
 }
 
@@ -67,7 +75,9 @@ describe('cli config precedence', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = resolveFetchUrl(input);
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -95,7 +105,9 @@ describe('cli config precedence', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = resolveFetchUrl(input);
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -139,7 +151,9 @@ describe('cli config precedence', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = resolveFetchUrl(input);
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -180,7 +194,9 @@ describe('cli config precedence', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = resolveFetchUrl(input);
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -215,7 +231,9 @@ describe('cli config precedence', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = resolveFetchUrl(input);
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

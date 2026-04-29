@@ -40,7 +40,7 @@ export async function buildAssetModelAttempts({
     });
     return all.map((attempt) => {
       if (attempt.transport !== 'cli') {
-        return ctx.summaryEngine.applyOpenAiGatewayOverrides(attempt as ModelAttempt);
+        return ctx.summaryEngine.applyOpenAiGatewayOverrides(attempt);
       }
       const parsed = parseCliUserModelId(attempt.userModelId);
       return { ...attempt, cliModel: parsed.model, cliProvider: parsed.provider };
@@ -116,10 +116,16 @@ export async function buildAssetCliContext({
     | import('../../../shared/contracts.js').SummaryLength
     | { maxCharacters: number };
 }) {
-  if (!attempts.some((attempt) => attempt.transport === 'cli')) {return null;}
-  if (attachmentsCount === 0) {return null;}
+  if (!attempts.some((attempt) => attempt.transport === 'cli')) {
+    return null;
+  }
+  if (attachmentsCount === 0) {
+    return null;
+  }
   const needsPathPrompt = args.attachment.kind === 'image' || args.attachment.kind === 'file';
-  if (!needsPathPrompt) {return null;}
+  if (!needsPathPrompt) {
+    return null;
+  }
 
   const filePath = await ensureCliAttachmentPath({
     attachment: args.attachment,
@@ -138,15 +144,15 @@ export async function buildAssetCliContext({
     cwd: dir,
     extraArgsByProvider,
     promptOverride: buildPathSummaryPrompt({
-      kindLabel: args.attachment.kind === 'image' ? 'image' : 'file',
       filePath,
       filename: args.attachment.filename,
+      kindLabel: args.attachment.kind === 'image' ? 'image' : 'file',
+      languageInstruction: ctx.languageInstruction ?? null,
+      lengthInstruction: ctx.lengthInstruction ?? null,
       mediaType: args.attachment.mediaType,
-      summaryLength: summaryLengthTarget,
       outputLanguage: ctx.outputLanguage,
       promptOverride: ctx.promptOverride ?? null,
-      lengthInstruction: ctx.lengthInstruction ?? null,
-      languageInstruction: ctx.languageInstruction ?? null,
+      summaryLength: summaryLengthTarget,
     }),
   };
 }

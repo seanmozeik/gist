@@ -22,9 +22,9 @@ describe('sidepanel metrics controller', () => {
     metricsHomeEl.append(metricsEl);
 
     const controller = createMetricsController({
-      chatMetricsSlotEl: chatMetricsSlotEl,
-      metricsEl: metricsEl,
-      metricsHomeEl: metricsHomeEl,
+      chatMetricsSlotEl,
+      metricsEl,
+      metricsHomeEl,
     });
 
     controller.setForMode(
@@ -49,9 +49,9 @@ describe('sidepanel metrics controller', () => {
     metricsHomeEl.append(metricsEl);
 
     const controller = createMetricsController({
-      chatMetricsSlotEl: chatMetricsSlotEl,
-      metricsEl: metricsEl,
-      metricsHomeEl: metricsHomeEl,
+      chatMetricsSlotEl,
+      metricsEl,
+      metricsHomeEl,
     });
 
     controller.setForMode('chat', 'Cached · example.com', null, null);

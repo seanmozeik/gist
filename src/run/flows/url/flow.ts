@@ -138,7 +138,9 @@ export async function runUrlFlow({
     };
 
     const updateSummaryProgress = () => {
-      if (!flags.progressEnabled) {return;}
+      if (!flags.progressEnabled) {
+        return;
+      }
       websiteProgress?.stop?.();
       progressStatus.setSummary(
         flags.extractMode
@@ -301,7 +303,9 @@ export async function runUrlFlow({
 
     const onModelChosen = (modelId: string) => {
       activeHooks.onModelChosen?.(modelId);
-      if (!flags.progressEnabled) {return;}
+      if (!flags.progressEnabled) {
+        return;
+      }
       progressStatus.setSummary(formatSummaryProgress(modelId), 'Summarizing');
     };
 

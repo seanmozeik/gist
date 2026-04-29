@@ -3,11 +3,7 @@ import { execFile } from 'node:child_process';
 import { CommanderError, type Command } from 'commander';
 
 import type { ExecFileFn } from '../markitdown.js';
-import {
-  handleDaemonCliRequest,
-  handleHelpRequest,
-  handleRefreshFreeRequest,
-} from './cli-preflight.js';
+import { handleHelpRequest } from './cli-preflight.js';
 import { attachRichHelp, buildProgram } from './help.js';
 import { createRunnerPlan } from './runner-plan.js';
 import {
@@ -17,8 +13,6 @@ import {
   prepareRunEnvironment,
   resolvePromptOverride,
 } from './runner-setup.js';
-import { handleSlidesCliRequest } from './slides-cli.js';
-import { handleTranscriberCliRequest } from './transcriber-cli.js';
 
 interface RunEnv {
   env: Record<string, string | undefined>;
@@ -51,7 +45,9 @@ export async function runCli(
   }
   const execFileImpl = execFileOverride ?? execFile;
   const program = buildCliProgram({ envForRun, normalizedArgv, stderr, stdout });
-  if (!program) {return;}
+  if (!program) {
+    return;
+  }
 
   if (handleVersionFlag({ stdout, versionRequested: Boolean(program.opts().version) })) {
     return;
@@ -90,24 +86,11 @@ export async function runCli(
 async function handleImmediateCliRequests(options: {
   normalizedArgv: string[];
   envForRun: Record<string, string | undefined>;
-  fetchImpl: typeof fetch;
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
 }) {
-  const { normalizedArgv, envForRun, fetchImpl, stdout, stderr } = options;
+  const { normalizedArgv, envForRun, stdout, stderr } = options;
   if (handleHelpRequest({ envForRun, normalizedArgv, stderr, stdout })) {
-    return true;
-  }
-  if (await handleRefreshFreeRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
-    return true;
-  }
-  if (await handleDaemonCliRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
-    return true;
-  }
-  if (await handleSlidesCliRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
-    return true;
-  }
-  if (await handleTranscriberCliRequest({ envForRun, normalizedArgv, stderr, stdout })) {
     return true;
   }
   return false;

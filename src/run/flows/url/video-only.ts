@@ -77,7 +77,9 @@ export async function handleVideoOnlyExtractedContent({
   }
 
   hooks.onExtracted?.(extracted);
-  if (flags.progressEnabled) {spinner.setText(renderStatus('Downloading video'));}
+  if (flags.progressEnabled) {
+    spinner.setText(renderStatus('Downloading video'));
+  }
   const loadedVideo = await loadRemoteAsset({
     fetchImpl: io.fetch,
     timeoutMs: flags.timeoutMs,
@@ -86,7 +88,9 @@ export async function handleVideoOnlyExtractedContent({
   assertAssetMediaTypeSupported({ attachment: loadedVideo.attachment, sizeLabel: null });
 
   let chosenModel: string | null = null;
-  if (flags.progressEnabled) {spinner.setText(renderStatus('Summarizing video'));}
+  if (flags.progressEnabled) {
+    spinner.setText(renderStatus('Summarizing video'));
+  }
   await hooks.summarizeAsset({
     attachment: loadedVideo.attachment,
     onModelChosen: (modelId) => {

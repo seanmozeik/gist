@@ -21,11 +21,11 @@ describe('sse events', () => {
           ocrAvailable: true,
           slides: [
             {
-              index: 0,
-              timestamp: 12,
               imageUrl: 'https://example.com/slide-1.jpg',
-              ocrText: 'Intro',
+              index: 0,
               ocrConfidence: 0.99,
+              ocrText: 'Intro',
+              timestamp: 12,
             },
           ],
           sourceId: 'video-1',
@@ -37,7 +37,7 @@ describe('sse events', () => {
       {
         data: {
           api: 'openai-completions',
-          content: [{ type: 'text', text: 'Hi' }],
+          content: [{ text: 'Hi', type: 'text' }],
           model: 'gpt-5.2',
           provider: 'openai',
           role: 'assistant',

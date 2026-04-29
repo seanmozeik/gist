@@ -1,19 +1,31 @@
-import { execTweetCli } from './bird/exec.js';
-import { parseBirdTweetPayload, parseXurlTweetPayload } from './bird/parse.js';
-import type { BirdTweetPayload, TweetCliClient } from './bird/types.js';
-import { BIRD_TIP, TWITTER_HOSTS } from './constants.js';
-import { hasBirdCli, hasXurlCli } from './env.js';
+import { spawn } from 'node:child_process';
 
-export type { TweetCliClient } from './bird/types.js';
+import { parseBirdTweetPayload } from './bird/parse.js';
+import type { BirdTweetMedia } from './bird/types.js';
+import { BIRD_TIP, TWITTER_HOSTS } from './constants.js';
+
+export interface BirdTweetPayload {
+  id?: string;
+  text: string;
+  author?: { username?: string; name?: string };
+  createdAt?: string;
+  media?: BirdTweetMedia | null;
+}
 
 function parseTweetId(raw: string): string | null {
   const trimmed = raw.trim();
-  if (!trimmed) {return null;}
-  if (/^\d+$/.test(trimmed)) {return trimmed;}
+  if (!trimmed) {
+    return null;
+  }
+  if (/^\d+$/.test(trimmed)) {
+    return trimmed;
+  }
   try {
     const parsed = new URL(trimmed);
     const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-    if (!TWITTER_HOSTS.has(host)) {return null;}
+    if (!TWITTER_HOSTS.has(host)) {
+      return null;
+    }
     const match = /\/status\/(\d+)/.exec(parsed.pathname);
     return match?.[1] ?? null;
   } catch {
@@ -25,116 +37,78 @@ function isTwitterStatusUrl(raw: string): boolean {
   try {
     const parsed = new URL(raw);
     const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-    if (!TWITTER_HOSTS.has(host)) {return false;}
+    if (!TWITTER_HOSTS.has(host)) {
+      return false;
+    }
     return /\/status\/\d+/.test(parsed.pathname);
   } catch {
     return false;
   }
 }
 
-function buildXurlTweetEndpoint(tweetId: string): string {
-  const params = new URLSearchParams({
-    expansions: 'author_id,attachments.media_keys',
-    'media.fields': 'type,url,preview_image_url,variants',
-    'tweet.fields': 'created_at,attachments,entities,note_tweet,article',
-    'user.fields': 'username,name',
+async function execBirdCli(
+  args: string[],
+  timeoutMs: number,
+  env: Record<string, string | undefined>,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('bird', args, { env: { ...process.env, ...env }, timeout: timeoutMs });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout?.on('data', (data: Buffer) => {
+      stdout += data.toString();
+    });
+
+    child.stderr?.on('data', (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', (err: Error) => {
+      reject(new Error(`Failed to start bird CLI: ${err.message}`));
+    });
+
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve(stdout.trim());
+      } else {
+        reject(new Error(`bird CLI exited with code ${code}: ${stderr.slice(0, 500)}`));
+      }
+    });
   });
-  return `/2/tweets/${tweetId}?${params.toString()}`;
 }
 
-export async function readTweetWithXurl(args: {
+export async function readTweet(args: {
   url: string;
   timeoutMs: number;
-  env: Record<string, string | undefined>;
+  env?: Record<string, string | undefined>;
 }): Promise<BirdTweetPayload> {
   const tweetId = parseTweetId(args.url);
   if (!tweetId) {
-    throw new Error('xurl read requires a tweet status URL or id');
+    throw new Error('bird read requires a tweet status URL or id');
   }
-  const stdout = await execTweetCli(
-    'xurl',
-    [buildXurlTweetEndpoint(tweetId)],
-    args.timeoutMs,
-    args.env,
-  );
-  if (!stdout) {
-    throw new Error('xurl read returned empty output');
-  }
-  try {
-    return parseXurlTweetPayload(JSON.parse(stdout));
-  } catch (parseError) {
-    if (
-      parseError instanceof Error &&
-      (parseError.message.startsWith('xurl read returned') ||
-        parseError.message.startsWith('xurl API error'))
-    ) {
-      throw parseError;
-    }
-    const message = parseError instanceof Error ? parseError.message : String(parseError);
-    throw new Error(`xurl read returned invalid JSON: ${message}`, { cause: parseError });
-  }
-}
 
-export async function readTweetWithBird(args: {
-  url: string;
-  timeoutMs: number;
-  env: Record<string, string | undefined>;
-}): Promise<BirdTweetPayload> {
-  const stdout = await execTweetCli(
-    'bird',
+  const stdout = await execBirdCli(
     ['read', args.url, '--json-full'],
     args.timeoutMs,
-    args.env,
+    args.env ?? {},
   );
+
   if (!stdout) {
     throw new Error('bird read returned empty output');
   }
+
   try {
     return parseBirdTweetPayload(JSON.parse(stdout));
   } catch (parseError) {
-    if (parseError instanceof Error && parseError.message.startsWith('bird read returned')) {
-      throw parseError;
-    }
     const message = parseError instanceof Error ? parseError.message : String(parseError);
     throw new Error(`bird read returned invalid JSON: ${message}`, { cause: parseError });
   }
 }
 
-export async function readTweetWithPreferredClient(args: {
-  url: string;
-  timeoutMs: number;
-  env: Record<string, string | undefined>;
-}): Promise<BirdTweetPayload> {
-  const attempts: [TweetCliClient, () => Promise<BirdTweetPayload>][] = [];
-  if (hasXurlCli(args.env)) {
-    attempts.push(['xurl', () => readTweetWithXurl(args)]);
-  }
-  if (hasBirdCli(args.env)) {
-    attempts.push(['bird', () => readTweetWithBird(args)]);
-  }
-
-  const errors: string[] = [];
-  for (const [client, run] of attempts) {
-    try {
-      const tweet = await run();
-      return { ...tweet, client };
-    } catch (error) {
-      errors.push(`${client}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    throw new Error(errors.join('; '));
-  }
-  throw new Error('No X CLI available');
-}
-
-export function withBirdTip(
-  error: unknown,
-  url: string | null,
-  env: Record<string, string | undefined>,
-): Error {
-  if (!url || !isTwitterStatusUrl(url) || hasXurlCli(env) || hasBirdCli(env)) {
+export function withBirdTip(error: unknown, url: string | null): Error {
+  if (!url || !isTwitterStatusUrl(url)) {
     return error instanceof Error ? error : new Error(String(error));
   }
   const message = error instanceof Error ? error.message : String(error);

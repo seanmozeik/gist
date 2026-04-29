@@ -38,16 +38,18 @@ function shouldSoftSkipLiveError(message: string): boolean {
           maxOutputTokens: 256,
           modelId: 'openai/gpt-5.2',
           prompt: buildDocumentPrompt({
-            text: 'Summarize the attached PDF in one sentence.',
             bytes: pdfBytes,
             filename: 'hello.pdf',
+            text: 'Summarize the attached PDF in one sentence.',
           }),
           timeoutMs,
         });
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },

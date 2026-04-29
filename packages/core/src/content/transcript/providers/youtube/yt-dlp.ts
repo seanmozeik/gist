@@ -49,7 +49,10 @@ interface YtDlpRequest {
   extraArgs?: string[];
 }
 
-interface YtDlpDurationRequest { ytDlpPath: string | null; url: string }
+interface YtDlpDurationRequest {
+  ytDlpPath: string | null;
+  url: string;
+}
 
 export const fetchTranscriptWithYtDlp = async ({
   ytDlpPath,
@@ -99,8 +102,8 @@ export const fetchTranscriptWithYtDlp = async ({
   }
 
   const progress = typeof onProgress === 'function' ? onProgress : null;
-  const {providerHint} = startInfo;
-  const {modelId} = startInfo;
+  const { providerHint } = startInfo;
+  const { modelId } = startInfo;
   const localFileInput = resolveLocalDirectMediaSource(url, mediaKind);
   const cachedMedia = localFileInput ? null : (mediaCache ? await mediaCache.get({ url }) : null);
 
@@ -208,18 +211,20 @@ export const fetchTranscriptWithYtDlp = async ({
       onProgress: (event) => {
         progress?.({
           kind: ProgressKind.TranscriptWhisperProgress,
-          url,
-          service,
-          processedDurationSeconds: event.processedDurationSeconds,
-          totalDurationSeconds: event.totalDurationSeconds,
           partIndex: event.partIndex,
           parts: event.parts,
+          processedDurationSeconds: event.processedDurationSeconds,
+          service,
+          totalDurationSeconds: event.totalDurationSeconds,
+          url,
         });
       },
       openaiApiKey: effectiveTranscription.openaiApiKey,
       totalDurationSeconds: probedDurationSeconds,
     });
-    if (result.notes.length > 0) {notes.push(...result.notes);}
+    if (result.notes.length > 0) {
+      notes.push(...result.notes);
+    }
     return { error: result.error, notes, provider: result.provider, text: result.text };
   } catch (error) {
     if (
@@ -250,7 +255,9 @@ export const fetchDurationSecondsWithYtDlp = async ({
   ytDlpPath,
   url,
 }: YtDlpDurationRequest): Promise<number | null> => {
-  if (!ytDlpPath) {return null;}
+  if (!ytDlpPath) {
+    return null;
+  }
 
   return new Promise((resolve) => {
     const args = ['--skip-download', '--dump-json', '--no-playlist', '--no-warnings', url];
@@ -350,7 +357,9 @@ async function downloadAudio(
     let lastTotalBytes: number | null = null;
 
     const reportProgress = (downloadedBytes: number, totalBytes: number | null): void => {
-      if (!onProgress) {return;}
+      if (!onProgress) {
+        return;
+      }
       let normalizedTotal = totalBytes;
       if (typeof normalizedTotal === 'number' && Number.isFinite(normalizedTotal)) {
         if (normalizedTotal > 0) {
@@ -374,7 +383,9 @@ async function downloadAudio(
     };
 
     const handleProgressChunk = (chunk: string) => {
-      if (!onProgress) {return;}
+      if (!onProgress) {
+        return;
+      }
       progressBuffer += chunk;
       const lines = progressBuffer.split(/\r?\n/);
       progressBuffer = lines.pop() ?? '';
@@ -436,11 +447,15 @@ function emitProgressFromLine(
   onProgress: (downloadedBytes: number, totalBytes: number | null) => void,
 ): void {
   const trimmed = line.trim();
-  if (!trimmed.startsWith('progress:')) {return;}
+  if (!trimmed.startsWith('progress:')) {
+    return;
+  }
   const payload = trimmed.slice('progress:'.length);
   const [downloadedRaw, totalRaw, estimateRaw] = payload.split('|');
   const downloaded = Number.parseFloat(downloadedRaw);
-  if (!Number.isFinite(downloaded) || downloaded < 0) {return;}
+  if (!Number.isFinite(downloaded) || downloaded < 0) {
+    return;
+  }
   const totalCandidate = Number.parseFloat(totalRaw);
   const estimateCandidate = Number.parseFloat(estimateRaw);
   const totalBytes =

@@ -101,7 +101,9 @@ export function resolveOutputLanguageSetting({
   fallback: OutputLanguage;
 }): OutputLanguage {
   const value = typeof raw === 'string' ? raw.trim() : '';
-  if (!value) {return fallback;}
+  if (!value) {
+    return fallback;
+  }
   return resolveOutputLanguage(value);
 }
 
@@ -131,8 +133,7 @@ export function resolveCliRunSettings({
   const strictOverrides = resolveRunOverrides(
     {
       firecrawl,
-      markdownMode:
-        format === 'markdown' ? ((markdownMode ?? markdown ?? 'readability')) : 'off',
+      markdownMode: format === 'markdown' ? (markdownMode ?? markdown ?? 'readability') : 'off',
       maxOutputTokens,
       preprocess,
       retries,
@@ -193,11 +194,15 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof timeout !== 'string') {return null;}
+    if (typeof timeout !== 'string') {
+      return null;
+    }
     try {
       return parseDurationMs(timeout);
     } catch (error) {
-      if (strict) {throw error;}
+      if (strict) {
+        throw error;
+      }
       return null;
     }
   })();
@@ -208,7 +213,9 @@ export function resolveRunOverrides(
         try {
           return parseRetriesArg(String(retries));
         } catch (error) {
-          if (strict) {throw error;}
+          if (strict) {
+            throw error;
+          }
           return null;
         }
       }
@@ -217,11 +224,15 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof retries !== 'string') {return null;}
+    if (typeof retries !== 'string') {
+      return null;
+    }
     try {
       return parseRetriesArg(retries);
     } catch (error) {
-      if (strict) {throw error;}
+      if (strict) {
+        throw error;
+      }
       return null;
     }
   })();
@@ -232,7 +243,9 @@ export function resolveRunOverrides(
         try {
           return parseMaxOutputTokensArg(String(maxOutputTokens));
         } catch (error) {
-          if (strict) {throw error;}
+          if (strict) {
+            throw error;
+          }
           return null;
         }
       }
@@ -241,17 +254,23 @@ export function resolveRunOverrides(
       }
       return null;
     }
-    if (typeof maxOutputTokens !== 'string') {return null;}
+    if (typeof maxOutputTokens !== 'string') {
+      return null;
+    }
     try {
       return parseMaxOutputTokensArg(maxOutputTokens);
     } catch (error) {
-      if (strict) {throw error;}
+      if (strict) {
+        throw error;
+      }
       return null;
     }
   })();
 
   const transcriberOverride = (() => {
-    if (typeof transcriber !== 'string') {return null;}
+    if (typeof transcriber !== 'string') {
+      return null;
+    }
     const normalized = transcriber.trim().toLowerCase();
     if (
       normalized === 'auto' ||

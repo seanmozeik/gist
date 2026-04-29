@@ -85,7 +85,7 @@ describe('slides summary stream handler', () => {
       env: {},
       envForRun: {},
       getSlideIndexOrder: () => [1],
-      getSlideMeta: () => ({ total: 1, timestamp: 4 }),
+      getSlideMeta: () => ({ timestamp: 4, total: 1 }),
       outputMode: 'line',
       plain: true,
       renderSlide: async (_index, title) => {
@@ -227,8 +227,8 @@ describe('slides summary stream handler', () => {
       ocrRequested: false,
       sceneThreshold: 0.3,
       slides: [
-        { index: 1, timestamp: 10, imagePath: '/tmp/1.png' },
-        { index: 2, timestamp: 20, imagePath: '/tmp/2.png' },
+        { imagePath: '/tmp/1.png', index: 1, timestamp: 10 },
+        { imagePath: '/tmp/2.png', index: 2, timestamp: 20 },
       ],
       slidesDir: '/tmp/slides',
       slidesDirId: null,

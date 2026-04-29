@@ -28,7 +28,7 @@ function createCtx() {
       firecrawlMode: 'off',
       maxExtractCharacters: null,
       slides: null,
-      timeoutMs: 1_000,
+      timeoutMs: 1000,
       transcriptTimestamps: false,
       verbose: false,
       verboseColor: false,

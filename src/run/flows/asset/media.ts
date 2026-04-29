@@ -70,8 +70,12 @@ export async function summarizeMediaFile(
         env: ctx.env,
         stdio: ['ignore', 'ignore', 'ignore'],
       });
-      proc.on('error', () =>{  resolve(false); });
-      proc.on('close', (code) =>{  resolve(code === 0); });
+      proc.on('error', () => {
+        resolve(false);
+      });
+      proc.on('close', (code) => {
+        resolve(code === 0);
+      });
     });
   };
 
@@ -84,7 +88,7 @@ export async function summarizeMediaFile(
     : await isBinaryAvailable('whisper-cli');
 
   const hasAnyTranscriptionProvider =
-    (groqKey ?? assemblyaiKey) || geminiKey || openaiKey || falKey ?? hasLocalWhisper;
+    (((groqKey ?? assemblyaiKey) ?? geminiKey) || openaiKey ?? falKey) ?? hasLocalWhisper;
 
   if (!hasAnyTranscriptionProvider) {
     throw new Error(`Media file transcription requires one of the following:
@@ -160,7 +164,8 @@ See: https://github.com/openai/whisper for setup details`);
       }
       // For other statSync errors (e.g., file not found), let them bubble up
       throw new Error(
-        `Unable to access media file: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error },
+        `Unable to access media file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { cause: error },
       );
     }
   }
@@ -281,7 +286,8 @@ See: https://github.com/openai/whisper for setup details`);
       throw error;
     }
     throw new Error(
-      `Transcription failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error },
+      `Transcription failed: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
     );
   }
 }

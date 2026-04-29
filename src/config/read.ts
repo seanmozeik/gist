@@ -6,7 +6,7 @@ import JSON5 from 'json5';
 import { isRecord } from './parse-helpers.js';
 
 export function resolveSummarizeConfigPath(env: Record<string, string | undefined>): string | null {
-  const home = (env.HOME?.trim() ?? env.USERPROFILE?.trim()) ?? null;
+  const home = env.HOME?.trim() ?? env.USERPROFILE?.trim() ?? null;
   return home ? join(home, '.summarize', 'config.json') : null;
 }
 

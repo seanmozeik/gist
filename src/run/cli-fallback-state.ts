@@ -7,7 +7,9 @@ const STATE_FILE_NAME = 'cli-state.json';
 
 function resolveStatePath(env: Record<string, string | undefined>): string | null {
   const home = env.HOME?.trim() ?? env.USERPROFILE?.trim();
-  if (!home) {return null;}
+  if (!home) {
+    return null;
+  }
   return path.join(home, '.summarize', STATE_FILE_NAME);
 }
 
@@ -29,7 +31,9 @@ export async function readLastSuccessfulCliProvider(
   env: Record<string, string | undefined>,
 ): Promise<CliProvider | null> {
   const statePath = resolveStatePath(env);
-  if (!statePath) {return null;}
+  if (!statePath) {
+    return null;
+  }
   try {
     const raw = await fs.readFile(statePath, 'utf8');
     const parsed = JSON.parse(raw) as { lastSuccessfulProvider?: unknown };
@@ -47,7 +51,9 @@ export async function writeLastSuccessfulCliProvider({
   provider: CliProvider;
 }): Promise<void> {
   const statePath = resolveStatePath(env);
-  if (!statePath) {return;}
+  if (!statePath) {
+    return;
+  }
   try {
     await fs.mkdir(path.dirname(statePath), { recursive: true });
     const payload = { lastSuccessfulProvider: provider, updatedAt: new Date().toISOString() };

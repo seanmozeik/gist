@@ -41,7 +41,9 @@ describe('llm/generate-text extra branches', () => {
     });
 
     const chunks: string[] = [];
-    for await (const chunk of result.textStream) {chunks.push(chunk);}
+    for await (const chunk of result.textStream) {
+      chunks.push(chunk);
+    }
     expect(chunks.join('')).toBe('ok');
     await expect(result.usage).resolves.toBeNull();
   });
@@ -51,8 +53,8 @@ describe('llm/generate-text extra branches', () => {
       makeTextDeltaStream(['o', 'k'], makeAssistantMessage({ provider: 'anthropic', text: 'ok' }), {
         error: Object.assign(new Error('model: claude-3-5-sonnet-latest'), {
           responseBody: JSON.stringify({
+            error: { message: 'model: claude-3-5-sonnet-latest', type: 'permission_error' },
             type: 'error',
-            error: { type: 'permission_error', message: 'model: claude-3-5-sonnet-latest' },
           }),
           statusCode: 403,
         }),
@@ -90,7 +92,9 @@ describe('llm/generate-text extra branches', () => {
       let calls = 0;
       mocks.completeSimple.mockImplementation(async () => {
         calls += 1;
-        if (calls === 1) {throw new Error('timed out');}
+        if (calls === 1) {
+          throw new Error('timed out');
+        }
         return makeAssistantMessage({ text: 'OK' });
       });
 

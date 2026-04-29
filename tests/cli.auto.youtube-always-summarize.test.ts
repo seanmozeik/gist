@@ -7,7 +7,7 @@ import { runCli } from '../src/run.js';
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(async () => ({
     api: 'openai-responses',
-    content: [{ type: 'text', text: 'SUMMARY' }],
+    content: [{ text: 'SUMMARY', type: 'text' }],
     model: 'gpt-5-chat',
     provider: 'openai',
     role: 'assistant',

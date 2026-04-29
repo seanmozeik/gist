@@ -1,5 +1,4 @@
-import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
-
+import type { LinkPreviewProgressEvent } from '../../../content/index.js';
 import { formatBytes, formatBytesPerSecond, formatElapsedMs } from '../format.js';
 import type { OscProgressController } from '../osc-progress.js';
 import type { ThemeRenderer } from '../theme.js';
@@ -28,7 +27,9 @@ export function createFetchHtmlProgressRenderer({
 
   const updateSpinner = (text: string, options?: { force?: boolean }) => {
     const now = Date.now();
-    if (!options?.force && now - state.lastSpinnerUpdateAtMs < 100) {return;}
+    if (!options?.force && now - state.lastSpinnerUpdateAtMs < 100) {
+      return;
+    }
     state.lastSpinnerUpdateAtMs = now;
     spinner.setText(text);
   };
@@ -58,12 +59,18 @@ export function createFetchHtmlProgressRenderer({
   };
 
   const startTicker = () => {
-    if (ticker) {return;}
-    ticker = setInterval(() =>{  updateSpinner(render()); }, 1000);
+    if (ticker) {
+      return;
+    }
+    ticker = setInterval(() => {
+      updateSpinner(render());
+    }, 1000);
   };
 
   const stopTicker = () => {
-    if (!ticker) {return;}
+    if (!ticker) {
+      return;
+    }
     clearInterval(ticker);
     ticker = null;
   };

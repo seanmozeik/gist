@@ -132,8 +132,8 @@ describe('slides scene detection', () => {
         return results;
       },
       segments: [
-        { start: 0, duration: 10 },
-        { start: 10, duration: 5 },
+        { duration: 10, start: 0 },
+        { duration: 5, start: 10 },
       ],
       threshold: 0.25,
       timeoutMs: 1000,
@@ -164,7 +164,7 @@ describe('slides scene detection', () => {
     mocks.runProcessCapture.mockResolvedValueOnce(
       JSON.stringify({
         format: { duration: '90' },
-        streams: [{ codec_type: 'video', width: 1280, height: 720 }],
+        streams: [{ codec_type: 'video', height: 720, width: 1280 }],
       }),
     );
     await expect(

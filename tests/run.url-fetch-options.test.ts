@@ -14,7 +14,7 @@ const baseFlags = {
   firecrawlMode: 'off' as const,
   maxExtractCharacters: null,
   slides: null,
-  timeoutMs: 1_000,
+  timeoutMs: 1000,
   transcriptTimestamps: false,
   videoMode: 'auto' as const,
   youtubeMode: 'auto' as const,

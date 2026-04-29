@@ -11,7 +11,9 @@ export function resolvePackageVersion(importMetaUrl?: string): string {
     typeof process !== 'undefined' && typeof process.env.SUMMARIZE_VERSION === 'string'
       ? process.env.SUMMARIZE_VERSION.trim()
       : '';
-  if (injected.length > 0) {return injected;}
+  if (injected.length > 0) {
+    return injected;
+  }
 
   const startDir = (() => {
     if (typeof importMetaUrl === 'string' && importMetaUrl.trim().length > 0) {
@@ -22,7 +24,9 @@ export function resolvePackageVersion(importMetaUrl?: string): string {
       }
     }
 
-    if (typeof __dirname === 'string' && __dirname.length > 0) {return __dirname;}
+    if (typeof __dirname === 'string' && __dirname.length > 0) {
+      return __dirname;
+    }
 
     return process.cwd();
   })();
@@ -41,7 +45,9 @@ export function resolvePackageVersion(importMetaUrl?: string): string {
     }
 
     const parent = path.dirname(dir);
-    if (parent === dir) {break;}
+    if (parent === dir) {
+      break;
+    }
     dir = parent;
   }
 
@@ -50,8 +56,12 @@ export function resolvePackageVersion(importMetaUrl?: string): string {
 
 function truncateSha(sha: string, length = 8): string {
   const trimmed = sha.trim();
-  if (!trimmed) {return '';}
-  if (trimmed.length <= length) {return trimmed;}
+  if (!trimmed) {
+    return '';
+  }
+  if (trimmed.length <= length) {
+    return trimmed;
+  }
   return trimmed.slice(0, length);
 }
 
@@ -64,14 +74,18 @@ function resolveGitShaFromGitDir(gitDir: string): string | null {
     return null;
   }
 
-  if (!head) {return null;}
+  if (!head) {
+    return null;
+  }
   if (!head.startsWith('ref:')) {
     const sha = truncateSha(head);
     return sha.length > 0 ? sha : null;
   }
 
   const ref = head.replace(/^ref:\s*/i, '').trim();
-  if (!ref) {return null;}
+  if (!ref) {
+    return null;
+  }
 
   const refPath = path.join(gitDir, ref);
   try {
@@ -86,7 +100,9 @@ function resolveGitShaFromGitDir(gitDir: string): string | null {
     const packed = fs.readFileSync(packedRefsPath, 'utf8');
     const lines = packed.split(/\r?\n/);
     for (const line of lines) {
-      if (!line || line.startsWith('#') || line.startsWith('^')) {continue;}
+      if (!line || line.startsWith('#') || line.startsWith('^')) {
+        continue;
+      }
       const [shaRaw, refName] = line.split(' ');
       if (refName?.trim() === ref) {
         const sha = truncateSha(shaRaw ?? '');
@@ -105,7 +121,9 @@ export function resolveGitSha(importMetaUrl?: string): string | null {
     typeof process !== 'undefined' && typeof process.env.SUMMARIZE_GIT_SHA === 'string'
       ? process.env.SUMMARIZE_GIT_SHA.trim()
       : '';
-  if (injected.length > 0) {return truncateSha(injected);}
+  if (injected.length > 0) {
+    return truncateSha(injected);
+  }
 
   const startDir = (() => {
     if (typeof importMetaUrl === 'string' && importMetaUrl.trim().length > 0) {
@@ -116,7 +134,9 @@ export function resolveGitSha(importMetaUrl?: string): string | null {
       }
     }
 
-    if (typeof __dirname === 'string' && __dirname.length > 0) {return __dirname;}
+    if (typeof __dirname === 'string' && __dirname.length > 0) {
+      return __dirname;
+    }
 
     return process.cwd();
   })();
@@ -128,16 +148,20 @@ export function resolveGitSha(importMetaUrl?: string): string | null {
       const stat = fs.statSync(dotGit);
       if (stat.isDirectory()) {
         const sha = resolveGitShaFromGitDir(dotGit);
-        if (sha) {return sha;}
+        if (sha) {
+          return sha;
+        }
       } else if (stat.isFile()) {
         // Worktrees/submodules can have a file with: `gitdir: /path/to/actual/dir`
         const txt = fs.readFileSync(dotGit, 'utf8');
-        const match = txt.match(/gitdir:\s*(.+)\s*$/i);
+        const match = /gitdir:\s*(.+)\s*$/i.exec(txt);
         const gitDir = match?.[1]?.trim();
         if (gitDir) {
           const resolved = path.isAbsolute(gitDir) ? gitDir : path.resolve(dir, gitDir);
           const sha = resolveGitShaFromGitDir(resolved);
-          if (sha) {return sha;}
+          if (sha) {
+            return sha;
+          }
         }
       }
     } catch {
@@ -145,7 +169,9 @@ export function resolveGitSha(importMetaUrl?: string): string | null {
     }
 
     const parent = path.dirname(dir);
-    if (parent === dir) {break;}
+    if (parent === dir) {
+      break;
+    }
     dir = parent;
   }
 

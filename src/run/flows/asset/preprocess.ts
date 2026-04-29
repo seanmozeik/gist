@@ -68,8 +68,12 @@ export function resolveDocumentHandling({
   openrouterApiKey?: string | null;
   openaiBaseUrl?: string | null;
 }): DocumentHandlingDecision {
-  if (attachment.kind !== 'file') {return { mode: 'inline' };}
-  if (textContent) {return { mode: 'inline' };}
+  if (attachment.kind !== 'file') {
+    return { mode: 'inline' };
+  }
+  if (textContent) {
+    return { mode: 'inline' };
+  }
   if (!fileBytes) {
     return {
       error: new Error('Internal error: missing file bytes for binary attachment'),
@@ -78,8 +82,12 @@ export function resolveDocumentHandling({
   }
 
   const canAttachDocument = (() => {
-    if (preprocessMode === 'always') {return false;}
-    if (fixedModelSpec?.transport !== 'native') {return false;}
+    if (preprocessMode === 'always') {
+      return false;
+    }
+    if (fixedModelSpec?.transport !== 'native') {
+      return false;
+    }
     if (
       !supportsNativeFileAttachment({
         attachment: { kind: attachment.kind, mediaType: attachment.mediaType },
@@ -88,7 +96,9 @@ export function resolveDocumentHandling({
     ) {
       return false;
     }
-    if (fixedModelSpec.provider !== 'openai') {return true;}
+    if (fixedModelSpec.provider !== 'openai') {
+      return true;
+    }
     const resolvedOpenAiBaseUrl = fixedModelSpec.openaiBaseUrlOverride ?? openaiBaseUrl ?? null;
     try {
       const openaiConfig = resolveOpenAiClientConfig({
@@ -97,11 +107,15 @@ export function resolveDocumentHandling({
         forceOpenRouter: fixedModelSpec.forceOpenRouter,
         openaiBaseUrlOverride: resolvedOpenAiBaseUrl,
       });
-      if (openaiConfig.isOpenRouter) {return false;}
+      if (openaiConfig.isOpenRouter) {
+        return false;
+      }
       const host = new URL(openaiConfig.baseURL ?? 'https://api.openai.com/v1').host.toLowerCase();
       return host === 'api.openai.com';
     } catch {
-      if (!resolvedOpenAiBaseUrl) {return true;}
+      if (!resolvedOpenAiBaseUrl) {
+        return true;
+      }
       try {
         return new URL(resolvedOpenAiBaseUrl).host.toLowerCase() === 'api.openai.com';
       } catch {
@@ -219,10 +233,10 @@ export async function prepareAssetPrompt({
           attachment,
           fileBytes,
           fixedModelSpec: ctx.fixedModelSpec,
-          openaiApiKey: ctx.openaiApiKey ?? (ctx.envForRun.OPENAI_API_KEY?.trim() ?? null),
-          openaiBaseUrl: ctx.openaiBaseUrl ?? (ctx.envForRun.OPENAI_BASE_URL?.trim() ?? null),
+          openaiApiKey: ctx.openaiApiKey ?? ctx.envForRun.OPENAI_API_KEY?.trim() ?? null,
+          openaiBaseUrl: ctx.openaiBaseUrl ?? ctx.envForRun.OPENAI_BASE_URL?.trim() ?? null,
           openrouterApiKey:
-            ctx.openrouterApiKey ?? (ctx.envForRun.OPENROUTER_API_KEY?.trim() ?? null),
+            ctx.openrouterApiKey ?? ctx.envForRun.OPENROUTER_API_KEY?.trim() ?? null,
           preprocessMode: ctx.preprocessMode,
           textContent,
         })
@@ -287,7 +301,9 @@ export async function prepareAssetPrompt({
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`, { cause: error });
+      throw new Error(`Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`, {
+        cause: error,
+      });
     }
     if (Buffer.byteLength(preprocessedMarkdown, 'utf8') > MAX_TEXT_BYTES_DEFAULT) {
       throw new Error(
@@ -301,8 +317,9 @@ export async function prepareAssetPrompt({
   if (attachment.kind === 'image') {
     buildImageAttachment();
   } else if (usingPreprocessedMarkdown) {
-    if (!preprocessedMarkdown)
-      {throw new Error('Internal error: missing markitdown content for preprocessing');}
+    if (!preprocessedMarkdown) {
+      throw new Error('Internal error: missing markitdown content for preprocessing');
+    }
     buildInlinePromptText({
       content: preprocessedMarkdown,
       contentMediaType: 'text/markdown',

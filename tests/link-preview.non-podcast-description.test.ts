@@ -18,7 +18,9 @@ describe('link preview extraction (non-podcast host description)', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com/article') {return htmlResponse(html);}
+      if (url === 'https://example.com/article') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

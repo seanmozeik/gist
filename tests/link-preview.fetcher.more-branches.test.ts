@@ -33,7 +33,7 @@ describe('link preview fetcher - more branches', () => {
     const fetchNoBody = vi.fn(async () => {
       return {
         body: null,
-        headers: new Headers({ 'content-type': 'text/html', 'content-length': '3' }),
+        headers: new Headers({ 'content-length': '3', 'content-type': 'text/html' }),
         ok: true,
         status: 200,
         async text() {
@@ -54,8 +54,12 @@ describe('link preview fetcher - more branches', () => {
       return {
         async read() {
           i += 1;
-          if (i === 1) {return { done: false, value: undefined as unknown as Uint8Array };}
-          if (i === 2) {return { done: false, value: new TextEncoder().encode('hi') };}
+          if (i === 1) {
+            return { done: false, value: undefined as unknown as Uint8Array };
+          }
+          if (i === 2) {
+            return { done: false, value: new TextEncoder().encode('hi') };
+          }
           return { done: true, value: undefined as unknown as Uint8Array };
         },
       };

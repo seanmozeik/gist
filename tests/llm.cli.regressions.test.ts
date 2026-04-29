@@ -70,8 +70,8 @@ describe('runCliModel regressions', () => {
       env: {},
       execFileImpl: (_cmd, args, _opts, cb) => {
         const outputIndex = args.indexOf('--output-last-message');
-        const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
-        if (!outputPath) throw new Error('missing output path');
+        const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
+        if (!outputPath) {throw new Error('missing output path');}
         writeFileSync(outputPath, '   ', 'utf8');
         cb(
           null,
@@ -82,7 +82,7 @@ describe('runCliModel regressions', () => {
           ].join('\n'),
           '',
         );
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: null,
       prompt: 'hi',
@@ -101,8 +101,8 @@ describe('runCliModel regressions', () => {
         env: {},
         execFileImpl: (_cmd, args, _opts, cb) => {
           const outputIndex = args.indexOf('--output-last-message');
-          const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
-          if (!outputPath) throw new Error('missing output path');
+          const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
+          if (!outputPath) {throw new Error('missing output path');}
           writeFileSync(outputPath, '   ', 'utf8');
           cb(
             null,
@@ -112,7 +112,7 @@ describe('runCliModel regressions', () => {
             ].join('\n'),
             '',
           );
-          return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+          return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
         },
         model: null,
         prompt: 'hi',

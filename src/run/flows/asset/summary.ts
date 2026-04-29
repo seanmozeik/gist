@@ -55,14 +55,24 @@ function shouldBypassShortContentSummary({
   ctx: Pick<AssetSummaryContext, 'forceSummary' | 'lengthArg' | 'maxOutputTokensArg' | 'json'>;
   textContent: { content: string } | null;
 }): boolean {
-  if (ctx.forceSummary) {return false;}
-  if (!textContent?.content) {return false;}
+  if (ctx.forceSummary) {
+    return false;
+  }
+  if (!textContent?.content) {
+    return false;
+  }
   const targetCharacters = resolveTargetCharacters(ctx.lengthArg, SUMMARY_LENGTH_TARGET_CHARACTERS);
-  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) {return false;}
-  if (textContent.content.length > targetCharacters) {return false;}
+  if (!Number.isFinite(targetCharacters) || targetCharacters <= 0) {
+    return false;
+  }
+  if (textContent.content.length > targetCharacters) {
+    return false;
+  }
   if (!ctx.json && typeof ctx.maxOutputTokensArg === 'number') {
     const tokenCount = countTokens(textContent.content);
-    if (tokenCount > ctx.maxOutputTokensArg) {return false;}
+    if (tokenCount > ctx.maxOutputTokensArg) {
+      return false;
+    }
   }
   return true;
 }
@@ -170,7 +180,9 @@ async function outputBypassedAssetSummary({
   if (!ctx.plain && isRichTty(ctx.stdout)) {
     ctx.stdout.write(`\n${rendered.replace(/^\n+/, '')}`);
   } else {
-    if (isRichTty(ctx.stdout)) {ctx.stdout.write('\n');}
+    if (isRichTty(ctx.stdout)) {
+      ctx.stdout.write('\n');
+    }
     ctx.stdout.write(rendered.replace(/^\n+/, ''));
   }
   if (!rendered.endsWith('\n')) {
@@ -517,7 +529,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
     }
     if (!summaryFromCache) {
       for (const attempt of attempts) {
-        if (!ctx.summaryEngine.envHasKeyFor(attempt.requiredEnv)) {continue;}
+        if (!ctx.summaryEngine.envHasKeyFor(attempt.requiredEnv)) {
+          continue;
+        }
         const key = buildSummaryCacheKey({
           contentHash,
           languageKey,
@@ -526,7 +540,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
           promptHash,
         });
         const cached = cacheStore.getText('summary', key);
-        if (!cached) {continue;}
+        if (!cached) {
+          continue;
+        }
         writeVerbose(ctx.stderr, ctx.verbose, 'cache hit summary', ctx.verboseColor, ctx.envForRun);
         args.onModelChosen?.(attempt.userModelId);
         summaryResult = {
@@ -587,11 +603,11 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
       },
       runAttempt: (attempt) =>
         ctx.summaryEngine.runSummaryAttempt({
-          attempt,
-          prompt,
           allowStreaming: ctx.streamingEnabled,
-          onModelChosen: args.onModelChosen ?? null,
+          attempt,
           cli: cliContext,
+          onModelChosen: args.onModelChosen ?? null,
+          prompt,
         }),
     });
     summaryResult = attemptOutcome.result;
@@ -603,7 +619,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
 
   if (!summaryResult || !usedAttempt) {
     const withFreeTip = (message: string) => {
-      if (!ctx.isNamedModelSelection || !ctx.wantsFreeNamedModel) {return message;}
+      if (!ctx.isNamedModelSelection || !ctx.wantsFreeNamedModel) {
+        return message;
+      }
       return (
         `${message}\n` +
         `Tip: run "summarize refresh-free" to refresh the free model candidates (writes ~/.summarize/config.json).`
@@ -640,7 +658,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
       }
       return;
     }
-    if (lastError instanceof Error) {throw lastError;}
+    if (lastError instanceof Error) {
+      throw lastError;
+    }
     throw new Error('No model available for this input');
   }
 
@@ -790,7 +810,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
     if (!ctx.plain && isRichTty(ctx.stdout)) {
       ctx.stdout.write(`\n${rendered.replace(/^\n+/, '')}`);
     } else {
-      if (isRichTty(ctx.stdout)) {ctx.stdout.write('\n');}
+      if (isRichTty(ctx.stdout)) {
+        ctx.stdout.write('\n');
+      }
       ctx.stdout.write(rendered.replace(/^\n+/, ''));
     }
     if (!rendered.endsWith('\n')) {

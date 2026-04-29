@@ -19,7 +19,9 @@ function noopStream(): Writable {
   });
 }
 
-interface CapturedCtx { model: { apiStatus: { openaiApiKey: string | undefined } } }
+interface CapturedCtx {
+  model: { apiStatus: { openaiApiKey: string | undefined } };
+}
 
 let capturedCtx: CapturedCtx | null = null;
 

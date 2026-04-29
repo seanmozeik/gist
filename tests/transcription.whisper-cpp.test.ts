@@ -32,7 +32,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+        if (_cmd !== 'whisper-cli') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {};
@@ -55,10 +57,16 @@ describe('transcription/whisper local whisper.cpp', () => {
         // Transcription run: create output file and close 0
         const outIdx = args.indexOf('--output-file');
         const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {throw new Error('missing --output-file arg');}
+        if (!base || typeof base !== 'string') {
+          throw new Error('missing --output-file arg');
+        }
         void writeFile(`${base}.txt`, 'hello from whisper.cpp\n')
-          .then(() =>{  queueMicrotask(() => handlers.get('close')?.(0)); })
-          .catch((error) =>{  queueMicrotask(() => handlers.get('error')?.(error)); });
+          .then(() => {
+            queueMicrotask(() => handlers.get('close')?.(0));
+          })
+          .catch((error) => {
+            queueMicrotask(() => handlers.get('error')?.(error));
+          });
         return proc;
       },
     }));
@@ -100,7 +108,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+        if (_cmd !== 'whisper-cli') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {};
@@ -121,10 +131,16 @@ describe('transcription/whisper local whisper.cpp', () => {
 
         const outIdx = args.indexOf('--output-file');
         const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {throw new Error('missing --output-file arg');}
+        if (!base || typeof base !== 'string') {
+          throw new Error('missing --output-file arg');
+        }
         void writeFile(`${base}.txt`, `ok ${mediaType}\n`)
-          .then(() =>{  queueMicrotask(() => handlers.get('close')?.(0)); })
-          .catch((error) =>{  queueMicrotask(() => handlers.get('error')?.(error)); });
+          .then(() => {
+            queueMicrotask(() => handlers.get('close')?.(0));
+          })
+          .catch((error) => {
+            queueMicrotask(() => handlers.get('error')?.(error));
+          });
         return proc;
       },
     }));
@@ -158,7 +174,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+        if (_cmd !== 'whisper-cli') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {};
@@ -179,14 +197,18 @@ describe('transcription/whisper local whisper.cpp', () => {
 
         const outIdx = args.indexOf('--output-file');
         const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {throw new Error('missing --output-file arg');}
+        if (!base || typeof base !== 'string') {
+          throw new Error('missing --output-file arg');
+        }
         void writeFile(`${base}.txt`, 'file mode ok\n')
           .then(() => {
             // Progress output from `whisper-cli --print-progress` arrives on stderr.
             stderr.emit('data', String.raw`whisper_print_progress_callback: progress = 50%\n`);
             queueMicrotask(() => handlers.get('close')?.(0));
           })
-          .catch((error) =>{  queueMicrotask(() => handlers.get('error')?.(error)); });
+          .catch((error) => {
+            queueMicrotask(() => handlers.get('error')?.(error));
+          });
         return proc;
       },
     }));
@@ -243,7 +265,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
       vi.doMock('node:child_process', () => ({
         spawn: (_cmd: string, args: string[]) => {
-          if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+          if (_cmd !== 'whisper-cli') {
+            throw new Error(`Unexpected spawn: ${_cmd}`);
+          }
 
           const stderr = new EventEmitter();
           stderr.setEncoding = () => {};
@@ -301,7 +325,11 @@ describe('transcription/whisper local whisper.cpp', () => {
       const proc = {
         on(event: string, handler: (value?: unknown) => void) {
           handlers.set(event, handler);
-          if (event === 'error') {queueMicrotask(() =>{  handler(new Error('spawn ENOENT')); });}
+          if (event === 'error') {
+            queueMicrotask(() => {
+              handler(new Error('spawn ENOENT'));
+            });
+          }
           return proc;
         },
       } as unknown;
@@ -343,7 +371,11 @@ describe('transcription/whisper local whisper.cpp', () => {
       const proc = {
         on(event: string, handler: (value?: unknown) => void) {
           handlers.set(event, handler);
-          if (event === 'close') {queueMicrotask(() =>{  handler(0); });}
+          if (event === 'close') {
+            queueMicrotask(() => {
+              handler(0);
+            });
+          }
           return proc;
         },
       } as unknown;
@@ -400,7 +432,9 @@ describe('transcription/whisper local whisper.cpp', () => {
             on(event: string, handler: (value?: unknown) => void) {
               handlers.set(event, handler);
               if (_cmd === 'ffmpeg' && args.includes('-version') && event === 'error') {
-                queueMicrotask(() =>{  handler(new Error('spawn ENOENT')); });
+                queueMicrotask(() => {
+                  handler(new Error('spawn ENOENT'));
+                });
               }
               return proc;
             },
@@ -464,7 +498,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
       vi.doMock('node:child_process', () => ({
         spawn: (_cmd: string, args: string[]) => {
-          if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+          if (_cmd !== 'whisper-cli') {
+            throw new Error(`Unexpected spawn: ${_cmd}`);
+          }
 
           const stderr = new EventEmitter();
           stderr.setEncoding = () => {};
@@ -485,10 +521,16 @@ describe('transcription/whisper local whisper.cpp', () => {
 
           const outIdx = args.indexOf('--output-file');
           const base = outIdx !== -1 ? args[outIdx + 1] : null;
-          if (!base || typeof base !== 'string') {throw new Error('missing --output-file arg');}
+          if (!base || typeof base !== 'string') {
+            throw new Error('missing --output-file arg');
+          }
           void writeFile(`${base}.txt`, '   \n')
-            .then(() =>{  queueMicrotask(() => handlers.get('close')?.(0)); })
-            .catch((error) =>{  queueMicrotask(() => handlers.get('error')?.(error)); });
+            .then(() => {
+              queueMicrotask(() => handlers.get('close')?.(0));
+            })
+            .catch((error) => {
+              queueMicrotask(() => handlers.get('error')?.(error));
+            });
           return proc;
         },
       }));
@@ -526,14 +568,22 @@ describe('transcription/whisper local whisper.cpp', () => {
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {throw new Error(`Unexpected spawn: ${_cmd}`);}
-        if (!args.includes('--help')) {throw new Error(`Unexpected args: ${args.join(' ')}`);}
+        if (_cmd !== 'whisper-cli') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
+        if (!args.includes('--help')) {
+          throw new Error(`Unexpected args: ${args.join(' ')}`);
+        }
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
           on(event: string, handler: (value?: unknown) => void) {
             handlers.set(event, handler);
-            if (event === 'close') {queueMicrotask(() =>{  handler(0); });}
+            if (event === 'close') {
+              queueMicrotask(() => {
+                handler(0);
+              });
+            }
             return proc;
           },
         } as unknown;
@@ -571,7 +621,9 @@ describe('transcription/whisper local whisper.cpp', () => {
           stderr,
         } as unknown;
 
-        const close = (code: number) =>{  queueMicrotask(() => handlers.get('close')?.(code)); };
+        const close = (code: number) => {
+          queueMicrotask(() => handlers.get('close')?.(code));
+        };
 
         if (_cmd === 'whisper-cli' && args.includes('--help')) {
           close(0);
@@ -585,15 +637,21 @@ describe('transcription/whisper local whisper.cpp', () => {
 
         if (_cmd === 'ffmpeg') {
           const output = args.at(-1) ?? '';
-          void writeFile(output, new Uint8Array([9, 9, 9])).then(() =>{  close(0); });
+          void writeFile(output, new Uint8Array([9, 9, 9])).then(() => {
+            close(0);
+          });
           return proc;
         }
 
         if (_cmd === 'whisper-cli') {
           const outIdx = args.indexOf('--output-file');
           const base = outIdx !== -1 ? args[outIdx + 1] : null;
-          if (!base || typeof base !== 'string') {throw new Error('missing --output-file arg');}
-          void writeFile(`${base}.txt`, 'transcoded ok\n').then(() =>{  close(0); });
+          if (!base || typeof base !== 'string') {
+            throw new Error('missing --output-file arg');
+          }
+          void writeFile(`${base}.txt`, 'transcoded ok\n').then(() => {
+            close(0);
+          });
           return proc;
         }
 
@@ -689,7 +747,11 @@ describe('transcription/whisper local whisper.cpp', () => {
       const proc = {
         on(event: string, handler: (value?: unknown) => void) {
           handlers.set(event, handler);
-          if (event === 'close') {queueMicrotask(() =>{  handler(0); });}
+          if (event === 'close') {
+            queueMicrotask(() => {
+              handler(0);
+            });
+          }
           return proc;
         },
       } as unknown;

@@ -71,7 +71,9 @@ export function createMarkdownConverters(
     markdownRequested || transcriptMarkdownRequested ? ctx.flags.markdownMode : 'off';
 
   const markdownModel: MarkdownModel | null = (() => {
-    if (!markdownRequested && !transcriptMarkdownRequested) {return null;}
+    if (!markdownRequested && !transcriptMarkdownRequested) {
+      return null;
+    }
 
     // Prefer the explicitly chosen model when it is a native provider (keeps behavior stable).
     if (
@@ -162,20 +164,32 @@ export function createMarkdownConverters(
   })();
 
   const markdownProvider = (() => {
-    if (!markdownModel) {return 'none' as const;}
+    if (!markdownModel) {
+      return 'none' as const;
+    }
     const parsed = parseGatewayStyleModelId(markdownModel.llmModelId);
     return parsed.provider;
   })();
 
   const hasKeyForMarkdownModel = (() => {
-    if (!markdownModel) {return false;}
-    if (markdownModel.forceOpenRouter) {return ctx.model.apiStatus.openrouterConfigured;}
-    if (markdownModel.requiredEnv === 'Z_AI_API_KEY') {return Boolean(ctx.model.apiStatus.zaiApiKey);}
-    if (markdownModel.requiredEnv === 'NVIDIA_API_KEY')
-      {return Boolean(ctx.model.apiStatus.nvidiaApiKey);}
-    if (markdownModel.requiredEnv === 'GITHUB_TOKEN')
-      {return Boolean(resolveGitHubModelsApiKey(ctx.io.envForRun));}
-    if (markdownModel.openaiApiKeyOverride) {return true;}
+    if (!markdownModel) {
+      return false;
+    }
+    if (markdownModel.forceOpenRouter) {
+      return ctx.model.apiStatus.openrouterConfigured;
+    }
+    if (markdownModel.requiredEnv === 'Z_AI_API_KEY') {
+      return Boolean(ctx.model.apiStatus.zaiApiKey);
+    }
+    if (markdownModel.requiredEnv === 'NVIDIA_API_KEY') {
+      return Boolean(ctx.model.apiStatus.nvidiaApiKey);
+    }
+    if (markdownModel.requiredEnv === 'GITHUB_TOKEN') {
+      return Boolean(resolveGitHubModelsApiKey(ctx.io.envForRun));
+    }
+    if (markdownModel.openaiApiKeyOverride) {
+      return true;
+    }
     const parsed = parseGatewayStyleModelId(markdownModel.llmModelId);
     return parsed.provider === 'xai'
       ? Boolean(ctx.model.apiStatus.xaiApiKey)
@@ -196,10 +210,18 @@ export function createMarkdownConverters(
     !hasKeyForMarkdownModel
   ) {
     const required = (() => {
-      if (markdownModel?.forceOpenRouter) {return 'OPENROUTER_API_KEY';}
-      if (markdownModel?.requiredEnv === 'Z_AI_API_KEY') {return 'Z_AI_API_KEY';}
-      if (markdownModel?.requiredEnv === 'NVIDIA_API_KEY') {return 'NVIDIA_API_KEY';}
-      if (markdownModel?.requiredEnv === 'GITHUB_TOKEN') {return 'GITHUB_TOKEN (or GH_TOKEN)';}
+      if (markdownModel?.forceOpenRouter) {
+        return 'OPENROUTER_API_KEY';
+      }
+      if (markdownModel?.requiredEnv === 'Z_AI_API_KEY') {
+        return 'Z_AI_API_KEY';
+      }
+      if (markdownModel?.requiredEnv === 'NVIDIA_API_KEY') {
+        return 'NVIDIA_API_KEY';
+      }
+      if (markdownModel?.requiredEnv === 'GITHUB_TOKEN') {
+        return 'GITHUB_TOKEN (or GH_TOKEN)';
+      }
       if (markdownModel) {
         const parsed = parseGatewayStyleModelId(markdownModel.llmModelId);
         return parsed.provider === 'xai'
@@ -237,14 +259,14 @@ export function createMarkdownConverters(
           googleBaseUrlOverride: ctx.model.apiStatus.providerBaseUrls.google,
           modelId: markdownModel.llmModelId,
           onRetry: createRetryLogger({
+            color: ctx.flags.verboseColor,
+            env: ctx.io.envForRun,
+            modelId: markdownModel.llmModelId,
             stderr: ctx.io.stderr,
             verbose: ctx.flags.verbose,
-            color: ctx.flags.verboseColor,
-            modelId: markdownModel.llmModelId,
-            env: ctx.io.envForRun,
           }),
           onUsage: ({ model: usedModel, provider, usage }) => {
-            ctx.model.llmCalls.push({ provider, model: usedModel, usage, purpose: 'markdown' });
+            ctx.model.llmCalls.push({ model: usedModel, provider, purpose: 'markdown', usage });
           },
           openaiApiKey: markdownModel.openaiApiKeyOverride ?? ctx.model.apiStatus.apiKey,
           openaiBaseUrlOverride:
@@ -302,7 +324,7 @@ export function createMarkdownConverters(
 
         if (ctx.flags.extractMode) {
           if (markitdownHtmlToMarkdown) {
-            return  markitdownHtmlToMarkdown(args);
+            return markitdownHtmlToMarkdown(args);
           }
           throw new Error(
             'No HTML→Markdown converter configured (install uvx/markitdown or use --markdown-mode llm)',
@@ -313,13 +335,15 @@ export function createMarkdownConverters(
           try {
             return await llmHtmlToMarkdown(args);
           } catch (error) {
-            if (!markitdownHtmlToMarkdown) {throw error;}
-            return  markitdownHtmlToMarkdown(args);
+            if (!markitdownHtmlToMarkdown) {
+              throw error;
+            }
+            return markitdownHtmlToMarkdown(args);
           }
         }
 
         if (markitdownHtmlToMarkdown) {
-          return  markitdownHtmlToMarkdown(args);
+          return markitdownHtmlToMarkdown(args);
         }
 
         throw new Error('No HTML→Markdown converter configured');
@@ -341,14 +365,14 @@ export function createMarkdownConverters(
           googleBaseUrlOverride: ctx.model.apiStatus.providerBaseUrls.google,
           modelId: markdownModel.llmModelId,
           onRetry: createRetryLogger({
+            color: ctx.flags.verboseColor,
+            env: ctx.io.envForRun,
+            modelId: markdownModel.llmModelId,
             stderr: ctx.io.stderr,
             verbose: ctx.flags.verbose,
-            color: ctx.flags.verboseColor,
-            modelId: markdownModel.llmModelId,
-            env: ctx.io.envForRun,
           }),
           onUsage: ({ model: usedModel, provider, usage }) => {
-            ctx.model.llmCalls.push({ provider, model: usedModel, usage, purpose: 'markdown' });
+            ctx.model.llmCalls.push({ model: usedModel, provider, purpose: 'markdown', usage });
           },
           openaiApiKey: markdownModel.openaiApiKeyOverride ?? ctx.model.apiStatus.apiKey,
           openaiBaseUrlOverride:

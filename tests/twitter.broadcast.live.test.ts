@@ -45,7 +45,7 @@ const createClient = () =>
     groqApiKey: null,
     openaiApiKey: OPENAI_API_KEY,
     readTweetWithBird: ({ url, timeoutMs }) =>
-      readTweetWithPreferredClient({ url, timeoutMs, env: ENV }),
+      readTweetWithPreferredClient({ env: ENV, timeoutMs, url }),
     resolveTwitterCookies: async () => {
       const res = await resolveTwitterCookies({ env: ENV });
       return {
@@ -64,9 +64,7 @@ describe('live X broadcast (tweet video)', () => {
     'transcribes tweet video via yt-dlp and exposes a video url',
     async () => {
       const client = createClient();
-      const result = await client.fetchLinkContent(TWEET_URL, {
-        timeoutMs: LIVE_FETCH_TIMEOUT_MS,
-      });
+      const result = await client.fetchLinkContent(TWEET_URL, { timeoutMs: LIVE_FETCH_TIMEOUT_MS });
 
       expect(result.video).not.toBeNull();
       expect(result.transcriptSource).not.toBeNull();
@@ -83,13 +81,13 @@ describe('live X broadcast slides', () => {
     'extracts slides for tweet video',
     async () => {
       const client = createClient();
-      const result = await client.fetchLinkContent(TWEET_URL, {
-        timeoutMs: LIVE_FETCH_TIMEOUT_MS,
-      });
+      const result = await client.fetchLinkContent(TWEET_URL, { timeoutMs: LIVE_FETCH_TIMEOUT_MS });
       const source = resolveSlideSource({ extracted: result, url: TWEET_URL! });
 
       expect(source).not.toBeNull();
-      if (!source) {return;}
+      if (!source) {
+        return;
+      }
 
       const slidesDir = mkdtempSync(path.join(tmpdir(), 'summarize-live-slides-'));
       const settings = resolveSlideSettings({ cwd: slidesDir, slides: true, slidesDir });

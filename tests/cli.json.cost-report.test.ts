@@ -9,7 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/run.js';
 import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -48,9 +52,9 @@ describe('cli json + metrics report', () => {
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
         'gpt-5-chat': {
-          input_cost_per_token: 0.000001,
+          input_cost_per_token: 0.000_001,
           max_output_tokens: 2048,
-          output_cost_per_token: 0.000002,
+          output_cost_per_token: 0.000_002,
         },
       }),
       'utf8',

@@ -20,7 +20,7 @@ describe('daemon/meta', () => {
     it('formats website input lengths', () => {
       expect(
         formatInputSummary({
-          characters: 12000,
+          characters: 12_000,
           durationSeconds: null,
           kindLabel: null,
           words: 1234,
@@ -31,7 +31,7 @@ describe('daemon/meta', () => {
     it('formats media input with approximate duration', () => {
       expect(
         formatInputSummary({
-          characters: 10200,
+          characters: 10_200,
           durationSeconds: 600,
           isDurationApproximate: true,
           kindLabel: 'YouTube',

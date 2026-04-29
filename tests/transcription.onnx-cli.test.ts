@@ -163,7 +163,9 @@ describe('onnx cli transcriber', () => {
     });
 
     const cacheDir = env.SUMMARIZE_ONNX_CACHE_DIR;
-    if (!cacheDir) {throw new Error('missing SUMMARIZE_ONNX_CACHE_DIR');}
+    if (!cacheDir) {
+      throw new Error('missing SUMMARIZE_ONNX_CACHE_DIR');
+    }
 
     await fs.rm(cacheDir, { force: true, recursive: true });
     await fs.unlink(filePath);

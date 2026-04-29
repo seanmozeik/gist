@@ -41,7 +41,9 @@ const silentStderr = new Writable({
     if (descriptionText.length <= minDescriptionChars) {
       // Some hosts (especially geo/consent gated pages) omit metadata and return thin content.
       // Treat this as a soft skip for live host tests.
-      if (contentText.length < 200) {return;}
+      if (contentText.length < 200) {
+        return;
+      }
       expect(contentText.length).toBeGreaterThanOrEqual(200);
       return;
     }
@@ -90,7 +92,9 @@ const silentStderr = new Writable({
       const description = payload.extracted?.description ?? '';
       const content = payload.extracted?.content ?? '';
       // Amazon pages can return geo/anti-bot thin payloads even via Firecrawl.
-      if (description.length === 0 && content.length < 200) {return;}
+      if (description.length === 0 && content.length < 200) {
+        return;
+      }
       expectDescriptionOrTranscript({ content, description, minDescriptionChars: 80 });
     },
     timeoutMs,

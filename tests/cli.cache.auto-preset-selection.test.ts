@@ -38,7 +38,9 @@ describe('auto preset summary cache', () => {
     });
     mocks.generateTextWithModelId.mockImplementation(async ({ modelId }: { modelId: string }) => {
       if (modelId === 'openai/gpt-4.1') {
-        if (mocks.weakFails) {throw new Error('weak model failed');}
+        if (mocks.weakFails) {
+          throw new Error('weak model failed');
+        }
         return { text: 'Weak summary.' };
       }
       if (modelId === 'openai/gpt-5.2') {

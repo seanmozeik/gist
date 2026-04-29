@@ -28,7 +28,7 @@ vi.mock('@mariozechner/pi-ai', () => {
 
 const buildAssistant = (provider: string, model: string): AssistantMessage => ({
   api: 'openai-completions',
-  content: [{ type: 'text', text: 'ok' }],
+  content: [{ text: 'ok', type: 'text' }],
   model,
   provider,
   role: 'assistant',
@@ -92,7 +92,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home, OPENROUTER_API_KEY: 'or-key' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openrouter/openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -109,7 +109,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -128,7 +128,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai', OPENAI_BASE_URL: 'http://127.0.0.1:1234/v1' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/my-custom-model',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -156,7 +156,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai', OPENAI_BASE_URL: 'http://127.0.0.1:1234/v1' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -179,7 +179,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -197,7 +197,7 @@ describe('daemon/agent', () => {
       completeAgentResponse({
         automationEnabled: false,
         env: { HOME: home },
-        messages: [{ role: 'user', content: 'Hi' }],
+        messages: [{ content: 'Hi', role: 'user' }],
         modelOverride: 'openrouter/openai/gpt-5-mini',
         pageContent: 'Hello world',
         pageTitle: null,
@@ -212,7 +212,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: true,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -229,7 +229,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: true,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -252,7 +252,7 @@ describe('daemon/agent', () => {
     await completeAgentResponse({
       automationEnabled: true,
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'openai/gpt-5-mini',
       pageContent: 'Hello world',
       pageTitle: null,
@@ -292,7 +292,7 @@ describe('daemon/agent', () => {
           OPENAI_API_KEY: 'sk-openrouter-via-openai',
           OPENAI_BASE_URL: 'https://openrouter.ai/api/v1',
         },
-        messages: [{ role: 'user', content: 'Hi' }],
+        messages: [{ content: 'Hi', role: 'user' }],
         modelOverride: null,
         pageContent: 'Hello world',
         pageTitle: null,
@@ -313,7 +313,7 @@ describe('daemon/agent', () => {
     const assistant = await completeAgentResponse({
       automationEnabled: false,
       env: { HOME: home },
-      messages: [{ role: 'user', content: 'Hi' }],
+      messages: [{ content: 'Hi', role: 'user' }],
       modelOverride: 'cli/codex/gpt-5.2',
       pageContent: 'Hello world',
       pageTitle: 'Example',
@@ -352,7 +352,7 @@ describe('daemon/agent', () => {
       const assistant = await completeAgentResponse({
         automationEnabled: false,
         env: { HOME: home, PATH: fakeCodex.dir },
-        messages: [{ role: 'user', content: 'Hi' }],
+        messages: [{ content: 'Hi', role: 'user' }],
         modelOverride: null,
         pageContent: 'Hello world',
         pageTitle: null,
@@ -398,7 +398,7 @@ describe('daemon/agent', () => {
         completeAgentResponse({
           automationEnabled: false,
           env: { HOME: home, PATH: '' },
-          messages: [{ role: 'user', content: 'Hi' }],
+          messages: [{ content: 'Hi', role: 'user' }],
           modelOverride: null,
           pageContent: 'Hello world',
           pageTitle: null,

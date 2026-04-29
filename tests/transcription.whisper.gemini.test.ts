@@ -17,9 +17,7 @@ describe('transcription/whisper gemini', () => {
       const url = typeof input === 'string' ? input : input.toString();
       expect(url).toContain('/models/gemini-2.5-flash:generateContent');
       const body = JSON.parse(String(init?.body)) as {
-        contents?: {
-          parts?: Array<{ inline_data?: { mime_type?: string; data?: string } }>;
-        }[];
+        contents?: { parts?: { inline_data?: { mime_type?: string; data?: string } }[] }[];
       };
       expect(body.contents?.[0]?.parts?.[1]?.inline_data?.mime_type).toBe('audio/mpeg');
       expect(body.contents?.[0]?.parts?.[1]?.inline_data?.data).toBeTypeOf('string');
@@ -113,7 +111,7 @@ describe('transcription/whisper gemini', () => {
       }
       if (url.includes('/models/gemini-2.5-flash:generateContent')) {
         const body = JSON.parse(String(init?.body)) as {
-          contents?: { parts?: Array<{ file_data?: { file_uri?: string } }> }[];
+          contents?: { parts?: { file_data?: { file_uri?: string } }[] }[];
         };
         expect(body.contents?.[0]?.parts?.[1]?.file_data?.file_uri).toBe(
           'https://files.example/audio',

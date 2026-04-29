@@ -5,18 +5,16 @@ import {
   parseCacheConfig,
   parseCliConfig,
   parseEnvConfig,
+  parseLocalConfig,
   parseLoggingConfig,
   parseMediaConfig,
   parseOpenAiConfig,
   parseOutputConfig,
-  parseProviderBaseUrlConfig,
-  parseSlidesConfig,
   parseUiConfig,
 } from './config/sections.js';
 import type { SummarizeConfig } from './config/types.js';
 
 export type {
-  AnthropicConfig,
   ApiKeysConfig,
   AutoRule,
   AutoRuleKind,
@@ -26,19 +24,16 @@ export type {
   CliProvider,
   CliProviderConfig,
   EnvConfig,
-  GoogleConfig,
+  LocalConfig,
   LoggingConfig,
   LoggingFormat,
   LoggingLevel,
   MediaCacheConfig,
   MediaCacheVerifyMode,
   ModelConfig,
-  NvidiaConfig,
   OpenAiConfig,
   SummarizeConfig,
   VideoMode,
-  XaiConfig,
-  ZaiConfig,
 } from './config/types.js';
 
 export { mergeConfigEnv, resolveConfigEnv } from './config/env.js';
@@ -48,15 +43,21 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
   path: string | null;
 } {
   const path = resolveSummarizeConfigPath(env);
-  if (!path) {return { config: null, path: null };}
+  if (!path) {
+    return { config: null, path: null };
+  }
   const parsed = readParsedConfigFile(path);
-  if (!parsed) {return { config: null, path };}
+  if (!parsed) {
+    return { config: null, path };
+  }
 
   const model = parseModelConfig(parsed.model, path, 'model');
 
   const language = (() => {
     const value = parsed.language;
-    if (value === undefined) {return undefined;}
+    if (value === undefined) {
+      return;
+    }
     if (typeof value !== 'string') {
       throw new TypeError(`Invalid config file ${path}: "language" must be a string.`);
     }
@@ -68,8 +69,10 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
   })();
 
   const prompt = (() => {
-    const value = (parsed).prompt;
-    if (value === undefined) {return undefined;}
+    const value = parsed.prompt;
+    if (value === undefined) {
+      return;
+    }
     if (typeof value !== 'string') {
       throw new TypeError(`Invalid config file ${path}: "prompt" must be a string.`);
     }
@@ -83,23 +86,12 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
   const models = parseModelsConfig(parsed, path);
   const cache = parseCacheConfig(parsed, path);
   const media = parseMediaConfig(parsed);
-  const slides = parseSlidesConfig(parsed, path);
   const cli = parseCliConfig(parsed, path);
   const output = parseOutputConfig(parsed, path);
   const ui = parseUiConfig(parsed, path);
   const logging = parseLoggingConfig(parsed, path);
   const openai = parseOpenAiConfig(parsed, path);
-
-  const nvidia = parseProviderBaseUrlConfig(
-    (parsed).nvidia,
-    path,
-    'nvidia',
-  );
-  const anthropic = parseProviderBaseUrlConfig(parsed.anthropic, path, 'anthropic');
-  const google = parseProviderBaseUrlConfig(parsed.google, path, 'google');
-  const xai = parseProviderBaseUrlConfig(parsed.xai, path, 'xai');
-  const zai = parseProviderBaseUrlConfig((parsed).zai, path, 'zai');
-
+  const local = parseLocalConfig(parsed, path);
   const configEnv = parseEnvConfig(parsed, path);
   const apiKeys = parseApiKeysConfig(parsed, path);
 
@@ -111,16 +103,11 @@ export function loadSummarizeConfig({ env }: { env: Record<string, string | unde
       ...(cache ? { cache } : {}),
       ...(models ? { models } : {}),
       ...(media ? { media } : {}),
-      ...(slides ? { slides } : {}),
       ...(output ? { output } : {}),
       ...(ui ? { ui } : {}),
       ...(cli ? { cli } : {}),
       ...(openai ? { openai } : {}),
-      ...(nvidia ? { nvidia } : {}),
-      ...(anthropic ? { anthropic } : {}),
-      ...(google ? { google } : {}),
-      ...(xai ? { xai } : {}),
-      ...(zai ? { zai } : {}),
+      ...(local ? { local } : {}),
       ...(logging ? { logging } : {}),
       ...(configEnv ? { env: configEnv } : {}),
       ...(apiKeys ? { apiKeys } : {}),

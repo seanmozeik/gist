@@ -126,7 +126,7 @@ describe('sidepanel navigation runtime', () => {
     ]);
 
     const runtimeWithSource = createNavigationRuntime({
-      getCurrentSource: () => ({ url: 'https://example.com/a', title: 'A' }),
+      getCurrentSource: () => ({ title: 'A', url: 'https://example.com/a' }),
       resetForNavigation,
       setBaseTitle,
       setCurrentSource: vi.fn(),
@@ -167,7 +167,7 @@ describe('sidepanel navigation runtime', () => {
     const setBaseTitle = vi.fn();
 
     const runtime = createNavigationRuntime({
-      getCurrentSource: () => ({ url: 'https://example.com/a', title: 'A' }),
+      getCurrentSource: () => ({ title: 'A', url: 'https://example.com/a' }),
       resetForNavigation,
       setBaseTitle,
       setCurrentSource: vi.fn(),

@@ -55,7 +55,9 @@ describe('link preview fetcher', () => {
             reject(new Error('Missing abort signal'));
             return;
           }
-          signal.addEventListener('abort', () =>{  reject(new DOMException('Aborted', 'AbortError')); });
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
         });
       });
 

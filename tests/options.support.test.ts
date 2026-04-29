@@ -26,7 +26,7 @@ function createFakeElement() {
     hidden: false,
     textContent: '',
     toggleAttribute(name: string, force?: boolean) {
-      if (name === 'hidden') this.hidden = Boolean(force);
+      if (name === 'hidden') {this.hidden = Boolean(force);}
     },
   } as unknown as HTMLElement;
 }
@@ -102,7 +102,11 @@ describe('options support', () => {
     const tokenEl = createFakeInput('abc123');
     const flashStatus = vi.fn();
     vi.stubGlobal('navigator', {
-      clipboard: { writeText: vi.fn(async () => { throw new Error('boom'); }) },
+      clipboard: {
+        writeText: vi.fn(async () => {
+          throw new Error('boom');
+        }),
+      },
     });
     const execCommand = vi.fn(() => true);
     vi.stubGlobal('document', { execCommand });
@@ -122,7 +126,11 @@ describe('options support', () => {
 
     const tokenEl = createFakeInput('abc123');
     vi.stubGlobal('navigator', {
-      clipboard: { writeText: vi.fn(async () => { throw new Error('boom'); }) },
+      clipboard: {
+        writeText: vi.fn(async () => {
+          throw new Error('boom');
+        }),
+      },
     });
     vi.stubGlobal('document', { execCommand: vi.fn(() => false) });
 

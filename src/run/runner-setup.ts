@@ -25,7 +25,9 @@ export function handleVersionFlag({
   versionRequested: boolean;
   stdout: NodeJS.WritableStream;
 }) {
-  if (!versionRequested) {return false;}
+  if (!versionRequested) {
+    return false;
+  }
   stdout.write(`${formatVersionLine()}\n`);
   return true;
 }
@@ -38,7 +40,9 @@ export function applyWidthOverride({
   env: Record<string, string | undefined>;
 }) {
   const widthArg = typeof width === 'string' ? Number(width) : undefined;
-  if (widthArg === undefined) {return;}
+  if (widthArg === undefined) {
+    return;
+  }
   if (!Number.isFinite(widthArg) || widthArg < 20) {
     throw new Error('--width must be a number >= 20.');
   }
@@ -64,7 +68,9 @@ export async function resolvePromptOverride({
       text = await fs.readFile(promptFileArg, 'utf8');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to read --prompt-file ${promptFileArg}: ${message}`, { cause: error });
+      throw new Error(`Failed to read --prompt-file ${promptFileArg}: ${message}`, {
+        cause: error,
+      });
     }
     const trimmed = text.trim();
     if (!trimmed) {
@@ -73,7 +79,9 @@ export async function resolvePromptOverride({
     return trimmed;
   }
 
-  if (!promptArg) {return null;}
+  if (!promptArg) {
+    return null;
+  }
   const trimmed = promptArg.trim();
   if (!trimmed) {
     throw new Error('Prompt must not be empty.');
@@ -107,7 +115,9 @@ export async function handleCacheUtilityFlags({
   }
 
   const cacheStatsFlag = normalizedArgv.includes('--cache-stats');
-  if (!cacheStatsFlag) {return false;}
+  if (!cacheStatsFlag) {
+    return false;
+  }
 
   const extraArgs = normalizedArgv.filter((arg) => arg !== '--cache-stats');
   if (extraArgs.length > 0) {

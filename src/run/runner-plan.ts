@@ -24,11 +24,13 @@ import { resolveStreamSettings } from './run-stream.js';
 import { createRunnerFlowContexts } from './runner-contexts.js';
 import { executeRunnerInput } from './runner-execution.js';
 import { resolveRunnerFlags } from './runner-flags.js';
-import { resolveRunnerSlidesSettings } from './runner-slides.js';
 import { createSummaryEngine } from './summary-engine.js';
 import { isRichTty, supportsColor } from './terminal.js';
 
-export interface RunnerPlan { cacheState: CacheState; execute: () => Promise<void> }
+export interface RunnerPlan {
+  cacheState: CacheState;
+  execute: () => Promise<void>;
+}
 
 export async function createRunnerPlan(options: {
   normalizedArgv: string[];
@@ -60,8 +62,8 @@ export async function createRunnerPlan(options: {
   let cliProviderArgRaw = typeof programOpts.cli === 'string' ? programOpts.cli : null;
   const inputResolution = resolveRunInput({ cliFlagPresent, cliProviderArgRaw, program, stdout });
   ({ cliProviderArgRaw } = inputResolution);
-  const {inputTarget} = inputResolution;
-  const {url} = inputResolution;
+  const { inputTarget } = inputResolution;
+  const { url } = inputResolution;
 
   const runStartedAtMs = Date.now();
   const {
@@ -176,13 +178,7 @@ export async function createRunnerPlan(options: {
     ? requestedLengthArg
     : resolveSummaryLength(config?.output?.length).lengthArg;
 
-  const slidesSettings = resolveRunnerSlidesSettings({
-    config,
-    inputTarget,
-    normalizedArgv,
-    programOpts,
-  });
-  const transcriptTimestamps = Boolean(programOpts.timestamps) || Boolean(slidesSettings);
+  const transcriptTimestamps = Boolean(programOpts.timestamps);
 
   const lengthInstruction = promptOverride ? buildPromptLengthInstruction(lengthArg) : null;
   const languageInstruction =
@@ -285,21 +281,18 @@ export async function createRunnerPlan(options: {
   const desiredOutputTokens = resolveDesiredOutputTokens({ lengthArg, maxOutputTokensArg });
 
   const summaryEngine = createSummaryEngine({
-    apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey: apiKey, openrouterApiKey, xaiApiKey },
+    apiKeys: { openrouterApiKey },
     clearProgressForStdout,
     cliAvailability,
     cliConfigForRun: cliConfigForRun ?? null,
     env,
     envForRun,
     execFileImpl,
-    keyFlags: { anthropicConfigured, googleConfigured, openrouterConfigured },
     llmCalls,
-    nvidia: { apiKey: nvidiaApiKey, baseUrl: nvidiaBaseUrl },
     openaiRequestOptions,
     openaiRequestOptionsOverride,
     openaiUseChatCompletions,
     plain,
-    providerBaseUrls,
     resolveMaxInputTokensForCall,
     resolveMaxOutputTokensForCall,
     restoreProgressAfterStdout,
@@ -311,13 +304,16 @@ export async function createRunnerPlan(options: {
     trackedFetch,
     verbose,
     verboseColor,
-    zai: { apiKey: zaiApiKey, baseUrl: zaiBaseUrl },
   });
 
   const writeViaFooter = (parts: string[]) => {
-    if (json || extractMode) {return;}
+    if (json || extractMode) {
+      return;
+    }
     const filtered = parts.map((part) => part.trim()).filter(Boolean);
-    if (filtered.length === 0) {return;}
+    if (filtered.length === 0) {
+      return;
+    }
     clearProgressForStdout();
     stderr.write(`${themeForStderr.dim(`via ${filtered.join(', ')}`)}\n`);
     restoreProgressAfterStdout?.();
@@ -353,9 +349,7 @@ export async function createRunnerPlan(options: {
       retries,
       runStartedAtMs,
       shouldComputeReport,
-      slides: slidesSettings,
-      slidesDebug,
-      slidesOutput: true,
+
       streamMode,
       streamingEnabled,
       summaryCacheBypass: noCacheFlag,
@@ -371,28 +365,14 @@ export async function createRunnerPlan(options: {
     model: {
       allowAutoCliFallback: false,
       apiStatus: {
-        anthropicApiKey,
-        anthropicConfigured,
-        apiKey,
         apifyToken,
-        assemblyaiApiKey,
-        falApiKey,
         firecrawlApiKey,
         firecrawlConfigured,
-        googleApiKey,
-        googleConfigured,
-        groqApiKey,
-        nvidiaApiKey,
-        nvidiaBaseUrl,
-        openaiApiKey,
+        localBaseUrl: envForRun.SUMMARIZE_LOCAL_BASE_URL ?? null,
         openrouterApiKey,
         openrouterConfigured,
-        providerBaseUrls,
-        xaiApiKey,
         ytDlpCookiesFromBrowser,
         ytDlpPath,
-        zaiApiKey,
-        zaiBaseUrl,
       },
       cliAvailability,
       configForModelSelection,
@@ -431,16 +411,7 @@ export async function createRunnerPlan(options: {
         inputTarget,
         isYoutubeUrl,
         outputExtractedAssetContext: {
-          apiStatus: {
-            anthropicConfigured,
-            apiKey,
-            apifyToken,
-            firecrawlConfigured,
-            googleConfigured,
-            openaiApiKey,
-            openrouterApiKey,
-            xaiApiKey,
-          },
+          apiStatus: { apifyToken, firecrawlConfigured, openrouterApiKey },
           flags: {
             format,
             json,
@@ -465,7 +436,7 @@ export async function createRunnerPlan(options: {
         renderSpinnerStatus,
         renderSpinnerStatusWithModel,
         runUrlFlowContext: urlFlowContext,
-        slidesEnabled: Boolean(slidesSettings),
+
         stdin: stdin ?? process.stdin,
         summarizeAsset,
         url,

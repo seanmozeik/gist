@@ -42,7 +42,7 @@ describe('buildUrlPrompt with transcript timestamps', () => {
     const prompt = buildUrlPrompt({
       extracted: {
         ...baseExtracted,
-        transcriptSegments: [{ startMs: 1000, endMs: 2000, text: 'hello' }],
+        transcriptSegments: [{ endMs: 2000, startMs: 1000, text: 'hello' }],
         transcriptTimedText: '[0:01] hello',
       },
       languageInstruction: null,

@@ -20,15 +20,21 @@ export function resolveExecutableInPath(
   binary: string,
   env: Record<string, string | undefined>,
 ): string | null {
-  if (!binary) {return null;}
+  if (!binary) {
+    return null;
+  }
   if (path.isAbsolute(binary)) {
     return isExecutable(binary) ? binary : null;
   }
   const pathEnv = env.PATH ?? '';
   for (const entry of pathEnv.split(path.delimiter)) {
-    if (!entry) {continue;}
+    if (!entry) {
+      continue;
+    }
     const candidate = path.join(entry, binary);
-    if (isExecutable(candidate)) {return candidate;}
+    if (isExecutable(candidate)) {
+      return candidate;
+    }
   }
   return null;
 }
@@ -42,24 +48,26 @@ export async function canSpawnCommand({
   args?: string[];
   env: Record<string, string | undefined>;
 }): Promise<boolean> {
-  if (!command.trim()) {return false;}
+  if (!command.trim()) {
+    return false;
+  }
   return new Promise((resolve) => {
     const proc = spawn(command, args, {
       env,
       stdio: ['ignore', 'ignore', 'ignore'],
       windowsHide: true,
     });
-    proc.on('error', () =>{  resolve(false); });
-    proc.on('close', (code) =>{  resolve(code === 0); });
+    proc.on('error', () => {
+      resolve(false);
+    });
+    proc.on('close', (code) => {
+      resolve(code === 0);
+    });
   });
 }
 
 export function hasBirdCli(env: Record<string, string | undefined>): boolean {
   return resolveExecutableInPath('bird', env) !== null;
-}
-
-export function hasXurlCli(env: Record<string, string | undefined>): boolean {
-  return resolveExecutableInPath('xurl', env) !== null;
 }
 
 export function hasUvxCli(env: Record<string, string | undefined>): boolean {
@@ -77,7 +85,7 @@ export function resolveCliAvailability({
   config: ConfigForCli;
 }): Partial<Record<CliProvider, boolean>> {
   const cliConfig = config?.cli ?? null;
-  const providers: CliProvider[] = ['claude', 'codex', 'gemini', 'agent', 'openclaw', 'opencode'];
+  const providers: CliProvider[] = ['claude', 'codex', 'gemini', 'agent'];
   const availability: Partial<Record<CliProvider, boolean>> = {};
   for (const provider of providers) {
     if (isCliDisabled(provider, cliConfig)) {
@@ -103,9 +111,7 @@ export function parseCliUserModelId(modelId: string): {
     provider !== 'claude' &&
     provider !== 'codex' &&
     provider !== 'gemini' &&
-    provider !== 'agent' &&
-    provider !== 'openclaw' &&
-    provider !== 'opencode'
+    provider !== 'agent'
   ) {
     throw new Error(`Invalid CLI model id "${modelId}". Expected cli/<provider>/<model>.`);
   }
@@ -119,9 +125,7 @@ export function parseCliProviderArg(raw: string): CliProvider {
     normalized === 'claude' ||
     normalized === 'codex' ||
     normalized === 'gemini' ||
-    normalized === 'agent' ||
-    normalized === 'openclaw' ||
-    normalized === 'opencode'
+    normalized === 'agent'
   ) {
     return normalized as CliProvider;
   }
@@ -129,10 +133,18 @@ export function parseCliProviderArg(raw: string): CliProvider {
 }
 
 export function parseBooleanEnv(value: string | null | undefined): boolean | null {
-  if (typeof value !== 'string') {return null;}
+  if (typeof value !== 'string') {
+    return null;
+  }
   const normalized = value.trim().toLowerCase();
-  if (normalized.length === 0) {return null;}
-  if (['1', 'true', 'yes', 'on'].includes(normalized)) {return true;}
-  if (['0', 'false', 'no', 'off'].includes(normalized)) {return false;}
+  if (normalized.length === 0) {
+    return null;
+  }
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
   return null;
 }

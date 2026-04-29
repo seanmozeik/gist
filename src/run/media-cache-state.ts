@@ -20,13 +20,17 @@ export async function createMediaCacheFromConfig({
 }): Promise<MediaCache | null> {
   const mediaConfig = config?.cache?.media;
   const enabled = mediaConfig?.enabled !== false;
-  if (!enabled || noMediaCacheFlag) {return null;}
+  if (!enabled || noMediaCacheFlag) {
+    return null;
+  }
 
   const cachePath = resolveMediaCachePath({
     cachePath: typeof mediaConfig?.path === 'string' ? mediaConfig.path : null,
     env: envForRun,
   });
-  if (!cachePath) {return null;}
+  if (!cachePath) {
+    return null;
+  }
 
   const maxMb =
     typeof mediaConfig?.maxMb === 'number' && Number.isFinite(mediaConfig.maxMb)
@@ -42,7 +46,9 @@ export async function createMediaCacheFromConfig({
       : DEFAULT_MEDIA_CACHE_VERIFY;
   const maxBytes = Math.max(0, maxMb) * 1024 * 1024;
   const ttlMs = Math.max(0, ttlDays) * 24 * 60 * 60 * 1000;
-  if (maxBytes <= 0) {return null;}
+  if (maxBytes <= 0) {
+    return null;
+  }
 
-  return  createMediaCache({ maxBytes, path: cachePath, ttlMs, verify });
+  return createMediaCache({ maxBytes, path: cachePath, ttlMs, verify });
 }

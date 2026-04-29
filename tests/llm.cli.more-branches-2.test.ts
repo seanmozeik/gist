@@ -45,7 +45,7 @@ describe('llm/cli more branches', () => {
         execFileImpl: (_cmd, _args, _opts, cb) => {
           const error = Object.assign(new Error('boom'), { code: 1 });
           cb(error as unknown as NodeJS.ErrnoException, '', 'stderr details');
-          return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+          return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
         },
         model: 'm',
         prompt: 'hi',
@@ -66,7 +66,7 @@ describe('llm/cli more branches', () => {
           code: 1,
         });
         cb(error as unknown as NodeJS.ErrnoException, '', stderrText);
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: 'm',
       prompt: 'hi',
@@ -86,13 +86,13 @@ describe('llm/cli more branches', () => {
       env: {},
       execFileImpl: (_cmd, _args, _opts, cb) => {
         const timeoutError = Object.assign(new Error('Command failed: gemini --prompt hi'), {
-          code: 'ETIMEDOUT',
           cmd: 'gemini --prompt hi',
+          code: 'ETIMEDOUT',
           killed: true,
           signal: 'SIGTERM',
         });
         cb(timeoutError as unknown as NodeJS.ErrnoException, '', 'Reading prompt from stdin...');
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: 'm',
       prompt: 'hi',
@@ -113,8 +113,8 @@ describe('llm/cli more branches', () => {
       env: {},
       execFileImpl: (_cmd, args, _opts, cb) => {
         const outputIndex = args.indexOf('--output-last-message');
-        const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
-        if (!outputPath) throw new Error('missing output path');
+        const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
+        if (!outputPath) {throw new Error('missing output path');}
         writeFileSync(outputPath, 'FROM FILE', 'utf8');
         cb(
           null,
@@ -124,7 +124,7 @@ describe('llm/cli more branches', () => {
           ].join('\n'),
           '',
         );
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: null,
       prompt: 'hi',
@@ -142,11 +142,11 @@ describe('llm/cli more branches', () => {
       env: {},
       execFileImpl: (_cmd, args, _opts, cb) => {
         const outputIndex = args.indexOf('--output-last-message');
-        const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
-        if (!outputPath) throw new Error('missing output path');
+        const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
+        if (!outputPath) {throw new Error('missing output path');}
         writeFileSync(outputPath, '   ', 'utf8');
         cb(null, 'STDOUT', '');
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: null,
       prompt: 'hi',
@@ -163,7 +163,7 @@ describe('llm/cli more branches', () => {
       env: {},
       execFileImpl: (_cmd, _args, _opts, cb) => {
         cb(null, '{"foo":"bar"}', '');
-        return { stdin: { write() {}, end() {} } } as unknown as ChildProcess;
+        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
       },
       model: 'm',
       prompt: 'hi',

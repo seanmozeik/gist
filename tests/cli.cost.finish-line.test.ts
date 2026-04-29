@@ -89,7 +89,9 @@ describe('cli finish line + metrics', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -175,7 +177,9 @@ describe('cli finish line + metrics', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

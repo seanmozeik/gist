@@ -12,15 +12,22 @@ const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(XURL_PATH);
 let cachedIdentity: { userId: string; username: string } | null | undefined;
 let cachedTimelineAvailable: boolean | undefined;
 
-interface MeResponse { data?: { id?: string; username?: string } }
-interface TimelineTweet { id?: string; attachments?: { media_keys?: string[] } }
+interface MeResponse {
+  data?: { id?: string; username?: string };
+}
+interface TimelineTweet {
+  id?: string;
+  attachments?: { media_keys?: string[] };
+}
 interface TimelineResponse {
   data?: TimelineTweet[];
-  includes?: { media?: Array<{ media_key?: string; type?: string }> };
+  includes?: { media?: { media_key?: string; type?: string }[] };
 }
 
 function readExecErrorDetail(error: unknown): string {
-  if (!(error instanceof Error)) {return String(error);}
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
   const execError = error as Error & { stdout?: string | Buffer; stderr?: string | Buffer };
   const stdout =
     typeof execError.stdout === 'string'
@@ -56,7 +63,9 @@ function readJson<T>(endpoint: string): T {
 
 function resolveLiveIdentity(): { userId: string; username: string } {
   if (cachedIdentity !== undefined) {
-    if (!cachedIdentity) {throw new Error('xurl live test could not resolve /2/users/me');}
+    if (!cachedIdentity) {
+      throw new Error('xurl live test could not resolve /2/users/me');
+    }
     return cachedIdentity;
   }
   const me = readJson<MeResponse>('/2/users/me');
@@ -80,7 +89,9 @@ function hasAuthenticatedXurl(): boolean {
 }
 
 function hasTimelineXurl(): boolean {
-  if (cachedTimelineAvailable !== undefined) {return cachedTimelineAvailable;}
+  if (cachedTimelineAvailable !== undefined) {
+    return cachedTimelineAvailable;
+  }
   try {
     resolveRecentTweets();
     cachedTimelineAvailable = true;
@@ -179,7 +190,9 @@ describe('live xurl tweet reader', () => {
     'resolves media urls from xurl for recent video tweets when available',
     async () => {
       const mediaTweetUrl = resolveLiveMediaTweetUrl();
-      if (!mediaTweetUrl) {return;}
+      if (!mediaTweetUrl) {
+        return;
+      }
 
       const result = await readTweetWithPreferredClient({
         env: ENV,

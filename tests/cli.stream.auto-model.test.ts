@@ -24,7 +24,9 @@ function collectStream() {
 function createTextStream(chunks: string[]): AsyncIterable<string> {
   return {
     async *[Symbol.asyncIterator]() {
-      for (const chunk of chunks) {yield chunk;}
+      for (const chunk of chunks) {
+        yield chunk;
+      }
     },
   };
 }
@@ -38,7 +40,7 @@ vi.mock('../src/llm/generate-text.js', () => ({
     lastError: () => null,
     provider: 'openai',
     textStream: createTextStream(['O', 'K']),
-    usage: Promise.resolve({ promptTokens: 1, completionTokens: 2, totalTokens: 3 }),
+    usage: Promise.resolve({ completionTokens: 2, promptTokens: 1, totalTokens: 3 }),
   })),
 }));
 
@@ -79,7 +81,9 @@ describe('cli streaming with auto model selection', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

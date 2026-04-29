@@ -64,7 +64,7 @@ describe('slides output render', () => {
       clearProgressForStdout,
       flags: {},
       getOrder: () => [1, 2],
-      getSlide: () => ({ index: 1, timestamp: 12, imagePath: null }),
+      getSlide: () => ({ imagePath: null, index: 1, timestamp: 12 }),
       getSourceUrl: () => 'https://example.com/watch',
       initialSlides: null,
       inlineEnabled: true,
@@ -104,11 +104,11 @@ describe('slides output render', () => {
       getOrder: () => [1],
       getSlide: (index) =>
         index === 1
-          ? { index: 1, timestamp: Number.NaN, imagePath: '/tmp/missing-slide.png' }
+          ? { imagePath: '/tmp/missing-slide.png', index: 1, timestamp: Number.NaN }
           : null,
       getSourceUrl: () => 'https://example.com/watch',
       initialSlides: {
-        slides: [{ index: 1, timestamp: 0, imageUrl: '', ocrText: null }],
+        slides: [{ imageUrl: '', index: 1, ocrText: null, timestamp: 0 }],
         slidesDir: '/tmp/slides',
         sourceUrl: 'https://example.com/watch',
       },
@@ -135,7 +135,7 @@ describe('slides output render', () => {
       clearProgressForStdout: vi.fn(),
       flags: {},
       getOrder: () => [],
-      getSlide: () => ({ index: 3, timestamp: 75, imagePath: '/tmp/slide-3.png' }),
+      getSlide: () => ({ imagePath: '/tmp/slide-3.png', index: 3, timestamp: 75 }),
       getSourceUrl: () => 'https://example.com/watch',
       initialSlides: null,
       inlineEnabled: false,

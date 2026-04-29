@@ -28,7 +28,7 @@ const makeSlides = (url: string): SlideExtractionResult => ({
   ocrAvailable: false,
   ocrRequested: false,
   sceneThreshold: 0.3,
-  slides: [{ index: 1, timestamp: 1.2, imagePath: '/tmp/slide_0001.png' }],
+  slides: [{ imagePath: '/tmp/slide_0001.png', index: 1, timestamp: 1.2 }],
   slidesDir: '/tmp/slides',
   sourceId: 'abc123def45',
   sourceKind: 'youtube',

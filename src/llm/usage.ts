@@ -1,7 +1,9 @@
 import type { LlmTokenUsage } from './types.js';
 
 export function normalizeTokenUsage(raw: unknown): LlmTokenUsage | null {
-  if (!raw || typeof raw !== 'object') {return null;}
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
   const usage = raw as { input?: unknown; output?: unknown; totalTokens?: unknown };
 
   const promptTokens =
@@ -13,12 +15,16 @@ export function normalizeTokenUsage(raw: unknown): LlmTokenUsage | null {
       ? usage.totalTokens
       : null;
 
-  if (promptTokens === null && completionTokens === null && totalTokens === null) {return null;}
+  if (promptTokens === null && completionTokens === null && totalTokens === null) {
+    return null;
+  }
   return { completionTokens, promptTokens, totalTokens };
 }
 
 export function normalizeAnthropicUsage(raw: unknown): LlmTokenUsage | null {
-  if (!raw || typeof raw !== 'object') {return null;}
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
   const usage = raw as { input_tokens?: unknown; output_tokens?: unknown };
   const promptTokens =
     typeof usage.input_tokens === 'number' && Number.isFinite(usage.input_tokens)
@@ -32,12 +38,16 @@ export function normalizeAnthropicUsage(raw: unknown): LlmTokenUsage | null {
     typeof promptTokens === 'number' && typeof completionTokens === 'number'
       ? promptTokens + completionTokens
       : null;
-  if (promptTokens === null && completionTokens === null && totalTokens === null) {return null;}
+  if (promptTokens === null && completionTokens === null && totalTokens === null) {
+    return null;
+  }
   return { completionTokens, promptTokens, totalTokens };
 }
 
 export function normalizeOpenAiUsage(raw: unknown): LlmTokenUsage | null {
-  if (!raw || typeof raw !== 'object') {return null;}
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
   const usage = raw as { input_tokens?: unknown; output_tokens?: unknown; total_tokens?: unknown };
   const promptTokens =
     typeof usage.input_tokens === 'number' && Number.isFinite(usage.input_tokens)
@@ -53,12 +63,16 @@ export function normalizeOpenAiUsage(raw: unknown): LlmTokenUsage | null {
       : (typeof promptTokens === 'number' && typeof completionTokens === 'number'
         ? promptTokens + completionTokens
         : null);
-  if (promptTokens === null && completionTokens === null && totalTokens === null) {return null;}
+  if (promptTokens === null && completionTokens === null && totalTokens === null) {
+    return null;
+  }
   return { completionTokens, promptTokens, totalTokens };
 }
 
 export function normalizeGoogleUsage(raw: unknown): LlmTokenUsage | null {
-  if (!raw || typeof raw !== 'object') {return null;}
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
   const usage = raw as {
     promptTokenCount?: unknown;
     candidatesTokenCount?: unknown;
@@ -78,6 +92,8 @@ export function normalizeGoogleUsage(raw: unknown): LlmTokenUsage | null {
       : (typeof promptTokens === 'number' && typeof completionTokens === 'number'
         ? promptTokens + completionTokens
         : null);
-  if (promptTokens === null && completionTokens === null && totalTokens === null) {return null;}
+  if (promptTokens === null && completionTokens === null && totalTokens === null) {
+    return null;
+  }
   return { completionTokens, promptTokens, totalTokens };
 }

@@ -3,20 +3,11 @@ import type { LlmProvider } from '../llm/model-id.js';
 import type { ModelRequestOptions } from '../llm/model-options.js';
 
 export type ModelAttemptRequiredEnv =
-  | 'XAI_API_KEY'
-  | 'OPENAI_API_KEY'
-  | 'NVIDIA_API_KEY'
-  | 'GEMINI_API_KEY'
-  | 'ANTHROPIC_API_KEY'
   | 'OPENROUTER_API_KEY'
-  | 'Z_AI_API_KEY'
-  | 'GITHUB_TOKEN'
   | 'CLI_CLAUDE'
   | 'CLI_CODEX'
   | 'CLI_GEMINI'
-  | 'CLI_AGENT'
-  | 'CLI_OPENCLAW'
-  | 'CLI_OPENCODE';
+  | 'CLI_AGENT';
 
 export interface ModelAttempt {
   transport: 'native' | 'openrouter' | 'cli';
@@ -33,7 +24,10 @@ export interface ModelAttempt {
   cliModel?: string | null;
 }
 
-export interface ModelMeta { provider: LlmProvider | 'cli'; canonical: string }
+export interface ModelMeta {
+  provider: LlmProvider | 'cli';
+  canonical: string;
+}
 
 export interface MarkdownModel {
   llmModelId: string;

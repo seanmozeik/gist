@@ -103,9 +103,7 @@ describe('config prompt', () => {
       },
     );
 
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     const promptText = String(context.messages?.[0]?.content ?? '');
     expect(promptText).toContain('<instructions>');
     expect(promptText).toContain('Explain for a kid.');
@@ -181,9 +179,7 @@ describe('config prompt', () => {
       },
     );
 
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     const promptText = String(context.messages?.[0]?.content ?? '');
     expect(promptText).toContain('Explain for a kid.');
     expect(promptText).toContain('Target length: around 900 characters');

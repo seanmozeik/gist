@@ -1,6 +1,6 @@
 export type AutoRuleKind = 'text' | 'website' | 'youtube' | 'image' | 'video' | 'file';
 export type VideoMode = 'auto' | 'transcript' | 'understand';
-export type CliProvider = 'claude' | 'codex' | 'gemini' | 'agent' | 'openclaw' | 'opencode';
+export type CliProvider = 'claude' | 'codex' | 'gemini' | 'agent';
 export type OpenAiReasoningEffort = 'none' | 'low' | 'medium' | 'high' | 'xhigh';
 export type OpenAiTextVerbosity = 'low' | 'medium' | 'high';
 export interface ModelRequestOptions {
@@ -8,7 +8,11 @@ export interface ModelRequestOptions {
   reasoningEffort?: OpenAiReasoningEffort;
   textVerbosity?: OpenAiTextVerbosity;
 }
-export interface CliProviderConfig { binary?: string; extraArgs?: string[]; model?: string }
+export interface CliProviderConfig {
+  binary?: string;
+  extraArgs?: string[];
+  model?: string;
+}
 export interface CliAutoFallbackConfig {
   enabled?: boolean;
   onlyWhenNoApiKeys?: boolean;
@@ -21,8 +25,6 @@ export interface CliConfig {
   codex?: CliProviderConfig;
   gemini?: CliProviderConfig;
   agent?: CliProviderConfig;
-  openclaw?: CliProviderConfig;
-  opencode?: CliProviderConfig;
   autoFallback?: CliAutoFallbackConfig;
   magicAuto?: CliAutoFallbackConfig;
   promptOverride?: string;
@@ -33,9 +35,7 @@ export interface CliConfig {
 
 export interface OpenAiConfig {
   /**
-   * Override the OpenAI-compatible API base URL (e.g. a proxy, OpenRouter, or a local gateway).
-   *
-   * Prefer env `OPENAI_BASE_URL` when you need per-run overrides.
+   * Override the OpenAI-compatible API base URL (e.g. a proxy, or local sidecar).
    */
   baseUrl?: string;
   useChatCompletions?: boolean;
@@ -43,12 +43,14 @@ export interface OpenAiConfig {
   reasoningEffort?: OpenAiReasoningEffort;
   thinking?: OpenAiReasoningEffort;
   textVerbosity?: OpenAiTextVerbosity;
+}
+
+export interface LocalConfig {
   /**
-   * USD per minute for OpenAI Whisper transcription cost estimation.
-   *
-   * Default: 0.006 (per OpenAI pricing as of 2025-12-24).
+   * Base URL of the local sidecar server (e.g. http://localhost:8000).
+   * Also controlled by SUMMARIZE_LOCAL_BASE_URL env var.
    */
-  whisperUsdPerMinute?: number;
+  baseUrl?: string;
 }
 
 export type MediaCacheVerifyMode = 'none' | 'size' | 'hash';
@@ -58,50 +60,6 @@ export interface MediaCacheConfig {
   ttlDays?: number;
   path?: string;
   verify?: MediaCacheVerifyMode;
-}
-
-export interface AnthropicConfig {
-  /**
-   * Override the Anthropic API base URL (e.g. a proxy).
-   *
-   * Prefer env `ANTHROPIC_BASE_URL` when you need per-run overrides.
-   */
-  baseUrl?: string;
-}
-
-export interface GoogleConfig {
-  /**
-   * Override the Google Generative Language API base URL (e.g. a proxy).
-   *
-   * Prefer env `GOOGLE_BASE_URL` / `GEMINI_BASE_URL` when you need per-run overrides.
-   */
-  baseUrl?: string;
-}
-
-export interface NvidiaConfig {
-  /**
-   * Override the NVIDIA OpenAI-compatible API base URL.
-   *
-   * Default: https://integrate.api.nvidia.com/v1
-   *
-   * Prefer env `NVIDIA_BASE_URL` when you need per-run overrides.
-   */
-  baseUrl?: string;
-}
-
-export interface ApiKeysConfig {
-  openai?: string;
-  nvidia?: string;
-  anthropic?: string;
-  google?: string;
-  xai?: string;
-  openrouter?: string;
-  zai?: string;
-  apify?: string;
-  firecrawl?: string;
-  fal?: string;
-  groq?: string;
-  assemblyai?: string;
 }
 
 export type EnvConfig = Record<string, string>;
@@ -117,27 +75,6 @@ export interface LoggingConfig {
   maxFiles?: number;
 }
 
-export interface XaiConfig {
-  /**
-   * Override the xAI API base URL (e.g. a proxy).
-   *
-   * Prefer env `XAI_BASE_URL` when you need per-run overrides.
-   */
-  baseUrl?: string;
-}
-
-export interface ZaiConfig {
-  /**
-   * Override the Z.AI API base URL (e.g. use China endpoint).
-   *
-   * Default: https://api.z.ai/api/paas/v4
-   * China: https://api.zhipuai.cn/paas/v4
-   *
-   * Prefer env `Z_AI_BASE_URL` when you need per-run overrides.
-   */
-  baseUrl?: string;
-}
-
 export interface AutoRule {
   /**
    * Input kinds this rule applies to.
@@ -149,8 +86,8 @@ export interface AutoRule {
   /**
    * Candidate model ids (ordered).
    *
-   * - Native: `openai/...`, `google/...`, `xai/...`, `anthropic/...`, `zai/...`
-   * - OpenRouter (forced): `openrouter/<provider>/<model>` (e.g. `openrouter/openai/gpt-5-mini`)
+   * - OpenRouter: `openrouter/<provider>/<model>` (e.g. `openrouter/meta/llama-3.1-8b-instruct`)
+   * - Local sidecar: `local/<model-name>` (e.g. `local/qwen2.5-7b`)
    */
   candidates?: string[];
 
@@ -159,7 +96,7 @@ export interface AutoRule {
    *
    * First matching band wins.
    */
-  bands?: Array<{ token?: { min?: number; max?: number }; candidates: string[] }>;
+  bands?: { token?: { min?: number; max?: number }; candidates: string[] }[];
 }
 
 export type ModelConfig =
@@ -173,12 +110,16 @@ export type ModelConfig =
   | { mode: 'auto'; rules?: AutoRule[] }
   | { name: string };
 
+export interface ApiKeysConfig {
+  openrouter?: string;
+  apify?: string;
+  firecrawl?: string;
+}
+
 export interface SummarizeConfig {
   model?: ModelConfig;
   /**
    * Output language for summaries (default: auto = match source content language).
-   *
-   * Examples: "en", "de", "english", "german", "pt-BR".
    */
   language?: string;
   /**
@@ -202,53 +143,18 @@ export interface SummarizeConfig {
    */
   models?: Record<string, ModelConfig>;
   media?: { videoMode?: VideoMode };
-  slides?: {
-    enabled?: boolean;
-    ocr?: boolean;
-    dir?: string;
-    sceneThreshold?: number;
-    max?: number;
-    minDuration?: number;
-  };
-  output?: {
-    /**
-     * Output language for the summary (e.g. "auto", "en", "de", "English").
-     *
-     * - "auto": match the source language (default behavior when unset)
-     * - otherwise: translate the output into the requested language
-     */
-    language?: string;
-    /**
-     * Default summary length (same values as `--length`).
-     *
-     * Examples: "short", "long", "xl", "20k".
-     */
-    length?: string;
-  };
-  ui?: {
-    /**
-     * CLI theme name (e.g. "aurora", "ember", "moss", "mono").
-     */
-    theme?: string;
-  };
+  output?: { language?: string; length?: string };
+  ui?: { theme?: string };
   cli?: CliConfig;
   openai?: OpenAiConfig;
-  nvidia?: NvidiaConfig;
-  anthropic?: AnthropicConfig;
-  google?: GoogleConfig;
-  xai?: XaiConfig;
-  zai?: ZaiConfig;
+  local?: LocalConfig;
   logging?: LoggingConfig;
   /**
    * Generic environment variable defaults.
-   *
-   * Precedence: process env > config file env.
    */
   env?: EnvConfig;
   /**
    * Legacy API key shortcuts. Prefer `env` for new configs.
-   *
-   * Precedence: environment variables > config file apiKeys.
    */
   apiKeys?: ApiKeysConfig;
 }

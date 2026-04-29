@@ -16,7 +16,9 @@ function parseAutoRuleKind(value: unknown): AutoRuleKind | null {
 
 function parseWhenKinds(raw: unknown, path: string): AutoRuleKind[] {
   if (!Array.isArray(raw)) {
-    throw new TypeError(`Invalid config file ${path}: "model.rules[].when" must be an array of kinds.`);
+    throw new TypeError(
+      `Invalid config file ${path}: "model.rules[].when" must be an array of kinds.`,
+    );
   }
 
   if (raw.length === 0) {
@@ -29,7 +31,9 @@ function parseWhenKinds(raw: unknown, path: string): AutoRuleKind[] {
     if (!kind) {
       throw new Error(`Invalid config file ${path}: unknown "when" kind "${String(entry)}".`);
     }
-    if (!kinds.includes(kind)) {kinds.push(kind);}
+    if (!kinds.includes(kind)) {
+      kinds.push(kind);
+    }
   }
 
   return kinds;
@@ -49,7 +53,9 @@ function parseModelCandidates(raw: unknown, path: string): string[] {
       );
     }
     const trimmed = entry.trim();
-    if (trimmed.length === 0) {continue;}
+    if (trimmed.length === 0) {
+      continue;
+    }
     candidates.push(trimmed);
   }
   if (candidates.length === 0) {
@@ -108,7 +114,9 @@ function parseTokenBand(
   const candidates = parseModelCandidates(raw.candidates, path);
 
   const token = (() => {
-    if (raw.token === undefined) {return undefined;}
+    if (raw.token === undefined) {
+      return;
+    }
     if (!isRecord(raw.token)) {
       throw new Error(
         `Invalid config file ${path}: "model.rules[].bands[].token" must be an object.`,
@@ -144,7 +152,9 @@ export function parseModelConfig(
   path: string,
   label: string,
 ): ModelConfig | undefined {
-  if (raw === undefined) {return undefined;}
+  if (raw === undefined) {
+    return undefined;
+  }
 
   if (typeof raw === 'string') {
     const value = raw.trim();
@@ -191,15 +201,18 @@ export function parseModelConfig(
   const hasRules = raw.rules !== undefined;
   if (raw.mode === 'auto' || (!('mode' in raw) && hasRules)) {
     const rules = (() => {
-      if (raw.rules === undefined) {return undefined;}
+      if (raw.rules === undefined) {
+        return;
+      }
       if (!Array.isArray(raw.rules)) {
         throw new TypeError(`Invalid config file ${path}: "${label}.rules" must be an array.`);
       }
       const rulesParsed: AutoRule[] = [];
       for (const entry of raw.rules) {
-        if (!isRecord(entry)) {continue;}
-        const when =
-          entry.when === undefined ? undefined : parseWhenKinds(entry.when, path);
+        if (!isRecord(entry)) {
+          continue;
+        }
+        const when = entry.when === undefined ? undefined : parseWhenKinds(entry.when, path);
 
         const hasCandidates = entry.candidates !== undefined;
         const hasBands = entry.bands !== undefined;
@@ -250,7 +263,9 @@ export function parseModelsConfig(
     );
   }
   const raw = root.models;
-  if (raw === undefined) {return undefined;}
+  if (raw === undefined) {
+    return undefined;
+  }
   if (!isRecord(raw)) {
     throw new Error(`Invalid config file ${path}: "models" must be an object.`);
   }
@@ -259,7 +274,9 @@ export function parseModelsConfig(
   const seen = new Set<string>();
   for (const [keyRaw, value] of Object.entries(raw)) {
     const key = keyRaw.trim();
-    if (!key) {continue;}
+    if (!key) {
+      continue;
+    }
     const keyLower = key.toLowerCase();
     if (keyLower === 'auto') {
       throw new Error(`Invalid config file ${path}: model name "auto" is reserved.`);
@@ -274,7 +291,9 @@ export function parseModelsConfig(
       throw new Error(`Invalid config file ${path}: model name "${key}" must not include "/".`);
     }
     const parsedModel = parseModelConfig(value, path, `models.${key}`);
-    if (!parsedModel) {continue;}
+    if (!parsedModel) {
+      continue;
+    }
     if ('name' in parsedModel) {
       throw new Error(
         `Invalid config file ${path}: "models.${key}" must not reference another model.`,

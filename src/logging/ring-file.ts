@@ -1,9 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-export interface RingFileOptions { filePath: string; maxBytes: number; maxFiles: number }
+export interface RingFileOptions {
+  filePath: string;
+  maxBytes: number;
+  maxFiles: number;
+}
 
-export interface RingFileWriter { write: (line: string) => void; flush: () => Promise<void> }
+export interface RingFileWriter {
+  write: (line: string) => void;
+  flush: () => Promise<void>;
+}
 
 const normalizeMaxFiles = (value: number) =>
   Number.isFinite(value) && value > 0 ? Math.max(1, Math.trunc(value)) : 1;
@@ -47,7 +54,7 @@ async function rotateFiles(filePath: string, maxFiles: number) {
 }
 
 export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
-  const {filePath} = options;
+  const { filePath } = options;
   const maxBytes = normalizeMaxBytes(options.maxBytes);
   const maxFiles = normalizeMaxFiles(options.maxFiles);
   const dir = path.dirname(filePath);
@@ -71,7 +78,9 @@ export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
     });
   };
 
-  const flush = async () =>{  await chain; };
+  const flush = async () => {
+    await chain;
+  };
 
   return { flush, write };
 }

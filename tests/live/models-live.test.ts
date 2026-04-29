@@ -43,7 +43,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -71,11 +73,15 @@ function shouldSoftSkipLiveError(message: string): boolean {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
-        if (text.trim().length === 0) {return;}
+        if (text.trim().length === 0) {
+          return;
+        }
         expect(text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -103,11 +109,15 @@ function shouldSoftSkipLiveError(message: string): boolean {
         for await (const chunk of result.textStream) {
           text += chunk;
         }
-        if (text.trim().length === 0) {return;}
+        if (text.trim().length === 0) {
+          return;
+        }
         expect(text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -133,7 +143,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -159,7 +171,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -185,7 +199,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -211,7 +227,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
         expect(result.text.trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },

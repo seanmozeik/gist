@@ -29,16 +29,24 @@ function parseDotenv(text: string): Record<string, string> {
 
   for (const rawLine of text.split(/\r?\n/)) {
     const trimmed = rawLine.trim();
-    if (!trimmed || trimmed.startsWith('#')) {continue;}
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
 
     let line = trimmed;
-    if (line.startsWith('export ')) {line = line.slice('export '.length).trim();}
+    if (line.startsWith('export ')) {
+      line = line.slice('export '.length).trim();
+    }
 
     const equalsIndex = line.indexOf('=');
-    if (equalsIndex <= 0) {continue;}
+    if (equalsIndex <= 0) {
+      continue;
+    }
 
     const key = line.slice(0, equalsIndex).trim();
-    if (!key) {continue;}
+    if (!key) {
+      continue;
+    }
 
     let value = line.slice(equalsIndex + 1).trim();
 
@@ -47,7 +55,9 @@ function parseDotenv(text: string): Record<string, string> {
       value = value.slice(1, -1);
     } else {
       const commentIndex = value.search(/\s+#/);
-      if (commentIndex !== -1) {value = value.slice(0, commentIndex).trimEnd();}
+      if (commentIndex !== -1) {
+        value = value.slice(0, commentIndex).trimEnd();
+      }
     }
 
     out[key] = value;
@@ -83,7 +93,9 @@ function stripAnsi(input: string): string {
       i += 2;
       while (i < input.length) {
         const c = input[i];
-        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {break;}
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+          break;
+        }
         i += 1;
       }
       continue;
@@ -94,7 +106,9 @@ function stripAnsi(input: string): string {
       i += 2;
       while (i < input.length) {
         const c = input[i];
-        if (c === '\u0007') {break;}
+        if (c === '\u0007') {
+          break;
+        }
         if (c === '\u001B' && input[i + 1] === '\\') {
           i += 1;
           break;
@@ -136,11 +150,13 @@ export async function runCliMain({
     await runCli(argv, { env: mergedEnv, fetch, stderr, stdout });
   } catch (error: unknown) {
     const isTty = Boolean((stderr as unknown as { isTTY?: boolean }).isTTY);
-    if (isTty) {stderr.write('\n');}
+    if (isTty) {
+      stderr.write('\n');
+    }
 
     if (verbose && error instanceof Error && typeof error.stack === 'string') {
       stderr.write(`${error.stack}\n`);
-      const {cause} = (error as Error & { cause?: unknown });
+      const { cause } = error as Error & { cause?: unknown };
       if (cause instanceof Error && typeof cause.stack === 'string') {
         stderr.write(`Caused by: ${cause.stack}\n`);
       }

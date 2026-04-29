@@ -21,7 +21,7 @@ describe('osc-progress', () => {
       env: { TERM_PROGRAM: 'ghostty' },
       indeterminate: true,
       isTty: true,
-      label: 'Load\u001b[31m]\u0007\u009c  file  ',
+      label: 'Load\u001B[31m]\u0007\u009C  file  ',
       write: (data) => writes.push(data),
     });
 

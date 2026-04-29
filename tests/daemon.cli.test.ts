@@ -49,8 +49,8 @@ vi.mock('../src/daemon/launchd.js', () => ({
   readLaunchAgentProgramArguments: mocks.readLaunchAgentProgramArguments,
   resolveDaemonLogPaths: () => ({
     logDir: '/tmp/.summarize/logs',
-    stdoutPath: '/tmp/.summarize/logs/daemon.log',
     stderrPath: '/tmp/.summarize/logs/daemon.err.log',
+    stdoutPath: '/tmp/.summarize/logs/daemon.log',
   }),
   restartLaunchAgent: mocks.restartLaunchAgent,
   uninstallLaunchAgent: mocks.uninstallLaunchAgent,
@@ -101,12 +101,21 @@ describe('daemon cli', () => {
   });
 
   afterEach(() => {
-    if (originalPath === undefined) {delete process.env.PATH;}
-    else {process.env.PATH = originalPath;}
-    if (originalOpenAiKey === undefined) {delete process.env.OPENAI_API_KEY;}
-    else {process.env.OPENAI_API_KEY = originalOpenAiKey;}
-    if (originalHome === undefined) {delete process.env.HOME;}
-    else {process.env.HOME = originalHome;}
+    if (originalPath === undefined) {
+      delete process.env.PATH;
+    } else {
+      process.env.PATH = originalPath;
+    }
+    if (originalOpenAiKey === undefined) {
+      delete process.env.OPENAI_API_KEY;
+    } else {
+      process.env.OPENAI_API_KEY = originalOpenAiKey;
+    }
+    if (originalHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = originalHome;
+    }
     Object.defineProperty(process, 'platform', { value: originalPlatform });
   });
 
@@ -162,10 +171,12 @@ describe('daemon cli', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.endsWith('/health'))
-        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
-      if (url.endsWith('/v1/ping'))
-        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
+      if (url.endsWith('/health')) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      if (url.endsWith('/v1/ping')) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
@@ -203,10 +214,12 @@ describe('daemon cli', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.endsWith('/health'))
-        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
-      if (url.endsWith('/v1/ping'))
-        {return new Response(JSON.stringify({ ok: true }), { status: 200 });}
+      if (url.endsWith('/health')) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      if (url.endsWith('/v1/ping')) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
       throw new Error(`Unexpected fetch: ${url}`);
     });
 

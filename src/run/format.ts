@@ -27,7 +27,9 @@ export function sumNumbersOrNull(values: (number | null)[]): number | null {
 }
 
 export function formatUSD(value: number): string {
-  if (!Number.isFinite(value)) {return 'n/a';}
+  if (!Number.isFinite(value)) {
+    return 'n/a';
+  }
   return `$${value.toFixed(4)}`;
 }
 
@@ -42,8 +44,12 @@ export function estimateWhisperTranscriptionCostUsd({
   mediaDurationSeconds: number | null;
   openaiWhisperUsdPerMinute: number;
 }): number | null {
-  if (transcriptSource !== 'whisper') {return null;}
-  if (transcriptionProvider?.toLowerCase() !== 'openai') {return null;}
+  if (transcriptSource !== 'whisper') {
+    return null;
+  }
+  if (transcriptionProvider?.toLowerCase() !== 'openai') {
+    return null;
+  }
   if (
     typeof mediaDurationSeconds !== 'number' ||
     !Number.isFinite(mediaDurationSeconds) ||

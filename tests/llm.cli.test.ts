@@ -11,7 +11,9 @@ const makeStub = (handler: (args: string[]) => { stdout?: string; stderr?: strin
     const result = handler(args);
     const stdout = result.stdout ?? '';
     const stderr = result.stderr ?? '';
-    if (cb) {cb(null, stdout, stderr);}
+    if (cb) {
+      cb(null, stdout, stderr);
+    }
     return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
   }) as ExecFileFn;
   return execFileStub;
@@ -161,10 +163,10 @@ describe('runCliModel', () => {
         return {
           stdout: JSON.stringify({
             result: {
-              payloads: [{ text: 'hello' }, { text: 'world' }],
               meta: {
-                agentMeta: { usage: { promptTokens: 4, completionTokens: 5, totalTokens: 9 } },
+                agentMeta: { usage: { completionTokens: 5, promptTokens: 4, totalTokens: 9 } },
               },
+              payloads: [{ text: 'hello' }, { text: 'world' }],
             },
           }),
         };
@@ -218,7 +220,7 @@ describe('runCliModel', () => {
     let seenCwd = '';
     const execFileImpl: ExecFileFn = ((_cmd, args, options, cb) => {
       seen.push(args);
-      seenCwd = ((options as { cwd?: string } | undefined)?.cwd ?? '');
+      seenCwd = (options as { cwd?: string } | undefined)?.cwd ?? '';
       cb?.(
         null,
         [
@@ -298,7 +300,7 @@ describe('runCliModel', () => {
     let seenCwd = '';
     const execFileImpl: ExecFileFn = ((_cmd, args, options, cb) => {
       seen.push(args);
-      seenCwd = ((options as { cwd?: string } | undefined)?.cwd ?? '');
+      seenCwd = (options as { cwd?: string } | undefined)?.cwd ?? '';
       cb?.(null, JSON.stringify({ part: { text: 'ok', type: 'text' }, type: 'text' }), '');
       return {
         stdin: {
@@ -364,8 +366,8 @@ describe('runCliModel', () => {
       env: {},
       execFileImpl: makeStub(() => ({
         stdout: JSON.stringify([
-          { type: 'status', message: 'working' },
-          { type: 'result', result: 'ok from array' },
+          { message: 'working', type: 'status' },
+          { result: 'ok from array', type: 'result' },
         ]),
       })),
       model: 'gpt-5.2',

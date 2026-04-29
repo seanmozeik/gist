@@ -20,14 +20,17 @@ async function importPodcastProviderWithFfmpeg(plan: SpawnPlan) {
         },
       } as unknown;
       queueMicrotask(() => {
-        if (plan === 'ffmpeg-ok') {handlers.get('close')?.(0);}
-        else {handlers.get('error')?.(new Error('spawn ENOENT'));}
+        if (plan === 'ffmpeg-ok') {
+          handlers.get('close')?.(0);
+        } else {
+          handlers.get('error')?.(new Error('spawn ENOENT'));
+        }
       });
       return proc;
     },
   }));
 
-  return  import('../packages/core/src/content/transcript/providers/podcast.js');
+  return import('../packages/core/src/content/transcript/providers/podcast.js');
 }
 
 const baseOptions = {

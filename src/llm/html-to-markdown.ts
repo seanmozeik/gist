@@ -1,5 +1,4 @@
-import type { ConvertHtmlToMarkdown } from '@steipete/summarize-core/content';
-
+import type { ConvertHtmlToMarkdown } from '../content/index.js';
 import type { LlmTokenUsage } from './generate-text.js';
 import { generateTextWithModelId } from './generate-text.js';
 import type { LlmProvider } from './model-id.js';
@@ -43,14 +42,8 @@ ${html}
 export function createHtmlToMarkdownConverter({
   modelId,
   forceOpenRouter,
-  xaiApiKey,
-  googleApiKey,
-  openaiApiKey,
   openaiBaseUrlOverride,
-  anthropicBaseUrlOverride,
-  googleBaseUrlOverride,
-  xaiBaseUrlOverride,
-  anthropicApiKey,
+
   openrouterApiKey,
   fetchImpl,
   forceChatCompletions,
@@ -61,15 +54,10 @@ export function createHtmlToMarkdownConverter({
 }: {
   modelId: string;
   forceOpenRouter?: boolean;
-  xaiApiKey: string | null;
-  googleApiKey: string | null;
-  openaiApiKey: string | null;
   openaiBaseUrlOverride?: string | null;
-  anthropicBaseUrlOverride?: string | null;
   googleBaseUrlOverride?: string | null;
   xaiBaseUrlOverride?: string | null;
   fetchImpl: typeof fetch;
-  anthropicApiKey: string | null;
   openrouterApiKey: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
@@ -93,12 +81,11 @@ export function createHtmlToMarkdownConverter({
     });
 
     const result = await generateTextWithModelId({
-      anthropicBaseUrlOverride,
-      apiKeys: { anthropicApiKey, googleApiKey, openaiApiKey, openrouterApiKey, xaiApiKey },
+      apiKeys: { openrouterApiKey },
       fetchImpl,
       forceChatCompletions,
       forceOpenRouter,
-      googleBaseUrlOverride,
+
       modelId,
       onRetry,
       openaiBaseUrlOverride,
@@ -106,7 +93,6 @@ export function createHtmlToMarkdownConverter({
       requestOptions,
       retries,
       timeoutMs,
-      xaiBaseUrlOverride,
     });
     onUsage?.({ model: result.canonicalModelId, provider: result.provider, usage: result.usage });
     return result.text;

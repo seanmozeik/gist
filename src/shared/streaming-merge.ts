@@ -6,7 +6,9 @@ function commonPrefixLength(a: string, b: string, limit = 4096): number {
   const max = Math.min(a.length, b.length, limit);
   let i = 0;
   for (; i < max; i += 1) {
-    if (a[i] !== b[i]) {break;}
+    if (a[i] !== b[i]) {
+      break;
+    }
   }
   return i;
 }
@@ -16,10 +18,14 @@ export function mergeStreamingChunk(
   previous: string,
   chunk: string,
 ): { next: string; appended: string } {
-  if (!chunk) {return { next: previous, appended: '' };}
+  if (!chunk) {
+    return { appended: '', next: previous };
+  }
   const prev = normalizeStreamText(previous);
   const nextChunk = normalizeStreamText(chunk);
-  if (!prev) {return { next: nextChunk, appended: nextChunk };}
+  if (!prev) {
+    return { appended: nextChunk, next: nextChunk };
+  }
   if (nextChunk.startsWith(prev)) {
     return { appended: nextChunk.slice(prev.length), next: nextChunk };
   }

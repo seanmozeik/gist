@@ -50,7 +50,9 @@ const hasFlag = (normalizedArgv: readonly string[], ...names: readonly string[])
   normalizedArgv.some((arg) => names.some((name) => arg === name || arg.startsWith(`${name}=`)));
 
 const normalizeTranscriber = (value: unknown): Transcriber | null => {
-  if (typeof value !== 'string') {return null;}
+  if (typeof value !== 'string') {
+    return null;
+  }
   const normalized = value.trim().toLowerCase();
   if (
     normalized === 'auto' ||
@@ -121,9 +123,9 @@ export function resolveRunnerFlags({
     maxOutputTokens:
       typeof programOpts.maxOutputTokens === 'string'
         ? programOpts.maxOutputTokens
-        : programOpts.maxOutputTokens != null
+        : (programOpts.maxOutputTokens != null
           ? String(programOpts.maxOutputTokens)
-          : undefined,
+          : undefined),
     preprocess: String(programOpts.preprocess),
     retries: String(programOpts.retries),
     timeout: String(programOpts.timeout),

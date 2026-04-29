@@ -41,18 +41,18 @@ describe('tweet CLI helpers', () => {
                 type: 'audio',
                 video_info: {
                   variants: [
-                    { url: 'not-a-url', content_type: 'video/mp4', bitrate: 64 },
+                    { bitrate: 64, content_type: 'video/mp4', url: 'not-a-url' },
                     {
-                      url: 'https://video.twimg.com/low.mp4',
-                      content_type: 'video/mp4',
                       bitrate: 120,
+                      content_type: 'video/mp4',
+                      url: 'https://video.twimg.com/low.mp4',
                     },
                     {
-                      url: 'https://video.twimg.com/high.mp4',
-                      content_type: 'video/mp4',
                       bitrate: 240,
+                      content_type: 'video/mp4',
+                      url: 'https://video.twimg.com/high.mp4',
                     },
-                    { url: 'https://video.twimg.com/playlist.m3u8', content_type: 'text/plain' },
+                    { content_type: 'text/plain', url: 'https://video.twimg.com/playlist.m3u8' },
                   ],
                 },
               },
@@ -94,12 +94,12 @@ describe('tweet CLI helpers', () => {
             media_key: '7_1',
             type: 'video',
             variants: [
-              { url: 'https://video.twimg.com/low.mp4', content_type: 'video/mp4', bit_rate: 64 },
-              { url: 'https://video.twimg.com/high.mp4', content_type: 'video/mp4', bit_rate: 256 },
+              { bit_rate: 64, content_type: 'video/mp4', url: 'https://video.twimg.com/low.mp4' },
+              { bit_rate: 256, content_type: 'video/mp4', url: 'https://video.twimg.com/high.mp4' },
             ],
           },
         ],
-        users: [{ id: '99', username: 'steipete', name: 'Peter' }],
+        users: [{ id: '99', name: 'Peter', username: 'steipete' }],
       },
     };
     const { binDir } = makeCliScript('xurl', scriptForJson(payload));

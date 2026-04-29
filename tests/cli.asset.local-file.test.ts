@@ -85,7 +85,7 @@ describe('cli asset inputs (local file)', () => {
         typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url.startsWith('https://api.openai.com/v1/responses')) {
         const body = JSON.parse(String(init?.body ?? '{}')) as {
-          input?: { content?: Array<{ type?: string; file_data?: string }> }[];
+          input?: { content?: { type?: string; file_data?: string }[] }[];
         };
         const fileBlock = body.input?.[0]?.content?.[0];
         expect(fileBlock?.type).toBe('input_file');
@@ -242,9 +242,9 @@ describe('cli asset inputs (local file)', () => {
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
         'gpt-5.2': {
-          input_cost_per_token: 0.00000175,
+          input_cost_per_token: 0.000_001_75,
           max_input_tokens: 10,
-          output_cost_per_token: 0.000014,
+          output_cost_per_token: 0.000_014,
         },
       }),
       'utf8',
@@ -388,9 +388,9 @@ describe('cli asset inputs (local file)', () => {
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
         'gpt-5.2': {
-          input_cost_per_token: 0.00000175,
+          input_cost_per_token: 0.000_001_75,
           max_input_tokens: 10,
-          output_cost_per_token: 0.000014,
+          output_cost_per_token: 0.000_014,
         },
       }),
       'utf8',

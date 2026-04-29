@@ -50,7 +50,7 @@ describe('sidepanel stream controller error handling', () => {
 
     const controller = createStreamController({
       fetchImpl: async () =>
-        new Response(streamFromEvents([{ event: 'error', data: { message: 'daemon crashed' } }]), {
+        new Response(streamFromEvents([{ data: { message: 'daemon crashed' }, event: 'error' }]), {
           status: 200,
         }),
       getToken: async () => 'token',
@@ -91,7 +91,7 @@ describe('sidepanel stream controller error handling', () => {
 
     const controller = createStreamController({
       fetchImpl: async () =>
-        new Response(streamFromEvents([{ event: 'chunk', data: { text: 'Hello' } }]), {
+        new Response(streamFromEvents([{ data: { text: 'Hello' }, event: 'chunk' }]), {
           status: 200,
         }),
       getToken: async () => 'token',
@@ -136,8 +136,8 @@ describe('sidepanel stream controller error handling', () => {
         new Response(
           streamWithKeepaliveThenEvents(
             [
-              { event: 'chunk', data: { text: 'Hello' } },
-              { event: 'done', data: {} },
+              { data: { text: 'Hello' }, event: 'chunk' },
+              { data: {}, event: 'done' },
             ],
             60,
             10,

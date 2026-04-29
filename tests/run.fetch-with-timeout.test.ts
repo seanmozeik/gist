@@ -22,7 +22,7 @@ describe('run/fetch-with-timeout', () => {
     const fetchImpl = vi.fn((_: unknown, init?: RequestInit) => {
       return new Promise<Response>((_resolve, reject) => {
         init?.signal?.addEventListener('abort', () => {
-          reject((init.signal!).reason);
+          reject(init.signal!.reason);
         });
       });
     });

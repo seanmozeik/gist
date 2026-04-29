@@ -12,7 +12,7 @@ export function promptToContext(prompt: Prompt): Context {
   }
   if (attachments.length === 0) {
     return {
-      messages: [{ role: 'user', content: prompt.userText, timestamp: Date.now() }],
+      messages: [{ content: prompt.userText, role: 'user', timestamp: Date.now() }],
       systemPrompt: prompt.system,
     };
   }
@@ -31,7 +31,9 @@ export function promptToContext(prompt: Prompt): Context {
 }
 
 export function isRetryableTimeoutError(error: unknown): boolean {
-  if (!error) {return false;}
+  if (!error) {
+    return false;
+  }
   const message =
     typeof error === 'string'
       ? error
@@ -69,11 +71,15 @@ export async function withTimeoutFallback<T>({
     return await Promise.race([
       promise,
       new Promise<T>((resolve) => {
-        timer = setTimeout(() =>{  resolve(fallback); }, effectiveTimeoutMs);
+        timer = setTimeout(() => {
+          resolve(fallback);
+        }, effectiveTimeoutMs);
       }),
     ]);
   } finally {
-    if (timer) {clearTimeout(timer);}
+    if (timer) {
+      clearTimeout(timer);
+    }
   }
 }
 
@@ -108,8 +114,12 @@ export function resolveEffectiveTemperature({
   model: string;
   temperature?: number;
 }): number | undefined {
-  if (typeof temperature !== 'number') {return undefined;}
-  if (isOpenAiGpt5Model(provider, model)) {return undefined;}
+  if (typeof temperature !== 'number') {
+    return undefined;
+  }
+  if (isOpenAiGpt5Model(provider, model)) {
+    return undefined;
+  }
   return temperature;
 }
 
@@ -124,8 +134,12 @@ export function shouldRetryGpt5WithoutTokenCap({
   maxOutputTokens?: number;
   error: unknown;
 }): boolean {
-  if (typeof maxOutputTokens !== 'number') {return false;}
-  if (!isOpenAiGpt5Model(provider, model)) {return false;}
+  if (typeof maxOutputTokens !== 'number') {
+    return false;
+  }
+  if (!isOpenAiGpt5Model(provider, model)) {
+    return false;
+  }
   const message =
     error instanceof Error
       ? error.message
@@ -139,10 +153,16 @@ export function shouldRetryGpt5WithoutTokenCap({
 
 export function resolveGoogleEmptyResponseFallbackModelId(modelId: string): string | null {
   const normalized = modelId.trim().toLowerCase();
-  if (!normalized.startsWith('google/')) {return null;}
+  if (!normalized.startsWith('google/')) {
+    return null;
+  }
   const raw = normalized.slice('google/'.length);
-  if (!raw.includes('preview') && !raw.includes('exp')) {return null;}
-  if (raw === 'gemini-2.5-flash') {return null;}
+  if (!raw.includes('preview') && !raw.includes('exp')) {
+    return null;
+  }
+  if (raw === 'gemini-2.5-flash') {
+    return null;
+  }
   return 'google/gemini-2.5-flash';
 }
 

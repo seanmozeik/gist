@@ -1,4 +1,3 @@
-import { isTwitterStatusUrl, isYouTubeUrl } from '@steipete/summarize-core/content/url';
 import { countTokens } from 'gpt-tokenizer';
 
 import {
@@ -9,6 +8,7 @@ import {
   buildSummaryCacheKey,
 } from '../../../cache.js';
 import type { ExtractedLinkContent } from '../../../content/index.js';
+import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url.js';
 import { resolveGitHubModelsApiKey } from '../../../llm/github-models.js';
 import type { Prompt } from '../../../llm/prompt.js';
 import { buildAutoModelAttempts } from '../../../model-auto.js';
@@ -116,8 +116,9 @@ export async function resolveUrlSummaryExecution({
         }
       }
       return list.map((attempt) => {
-        if (attempt.transport !== 'cli')
-          {return model.summaryEngine.applyOpenAiGatewayOverrides(attempt as ModelAttempt);}
+        if (attempt.transport !== 'cli') {
+          return model.summaryEngine.applyOpenAiGatewayOverrides(attempt);
+        }
         const parsed = parseCliUserModelId(attempt.userModelId);
         return { ...attempt, cliModel: parsed.model, cliProvider: parsed.provider };
       });
@@ -200,7 +201,8 @@ export async function resolveUrlSummaryExecution({
     Boolean(extracted.video) ||
     (extracted.transcriptSource != null && extracted.transcriptSource !== 'unavailable') ||
     (typeof extracted.mediaDurationSeconds === 'number' && extracted.mediaDurationSeconds > 0) ||
-    extracted.isVideoOnly === true;
+    
+    extracted.isVideoOnly;
   const autoBypass = ctx.model.isFallbackModel && !ctx.model.isNamedModelSelection;
   const canBypassShortContent =
     (autoBypass || isTweet) &&
@@ -273,7 +275,9 @@ export async function resolveUrlSummaryExecution({
     }
     if (!summaryFromCache) {
       for (const attempt of attempts) {
-        if (!model.summaryEngine.envHasKeyFor(attempt.requiredEnv)) {continue;}
+        if (!model.summaryEngine.envHasKeyFor(attempt.requiredEnv)) {
+          continue;
+        }
         const key = buildSummaryCacheKey({
           contentHash,
           languageKey,
@@ -282,7 +286,9 @@ export async function resolveUrlSummaryExecution({
           promptHash,
         });
         const cached = cacheStore.getText('summary', key);
-        if (!cached) {continue;}
+        if (!cached) {
+          continue;
+        }
         writeVerbose(
           io.stderr,
           flags.verbose,
@@ -344,10 +350,10 @@ export async function resolveUrlSummaryExecution({
       },
       runAttempt: (attempt) =>
         model.summaryEngine.runSummaryAttempt({
-          attempt,
-          prompt: promptPayload,
           allowStreaming: flags.streamingEnabled && !sanitizeKeyMoments,
+          attempt,
           onModelChosen: onModelChosen ?? null,
+          prompt: promptPayload,
           streamHandler: slidesOutput?.streamHandler ?? null,
         }),
     });
@@ -360,7 +366,9 @@ export async function resolveUrlSummaryExecution({
 
   if (!summaryResult || !usedAttempt) {
     const withFreeTip = (message: string) => {
-      if (!model.isNamedModelSelection || !model.wantsFreeNamedModel) {return message;}
+      if (!model.isNamedModelSelection || !model.wantsFreeNamedModel) {
+        return message;
+      }
       return (
         `${message}\n` +
         `Tip: run "summarize refresh-free" to refresh the free model candidates (writes ~/.summarize/config.json).`

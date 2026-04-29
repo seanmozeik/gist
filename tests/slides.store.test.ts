@@ -20,7 +20,9 @@ describe('slides store', () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-store-'));
     const settings = resolveSlideSettings({ cwd: root, slides: true });
     expect(settings).not.toBeNull();
-    if (!settings) {return;}
+    if (!settings) {
+      return;
+    }
 
     const source = {
       kind: 'direct' as const,
@@ -46,7 +48,7 @@ describe('slides store', () => {
       ocrRequested: settings.ocr,
       sceneThreshold: settings.sceneThreshold,
       slides: [
-        { index: 1, timestamp: 12.3, imagePath: serializeSlideImagePath(slidesDir, imagePath) },
+        { imagePath: serializeSlideImagePath(slidesDir, imagePath), index: 1, timestamp: 12.3 },
       ],
       slidesDir,
       slidesDirId: buildSlidesDirId(slidesDir),
@@ -70,7 +72,9 @@ describe('slides store', () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-store-'));
     const settings = resolveSlideSettings({ cwd: root, slides: true });
     expect(settings).not.toBeNull();
-    if (!settings) {return;}
+    if (!settings) {
+      return;
+    }
 
     const source = {
       kind: 'direct' as const,
@@ -95,7 +99,7 @@ describe('slides store', () => {
       ocrAvailable: false,
       ocrRequested: settings.ocr,
       sceneThreshold: settings.sceneThreshold,
-      slides: [{ index: 1, timestamp: 1.2, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 1.2 }],
       slidesDir: otherDir,
       slidesDirId: buildSlidesDirId(otherDir),
       sourceId: source.sourceId,

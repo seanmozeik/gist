@@ -56,10 +56,18 @@ export function deriveExtractionUi(extracted: ExtractedLinkContent): UrlExtracti
   const viaSourceLabel = viaSources.length > 0 ? `, ${viaSources.join('+')}` : '';
 
   const footerParts: string[] = [];
-  if (extracted.diagnostics.strategy === 'html') {footerParts.push('html');}
-  if (twitterStrategy) {footerParts.push(twitterStrategy);}
-  if (extracted.diagnostics.strategy === 'nitter') {footerParts.push('nitter');}
-  if (extracted.diagnostics.firecrawl.used) {footerParts.push('firecrawl');}
+  if (extracted.diagnostics.strategy === 'html') {
+    footerParts.push('html');
+  }
+  if (twitterStrategy) {
+    footerParts.push(twitterStrategy);
+  }
+  if (extracted.diagnostics.strategy === 'nitter') {
+    footerParts.push('nitter');
+  }
+  if (extracted.diagnostics.firecrawl.used) {
+    footerParts.push('firecrawl');
+  }
   if (extracted.diagnostics.markdown.used) {
     if (extracted.diagnostics.markdown.provider === 'llm') {
       footerParts.push(

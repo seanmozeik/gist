@@ -50,9 +50,9 @@ describe('sidepanel/chat-state', () => {
       { content: 'ignore me', id: '1', role: 'system', timestamp: 1 } as ChatMessage,
       {
         content: [
-          { type: 'text', text: 'hello ' },
-          { type: 'image', image: 'ignored' },
-          { type: 'text', text: 'world' },
+          { text: 'hello ', type: 'text' },
+          { image: 'ignored', type: 'image' },
+          { text: 'world', type: 'text' },
         ],
         id: '2',
         role: 'user',
@@ -68,9 +68,9 @@ describe('sidepanel/chat-state', () => {
     expect(buildChatRequestMessages(messages)).toEqual([
       {
         content: [
-          { type: 'text', text: 'hello ' },
-          { type: 'image', image: 'ignored' },
-          { type: 'text', text: 'world' },
+          { text: 'hello ', type: 'text' },
+          { image: 'ignored', type: 'image' },
+          { text: 'world', type: 'text' },
         ],
         role: 'user',
       },

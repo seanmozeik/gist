@@ -40,11 +40,11 @@ describe('sidepanel slides stream controller', () => {
           ocrAvailable: false,
           slides: [
             {
-              index: 1,
-              timestamp: 1.2,
               imageUrl: 'http://127.0.0.1:8787/v1/slides/abc/1',
-              ocrText: null,
+              index: 1,
               ocrConfidence: null,
+              ocrText: null,
+              timestamp: 1.2,
             },
           ],
           sourceId: 'abc',
@@ -81,7 +81,7 @@ describe('sidepanel slides stream controller', () => {
 
     const controller = createSlidesStreamController({
       fetchImpl: async () =>
-        new Response(streamFromEvents([{ event: 'error', data: { message: 'slides crashed' } }]), {
+        new Response(streamFromEvents([{ data: { message: 'slides crashed' }, event: 'error' }]), {
           status: 200,
         }),
       getToken: async () => 'token',
@@ -180,7 +180,7 @@ describe('sidepanel slides stream controller', () => {
     const controller = createSlidesStreamController({
       fetchImpl: async () => {
         fetched = true;
-        return new Response(streamFromEvents([{ event: 'done', data: {} }]), { status: 200 });
+        return new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 });
       },
       getToken: async () => '',
       onSlides: () => {},
@@ -201,9 +201,9 @@ describe('sidepanel slides stream controller', () => {
     const controller = createSlidesStreamController({
       fetchImpl: async () => {
         fetched = true;
-        return new Response(streamFromEvents([{ event: 'done', data: {} }]), { status: 200 });
+        return new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 });
       },
-      getToken: async () =>  tokenPromise,
+      getToken: async () => tokenPromise,
       onSlides: () => {},
     });
 

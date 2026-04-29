@@ -1,24 +1,16 @@
 import { createUnsupportedFunctionalityError } from './errors.js';
-import {
-  isGoogleEmptySummaryError,
-  resolveGoogleEmptyResponseFallbackModelId,
-} from './generate-text-shared.js';
 import type { LlmProvider } from './model-id.js';
 import type { ModelRequestOptions } from './model-options.js';
 import type { Prompt } from './prompt.js';
-import {
-  resolveOpenAiCompatibleClientConfigForProvider,
-  supportsDocumentAttachments,
-} from './provider-capabilities.js';
-import {
-  completeAnthropicDocument,
-  normalizeAnthropicModelAccessError,
-} from './providers/anthropic.js';
-import { completeGoogleDocument } from './providers/google.js';
+import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities.js';
 import { completeOpenAiDocument } from './providers/openai.js';
 import type { LlmTokenUsage } from './types.js';
 
-interface ParsedModel { provider: LlmProvider; model: string; canonical: string }
+interface ParsedModel {
+  provider: LlmProvider;
+  model: string;
+  canonical: string;
+}
 
 interface DocumentResult {
   text: string;
@@ -29,12 +21,7 @@ interface DocumentResult {
 
 export async function maybeGenerateDocumentText(options: {
   parsed: ParsedModel;
-  apiKeys: {
-    openaiApiKey: string | null;
-    googleApiKey: string | null;
-    anthropicApiKey: string | null;
-    openrouterApiKey: string | null;
-  };
+  apiKeys: { openrouterApiKey: string | null };
   prompt: Prompt;
   maxOutputTokens?: number;
   temperature?: number;
@@ -42,8 +29,6 @@ export async function maybeGenerateDocumentText(options: {
   fetchImpl: typeof fetch;
   forceOpenRouter?: boolean;
   openaiBaseUrlOverride?: string | null;
-  anthropicBaseUrlOverride?: string | null;
-  googleBaseUrlOverride?: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
   retryWithModelId: (modelId: string) => Promise<DocumentResult>;
@@ -57,115 +42,48 @@ export async function maybeGenerateDocumentText(options: {
     timeoutMs,
     fetchImpl,
     forceOpenRouter,
-    openaiBaseUrlOverride,
-    anthropicBaseUrlOverride,
-    googleBaseUrlOverride,
     forceChatCompletions,
     requestOptions,
-    retryWithModelId,
   } = options;
   const attachments = prompt.attachments ?? [];
   const documentAttachment =
     attachments.find((attachment) => attachment.kind === 'document') ?? null;
-  if (!documentAttachment) {return null;}
+  if (!documentAttachment) {
+    return null;
+  }
   if (attachments.length !== 1) {
     throw new Error('Internal error: document attachments cannot be combined with other inputs.');
   }
-  if (!supportsDocumentAttachments(parsed.provider)) {
+
+  // Only OpenRouter supports document attachments via OpenAI-compatible API
+  if (parsed.provider !== 'openrouter') {
     throw createUnsupportedFunctionalityError(
-      `document attachments are not supported for ${parsed.provider}/... models`,
+      `document attachments are only supported for openrouter/... models`,
     );
   }
 
-  if (parsed.provider === 'anthropic') {
-    const apiKey = apiKeys.anthropicApiKey;
-    if (!apiKey) {throw new Error('Missing ANTHROPIC_API_KEY for anthropic/... model');}
-    try {
-      const result = await completeAnthropicDocument({
-        anthropicBaseUrlOverride,
-        apiKey,
-        document: documentAttachment,
-        fetchImpl,
-        maxOutputTokens,
-        modelId: parsed.model,
-        promptText: prompt.userText,
-        system: prompt.system,
-        timeoutMs,
-      });
-      return {
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
-        text: result.text,
-        usage: result.usage,
-      };
-    } catch (error) {
-      const normalized = normalizeAnthropicModelAccessError(error, parsed.model);
-      if (normalized) {throw normalized;}
-      throw error;
-    }
-  }
+  const openaiConfig = resolveOpenAiCompatibleClientConfigForProvider({
+    forceChatCompletions,
+    forceOpenRouter,
+    openaiApiKey: null,
+    openrouterApiKey: apiKeys.openrouterApiKey,
+    requestOptions,
+  });
 
-  if (parsed.provider === 'openai') {
-    const openaiConfig = resolveOpenAiCompatibleClientConfigForProvider({
-      forceChatCompletions,
-      forceOpenRouter,
-      openaiApiKey: apiKeys.openaiApiKey,
-      openaiBaseUrlOverride,
-      openrouterApiKey: apiKeys.openrouterApiKey,
-      provider: 'openai',
-      requestOptions,
-    });
-    const result = await completeOpenAiDocument({
-      document: documentAttachment,
-      fetchImpl,
-      maxOutputTokens,
-      modelId: parsed.model,
-      openaiConfig,
-      promptText: prompt.userText,
-      temperature,
-      timeoutMs,
-    });
-    return {
-      canonicalModelId: parsed.canonical,
-      provider: parsed.provider,
-      text: result.text,
-      usage: result.usage,
-    };
-  }
-
-  if (parsed.provider === 'google') {
-    const apiKey = apiKeys.googleApiKey;
-    if (!apiKey) {
-      throw new Error(
-        'Missing GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY / GOOGLE_API_KEY) for google/... model',
-      );
-    }
-    try {
-      const result = await completeGoogleDocument({
-        apiKey,
-        document: documentAttachment,
-        fetchImpl,
-        googleBaseUrlOverride,
-        maxOutputTokens,
-        modelId: parsed.model,
-        promptText: prompt.userText,
-        temperature,
-        timeoutMs,
-      });
-      return {
-        canonicalModelId: parsed.canonical,
-        provider: parsed.provider,
-        text: result.text,
-        usage: result.usage,
-      };
-    } catch (error) {
-      const fallbackModelId =
-        isGoogleEmptySummaryError(error) &&
-        resolveGoogleEmptyResponseFallbackModelId(parsed.canonical);
-      if (!fallbackModelId) {throw error;}
-      return retryWithModelId(fallbackModelId);
-    }
-  }
-
-  return null;
+  const result = await completeOpenAiDocument({
+    document: documentAttachment,
+    fetchImpl,
+    maxOutputTokens,
+    modelId: parsed.model,
+    openaiConfig,
+    promptText: prompt.userText,
+    temperature,
+    timeoutMs,
+  });
+  return {
+    canonicalModelId: parsed.canonical,
+    provider: parsed.provider,
+    text: result.text,
+    usage: result.usage,
+  };
 }

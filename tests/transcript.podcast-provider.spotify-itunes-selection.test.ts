@@ -196,7 +196,7 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
                   collectionName: showTitle,
                   episodeUrl,
                   trackName: episodeTitle,
-                  trackTimeMillis: 90000,
+                  trackTimeMillis: 90_000,
                 },
               ],
             }),

@@ -225,7 +225,7 @@ describe('slides summary controller', () => {
     panelState.summaryMarkdown = 'Primary summary';
     panelState.slides = {
       ocrAvailable: true,
-      slides: [{ index: 1, timestamp: 12, imageUrl: '', ocrText: 'Hello world from slide one.' }],
+      slides: [{ imageUrl: '', index: 1, ocrText: 'Hello world from slide one.', timestamp: 12 }],
       sourceId: 'slides-1',
       sourceKind: 'youtube',
       sourceUrl: panelState.currentSource?.url ?? '',

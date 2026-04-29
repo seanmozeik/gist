@@ -18,28 +18,42 @@ function formatErrorMessageWithStderr(
   separator: ': ' | '\n' = ': ',
 ): string {
   const trimmedStderr = stderrText.trim();
-  if (!trimmedStderr || message.includes(trimmedStderr)) {return message;}
+  if (!trimmedStderr || message.includes(trimmedStderr)) {
+    return message;
+  }
   return `${message}${separator}${trimmedStderr}`;
 }
 
 function formatTimeoutLabel(timeoutMs: number): string {
   if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
-    if (timeoutMs % 60_000 === 0) {return `${Math.floor(timeoutMs / 60_000)}m`;}
-    if (timeoutMs % 1000 === 0) {return `${Math.floor(timeoutMs / 1000)}s`;}
+    if (timeoutMs % 60_000 === 0) {
+      return `${Math.floor(timeoutMs / 60_000)}m`;
+    }
+    if (timeoutMs % 1000 === 0) {
+      return `${Math.floor(timeoutMs / 1000)}s`;
+    }
     return `${Math.floor(timeoutMs)}ms`;
   }
   return 'unknown time';
 }
 
 function getExecErrorCodeText(error: CliExecError): string {
-  if (typeof error.code === 'string') {return error.code;}
-  if (Buffer.isBuffer(error.code)) {return toUtf8String(error.code);}
-  if (typeof error.code === 'number') {return String(error.code);}
+  if (typeof error.code === 'string') {
+    return error.code;
+  }
+  if (Buffer.isBuffer(error.code)) {
+    return toUtf8String(error.code);
+  }
+  if (typeof error.code === 'number') {
+    return String(error.code);
+  }
   return '';
 }
 
 function isExecTimeoutError(error: CliExecError): boolean {
-  if (getExecErrorCodeText(error).toUpperCase() === 'ETIMEDOUT') {return true;}
+  if (getExecErrorCodeText(error).toUpperCase() === 'ETIMEDOUT') {
+    return true;
+  }
   return error.killed === true && error.signal === 'SIGTERM';
 }
 
@@ -72,7 +86,7 @@ export async function execCliWithInput({
   env: Record<string, string | undefined>;
   cwd?: string;
 }): Promise<{ stdout: string; stderr: string }> {
-  return  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const child = execFileImpl(
       cmd,
       args,

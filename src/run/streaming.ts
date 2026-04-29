@@ -3,7 +3,9 @@ import type { LlmProvider } from '../llm/model-id.js';
 export { mergeStreamingChunk } from '../shared/streaming-merge.js';
 
 export function isGoogleStreamingUnsupportedError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') {return false;}
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
   const maybe = error as Record<string, unknown>;
   const message = typeof maybe.message === 'string' ? maybe.message : '';
   const url = typeof maybe.url === 'string' ? maybe.url : '';
@@ -12,7 +14,9 @@ export function isGoogleStreamingUnsupportedError(error: unknown): boolean {
 
   const isStreamEndpoint =
     url.includes(':streamGenerateContent') || errorText.includes('streamGenerateContent');
-  if (!isStreamEndpoint) {return false;}
+  if (!isStreamEndpoint) {
+    return false;
+  }
 
   return (
     /does not support/i.test(errorText) ||
@@ -23,7 +27,9 @@ export function isGoogleStreamingUnsupportedError(error: unknown): boolean {
 }
 
 export function isStreamingTimeoutError(error: unknown): boolean {
-  if (!error) {return false;}
+  if (!error) {
+    return false;
+  }
   const message =
     typeof error === 'string'
       ? error
@@ -44,9 +50,13 @@ export function canStream({
   prompt: { attachments?: { kind: 'text' | 'image' | 'document' }[] };
   transport: 'cli' | 'native' | 'openrouter';
 }): boolean {
-  if (transport === 'cli') {return false;}
+  if (transport === 'cli') {
+    return false;
+  }
   const attachments = prompt.attachments ?? [];
-  if (attachments.some((attachment) => attachment.kind === 'document')) {return false;}
+  if (attachments.some((attachment) => attachment.kind === 'document')) {
+    return false;
+  }
   const streamableProviders: ReadonlySet<string> = new Set([
     'xai',
     'openai',

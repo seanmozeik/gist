@@ -42,7 +42,7 @@ const createContext = (overrides: Partial<Parameters<typeof summarizeAsset>[0]> 
       zaiApiKey: null,
       zaiBaseUrl: '',
     },
-    buildReport: async () => ({ tokens: 0, calls: 0, durationMs: 0 }),
+    buildReport: async () => ({ calls: 0, durationMs: 0, tokens: 0 }),
     cache: { mode: 'default', store: null },
     clearProgressForStdout: vi.fn(),
     cliAvailability: {},
@@ -52,7 +52,7 @@ const createContext = (overrides: Partial<Parameters<typeof summarizeAsset>[0]> 
     envForAuto: {},
     envForRun: {},
     estimateCostUsd: async () => null,
-    execFileImpl: async () => ({ ok: true, stdout: '', stderr: '' }),
+    execFileImpl: async () => ({ ok: true, stderr: '', stdout: '' }),
     extractMode: false,
     fixedModelSpec: null,
     forceSummary: false,
@@ -342,7 +342,7 @@ describe('asset summary early branches', () => {
     const { ctx, stderr } = createContext({
       buildReport: async () => ({
         llm: [],
-        services: { firecrawl: { requests: 0 }, apify: { requests: 0 } },
+        services: { apify: { requests: 0 }, firecrawl: { requests: 0 } },
       }),
       estimateCostUsd: async () => 0,
       metricsEnabled: true,

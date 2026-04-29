@@ -3,38 +3,27 @@ import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 
 import {
   buildExtractCacheKeyValue,
-  buildLanguageKey,
-  buildLengthKey,
-  buildPromptContentHash,
-  buildPromptHash,
   buildSlidesCacheKeyValue,
   buildSummaryCacheKeyValue,
   buildTranscriptCacheKeyValue,
-  hashJson,
-  hashString,
-  normalizeContentForHash,
-  extractTaggedBlock,
 } from './cache-keys.js';
 export {
   buildExtractCacheKeyValue,
-  buildLanguageKey,
-  buildLengthKey,
-  buildPromptContentHash,
-  buildPromptHash,
   buildSlidesCacheKeyValue,
   buildSummaryCacheKeyValue,
   buildTranscriptCacheKeyValue,
-  hashJson,
-  hashString,
-  normalizeContentForHash,
-  extractTaggedBlock,
 } from './cache-keys.js';
 import { cleanupSlidesPayload } from './cache-slides-cleanup.js';
 import type { TranscriptCache, TranscriptSource } from './content/index.js';
 
 export type CacheKind = 'extract' | 'summary' | 'transcript' | 'chat' | 'slides';
 
-export interface CacheConfig { enabled?: boolean; maxMb?: number; ttlDays?: number; path?: string }
+export interface CacheConfig {
+  enabled?: boolean;
+  maxMb?: number;
+  ttlDays?: number;
+  path?: string;
+}
 
 export const CACHE_FORMAT_VERSION = 2;
 export const DEFAULT_CACHE_MAX_MB = 512;
@@ -52,9 +41,13 @@ interface SqliteDatabase {
   close?: () => void;
 }
 
-interface CacheRow { value: string; expires_at: number | null; size_bytes: number }
+interface CacheRow {
+  value: string;
+  expires_at: number | null;
+  size_bytes: number;
+}
 
-const TRANSCRIPT_SOURCES: readonly TranscriptSource[] = new Set([
+const TRANSCRIPT_SOURCES = new Set<TranscriptSource>([
   'youtubei',
   'captionTracks',
   'yt-dlp',
@@ -67,10 +60,8 @@ const TRANSCRIPT_SOURCES: readonly TranscriptSource[] = new Set([
 ]);
 
 function normalizeTranscriptSource(value: unknown): TranscriptSource | null {
-  if (typeof value !== 'string') return null;
-  return TRANSCRIPT_SOURCES.has(value as TranscriptSource)
-    ? (value as TranscriptSource)
-    : null;
+  if (typeof value !== 'string') {return null;}
+  return TRANSCRIPT_SOURCES.has(value as TranscriptSource) ? (value as TranscriptSource) : null;
 }
 
 export interface CacheStore {
@@ -102,7 +93,9 @@ const isBun = (globalThis as { Bun?: unknown }).Bun !== undefined;
 let warningFilterInstalled = false;
 
 const installSqliteWarningFilter = () => {
-  if (warningFilterInstalled) {return;}
+  if (warningFilterInstalled) {
+    return;
+  }
   warningFilterInstalled = true;
   const original = process.emitWarning.bind(process);
   process.emitWarning = ((warning: unknown, ...args: unknown[]) => {
@@ -119,7 +112,7 @@ const installSqliteWarningFilter = () => {
     if (normalizedType === 'ExperimentalWarning' && message.toLowerCase().includes('sqlite')) {
       return;
     }
-    return original(warning as never, ...(args as [never]));
+     original(warning as never, ...(args as [never]));
   }) as typeof process.emitWarning;
 };
 
@@ -155,13 +148,17 @@ export function resolveCachePath({
   const raw = cachePath?.trim();
   if (raw && raw.length > 0) {
     if (raw.startsWith('~')) {
-      if (!home) {return null;}
+      if (!home) {
+        return null;
+      }
       const expanded = raw === '~' ? home : join(home, raw.slice(2));
       return resolvePath(expanded);
     }
     return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : null);
   }
-  if (!home) {return null;}
+  if (!home) {
+    return null;
+  }
   return join(home, '.summarize', 'cache.sqlite');
 }
 
@@ -229,31 +226,39 @@ export async function createCacheStore({
   };
 
   const enforceSize = () => {
-    if (!Number.isFinite(maxBytes) || maxBytes <= 0) {return;}
+    if (!Number.isFinite(maxBytes) || maxBytes <= 0) {
+      return;
+    }
     const row = stmtTotalSize.get() as { total?: number | null } | undefined;
     let total = typeof row?.total === 'number' ? row.total : 0;
-    if (total <= maxBytes) {return;}
+    if (total <= maxBytes) {
+      return;
+    }
     const batchSize = 50;
     while (total > maxBytes) {
-      const rows = stmtOldest.all(batchSize) as {
-        kind: string;
-        key: string;
-        size_bytes: number;
-      }[];
-      if (rows.length === 0) {break;}
+      const rows = stmtOldest.all(batchSize) as { kind: string; key: string; size_bytes: number }[];
+      if (rows.length === 0) {
+        break;
+      }
       for (const row of rows) {
-        if (total <= maxBytes) {break;}
+        if (total <= maxBytes) {
+          break;
+        }
         stmtDelete.run(row.kind, row.key);
         total -= row.size_bytes ?? 0;
       }
-      if (total <= maxBytes) {break;}
+      if (total <= maxBytes) {
+        break;
+      }
     }
     db.exec('PRAGMA incremental_vacuum');
   };
 
   const readEntry = (kind: CacheKind, key: string, now: number): CacheRow | null => {
     const row = stmtGet.get(kind, key) as CacheRow | undefined;
-    if (!row) {return null;}
+    if (!row) {
+      return null;
+    }
     const expiresAt = row.expires_at;
     if (typeof expiresAt === 'number' && expiresAt <= now) {
       if (kind === 'slides') {
@@ -269,15 +274,21 @@ export async function createCacheStore({
   const getText = (kind: CacheKind, key: string): string | null => {
     const now = Date.now();
     const row = readEntry(kind, key, now);
-    if (!row) {return null;}
+    if (!row) {
+      return null;
+    }
     const expiresAt = row.expires_at;
-    if (typeof expiresAt === 'number' && expiresAt <= now) {return null;}
+    if (typeof expiresAt === 'number' && expiresAt <= now) {
+      return null;
+    }
     return row.value;
   };
 
   const getJson = <T>(kind: CacheKind, key: string): T | null => {
     const text = getText(kind, key);
-    if (!text) {return null;}
+    if (!text) {
+      return null;
+    }
     try {
       return JSON.parse(text) as T;
     } catch {
@@ -328,7 +339,9 @@ export async function createCacheStore({
         url,
       });
       const row = readEntry('transcript', key, now);
-      if (!row) {return null;}
+      if (!row) {
+        return null;
+      }
       const expired = typeof row.expires_at === 'number' && row.expires_at <= now;
       let payload: {
         content?: string | null;
@@ -449,7 +462,9 @@ export function buildTranscriptCacheKey({
 }
 
 export async function readCacheStats(path: string): Promise<CacheStats | null> {
-  if (!existsSync(path)) {return null;}
+  if (!existsSync(path)) {
+    return null;
+  }
   const db = await openSqlite(path);
   try {
     db.exec('PRAGMA query_only = ON');

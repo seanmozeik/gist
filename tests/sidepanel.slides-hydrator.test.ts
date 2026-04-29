@@ -17,7 +17,9 @@ function streamFromEvents(events: SseEvent[]) {
 
 async function waitFor(check: () => boolean, attempts = 20) {
   for (let i = 0; i < attempts; i += 1) {
-    if (check()) {return;}
+    if (check()) {
+      return;
+    }
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
   throw new Error('timeout waiting for condition');
@@ -29,11 +31,11 @@ describe('sidepanel slides hydrator', () => {
       ocrAvailable: false,
       slides: [
         {
-          index: 1,
-          timestamp: 1.2,
           imageUrl: 'http://127.0.0.1:8787/v1/slides/abc/1',
-          ocrText: null,
+          index: 1,
           ocrConfidence: null,
+          ocrText: null,
+          timestamp: 1.2,
         },
       ],
       sourceId: 'abc',
@@ -48,7 +50,7 @@ describe('sidepanel slides hydrator', () => {
       snapshotFetchImpl: async () =>
         new Response(JSON.stringify({ ok: true, slides: payload }), { status: 200 }),
       streamFetchImpl: async () =>
-        new Response(streamFromEvents([{ event: 'done', data: {} }]), { status: 200 }),
+        new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 }),
     });
 
     await hydrator.start('run-1');
@@ -62,11 +64,11 @@ describe('sidepanel slides hydrator', () => {
       ocrAvailable: false,
       slides: [
         {
-          index: 1,
-          timestamp: 2.4,
           imageUrl: 'http://127.0.0.1:8787/v1/slides/stale/1',
-          ocrText: null,
+          index: 1,
           ocrConfidence: null,
+          ocrText: null,
+          timestamp: 2.4,
         },
       ],
       sourceId: 'stale',
@@ -83,11 +85,11 @@ describe('sidepanel slides hydrator', () => {
       ocrAvailable: false,
       slides: [
         {
-          index: 1,
-          timestamp: 1,
           imageUrl: 'http://127.0.0.1:8787/v1/slides/live/1',
-          ocrText: null,
+          index: 1,
           ocrConfidence: null,
+          ocrText: null,
+          timestamp: 1,
         },
       ],
       sourceId: 'live',
@@ -107,13 +109,13 @@ describe('sidepanel slides hydrator', () => {
         if (url.includes('run-2')) {
           return new Response(
             streamFromEvents([
-              { event: 'slides', data: livePayload },
-              { event: 'done', data: {} },
+              { data: livePayload, event: 'slides' },
+              { data: {}, event: 'done' },
             ]),
             { status: 200 },
           );
         }
-        return new Response(streamFromEvents([{ event: 'done', data: {} }]), { status: 200 });
+        return new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 });
       },
     });
 
@@ -133,11 +135,11 @@ describe('sidepanel slides hydrator', () => {
       ocrAvailable: false,
       slides: [
         {
-          index: 1,
-          timestamp: 5,
           imageUrl: 'http://127.0.0.1:8787/v1/slides/cache/1',
-          ocrText: null,
+          index: 1,
           ocrConfidence: null,
+          ocrText: null,
+          timestamp: 5,
         },
       ],
       sourceId: 'cache',
@@ -154,7 +156,7 @@ describe('sidepanel slides hydrator', () => {
         return new Response(JSON.stringify({ ok: true, slides: payload }), { status: 200 });
       },
       streamFetchImpl: async () =>
-        new Response(streamFromEvents([{ event: 'done', data: {} }]), { status: 200 }),
+        new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 }),
     });
 
     hydrator.syncFromCache({ hasSlides: false, runId: 'run-cache', summaryFromCache: true });

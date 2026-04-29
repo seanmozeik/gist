@@ -1,7 +1,6 @@
-import { isLocalFileUrl, resolveLocalFileMtime } from '@steipete/summarize-core/content/local-file';
-import { isDirectVideoInput } from '@steipete/summarize-core/content/url';
-
 import type { CacheMode, FetchLinkContentOptions } from '../../../content/index.js';
+import { isLocalFileUrl, resolveLocalFileMtime } from '../../../content/local-file.js';
+import { isDirectVideoInput } from '../../../content/url.js';
 
 interface UrlFetchFlags {
   timeoutMs: number;
@@ -55,9 +54,9 @@ export function resolveUrlFetchOptions({
           ? flags.maxExtractCharacters
           : undefined,
       mediaTranscript: shouldPreferTranscriptForTarget({
+        slides: flags.slides,
         targetUrl,
         videoMode: flags.videoMode,
-        slides: flags.slides,
       })
         ? 'prefer'
         : 'auto',

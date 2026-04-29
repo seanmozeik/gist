@@ -28,11 +28,20 @@ function parseKeyMomentSeconds(summary: string): number[] {
       inKeyMoments = true;
       continue;
     }
-    if (inKeyMoments && /^#{1,6}\s+\S/.test(trimmed)) {break;}
-    if (!inKeyMoments) {continue;}
-    const match = /^(?:[-*+]\s+)?(?:\[(\d{1,2}:\d{2}(?::\d{2})?)\]|(\d{1,2}:\d{2}(?::\d{2})?))(?=\s|[-:–—])/.exec(trimmed);
+    if (inKeyMoments && /^#{1,6}\s+\S/.test(trimmed)) {
+      break;
+    }
+    if (!inKeyMoments) {
+      continue;
+    }
+    const match =
+      /^(?:[-*+]\s+)?(?:\[(\d{1,2}:\d{2}(?::\d{2})?)\]|(\d{1,2}:\d{2}(?::\d{2})?))(?=\s|[-:–—])/.exec(
+        trimmed,
+      );
     const raw = match?.[1] ?? match?.[2] ?? null;
-    if (!raw) {continue;}
+    if (!raw) {
+      continue;
+    }
     const parts = raw.split(':').map(Number);
     const value =
       parts.length === 2
@@ -40,7 +49,9 @@ function parseKeyMomentSeconds(summary: string): number[] {
         : (parts.length === 3
           ? parts[0] * 3600 + parts[1] * 60 + parts[2]
           : null);
-    if (value != null) {seconds.push(value);}
+    if (value != null) {
+      seconds.push(value);
+    }
   }
   return seconds;
 }

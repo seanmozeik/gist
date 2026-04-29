@@ -52,7 +52,9 @@ describe('podcast transcript provider: RSS <podcast:transcript>', () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
         typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
-      if (url !== transcriptUrl) {throw new Error(`Unexpected fetch: ${url}`);}
+      if (url !== transcriptUrl) {
+        throw new Error(`Unexpected fetch: ${url}`);
+      }
       return new Response(
         JSON.stringify([
           { end: 0.2, start: 0.1, text: 'Hello' },

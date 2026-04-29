@@ -38,7 +38,7 @@ describe('sidepanel slides state', () => {
     expect(
       resolveSlidesTextState({
         currentMode: 'ocr',
-        slides: [{ index: 1, timestamp: 0, imageUrl: 'x', ocrText: 'tiny' }],
+        slides: [{ imageUrl: 'x', index: 1, ocrText: 'tiny', timestamp: 0 }],
         slidesOcrEnabled: true,
         slidesTranscriptAvailable: true,
       }),
@@ -53,8 +53,8 @@ describe('sidepanel slides state', () => {
     const descriptions = buildSlideDescriptions({
       lengthValue: 'short',
       slides: [
-        { index: 1, timestamp: 0, imageUrl: 'x', ocrText: 'Ignored OCR text' },
-        { index: 2, timestamp: 30, imageUrl: 'y', ocrText: 'Fallback OCR text for second slide' },
+        { imageUrl: 'x', index: 1, ocrText: 'Ignored OCR text', timestamp: 0 },
+        { imageUrl: 'y', index: 2, ocrText: 'Fallback OCR text for second slide', timestamp: 30 },
       ],
       slidesOcrAvailable: true,
       slidesOcrEnabled: true,
@@ -72,10 +72,10 @@ describe('sidepanel slides state', () => {
       lengthValue: 'short',
       slides: [
         {
-          index: 1,
-          timestamp: 90,
           imageUrl: 'x',
+          index: 1,
           ocrText: 'Clear OCR paragraph for the first slide with enough words to keep.',
+          timestamp: 90,
         },
       ],
       slidesOcrAvailable: true,
@@ -92,8 +92,8 @@ describe('sidepanel slides state', () => {
       resolveSlidesTextState({
         currentMode: 'ocr',
         slides: [
-          { index: 1, timestamp: 0, imageUrl: 'x', ocrText: 'A b c d e f g h I J K L' },
-          { index: 2, timestamp: 10, imageUrl: 'y', ocrText: '^^ ~~ == || `` __ ++ --' },
+          { imageUrl: 'x', index: 1, ocrText: 'A b c d e f g h I J K L', timestamp: 0 },
+          { imageUrl: 'y', index: 2, ocrText: '^^ ~~ == || `` __ ++ --', timestamp: 10 },
         ],
         slidesOcrEnabled: true,
         slidesTranscriptAvailable: false,
@@ -111,22 +111,22 @@ describe('sidepanel slides state', () => {
         currentMode: 'ocr',
         slides: [
           {
-            index: 1,
-            timestamp: 0,
             imageUrl: 'x',
+            index: 1,
             ocrText: 'Long readable OCR text for slide one with enough detail to count strongly.',
+            timestamp: 0,
           },
           {
-            index: 2,
-            timestamp: 10,
             imageUrl: 'y',
+            index: 2,
             ocrText: 'Another readable OCR paragraph for slide two with enough detail to count.',
+            timestamp: 10,
           },
           {
-            index: 3,
-            timestamp: 20,
             imageUrl: 'z',
+            index: 3,
             ocrText: 'Third readable OCR paragraph for slide three with enough detail to count.',
+            timestamp: 20,
           },
         ],
         slidesOcrEnabled: true,

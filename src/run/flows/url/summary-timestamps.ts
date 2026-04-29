@@ -8,7 +8,9 @@ const KEY_MOMENT_LINE_RE =
 
 function parseTimestampSeconds(value: string): number | null {
   const parts = value.split(':').map((item) => Number(item));
-  if (parts.some((item) => !Number.isFinite(item))) {return null;}
+  if (parts.some((item) => !Number.isFinite(item))) {
+    return null;
+  }
   if (parts.length === 2) {
     const [minutes, seconds] = parts;
     return minutes * 60 + seconds;
@@ -27,7 +29,9 @@ function formatTimestamp(seconds: number): string {
   const secs = clamped % 60;
   const mm = String(minutes).padStart(2, '0');
   const ss = String(secs).padStart(2, '0');
-  if (hours <= 0) {return `${minutes}:${ss}`;}
+  if (hours <= 0) {
+    return `${minutes}:${ss}`;
+  }
   const hh = String(hours).padStart(2, '0');
   return `${hh}:${mm}:${ss}`;
 }
@@ -38,7 +42,9 @@ function readTranscriptMaxSeconds(
   let maxSeconds: number | null = null;
 
   for (const segment of extracted.transcriptSegments ?? []) {
-    if (!segment) {continue;}
+    if (!segment) {
+      continue;
+    }
     const startSeconds = Math.floor(segment.startMs / 1000);
     if (Number.isFinite(startSeconds) && startSeconds >= 0) {
       maxSeconds = maxSeconds == null ? startSeconds : Math.max(maxSeconds, startSeconds);
@@ -52,10 +58,14 @@ function readTranscriptMaxSeconds(
   }
 
   for (const line of extracted.transcriptTimedText?.split('\n') ?? []) {
-    const match = line.trim().match(TIMED_TRANSCRIPT_LINE_RE);
-    if (!match) {continue;}
+    const match = TIMED_TRANSCRIPT_LINE_RE.exec(line.trim());
+    if (!match) {
+      continue;
+    }
     const seconds = parseTimestampSeconds(match[1] ?? '');
-    if (seconds == null) {continue;}
+    if (seconds == null) {
+      continue;
+    }
     maxSeconds = maxSeconds == null ? seconds : Math.max(maxSeconds, seconds);
   }
 
@@ -65,8 +75,12 @@ function readTranscriptMaxSeconds(
 function trimEdgeBlankLines(lines: string[]): string[] {
   let start = 0;
   let end = lines.length;
-  while (start < end && lines[start]?.trim() === '') {start += 1;}
-  while (end > start && lines[end - 1]?.trim() === '') {end -= 1;}
+  while (start < end && lines[start]?.trim() === '') {
+    start += 1;
+  }
+  while (end > start && lines[end - 1]?.trim() === '') {
+    end -= 1;
+  }
   return lines.slice(start, end);
 }
 
@@ -83,7 +97,9 @@ export function buildSummaryTimestampLimitInstruction(
   >,
 ): string | null {
   const maxSeconds = resolveSummaryTimestampUpperBound(extracted);
-  if (maxSeconds == null) {return null;}
+  if (maxSeconds == null) {
+    return null;
+  }
   return `The last available timestamp is ${formatTimestamp(maxSeconds)}. Never use a later timestamp.`;
 }
 
@@ -101,8 +117,12 @@ export function resolveSummaryTimestampUpperBound(
       ? Math.floor(extracted.mediaDurationSeconds)
       : null;
 
-  if (transcriptMaxSeconds == null) {return durationSeconds;}
-  if (durationSeconds == null) {return transcriptMaxSeconds;}
+  if (transcriptMaxSeconds == null) {
+    return durationSeconds;
+  }
+  if (durationSeconds == null) {
+    return transcriptMaxSeconds;
+  }
   return Math.max(transcriptMaxSeconds, durationSeconds);
 }
 
@@ -116,7 +136,9 @@ export function shouldSanitizeSummaryKeyMoments({
   >;
   hasSlides: boolean;
 }): boolean {
-  if (hasSlides) {return false;}
+  if (hasSlides) {
+    return false;
+  }
   return resolveSummaryTimestampUpperBound(extracted) != null;
 }
 
@@ -127,7 +149,9 @@ export function sanitizeSummaryKeyMoments({
   markdown: string;
   maxSeconds: number | null;
 }): string {
-  if (!markdown || maxSeconds == null) {return markdown;}
+  if (!markdown || maxSeconds == null) {
+    return markdown;
+  }
 
   const lines = markdown.split('\n');
   const output: string[] = [];
@@ -142,7 +166,9 @@ export function sanitizeSummaryKeyMoments({
     let sectionEnd = index + 1;
     while (sectionEnd < lines.length) {
       const candidate = lines[sectionEnd] ?? '';
-      if (MARKDOWN_HEADING_RE.test(candidate.trim())) {break;}
+      if (MARKDOWN_HEADING_RE.test(candidate.trim())) {
+        break;
+      }
       sectionEnd += 1;
     }
 
@@ -150,8 +176,12 @@ export function sanitizeSummaryKeyMoments({
     let keptTimestampCount = 0;
     for (const sectionLine of lines.slice(index + 1, sectionEnd)) {
       const seconds = readLeadingKeyMomentSeconds(sectionLine);
-      if (seconds != null && seconds > maxSeconds) {continue;}
-      if (seconds != null) {keptTimestampCount += 1;}
+      if (seconds != null && seconds > maxSeconds) {
+        continue;
+      }
+      if (seconds != null) {
+        keptTimestampCount += 1;
+      }
       keptLines.push(sectionLine);
     }
 

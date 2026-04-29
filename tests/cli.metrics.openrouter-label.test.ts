@@ -9,7 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/run.js';
 import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(),

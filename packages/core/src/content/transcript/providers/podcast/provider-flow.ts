@@ -12,7 +12,9 @@ import {
 export async function tryPodcastTranscriptFromFeed(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
-  if (!flow.feedHtml || !/podcast:transcript/i.test(flow.feedHtml)) {return null;}
+  if (!flow.feedHtml || !/podcast:transcript/i.test(flow.feedHtml)) {
+    return null;
+  }
 
   flow.pushOnce('podcastTranscript');
   const direct = await tryFetchTranscriptFromFeedXml({
@@ -21,7 +23,9 @@ export async function tryPodcastTranscriptFromFeed(
     fetchImpl: flow.options.fetch,
     notes: flow.notes,
   });
-  if (!direct) {return null;}
+  if (!direct) {
+    return null;
+  }
 
   return {
     attemptedProviders: flow.attemptedProviders,
@@ -41,17 +45,23 @@ export async function tryPodcastTranscriptFromFeed(
 export async function tryFeedEnclosureTranscript(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
-  if (!flow.feedHtml) {return null;}
+  if (!flow.feedHtml) {
+    return null;
+  }
 
   const feedEnclosure = extractEnclosureFromFeed(flow.feedHtml);
-  if (!feedEnclosure) {return null;}
+  if (!feedEnclosure) {
+    return null;
+  }
 
   const resolvedUrl = decodeXmlEntities(feedEnclosure.enclosureUrl);
-  const {durationSeconds} = feedEnclosure;
+  const { durationSeconds } = feedEnclosure;
 
   try {
     const missing = flow.ensureTranscriptionProvider();
-    if (missing) {return missing;}
+    if (missing) {
+      return missing;
+    }
 
     flow.pushOnce('whisper');
     const transcript = await flow.transcribe({
@@ -86,10 +96,14 @@ export async function tryFeedEnclosureTranscript(
 export async function tryOgAudioTranscript(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
-  if (!flow.feedHtml) {return null;}
+  if (!flow.feedHtml) {
+    return null;
+  }
 
   const ogAudioUrl = extractOgAudioUrl(flow.feedHtml);
-  if (!ogAudioUrl) {return null;}
+  if (!ogAudioUrl) {
+    return null;
+  }
 
   flow.attemptedProviders.push('whisper');
   const result = await flow.transcribe({
@@ -119,7 +133,9 @@ export async function tryOgAudioTranscript(
 export async function tryPodcastYtDlpTranscript(
   flow: PodcastFlowContext,
 ): Promise<ProviderResult | null> {
-  if (!flow.options.ytDlpPath) {return null;}
+  if (!flow.options.ytDlpPath) {
+    return null;
+  }
 
   flow.attemptedProviders.push('yt-dlp');
   try {
@@ -131,7 +147,9 @@ export async function tryPodcastYtDlpTranscript(
       url: flow.context.url,
       ytDlpPath: flow.options.ytDlpPath,
     });
-    if (result.notes.length > 0) {flow.notes.push(...result.notes);}
+    if (result.notes.length > 0) {
+      flow.notes.push(...result.notes);
+    }
 
     return {
       attemptedProviders: flow.attemptedProviders,
@@ -153,7 +171,9 @@ export async function tryPodcastYtDlpTranscript(
 
 export function buildNoTranscriptResult(flow: PodcastFlowContext): ProviderResult {
   const missing = flow.ensureTranscriptionProvider();
-  if (missing) {return missing;}
+  if (missing) {
+    return missing;
+  }
 
   return {
     attemptedProviders: flow.attemptedProviders,
@@ -165,8 +185,12 @@ export function buildNoTranscriptResult(flow: PodcastFlowContext): ProviderResul
 
 function extractOgAudioUrl(html: string): string | null {
   const match = /<meta\s+property=['"]og:audio['"]\s+content=['"]([^'"]+)['"][^>]*>/i.exec(html);
-  if (!match?.[1]) {return null;}
+  if (!match?.[1]) {
+    return null;
+  }
   const candidate = match[1].trim();
-  if (!candidate) {return null;}
+  if (!candidate) {
+    return null;
+  }
   return /^https?:\/\//i.test(candidate) ? candidate : null;
 }

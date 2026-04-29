@@ -25,7 +25,9 @@ export function writeSlidesBackgroundFailureWarning({
   theme: ReturnType<typeof createThemeRenderer>;
   message: string;
 }) {
-  if (ctx.flags.json || ctx.flags.extractMode) {return;}
+  if (ctx.flags.json || ctx.flags.extractMode) {
+    return;
+  }
   ctx.hooks.clearProgressForStdout();
   ctx.io.stderr.write(
     `${theme.warning('Warning:')} --slides could not extract slide images: ${message}\n`,
@@ -66,7 +68,9 @@ export function createUrlFlowProgress({
     `${styleLabel(label)} ${meta}${styleDim(suffix)}`;
   const renderStatusFromText = (text: string) => {
     const match = /^([^:]+):(.*)$/.exec(text);
-    if (!match) {return styleLabel(text);}
+    if (!match) {
+      return styleLabel(text);
+    }
     return `${styleLabel(match[1])}${styleDim(`:${match[2]}`)}`;
   };
   const progressStatus = createUrlProgressStatus({
@@ -115,7 +119,9 @@ export function createUrlFlowProgress({
   });
 
   const stopProgress = () => {
-    if (!flags.progressEnabled) {return;}
+    if (!flags.progressEnabled) {
+      return;
+    }
     websiteProgress?.stop?.();
     try {
       spinner.stopAndClear();
@@ -133,7 +139,9 @@ export function createUrlFlowProgress({
     hooks: progressHooks,
     pauseProgress: () => {
       spinner.pause();
-      return () =>{  spinner.resume(); };
+      return () => {
+        spinner.resume();
+      };
     },
     progressStatus,
     renderStatus,

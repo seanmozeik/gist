@@ -33,7 +33,9 @@ export function parseStringArray(raw: unknown, path: string, label: string): str
       throw new TypeError(`Invalid config file ${path}: "${label}" must be an array of strings.`);
     }
     const trimmed = entry.trim();
-    if (!trimmed) {continue;}
+    if (!trimmed) {
+      continue;
+    }
     items.push(trimmed);
   }
   return items;

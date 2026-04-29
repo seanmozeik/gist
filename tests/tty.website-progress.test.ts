@@ -14,7 +14,9 @@ describe('tty website progress', () => {
     const setText = vi.fn();
     const progress = createWebsiteProgress({ enabled: true, spinner: { setText } });
     expect(progress).not.toBeNull();
-    if (!progress) {return;}
+    if (!progress) {
+      return;
+    }
 
     progress.onProgress({ kind: 'fetch-html-start', url: 'https://example.com' });
     expect(setText).toHaveBeenLastCalledWith('Fetching website (connecting)…');
@@ -49,7 +51,9 @@ describe('tty website progress', () => {
     const setText = vi.fn();
     const progress = createWebsiteProgress({ enabled: true, spinner: { setText } });
     expect(progress).not.toBeNull();
-    if (!progress) {return;}
+    if (!progress) {
+      return;
+    }
 
     progress.onProgress({ client: null, kind: 'bird-start', url: 'https://x.com/test/status/1' });
     expect(setText).toHaveBeenLastCalledWith('X: reading tweet…');
@@ -116,7 +120,9 @@ describe('tty website progress', () => {
     const setText = vi.fn();
     const progress = createWebsiteProgress({ enabled: true, spinner: { setText } });
     expect(progress).not.toBeNull();
-    if (!progress) {return;}
+    if (!progress) {
+      return;
+    }
 
     progress.onProgress({
       kind: 'transcript-media-download-start',
@@ -185,7 +191,9 @@ describe('tty website progress', () => {
     const setText = vi.fn();
     const progress = createWebsiteProgress({ enabled: true, spinner: { setText } });
     expect(progress).not.toBeNull();
-    if (!progress) {return;}
+    if (!progress) {
+      return;
+    }
 
     progress.onProgress({
       kind: 'transcript-whisper-start',

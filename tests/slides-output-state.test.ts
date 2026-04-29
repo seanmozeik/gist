@@ -13,8 +13,8 @@ describe('slide output state', () => {
       ocrRequested: false,
       sceneThreshold: 0.3,
       slides: [
-        { index: 2, timestamp: 20, imagePath: '/tmp/2.png' },
-        { index: 1, timestamp: 10, imagePath: '/tmp/1.png' },
+        { imagePath: '/tmp/2.png', index: 2, timestamp: 20 },
+        { imagePath: '/tmp/1.png', index: 1, timestamp: 10 },
       ],
       slidesDir: '/tmp/slides',
       slidesDirId: null,
@@ -74,8 +74,8 @@ describe('slide output state', () => {
       ocrRequested: false,
       sceneThreshold: 0.3,
       slides: [
-        { index: 8, timestamp: Number.NaN, imagePath: '/tmp/8.png' },
-        { index: 7, timestamp: 7, imagePath: '/tmp/7.png' },
+        { imagePath: '/tmp/8.png', index: 8, timestamp: Number.NaN },
+        { imagePath: '/tmp/7.png', index: 7, timestamp: 7 },
       ],
       slidesDir: '/tmp/slides-2',
       slidesDirId: null,

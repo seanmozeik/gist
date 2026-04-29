@@ -12,7 +12,7 @@ describe('finish line transcript label de-dupe', () => {
       label: 'YouTube',
       model: 'openrouter/xiaomi/mimo-v2-flash:free',
       report: {
-        llm: [{ promptTokens: 2600, completionTokens: 386, totalTokens: 2986, calls: 1 }],
+        llm: [{ calls: 1, completionTokens: 386, promptTokens: 2600, totalTokens: 2986 }],
         services: { apify: { requests: 0 }, firecrawl: { requests: 0 } },
       },
     });
@@ -30,7 +30,7 @@ describe('finish line transcript label de-dupe', () => {
       label: 'Spotify',
       model: 'openrouter/xiaomi/mimo-v2-flash:free',
       report: {
-        llm: [{ promptTokens: 2600, completionTokens: 386, totalTokens: 2986, calls: 1 }],
+        llm: [{ calls: 1, completionTokens: 386, promptTokens: 2600, totalTokens: 2986 }],
         services: { apify: { requests: 0 }, firecrawl: { requests: 0 } },
       },
     });

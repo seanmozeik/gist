@@ -82,8 +82,8 @@ describe('transcript cache helpers', () => {
         expired: false,
         metadata: {
           segments: [
-            { startMs: 1000, endMs: 2000, text: 'Hello' },
-            { startMs: 2000, endMs: null, text: 'world' },
+            { endMs: 2000, startMs: 1000, text: 'Hello' },
+            { endMs: null, startMs: 2000, text: 'world' },
           ],
         },
         source: 'captionTracks',

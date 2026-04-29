@@ -198,7 +198,7 @@ describe('cli --extract --format md --markdown-mode llm (transcript markdownify)
     await runCli(['--extract', '--timeout', '10s', 'https://www.youtube.com/watch?v=abcdefghijk'], {
       env: { OPENROUTER_API_KEY: 'test-key' },
       fetch: fetchMock as unknown as typeof fetch,
-      stderr: new Writable({ write: (_c, _e, cb) => cb() }),
+      stderr: new Writable({ write: (_c, _e, cb) =>{  cb(); } }),
       stdout,
     });
 

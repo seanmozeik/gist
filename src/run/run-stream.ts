@@ -1,7 +1,10 @@
 import type { StreamMode } from '../flags.js';
 import { isRichTty } from './terminal.js';
 
-export interface StreamSettings { effectiveStreamMode: 'on' | 'off'; streamingEnabled: boolean }
+export interface StreamSettings {
+  effectiveStreamMode: 'on' | 'off';
+  streamingEnabled: boolean;
+}
 
 export function resolveStreamSettings({
   streamMode,
@@ -15,7 +18,9 @@ export function resolveStreamSettings({
   extractMode: boolean;
 }): StreamSettings {
   const effectiveStreamMode = (() => {
-    if (streamMode !== 'auto') {return streamMode;}
+    if (streamMode !== 'auto') {
+      return streamMode;
+    }
     return isRichTty(stdout) ? 'on' : 'off';
   })();
   const streamingEnabled = effectiveStreamMode === 'on' && !json && !extractMode;

@@ -26,7 +26,10 @@ interface MediaCacheIndexEntry {
   expiresAtMs: number | null;
 }
 
-interface MediaCacheIndex { version: 1; entries: Record<string, MediaCacheIndexEntry> }
+interface MediaCacheIndex {
+  version: 1;
+  entries: Record<string, MediaCacheIndexEntry>;
+}
 
 export const DEFAULT_MEDIA_CACHE_MAX_MB = 2048;
 export const DEFAULT_MEDIA_CACHE_TTL_DAYS = 7;
@@ -47,14 +50,16 @@ export function resolveMediaCachePath({
   cachePath: string | null;
 }): string | null {
   const raw = cachePath?.trim();
-  const home = (env.HOME?.trim() ?? env.USERPROFILE?.trim()) ?? null;
+  const home = env.HOME?.trim() ?? env.USERPROFILE?.trim() ?? null;
   if (raw) {
     if (raw.startsWith('~/') && home) {
       return resolvePath(join(home, raw.slice(2)));
     }
     return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : resolvePath(raw));
   }
-  if (!home) {return null;}
+  if (!home) {
+    return null;
+  }
   return join(home, '.summarize', 'cache', 'media');
 }
 
@@ -68,28 +73,49 @@ const hashFile = async (filePath: string): Promise<string> => {
     const stream = createReadStream(filePath);
     stream.on('data', (chunk) => hash.update(chunk));
     stream.on('error', reject);
-    stream.on('end', () =>{  resolve(hash.digest('hex')); });
+    stream.on('end', () => {
+      resolve(hash.digest('hex'));
+    });
   });
 };
 
 const resolveExtension = (filename: string | null, mediaType: string | null): string => {
   const safeName = filename?.trim() ?? '';
   const match = /\.([a-z0-9]{2,5})$/i.exec(safeName);
-  if (match) {return `.${match[1].toLowerCase()}`;}
-  if (!mediaType) {return '.bin';}
+  if (match) {
+    return `.${match[1].toLowerCase()}`;
+  }
+  if (!mediaType) {
+    return '.bin';
+  }
   const normalized = mediaType.toLowerCase();
-  if (normalized.includes('audio/mpeg')) {return '.mp3';}
-  if (normalized.includes('audio/mp4')) {return '.m4a';}
-  if (normalized.includes('audio/ogg')) {return '.ogg';}
-  if (normalized.includes('audio/wav')) {return '.wav';}
-  if (normalized.includes('audio/flac')) {return '.flac';}
-  if (normalized.includes('video/mp4')) {return '.mp4';}
-  if (normalized.includes('video/webm')) {return '.webm';}
+  if (normalized.includes('audio/mpeg')) {
+    return '.mp3';
+  }
+  if (normalized.includes('audio/mp4')) {
+    return '.m4a';
+  }
+  if (normalized.includes('audio/ogg')) {
+    return '.ogg';
+  }
+  if (normalized.includes('audio/wav')) {
+    return '.wav';
+  }
+  if (normalized.includes('audio/flac')) {
+    return '.flac';
+  }
+  if (normalized.includes('video/mp4')) {
+    return '.mp4';
+  }
+  if (normalized.includes('video/webm')) {
+    return '.webm';
+  }
   if (
     normalized.includes('application/vnd.apple.mpegurl') ||
     normalized.includes('application/x-mpegurl')
-  )
-    {return '.m3u8';}
+  ) {
+    return '.m3u8';
+  }
   return '.bin';
 };
 
@@ -97,15 +123,8 @@ const readIndex = async (indexPath: string): Promise<MediaCacheIndex> => {
   try {
     const raw = await fs.readFile(indexPath, 'utf8');
     const parsed = JSON.parse(raw) as Partial<MediaCacheIndex>;
-    if (
-      parsed?.version === INDEX_VERSION &&
-      parsed.entries &&
-      typeof parsed.entries === 'object'
-    ) {
-      return {
-        entries: parsed.entries,
-        version: INDEX_VERSION,
-      };
+    if (parsed?.version === INDEX_VERSION && parsed.entries && typeof parsed.entries === 'object') {
+      return { entries: parsed.entries, version: INDEX_VERSION };
     }
   } catch {
     // Ignore
@@ -149,13 +168,17 @@ const normalizeEntry = (cacheDir: string, entry: MediaCacheIndexEntry): MediaCac
 };
 
 const moveFile = async (fromPath: string, toPath: string) => {
-  if (fromPath === toPath) {return;}
+  if (fromPath === toPath) {
+    return;
+  }
   await fs.rm(toPath, { force: true });
   try {
     await fs.rename(fromPath, toPath);
   } catch (error) {
     const code = (error as NodeJS.ErrnoException | null)?.code;
-    if (code !== 'EXDEV') {throw error;}
+    if (code !== 'EXDEV') {
+      throw error;
+    }
     await fs.copyFile(fromPath, toPath);
     await fs.rm(fromPath, { force: true });
   }
@@ -195,9 +218,13 @@ export async function createMediaCache({
   };
 
   const enforceMaxBytes = async (index: MediaCacheIndex) => {
-    if (!Number.isFinite(maxBytes) || maxBytes <= 0) {return;}
+    if (!Number.isFinite(maxBytes) || maxBytes <= 0) {
+      return;
+    }
     const entries = Object.entries(index.entries);
-    if (entries.length === 0) {return;}
+    if (entries.length === 0) {
+      return;
+    }
     let totalBytes = 0;
     for (const [, entry] of entries) {
       if (typeof entry.sizeBytes !== 'number') {
@@ -207,12 +234,16 @@ export async function createMediaCache({
         totalBytes += entry.sizeBytes;
       }
     }
-    if (totalBytes <= maxBytes) {return;}
+    if (totalBytes <= maxBytes) {
+      return;
+    }
     const sorted = entries
       .map(([key, entry]) => ({ entry, key }))
       .toSorted((a, b) => a.entry.lastAccessAtMs - b.entry.lastAccessAtMs);
     for (const { key, entry } of sorted) {
-      if (totalBytes <= maxBytes) {break;}
+      if (totalBytes <= maxBytes) {
+        break;
+      }
       const size = typeof entry.sizeBytes === 'number' ? entry.sizeBytes : 0;
       await removeEntry(cacheDir, index, key, entry);
       totalBytes -= size;
@@ -220,13 +251,17 @@ export async function createMediaCache({
   };
 
   const get = async ({ url }: { url: string }): Promise<MediaCacheEntry | null> => {
-    if (!shouldCacheUrl(url)) {return null;}
+    if (!shouldCacheUrl(url)) {
+      return null;
+    }
     const now = Date.now();
     const index = await readIndex(indexPath);
     await pruneExpired(index, now);
     const key = hashKey(url);
     const entry = index.entries[key];
-    if (!entry) {return null;}
+    if (!entry) {
+      return null;
+    }
 
     const filePath = join(cacheDir, entry.fileName);
     let stat: { size: number } | null = null;
@@ -275,7 +310,9 @@ export async function createMediaCache({
     mediaType?: string | null;
     filename?: string | null;
   }): Promise<MediaCacheEntry | null> => {
-    if (!shouldCacheUrl(url)) {return null;}
+    if (!shouldCacheUrl(url)) {
+      return null;
+    }
     const now = Date.now();
     const index = await readIndex(indexPath);
     await pruneExpired(index, now);

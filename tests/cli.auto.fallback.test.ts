@@ -9,7 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/run.js';
 import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -61,7 +65,9 @@ describe('cli auto fallback behavior', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
@@ -121,7 +127,9 @@ describe('cli auto fallback behavior', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

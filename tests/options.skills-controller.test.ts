@@ -202,9 +202,7 @@ describe('options skills controller', () => {
     await flush();
     restore.mockRestore();
 
-    const checkbox = elements.conflictsEl.querySelector(
-      'input[type="checkbox"]',
-    )!;
+    const checkbox = elements.conflictsEl.querySelector('input[type="checkbox"]')!;
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event('change'));
     const importButton = [...elements.conflictsEl.querySelectorAll('button')].find(

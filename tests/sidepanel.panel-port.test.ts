@@ -7,10 +7,10 @@ function createMockPort() {
   const onDisconnectListeners: (() => void)[] = [];
   return {
     disconnect() {
-      for (const listener of onDisconnectListeners) listener();
+      for (const listener of onDisconnectListeners) {listener();}
     },
     emitMessage(message: unknown) {
-      for (const listener of onMessageListeners) listener(message);
+      for (const listener of onMessageListeners) {listener(message);}
     },
     onDisconnect: {
       addListener(listener: () => void) {

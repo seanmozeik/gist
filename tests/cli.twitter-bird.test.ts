@@ -32,7 +32,9 @@ function stripOsc(text: string): string {
     i += 2;
     while (i < text.length) {
       const c = text[i];
-      if (c === '\u0007') {break;}
+      if (c === '\u0007') {
+        break;
+      }
       if (c === '\u001B' && text[i + 1] === '\\') {
         i += 1;
         break;
@@ -55,7 +57,9 @@ function stripCsi(text: string): string {
     i += 2;
     while (i < text.length) {
       const c = text[i];
-      if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {break;}
+      if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+        break;
+      }
       i += 1;
     }
   }

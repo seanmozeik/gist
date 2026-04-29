@@ -62,7 +62,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: {},
       mode: 'none',
-      slides: [{ index: 1, timestamp: 0, imagePath: '/tmp/missing.png' }],
+      slides: [{ imagePath: '/tmp/missing.png', index: 1, timestamp: 0 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('none');
@@ -77,7 +77,7 @@ describe('renderSlidesInline', () => {
       env: { KITTY_WINDOW_ID: '1', TERM: 'xterm-kitty' },
       labelForSlide: () => 'Slide 1',
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 12.3, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 12.3 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('kitty');
@@ -93,7 +93,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM: 'xterm-kitty' },
       mode: 'kitty',
-      slides: [{ index: 1, timestamp: 12.3, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 12.3 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('none');
@@ -107,7 +107,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM_PROGRAM: 'konsole' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 1.2, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 1.2 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('kitty');
@@ -121,7 +121,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM_PROGRAM: 'iTerm.app' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 4.2, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 4.2 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('iterm');
@@ -136,7 +136,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { COLUMNS: '90', TERM: 'xterm-kitty' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 9.1, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 9.1 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('kitty');
@@ -150,7 +150,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM: 'xterm-kitty' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 9.1, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 9.1 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('kitty');
@@ -164,7 +164,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM_PROGRAM: 'WezTerm' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 5.1, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 5.1 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('iterm');
@@ -178,7 +178,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { WEZTERM_EXECUTABLE: '/Applications/WezTerm.app/Contents/MacOS/wezterm' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 5.4, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 5.4 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('iterm');
@@ -192,7 +192,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM_PROGRAM: 'Terminal.app' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 4.2, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 4.2 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('none');
@@ -205,7 +205,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { KITTY_WINDOW_ID: '1', TERM: 'xterm-kitty' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 0, imagePath: '/tmp/missing-slide.png' }],
+      slides: [{ imagePath: '/tmp/missing-slide.png', index: 1, timestamp: 0 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('kitty');
@@ -221,7 +221,7 @@ describe('renderSlidesInline', () => {
     const result = await renderSlidesInline({
       env: { TERM_PROGRAM: 'iTerm.app' },
       mode: 'auto',
-      slides: [{ index: 1, timestamp: 0, imagePath }],
+      slides: [{ imagePath, index: 1, timestamp: 0 }],
       stdout: output.stream,
     });
     expect(result.protocol).toBe('iterm');

@@ -40,16 +40,25 @@ function trimLikelyUrlPunctuation(raw: string): string {
     let openCount = 0;
     let closeCount = 0;
     for (const char of input) {
-      if (char === open) {openCount += 1;}
-      else if (char === close) {closeCount += 1;}
+      if (char === open) {
+        openCount += 1;
+      } else if (char === close) {
+        closeCount += 1;
+      }
     }
     return closeCount > openCount;
   };
   while (value.length > 0 && /[)\].,;:'">}”’»]/.test(value.at(-1) ?? '')) {
     const last = value.at(-1) ?? '';
-    if (last === ')' && !hasUnbalancedClosing(value, '(', ')')) {break;}
-    if (last === ']' && !hasUnbalancedClosing(value, '[', ']')) {break;}
-    if (last === '}' && !hasUnbalancedClosing(value, '{', '}')) {break;}
+    if (last === ')' && !hasUnbalancedClosing(value, '(', ')')) {
+      break;
+    }
+    if (last === ']' && !hasUnbalancedClosing(value, '[', ']')) {
+      break;
+    }
+    if (last === '}' && !hasUnbalancedClosing(value, '{', '}')) {
+      break;
+    }
     value = value.slice(0, -1);
   }
   while (value.length > 0 && /^[('"<{[\]“‘«]/.test(value[0] ?? '')) {
@@ -65,27 +74,41 @@ function extractHttpUrlsFromText(raw: string): string[] {
 }
 
 function normalizeHeaderMediaType(value: string | null): string | null {
-  if (!value) {return null;}
+  if (!value) {
+    return null;
+  }
   const trimmed = value.trim();
-  if (!trimmed) {return null;}
+  if (!trimmed) {
+    return null;
+  }
   return trimmed.split(';')[0]?.trim().toLowerCase() ?? null;
 }
 
 function isHtmlMediaType(mediaType: string | null): boolean {
-  if (!mediaType) {return false;}
+  if (!mediaType) {
+    return false;
+  }
   return mediaType === 'text/html' || mediaType === 'application/xhtml+xml';
 }
 
 function isLikelyAssetMediaType(mediaType: string | null): boolean {
-  if (!mediaType) {return false;}
-  if (isHtmlMediaType(mediaType)) {return false;}
+  if (!mediaType) {
+    return false;
+  }
+  if (isHtmlMediaType(mediaType)) {
+    return false;
+  }
   return true;
 }
 
 function parseContentDispositionFilename(header: string | null): string | null {
-  if (!header) {return null;}
+  if (!header) {
+    return null;
+  }
   const match = /filename\*\s*=\s*([^;]+)/i.exec(header) ?? /filename\s*=\s*([^;]+)/i.exec(header);
-  if (!match?.[1]) {return null;}
+  if (!match?.[1]) {
+    return null;
+  }
   let value = match[1].trim();
   if (value.toLowerCase().startsWith("utf-8''")) {
     value = value.slice(7);
@@ -105,7 +128,9 @@ function looksLikeHtml(bytes: Uint8Array): boolean {
 
 function isLikelyAssetPathname(pathname: string): boolean {
   const ext = path.extname(pathname).toLowerCase();
-  if (!ext) {return false;}
+  if (!ext) {
+    return false;
+  }
   if (ext === '.html' || ext === '.htm' || ext === '.php' || ext === '.asp' || ext === '.aspx') {
     return false;
   }
@@ -132,7 +157,9 @@ export function resolveInputTarget(raw: string): InputTarget {
   if (extractedLast && extractedLast !== normalized) {
     for (let i = extractedUrls.length - 1; i >= 0; i -= 1) {
       const candidate = extractedUrls[i];
-      if (!candidate) {continue;}
+      if (!candidate) {
+        continue;
+      }
       try {
         return resolveInputTarget(candidate);
       } catch {
@@ -188,14 +215,22 @@ export async function classifyUrl({
 
   const tryDetectFromHead = async (): Promise<boolean> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
     try {
       const res = await fetchImpl(url, { method: 'HEAD', signal: controller.signal });
-      if (!res.ok) {return false;}
+      if (!res.ok) {
+        return false;
+      }
       const mediaType = normalizeHeaderMediaType(res.headers.get('content-type'));
-      if (isLikelyAssetMediaType(mediaType)) {return true;}
+      if (isLikelyAssetMediaType(mediaType)) {
+        return true;
+      }
       const filename = parseContentDispositionFilename(res.headers.get('content-disposition'));
-      if (filename && isLikelyAssetPathname(filename)) {return true;}
+      if (filename && isLikelyAssetPathname(filename)) {
+        return true;
+      }
       return false;
     } catch {
       return false;
@@ -206,16 +241,22 @@ export async function classifyUrl({
 
   const tryDetectFromRange = async (): Promise<boolean> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
     try {
       const res = await fetchImpl(url, {
         headers: { Range: 'bytes=0-2047' },
         method: 'GET',
         signal: controller.signal,
       });
-      if (!res.ok) {return false;}
+      if (!res.ok) {
+        return false;
+      }
       const mediaType = normalizeHeaderMediaType(res.headers.get('content-type'));
-      if (isLikelyAssetMediaType(mediaType)) {return true;}
+      if (isLikelyAssetMediaType(mediaType)) {
+        return true;
+      }
       const buffer = new Uint8Array(await res.arrayBuffer());
       return !looksLikeHtml(buffer);
     } catch {
@@ -225,8 +266,12 @@ export async function classifyUrl({
     }
   };
 
-  if (await tryDetectFromHead()) {return { kind: 'asset' };}
-  if (await tryDetectFromRange()) {return { kind: 'asset' };}
+  if (await tryDetectFromHead()) {
+    return { kind: 'asset' };
+  }
+  if (await tryDetectFromRange()) {
+    return { kind: 'asset' };
+  }
   return { kind: 'website' };
 }
 
@@ -240,14 +285,20 @@ async function detectMediaType({
   nameHint: string | null;
 }): Promise<string> {
   const sniffed = await fileTypeFromBuffer(bytes);
-  if (sniffed?.mime) {return sniffed.mime;}
+  if (sniffed?.mime) {
+    return sniffed.mime;
+  }
 
   const header = normalizeHeaderMediaType(headerContentType);
-  if (header && header !== 'application/octet-stream') {return header;}
+  if (header && header !== 'application/octet-stream') {
+    return header;
+  }
 
   if (nameHint) {
     const byExt = mime.getType(nameHint);
-    if (typeof byExt === 'string' && byExt.length > 0) {return byExt;}
+    if (typeof byExt === 'string' && byExt.length > 0) {
+      return byExt;
+    }
   }
 
   return 'application/octet-stream';
@@ -287,7 +338,7 @@ export async function loadLocalAsset({
   const bytes = new Uint8Array(await fs.readFile(filePath));
   const filename = path.basename(filePath);
   const mediaType = await detectMediaType({ bytes, headerContentType: null, nameHint: filename });
-  return { attachment: buildAttachment({ bytes, mediaType, filename }), sourceLabel: filePath };
+  return { attachment: buildAttachment({ bytes, filename, mediaType }), sourceLabel: filePath };
 }
 
 export async function loadRemoteAsset({
@@ -302,7 +353,9 @@ export async function loadRemoteAsset({
   maxBytes?: number;
 }): Promise<{ sourceLabel: string; attachment: AssetAttachment }> {
   const controller = new AbortController();
-  const timeout = setTimeout(() =>{  controller.abort(); }, timeoutMs);
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
   try {
     const res = await fetchImpl(url, { signal: controller.signal });
     if (!res.ok) {
@@ -334,7 +387,7 @@ export async function loadRemoteAsset({
       throw new Error('URL appears to be a website (HTML), not a file');
     }
 
-    return { attachment: buildAttachment({ bytes, mediaType, filename }), sourceLabel: url };
+    return { attachment: buildAttachment({ bytes, filename, mediaType }), sourceLabel: url };
   } finally {
     clearTimeout(timeout);
   }

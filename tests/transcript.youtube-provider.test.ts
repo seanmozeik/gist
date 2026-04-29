@@ -519,7 +519,7 @@ describe('YouTube transcript provider module', () => {
 
   it('returns segments when timestamps are requested', async () => {
     captions.fetchTranscriptFromCaptionTracks.mockResolvedValue({
-      segments: [{ startMs: 1000, endMs: 2000, text: 'Hello' }],
+      segments: [{ endMs: 2000, startMs: 1000, text: 'Hello' }],
       text: 'Creator caption',
     });
 

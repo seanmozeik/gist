@@ -61,9 +61,9 @@ describe('run/attachments', () => {
       kind: 'file',
       mediaType: 'application/zip',
     } as unknown as AssetAttachment;
-    expect(() =>{  assertAssetMediaTypeSupported({ attachment: zip, sizeLabel: '1B' }); }).toThrow(
-      /Unsupported file type/i,
-    );
+    expect(() => {
+      assertAssetMediaTypeSupported({ attachment: zip, sizeLabel: '1B' });
+    }).toThrow(/Unsupported file type/i);
   });
 
   it('passes through non-archive attachments', () => {
@@ -72,7 +72,9 @@ describe('run/attachments', () => {
       kind: 'file',
       mediaType: 'text/plain',
     } as unknown as AssetAttachment;
-    expect(() =>{  assertAssetMediaTypeSupported({ attachment: txt, sizeLabel: null }); }).not.toThrow();
+    expect(() => {
+      assertAssetMediaTypeSupported({ attachment: txt, sizeLabel: null });
+    }).not.toThrow();
   });
 
   it('returns raw bytes for file attachments', () => {

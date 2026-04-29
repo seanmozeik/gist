@@ -38,7 +38,7 @@ describe('asset loaders', () => {
     await expect(
       loadRemoteAsset({
         fetchImpl: async () =>
-          new Response(new Uint8Array(1), { status: 200, headers: { 'content-length': '999' } }),
+          new Response(new Uint8Array(1), { headers: { 'content-length': '999' }, status: 200 }),
         maxBytes: 10,
         timeoutMs: 2000,
         url: 'https://example.com/file.bin',
@@ -60,8 +60,8 @@ describe('asset loaders', () => {
       loadRemoteAsset({
         fetchImpl: async () =>
           new Response('<html><body>hi</body></html>', {
-            status: 200,
             headers: { 'content-type': 'text/html; charset=utf-8' },
+            status: 200,
           }),
         timeoutMs: 2000,
         url: 'https://example.com/file.bin',
@@ -86,8 +86,8 @@ describe('asset loaders', () => {
       loadRemoteAsset({
         fetchImpl: async () =>
           new Response('<!doctype html><html><body>hi</body></html>', {
-            status: 200,
             headers: { 'content-type': 'application/octet-stream' },
+            status: 200,
           }),
         timeoutMs: 2000,
         url: 'https://example.com/',
@@ -99,8 +99,8 @@ describe('asset loaders', () => {
     const loaded = await loadRemoteAsset({
       fetchImpl: async () =>
         new Response(new Uint8Array([1, 2, 3, 4]), {
-          status: 200,
           headers: { 'content-type': 'image/png' },
+          status: 200,
         }),
       timeoutMs: 2000,
       url: 'https://example.com/image.png',

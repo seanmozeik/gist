@@ -140,10 +140,10 @@ describe('link preview extraction (YouTube)', () => {
 
   it('uses ytInitialPlayerResponse shortDescription when transcripts are unavailable', async () => {
     const html =
-      '<!doctype html><html><head><title>Sample</title>' +
-      '<script>ytcfg.set({"INNERTUBE_API_KEY":"TEST_KEY","INNERTUBE_CONTEXT":{"client":{"clientName":"WEB","clientVersion":"1.0"}}});</script>' +
-      String.raw`<script>var ytInitialPlayerResponse = {"videoDetails":{"shortDescription":"Line one\n\nLine two"}};</script>` +
-      '</head><body><main><p>Fallback paragraph</p></main></body></html>';
+      `<!doctype html><html><head><title>Sample</title>` +
+      `<script>ytcfg.set({"INNERTUBE_API_KEY":"TEST_KEY","INNERTUBE_CONTEXT":{"client":{"clientName":"WEB","clientVersion":"1.0"}}});</script>${ 
+      String.raw`<script>var ytInitialPlayerResponse = {"videoDetails":{"shortDescription":"Line one\n\nLine two"}};</script>` 
+      }</head><body><main><p>Fallback paragraph</p></main></body></html>`;
 
     const fetchMock = vi.fn<[RequestInfo | URL, RequestInit?], Promise<Response>>((input) => {
       const url = typeof input === 'string' ? input : (input?.url ?? '');

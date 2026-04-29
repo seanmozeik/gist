@@ -1,4 +1,8 @@
-interface Rgb { r: number; g: number; b: number }
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
 
 export const CLI_THEME_NAMES = ['aurora', 'ember', 'moss', 'mono'] as const;
 export type CliThemeName = (typeof CLI_THEME_NAMES)[number];
@@ -104,13 +108,19 @@ export function isCliThemeName(value: string): value is CliThemeName {
 }
 
 export function parseCliThemeName(raw: unknown, label: string): CliThemeName | null {
-  if (raw === undefined || raw === null) {return null;}
+  if (raw === undefined || raw === null) {
+    return null;
+  }
   if (typeof raw !== 'string') {
     throw new TypeError(`Unsupported ${label}: ${String(raw)}`);
   }
   const normalized = raw.trim().toLowerCase();
-  if (!normalized) {return null;}
-  if (isCliThemeName(normalized)) {return normalized;}
+  if (!normalized) {
+    return null;
+  }
+  if (isCliThemeName(normalized)) {
+    return normalized;
+  }
   throw new Error(`Unsupported ${label}: ${raw} (use ${CLI_THEME_NAMES.join(', ')})`);
 }
 
@@ -126,22 +136,34 @@ export function resolveThemeNameFromSources({
   fallback?: CliThemeName;
 }): CliThemeName {
   const cliName = parseCliThemeName(cli, '--theme');
-  if (cliName) {return cliName;}
+  if (cliName) {
+    return cliName;
+  }
   const envName = parseCliThemeName(env, 'SUMMARIZE_THEME');
-  if (envName) {return envName;}
+  if (envName) {
+    return envName;
+  }
   const configName = parseCliThemeName(config, 'ui.theme');
-  if (configName) {return configName;}
+  if (configName) {
+    return configName;
+  }
   return fallback;
 }
 
 export function resolveTrueColor(env: Record<string, string | undefined>): boolean {
   const force = env.SUMMARIZE_TRUECOLOR?.trim().toLowerCase();
-  if (force === '1' || force === 'true' || force === 'yes') {return true;}
+  if (force === '1' || force === 'true' || force === 'yes') {
+    return true;
+  }
   const disabled = env.SUMMARIZE_NO_TRUECOLOR?.trim().toLowerCase();
-  if (disabled === '1' || disabled === 'true' || disabled === 'yes') {return false;}
+  if (disabled === '1' || disabled === 'true' || disabled === 'yes') {
+    return false;
+  }
 
   const colorterm = env.COLORTERM?.toLowerCase() ?? '';
-  if (colorterm.includes('truecolor') || colorterm.includes('24bit')) {return true;}
+  if (colorterm.includes('truecolor') || colorterm.includes('24bit')) {
+    return true;
+  }
 
   const termProgram = env.TERM_PROGRAM?.toLowerCase() ?? '';
   if (['iterm.app', 'wezterm', 'vscode', 'apple_terminal', 'hyper'].includes(termProgram)) {
@@ -149,7 +171,9 @@ export function resolveTrueColor(env: Record<string, string | undefined>): boole
   }
 
   const term = env.TERM?.toLowerCase() ?? '';
-  if (term.includes('256color') || term.includes('direct')) {return true;}
+  if (term.includes('256color') || term.includes('direct')) {
+    return true;
+  }
 
   return true;
 }
@@ -168,7 +192,11 @@ const FALLBACK_CODES: Record<ThemeRole, string> = {
   warning: '1;33',
 };
 
-interface ThemeRendererOptions { themeName: CliThemeName; enabled: boolean; trueColor: boolean }
+interface ThemeRendererOptions {
+  themeName: CliThemeName;
+  enabled: boolean;
+  trueColor: boolean;
+}
 
 export interface ThemeRenderer {
   name: CliThemeName;
@@ -189,22 +217,30 @@ export interface ThemeRenderer {
 }
 
 const ansi = (code: string, input: string, enabled: boolean): string => {
-  if (!enabled) {return input;}
+  if (!enabled) {
+    return input;
+  }
   return `\u001B[${code}m${input}\u001B[0m`;
 };
 
 const parseHex = (value: string): Rgb => {
   const hex = value.replace('#', '').trim();
-  if (hex.length !== 6) {return { r: 255, g: 255, b: 255 };}
+  if (hex.length !== 6) {
+    return { b: 255, g: 255, r: 255 };
+  }
   const r = Number.parseInt(hex.slice(0, 2), 16);
   const g = Number.parseInt(hex.slice(2, 4), 16);
   const b = Number.parseInt(hex.slice(4, 6), 16);
-  if ([r, g, b].some((c) => Number.isNaN(c))) {return { r: 255, g: 255, b: 255 };}
+  if ([r, g, b].some((c) => Number.isNaN(c))) {
+    return { b: 255, g: 255, r: 255 };
+  }
   return { b, g, r };
 };
 
 const ansiRgb = (rgb: Rgb, input: string, enabled: boolean, bold = false): string => {
-  if (!enabled) {return input;}
+  if (!enabled) {
+    return input;
+  }
   const codes = [bold ? '1' : null, `38;2;${rgb.r};${rgb.g};${rgb.b}`].filter(Boolean).join(';');
   return `\u001B[${codes}m${input}\u001B[0m`;
 };
@@ -217,7 +253,9 @@ export function createThemeRenderer({
   const palette = THEMES[themeName] ?? THEMES[DEFAULT_CLI_THEME];
 
   const colorize = (role: ThemeRole, text: string, bold = false) => {
-    if (!enabled) {return text;}
+    if (!enabled) {
+      return text;
+    }
     if (trueColor) {
       return ansiRgb(parseHex(palette.roles[role]), text, enabled, bold);
     }

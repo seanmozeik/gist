@@ -2,16 +2,22 @@ import { fetchWithTimeout } from './fetch-with-timeout.js';
 
 function truncateList(items: string[], max: number): string {
   const normalized = items.map((item) => item.trim()).filter(Boolean);
-  if (normalized.length <= max) {return normalized.join(', ');}
+  if (normalized.length <= max) {
+    return normalized.join(', ');
+  }
   return `${normalized.slice(0, max).join(', ')} (+${normalized.length - max} more)`;
 }
 
 function parseOpenRouterModelId(modelId: string): { author: string; slug: string } | null {
   const normalized = modelId.trim();
-  if (!normalized.startsWith('openrouter/')) {return null;}
+  if (!normalized.startsWith('openrouter/')) {
+    return null;
+  }
   const rest = normalized.slice('openrouter/'.length);
   const [author, ...slugParts] = rest.split('/');
-  if (!author || slugParts.length === 0) {return null;}
+  if (!author || slugParts.length === 0) {
+    return null;
+  }
   return { author, slug: slugParts.join('/') };
 }
 
@@ -30,7 +36,9 @@ async function resolveOpenRouterProvidersForModels({
   await Promise.all(
     unique.map(async (modelId) => {
       const parsed = parseOpenRouterModelId(modelId);
-      if (!parsed) {return;}
+      if (!parsed) {
+        return;
+      }
       const url = `https://openrouter.ai/api/v1/models/${encodeURIComponent(parsed.author)}/${encodeURIComponent(parsed.slug)}/endpoints`;
       try {
         const response = await fetchWithTimeout(
@@ -39,7 +47,9 @@ async function resolveOpenRouterProvidersForModels({
           { headers: { Accept: 'application/json' } },
           Math.min(timeoutMs, 15_000),
         );
-        if (!response.ok) {return;}
+        if (!response.ok) {
+          return;
+        }
         const payload = (await response.json()) as {
           data?: { endpoints?: ({ provider_name?: unknown } | null)[] };
         };
@@ -52,7 +62,9 @@ async function resolveOpenRouterProvidersForModels({
           )
           .filter((value): value is string => Boolean(value));
         const uniqueProviders = [...new Set(providers)].toSorted((a, b) => a.localeCompare(b));
-        if (uniqueProviders.length > 0) {results.set(modelId, uniqueProviders);}
+        if (uniqueProviders.length > 0) {
+          results.set(modelId, uniqueProviders);
+        }
       } catch {
         // Best-effort only
       }
@@ -77,7 +89,7 @@ export async function buildOpenRouterNoAllowedProvidersMessage({
   const tried = truncateList(modelIds, 6);
 
   const providerMap = await resolveOpenRouterProvidersForModels({ fetchImpl, modelIds, timeoutMs });
-  const allProviders = [...new Set(Array.from(providerMap.values()).flat())].toSorted((a, b) =>
+  const allProviders = [...new Set([...providerMap.values()].flat())].toSorted((a, b) =>
     a.localeCompare(b),
   );
 

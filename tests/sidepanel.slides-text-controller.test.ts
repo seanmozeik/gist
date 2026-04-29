@@ -27,7 +27,7 @@ describe('sidepanel slides text controller', () => {
   it('keeps slides-derived titles authoritative over summary titles', () => {
     const controller = createSlidesTextController({
       getLengthValue: () => 'short',
-      getSlides: () => [{ index: 1, timestamp: 2, imageUrl: 'x', ocrText: null }],
+      getSlides: () => [{ imageUrl: 'x', index: 1, ocrText: null, timestamp: 2 }],
       getSlidesOcrEnabled: () => true,
     });
 
@@ -136,7 +136,7 @@ describe('sidepanel slides text controller', () => {
   it('preserves existing titles when asked to ignore empty updates', () => {
     const controller = createSlidesTextController({
       getLengthValue: () => 'short',
-      getSlides: () => [{ index: 1, timestamp: 2, imageUrl: 'x', ocrText: null }],
+      getSlides: () => [{ imageUrl: 'x', index: 1, ocrText: null, timestamp: 2 }],
       getSlidesOcrEnabled: () => true,
     });
 
@@ -199,7 +199,7 @@ describe('sidepanel slides text controller', () => {
   it('resets transcript and ocr state cleanly', () => {
     const controller = createSlidesTextController({
       getLengthValue: () => 'short',
-      getSlides: () => [{ index: 1, timestamp: 2, imageUrl: 'x', ocrText: 'tiny' }],
+      getSlides: () => [{ imageUrl: 'x', index: 1, ocrText: 'tiny', timestamp: 2 }],
       getSlidesOcrEnabled: () => false,
     });
 

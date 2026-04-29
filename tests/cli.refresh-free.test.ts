@@ -337,7 +337,7 @@ describe('refresh-free', () => {
           data: [
             {
               architecture: { modality: 'text' },
-              context_length: 12345,
+              context_length: 12_345,
               created,
               id: 'acme/big-27b:free',
               name: 'Big 27B',

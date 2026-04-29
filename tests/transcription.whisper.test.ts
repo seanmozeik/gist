@@ -25,14 +25,18 @@ describe('transcription/whisper', () => {
         const proc = {
           on(event: string, handler: (value?: unknown) => void) {
             handlers.set(event, handler);
-            if (event === 'error') {queueMicrotask(() =>{  handler(new Error('spawn ENOENT')); });}
+            if (event === 'error') {
+              queueMicrotask(() => {
+                handler(new Error('spawn ENOENT'));
+              });
+            }
             return proc;
           },
         } as unknown as ChildProcess;
         return proc;
       },
     }));
-    return  import('../packages/core/src/transcription/whisper.js');
+    return import('../packages/core/src/transcription/whisper.js');
   };
 
   const importWhisperWithMockFfmpeg = async ({
@@ -41,7 +45,9 @@ describe('transcription/whisper', () => {
     resetModules();
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'ffmpeg') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+        if (_cmd !== 'ffmpeg') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {};
@@ -55,7 +61,9 @@ describe('transcription/whisper', () => {
           stderr,
         } as unknown as ChildProcess;
 
-        const close = (code: number) =>{  queueMicrotask(() => handlers.get('close')?.(code)); };
+        const close = (code: number) => {
+          queueMicrotask(() => handlers.get('close')?.(code));
+        };
 
         // Ffmpeg -version
         if (args.includes('-version')) {
@@ -74,7 +82,9 @@ describe('transcription/whisper', () => {
               await writeFile(part1, new Uint8Array([4, 5, 6]));
             }
           })()
-            .then(() =>{  close(0); })
+            .then(() => {
+              close(0);
+            })
             .catch((error) => {
               queueMicrotask(() => handlers.get('error')?.(error));
               close(1);
@@ -85,9 +95,13 @@ describe('transcription/whisper', () => {
         // Transcode: last arg is output file
         const output = args.at(-1) ?? '';
         (async () => {
-          if (output) {await writeFile(output, new Uint8Array([9, 9, 9]));}
+          if (output) {
+            await writeFile(output, new Uint8Array([9, 9, 9]));
+          }
         })()
-          .then(() =>{  close(0); })
+          .then(() => {
+            close(0);
+          })
           .catch((error) => {
             queueMicrotask(() => handlers.get('error')?.(error));
             close(1);
@@ -95,7 +109,7 @@ describe('transcription/whisper', () => {
         return proc;
       },
     }));
-    return  import('../packages/core/src/transcription/whisper.js');
+    return import('../packages/core/src/transcription/whisper.js');
   };
 
   const importWhisperWithGroqCurlFallback = async ({
@@ -114,23 +128,25 @@ describe('transcription/whisper', () => {
         callback: (error: Error | null, stdout: string, stderr: string) => void,
       ) => {
         const outputPath = args[args.indexOf('-o') + 1];
-        void writeFile(outputPath, responseBody, 'utf8').then(() =>{ 
-          callback(null, String(statusCode), ''); },
-        );
+        void writeFile(outputPath, responseBody, 'utf8').then(() => {
+          callback(null, String(statusCode), '');
+        });
         return {} as ChildProcess;
       },
       spawn: () => {
         throw new Error('spawn should not be used');
       },
     }));
-    return  import('../packages/core/src/transcription/whisper.js');
+    return import('../packages/core/src/transcription/whisper.js');
   };
 
   it('maps media types to filename extensions for Whisper format detection', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const form = init?.body as FormData;
       const file = form.get('file') as unknown as { name?: unknown };
-      if (typeof file?.name !== 'string') {throw new Error('expected file.name');}
+      if (typeof file?.name !== 'string') {
+        throw new TypeError('expected file.name');
+      }
       expect(file.name).toBe('audio.ogg');
       return new Response(JSON.stringify({ text: 'ok' }), {
         headers: { 'content-type': 'application/json' },
@@ -168,7 +184,9 @@ describe('transcription/whisper', () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const form = init?.body as FormData;
       const file = form.get('file') as unknown as { name?: unknown };
-      if (typeof file?.name !== 'string') {throw new Error('expected file.name');}
+      if (typeof file?.name !== 'string') {
+        throw new TypeError('expected file.name');
+      }
       expect(file.name).toBe(row.expected);
       return new Response(JSON.stringify({ text: 'ok' }), {
         headers: { 'content-type': 'application/json' },
@@ -397,7 +415,9 @@ describe('transcription/whisper', () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const form = init?.body as FormData;
       const file = form.get('file') as unknown as { name?: unknown };
-      if (typeof file?.name !== 'string') {throw new Error('expected file.name');}
+      if (typeof file?.name !== 'string') {
+        throw new TypeError('expected file.name');
+      }
       return new Response(JSON.stringify({ text: `T:${file.name}` }), {
         headers: { 'content-type': 'application/json' },
         status: 200,
@@ -597,7 +617,9 @@ describe('transcription/whisper', () => {
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'ffmpeg') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+        if (_cmd !== 'ffmpeg') {
+          throw new Error(`Unexpected spawn: ${_cmd}`);
+        }
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {};
@@ -611,7 +633,9 @@ describe('transcription/whisper', () => {
           stderr,
         } as unknown as ChildProcess;
 
-        const close = (code: number) =>{  queueMicrotask(() => handlers.get('close')?.(code)); };
+        const close = (code: number) => {
+          queueMicrotask(() => handlers.get('close')?.(code));
+        };
 
         if (args.includes('-version')) {
           close(0);
@@ -653,7 +677,9 @@ describe('transcription/whisper', () => {
     try {
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
-        if (!url.includes('/v1/audio/transcriptions')) {throw new Error(`Unexpected fetch: ${url}`);}
+        if (!url.includes('/v1/audio/transcriptions')) {
+          throw new Error(`Unexpected fetch: ${url}`);
+        }
         return new Response('Unrecognized file format', {
           headers: { 'content-type': 'text/plain' },
           status: 400,
@@ -662,7 +688,9 @@ describe('transcription/whisper', () => {
 
       vi.doMock('node:child_process', () => ({
         spawn: (_cmd: string, args: string[]) => {
-          if (_cmd !== 'ffmpeg') {throw new Error(`Unexpected spawn: ${_cmd}`);}
+          if (_cmd !== 'ffmpeg') {
+            throw new Error(`Unexpected spawn: ${_cmd}`);
+          }
           const stderr = new EventEmitter();
           stderr.setEncoding = () => {};
 
@@ -675,7 +703,9 @@ describe('transcription/whisper', () => {
             stderr,
           } as unknown as ChildProcess;
 
-          const close = (code: number) =>{  queueMicrotask(() => handlers.get('close')?.(code)); };
+          const close = (code: number) => {
+            queueMicrotask(() => handlers.get('close')?.(code));
+          };
 
           if (args.includes('-version')) {
             close(0);
@@ -713,7 +743,9 @@ describe('transcription/whisper', () => {
     const openaiFetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const form = init?.body as FormData;
       const file = form.get('file') as unknown as { size?: unknown };
-      if (typeof file?.size !== 'number') {throw new Error('expected file.size');}
+      if (typeof file?.size !== 'number') {
+        throw new TypeError('expected file.size');
+      }
       expect(file.size).toBe(whisper.MAX_OPENAI_UPLOAD_BYTES);
       return new Response(JSON.stringify({ text: 'ok' }), {
         headers: { 'content-type': 'application/json' },
@@ -1255,7 +1287,9 @@ describe('transcription/whisper', () => {
       }
       const form = init?.body as FormData;
       const file = form.get('file') as unknown as { name?: unknown };
-      if (typeof file?.name !== 'string') {throw new Error('expected file.name');}
+      if (typeof file?.name !== 'string') {
+        throw new TypeError('expected file.name');
+      }
       return new Response(JSON.stringify({ text: `G:${file.name}` }), {
         headers: { 'content-type': 'application/json' },
         status: 200,
@@ -1303,7 +1337,9 @@ describe('transcription/whisper', () => {
       const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const form = init?.body as FormData;
         const file = form.get('file') as unknown as { name?: unknown };
-        if (typeof file?.name !== 'string') {throw new Error('expected file.name');}
+        if (typeof file?.name !== 'string') {
+          throw new TypeError('expected file.name');
+        }
         expect(file.name).toBe(c.expected);
         return new Response(JSON.stringify({ text: 'ok' }), {
           headers: { 'content-type': 'application/json' },

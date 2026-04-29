@@ -63,10 +63,10 @@ describe('buildLinkSummaryPrompt', () => {
         {
           author: 'Peter',
           handle: 'steipete',
-          text: 'Worth reading',
           likeCount: 1200,
-          reshareCount: 45,
           replyCount: 2,
+          reshareCount: 45,
+          text: 'Worth reading',
           timestamp: '2025-12-17',
         },
       ],
@@ -97,7 +97,7 @@ describe('buildLinkSummaryPrompt', () => {
       medium: 1536,
       short: 768,
       xl: 6144,
-      xxl: 12288,
+      xxl: 12_288,
     });
   });
 

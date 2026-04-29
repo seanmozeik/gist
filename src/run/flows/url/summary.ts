@@ -1,7 +1,7 @@
-import { isTwitterStatusUrl, isYouTubeUrl } from '@steipete/summarize-core/content/url';
 import { render as renderMarkdownAnsi } from 'markdansi';
 
 import type { ExtractedLinkContent } from '../../../content/index.js';
+import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url.js';
 import type { RunMetricsReport } from '../../../costs.js';
 import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
 import { writeVerbose } from '../../logging.js';
@@ -64,10 +64,10 @@ async function writeUrlJsonOutput({
     extracted,
     input: {
       ...buildUrlJsonInput({
-        flags,
-        url,
         effectiveMarkdownMode,
+        flags,
         modelLabel: model.requestedModelLabel,
+        url,
       }),
     },
     llm,
@@ -101,8 +101,12 @@ async function writeUrlMetricsFinishLine({
   clearProgress?: boolean;
 }) {
   const { io, flags, hooks } = ctx;
-  if (!flags.metricsEnabled || !report) {return;}
-  if (clearProgress) {hooks.clearProgressForStdout();}
+  if (!flags.metricsEnabled || !report) {
+    return;
+  }
+  if (clearProgress) {
+    hooks.clearProgressForStdout();
+  }
   const costUsd = await hooks.estimateCostUsd();
   writeFinishLine({
     color: flags.verboseColor,
@@ -479,7 +483,9 @@ export async function summarizeExtractedUrl({
     if (!flags.plain && isRichTty(io.stdout)) {
       io.stdout.write(`\n${rendered.replace(/^\n+/, '')}`);
     } else {
-      if (isRichTty(io.stdout)) {io.stdout.write('\n');}
+      if (isRichTty(io.stdout)) {
+        io.stdout.write('\n');
+      }
       io.stdout.write(rendered.replace(/^\n+/, ''));
     }
     if (!rendered.endsWith('\n')) {

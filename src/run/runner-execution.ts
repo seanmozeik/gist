@@ -117,7 +117,9 @@ export async function executeRunnerInput(options: {
         filePath: inputTarget.filePath,
         maxBytes: MAX_PDF_EXTRACT_BYTES,
       });
-      if (progressEnabled) {spinner.setText(renderSpinnerStatus('Extracting text'));}
+      if (progressEnabled) {
+        spinner.setText(renderSpinnerStatus('Extracting text'));
+      }
       const extracted = await extractAssetContent({
         attachment: loaded.attachment,
         ctx: extractAssetContext,
@@ -165,7 +167,9 @@ export async function executeRunnerInput(options: {
         spinner: { setText: (text: string) => void };
       }) => {
         if (extractMode) {
-          if (progressEnabled) {spinner.setText(renderSpinnerStatus('Extracting text'));}
+          if (progressEnabled) {
+            spinner.setText(renderSpinnerStatus('Extracting text'));
+          }
           const extracted = await extractAssetContent({
             attachment: loaded.attachment,
             ctx: extractAssetContext,
@@ -180,11 +184,13 @@ export async function executeRunnerInput(options: {
           return;
         }
 
-        if (progressEnabled) {spinner.setText(renderSpinnerStatus('Summarizing'));}
+        if (progressEnabled) {
+          spinner.setText(renderSpinnerStatus('Summarizing'));
+        }
         await summarizeAsset({
           attachment: loaded.attachment,
           onModelChosen: (modelId) => {
-            if (!progressEnabled) return;
+            if (!progressEnabled) {return;}
             spinner.setText(renderSpinnerStatusWithModel('Summarizing', modelId));
           },
           sourceKind: 'asset-url',

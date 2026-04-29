@@ -227,7 +227,7 @@ describe('link-preview content utils', () => {
       siteName: null,
       title: null,
       transcriptResolution: {
-        segments: [{ startMs: 0, endMs: 1000, text: 'hello' }],
+        segments: [{ endMs: 1000, startMs: 0, text: 'hello' }],
         source: 'html',
         text: 'hello',
       },

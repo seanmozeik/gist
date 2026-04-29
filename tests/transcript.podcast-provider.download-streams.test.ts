@@ -32,14 +32,17 @@ async function importPodcastProviderWithFfmpeg(plan: SpawnPlan) {
         },
       } as unknown;
       queueMicrotask(() => {
-        if (plan === 'ffmpeg-ok') {handlers.get('close')?.(0);}
-        else {handlers.get('error')?.(new Error('spawn ENOENT'));}
+        if (plan === 'ffmpeg-ok') {
+          handlers.get('close')?.(0);
+        } else {
+          handlers.get('error')?.(new Error('spawn ENOENT'));
+        }
       });
       return proc;
     },
   }));
 
-  return  import('../packages/core/src/content/transcript/providers/podcast.js');
+  return import('../packages/core/src/content/transcript/providers/podcast.js');
 }
 
 const baseOptions = {
@@ -67,8 +70,8 @@ describe('podcast transcript provider - streaming download branches', () => {
         },
         async read() {
           i += 1;
-          if (i === 1) return { done: false, value: undefined as unknown as Uint8Array };
-          if (i === 2) return { done: false, value: new Uint8Array(MAX_OPENAI_UPLOAD_BYTES + 10) };
+          if (i === 1) {return { done: false, value: undefined as unknown as Uint8Array };}
+          if (i === 2) {return { done: false, value: new Uint8Array(MAX_OPENAI_UPLOAD_BYTES + 10) };}
           return { done: true, value: undefined as unknown as Uint8Array };
         },
       };
@@ -124,8 +127,8 @@ describe('podcast transcript provider - streaming download branches', () => {
         },
         async read() {
           i += 1;
-          if (i === 1) return { done: false, value: undefined as unknown as Uint8Array };
-          if (i === 2) return { done: false, value: new Uint8Array([1, 2, 3]) };
+          if (i === 1) {return { done: false, value: undefined as unknown as Uint8Array };}
+          if (i === 2) {return { done: false, value: new Uint8Array([1, 2, 3]) };}
           return { done: true, value: undefined as unknown as Uint8Array };
         },
       };

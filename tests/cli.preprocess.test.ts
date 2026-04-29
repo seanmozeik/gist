@@ -125,9 +125,7 @@ describe('cli preprocess / markitdown integration', () => {
 
     expect(execFileMock).toHaveBeenCalledTimes(1);
     expect(mocks.streamSimple).toHaveBeenCalledTimes(1);
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     expect(String(context.messages?.[0]?.content ?? '')).toContain('# Converted');
     expect(stdout.getText()).toContain('OK');
   });
@@ -287,9 +285,7 @@ describe('cli preprocess / markitdown integration', () => {
 
     expect(execFileMock).toHaveBeenCalledTimes(1);
     expect(mocks.streamSimple).toHaveBeenCalledTimes(1);
-    const context = mocks.streamSimple.mock.calls[0]?.[1] as {
-      messages?: { content?: unknown }[];
-    };
+    const context = mocks.streamSimple.mock.calls[0]?.[1] as { messages?: { content?: unknown }[] };
     expect(String(context.messages?.[0]?.content ?? '')).toContain('# Converted');
     expect(stdout.getText()).toContain('OK');
     expect(fetchMock).toHaveBeenCalledTimes(0);

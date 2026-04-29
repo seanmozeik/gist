@@ -6,7 +6,11 @@ import { buildDocumentPrompt } from './helpers/document-prompt.js';
 import { buildMinimalPdf } from './helpers/pdf.js';
 import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(),
@@ -258,9 +262,9 @@ describe('llm generate/stream', () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
       modelId: 'anthropic/claude-opus-4-5',
       prompt: buildDocumentPrompt({
-        text: 'Summarize the attached PDF.',
         bytes: pdfBytes,
         filename: 'test.pdf',
+        text: 'Summarize the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -303,9 +307,9 @@ describe('llm generate/stream', () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
       modelId: 'openai/gpt-5.2',
       prompt: buildDocumentPrompt({
-        text: 'Summarize the attached PDF.',
         bytes: pdfBytes,
         filename: 'test.pdf',
+        text: 'Summarize the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -346,9 +350,9 @@ describe('llm generate/stream', () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
       modelId: 'google/gemini-3-flash-preview',
       prompt: buildDocumentPrompt({
-        text: 'Summarize the attached PDF.',
         bytes: pdfBytes,
         filename: 'test.pdf',
+        text: 'Summarize the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -674,9 +678,9 @@ describe('llm generate/stream', () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
       modelId: 'google/gemini-3-flash-preview',
       prompt: buildDocumentPrompt({
-        text: 'Summarize the attached PDF.',
         bytes: pdfBytes,
         filename: 'test.pdf',
+        text: 'Summarize the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -695,6 +699,7 @@ describe('llm generate/stream', () => {
       content: [],
       errorMessage: JSON.stringify({
         error: {
+          code: 404,
           message: JSON.stringify({
             error: {
               code: 404,
@@ -703,7 +708,6 @@ describe('llm generate/stream', () => {
               status: 'NOT_FOUND',
             },
           }),
-          code: 404,
           status: 'Not Found',
         },
       }),
@@ -815,9 +819,9 @@ describe('llm generate/stream', () => {
     expect(model.baseUrl).toBe('https://openai.example.com/v1');
     expect(model.api).toBe('openai-completions');
 
-    const {headers} = (
-      mocks.completeSimple.mock.calls[0]?.[0] as { headers?: Record<string, string> }
-    );
+    const { headers } = mocks.completeSimple.mock.calls[0]?.[0] as {
+      headers?: Record<string, string>;
+    };
     expect(headers?.['HTTP-Referer'] ?? null).toBeNull();
   });
 
@@ -1012,8 +1016,8 @@ describe('llm generate/stream', () => {
     mocks.completeSimple.mockImplementationOnce(async () => {
       const error = Object.assign(new Error('model: claude-3-5-sonnet-latest'), {
         responseBody: JSON.stringify({
+          error: { message: 'model: claude-3-5-sonnet-latest', type: 'not_found_error' },
           type: 'error',
-          error: { type: 'not_found_error', message: 'model: claude-3-5-sonnet-latest' },
         }),
         statusCode: 404,
       });
@@ -1040,8 +1044,8 @@ describe('llm generate/stream', () => {
     mocks.streamSimple.mockImplementationOnce(() => {
       const error = Object.assign(new Error('model: claude-3-5-sonnet-latest'), {
         responseBody: JSON.stringify({
+          error: { message: 'model: claude-3-5-sonnet-latest', type: 'permission_error' },
           type: 'error',
-          error: { type: 'permission_error', message: 'model: claude-3-5-sonnet-latest' },
         }),
         statusCode: 403,
       });
@@ -1142,7 +1146,9 @@ describe('llm generate/stream', () => {
     });
 
     let streamed = '';
-    for await (const delta of result.textStream) {streamed += delta;}
+    for await (const delta of result.textStream) {
+      streamed += delta;
+    }
     expect(streamed).toBe('ok');
     await expect(result.usage).resolves.toBeNull();
   });

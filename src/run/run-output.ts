@@ -9,7 +9,9 @@ export function resolveDesiredOutputTokens({
   lengthArg: LengthArg;
   maxOutputTokensArg: number | null;
 }): number | null {
-  if (typeof maxOutputTokensArg === 'number') {return maxOutputTokensArg;}
+  if (typeof maxOutputTokensArg === 'number') {
+    return maxOutputTokensArg;
+  }
   const targetChars = resolveTargetCharacters(lengthArg, SUMMARY_LENGTH_MAX_CHARACTERS);
   if (
     !Number.isFinite(targetChars) ||

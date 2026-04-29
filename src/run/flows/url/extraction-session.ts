@@ -1,12 +1,11 @@
-import { NEGATIVE_TTL_MS } from '@steipete/summarize-core/content';
-import * as urlUtils from '@steipete/summarize-core/content/url';
-
 import { buildExtractCacheKey } from '../../../cache.js';
+import { NEGATIVE_TTL_MS } from '../../../content/index.js';
 import {
   createLinkPreviewClient,
   type ExtractedLinkContent,
   type LinkPreviewProgressEvent,
 } from '../../../content/index.js';
+import * as urlUtils from '../../../content/url.js';
 import { createFirecrawlScraper } from '../../../firecrawl.js';
 import { resolveSlideSource } from '../../../slides/index.js';
 import { readTweetWithPreferredClient } from '../../bird.js';
@@ -46,7 +45,7 @@ export function createUrlExtractionSession({
   const { io, flags, model, cache: cacheState } = ctx;
   const cacheStore = cacheState.mode === 'default' ? cacheState.store : null;
   const transcriptCache = cacheStore ? cacheStore.transcriptCache : null;
-  const {firecrawlApiKey} = model.apiStatus;
+  const { firecrawlApiKey } = model.apiStatus;
   const scrapeWithFirecrawl =
     model.apiStatus.firecrawlConfigured && flags.firecrawlMode !== 'off' && firecrawlApiKey
       ? createFirecrawlScraper({ apiKey: firecrawlApiKey, fetchImpl: io.fetch })
@@ -161,7 +160,7 @@ export function createUrlExtractionSession({
           : false;
       const isTwitter = urlUtils.isTwitterStatusUrl?.(targetUrl) ?? false;
       const isPodcast = urlUtils.isPodcastHost?.(targetUrl) ?? false;
-      if (!preferUrlMode || isTwitter || isPodcast) throw error;
+      if (!preferUrlMode || isTwitter || isPodcast) {throw error;}
       writeVerbose(
         io.stderr,
         flags.verbose,

@@ -4,7 +4,6 @@ import { createMarkdownStreamer, render as renderMarkdownAnsi } from 'markdansi'
 import type { CliProvider } from '../config.js';
 import { isCliDisabled, runCliModel } from '../llm/cli.js';
 import { streamTextWithModelId } from '../llm/generate-text.js';
-import { resolveGitHubModelsApiKey } from '../llm/github-models.js';
 import { parseGatewayStyleModelId } from '../llm/model-id.js';
 import { mergeModelRequestOptions } from '../llm/model-options.js';
 import type { ModelRequestOptions } from '../llm/model-options.js';
@@ -44,43 +43,16 @@ export interface SummaryEngineDeps {
   trackedFetch: typeof fetch;
   resolveMaxOutputTokensForCall: (modelId: string) => Promise<number | null>;
   resolveMaxInputTokensForCall: (modelId: string) => Promise<number | null>;
-  llmCalls: Array<{
-    provider:
-      | 'xai'
-      | 'openai'
-      | 'google'
-      | 'anthropic'
-      | 'zai'
-      | 'nvidia'
-      | 'github-copilot'
-      | 'cli';
+  llmCalls: {
+    provider: 'openrouter' | 'local' | 'cli';
     model: string;
     usage: Awaited<ReturnType<typeof summarizeWithModelId>>['usage'] | null;
     costUsd?: number | null;
     purpose: 'summary' | 'markdown';
-  }>;
+  }[];
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
-  apiKeys: {
-    xaiApiKey: string | null;
-    openaiApiKey: string | null;
-    googleApiKey: string | null;
-    anthropicApiKey: string | null;
-    openrouterApiKey: string | null;
-  };
-  keyFlags: {
-    googleConfigured: boolean;
-    anthropicConfigured: boolean;
-    openrouterConfigured: boolean;
-  };
-  zai: { apiKey: string | null; baseUrl: string };
-  nvidia: { apiKey: string | null; baseUrl: string };
-  providerBaseUrls: {
-    openai: string | null;
-    anthropic: string | null;
-    google: string | null;
-    xai: string | null;
-  };
+  apiKeys: { openrouterApiKey: string | null };
 }
 
 export interface SummaryStreamHandler {
@@ -179,12 +151,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     if (attempt.requiredEnv === 'CLI_AGENT') {
       return `Cursor Agent CLI not found for model ${attempt.userModelId}. Install Cursor CLI or set AGENT_PATH.`;
     }
-    if (attempt.requiredEnv === 'CLI_OPENCLAW') {
-      return `OpenClaw CLI not found for model ${attempt.userModelId}. Install OpenClaw CLI or set OPENCLAW_PATH.`;
-    }
-    if (attempt.requiredEnv === 'CLI_OPENCODE') {
-      return `OpenCode CLI not found for model ${attempt.userModelId}. Install OpenCode CLI or set OPENCODE_PATH.`;
-    }
+
     return `Missing ${attempt.requiredEnv} for model ${attempt.userModelId}. Set the env var or choose a different --model.`;
   };
 
@@ -242,7 +209,9 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         timeoutMs: deps.timeoutMs,
       });
       const summary = result.text.trim();
-      if (!summary) {throw new Error('CLI returned an empty summary');}
+      if (!summary) {
+        throw new Error('CLI returned an empty summary');
+      }
       if (result.usage || typeof result.costUsd === 'number') {
         deps.llmCalls.push({
           costUsd: result.costUsd ?? null,
@@ -340,11 +309,11 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         maxOutputTokens: maxOutputTokensForCall ?? undefined,
         modelId: parsedModelEffective.canonical,
         onRetry: createRetryLogger({
+          color: deps.verboseColor,
+          env: deps.envForRun,
+          modelId: parsedModelEffective.canonical,
           stderr: deps.stderr,
           verbose: deps.verbose,
-          color: deps.verboseColor,
-          modelId: parsedModelEffective.canonical,
-          env: deps.envForRun,
         }),
         openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
         prompt,
@@ -361,7 +330,9 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         usage: result.usage,
       });
       const summary = result.text.trim();
-      if (!summary) {throw new Error('LLM returned an empty summary');}
+      if (!summary) {
+        throw new Error('LLM returned an empty summary');
+      }
       const displayCanonical = attempt.userModelId.toLowerCase().startsWith('openrouter/')
         ? attempt.userModelId
         : parsedModelEffective.canonical;
@@ -421,11 +392,11 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,
           onRetry: createRetryLogger({
+            color: deps.verboseColor,
+            env: deps.envForRun,
+            modelId: parsedModelEffective.canonical,
             stderr: deps.stderr,
             verbose: deps.verbose,
-            color: deps.verboseColor,
-            modelId: parsedModelEffective.canonical,
-            env: deps.envForRun,
           }),
           openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
           prompt,
@@ -463,11 +434,11 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,
           onRetry: createRetryLogger({
+            color: deps.verboseColor,
+            env: deps.envForRun,
+            modelId: parsedModelEffective.canonical,
             stderr: deps.stderr,
             verbose: deps.verbose,
-            color: deps.verboseColor,
-            modelId: parsedModelEffective.canonical,
-            env: deps.envForRun,
           }),
           openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
           prompt,

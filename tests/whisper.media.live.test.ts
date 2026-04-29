@@ -24,7 +24,9 @@ describe('live Whisper transcription (media)', () => {
       const mp3Url = decodeXmlEntities(match[2]);
 
       const res = await fetch(mp3Url);
-      if (!res.ok) {throw new Error(`MP3 download failed (${res.status})`);}
+      if (!res.ok) {
+        throw new Error(`MP3 download failed (${res.status})`);
+      }
       const bytes = new Uint8Array(await res.arrayBuffer());
 
       const out = await transcribeMediaWithWhisper({

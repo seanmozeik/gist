@@ -14,7 +14,7 @@ describe('chrome panel slides context', () => {
       canSummarizeUrl: () => false,
       fetchImpl: vi.fn() as never,
       getActiveTab: vi.fn(async () => null) as never,
-      loadSettings: vi.fn(async () => ({ token: '', extendedLogging: false })) as never,
+      loadSettings: vi.fn(async () => ({ extendedLogging: false, token: '' })) as never,
       panelSessionStore: { getCachedExtract: () => null, setCachedExtract: vi.fn() },
       requestId: 'slides-1',
       requestedUrl: null,
@@ -36,7 +36,7 @@ describe('chrome panel slides context', () => {
     const send = vi.fn();
     const setCachedExtract = vi.fn();
     const fetchImpl = vi.fn(async () => ({
-      json: async () => ({ ok: true, extracted: { transcriptTimedText: '0:01 intro' } }),
+      json: async () => ({ extracted: { transcriptTimedText: '0:01 intro' }, ok: true }),
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -47,10 +47,10 @@ describe('chrome panel slides context', () => {
       fetchImpl,
       getActiveTab: vi.fn(async () => ({
         id: 4,
-        url: 'https://example.com/video',
         title: 'Video',
+        url: 'https://example.com/video',
       })) as never,
-      loadSettings: vi.fn(async () => ({ token: 'secret', extendedLogging: false })) as never,
+      loadSettings: vi.fn(async () => ({ extendedLogging: false, token: 'secret' })) as never,
       panelSessionStore: { getCachedExtract: () => null, setCachedExtract },
       requestId: 'slides-2',
       requestedUrl: 'https://example.com/video',

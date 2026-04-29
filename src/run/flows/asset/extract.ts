@@ -20,7 +20,10 @@ export interface AssetExtractContext {
   preprocessMode: 'off' | 'auto' | 'always';
 }
 
-export interface AssetExtractResult { content: string; diagnostics: ExtractDiagnosticsForFinishLine }
+export interface AssetExtractResult {
+  content: string;
+  diagnostics: ExtractDiagnosticsForFinishLine;
+}
 
 const baseDiagnostics: ExtractDiagnosticsForFinishLine = {
   firecrawl: { used: false },
@@ -88,7 +91,9 @@ export async function extractAssetContent({
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`, { cause: error });
+    throw new Error(`Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`, {
+      cause: error,
+    });
   }
 
   if (Buffer.byteLength(markdown, 'utf8') > MAX_TEXT_BYTES_DEFAULT) {

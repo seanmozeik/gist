@@ -265,8 +265,8 @@ describe('openai provider helpers', () => {
     try {
       const context = {
         messages: [
-          { role: 'user' as const, content: 'hello' },
-          { role: 'assistant' as const, content: [{ type: 'text' as const, text: 'seen' }] },
+          { content: 'hello', role: 'user' as const },
+          { content: [{ type: 'text' as const, text: 'seen' }], role: 'assistant' as const },
         ],
         systemPrompt: 'system',
       };
@@ -310,13 +310,13 @@ describe('openai provider helpers', () => {
       const body = JSON.parse(String(init?.body)) as {
         model: string;
         instructions?: string;
-        input: { role: string; content: Array<{ type: string; text: string }> }[];
+        input: { role: string; content: { type: string; text: string }[] }[];
       };
       expect(body.model).toBe('gpt-5.4');
       expect(body.instructions).toBe('system');
       expect(body.input).toEqual([
-        { content: [{ type: 'input_text', text: 'hello' }], role: 'user' },
-        { content: [{ type: 'input_text', text: 'seen' }], role: 'assistant' },
+        { content: [{ text: 'hello', type: 'input_text' }], role: 'user' },
+        { content: [{ text: 'seen', type: 'input_text' }], role: 'assistant' },
       ]);
       return new Response(
         JSON.stringify({
@@ -330,8 +330,8 @@ describe('openai provider helpers', () => {
     const result = await completeOpenAiText({
       context: {
         messages: [
-          { role: 'user', content: 'hello' },
-          { role: 'assistant', content: [{ type: 'text', text: 'seen' }] },
+          { content: 'hello', role: 'user' },
+          { content: [{ type: 'text', text: 'seen' }], role: 'assistant' },
         ],
         systemPrompt: 'system',
       },
@@ -367,7 +367,7 @@ describe('openai provider helpers', () => {
     });
 
     const result = await completeOpenAiText({
-      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
       fetchImpl: fetchMock as typeof fetch,
       modelId: 'gpt-5.5',
       openaiConfig: {
@@ -400,7 +400,7 @@ describe('openai provider helpers', () => {
     });
 
     const result = await completeOpenAiText({
-      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
       fetchImpl: fetchMock as typeof fetch,
       modelId: 'gpt-5.5',
       openaiConfig: {
@@ -439,7 +439,7 @@ describe('openai provider helpers', () => {
     });
 
     const result = await completeOpenAiText({
-      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
       fetchImpl: fetchMock as typeof fetch,
       modelId: 'openai/gpt-5-mini',
       openaiConfig: {
@@ -476,7 +476,7 @@ describe('openai provider helpers', () => {
       });
 
     const result = await completeOpenAiText({
-      context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+      context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
       fetchImpl: fetchMock as typeof fetch,
       modelId: 'openai/gpt-5.4',
       openaiConfig: {
@@ -501,7 +501,7 @@ describe('openai provider helpers', () => {
     try {
       await expect(
         completeOpenAiText({
-          context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+          context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
           modelId: 'openai/gpt-4.1',
           openaiConfig: {
             apiKey: 'gh-key',
@@ -526,7 +526,7 @@ describe('openai provider helpers', () => {
     try {
       await expect(
         completeOpenAiText({
-          context: { messages: [{ role: 'user', content: 'hello' }], systemPrompt: null },
+          context: { messages: [{ content: 'hello', role: 'user' }], systemPrompt: null },
           modelId: 'openai/gpt-5.4-mini',
           openaiConfig: {
             apiKey: 'gh-key',

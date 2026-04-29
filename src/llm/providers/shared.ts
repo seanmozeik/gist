@@ -21,7 +21,9 @@ export function extractText(message: AssistantMessage): string {
 export function wantsImages(context: Context): boolean {
   for (const msg of context.messages) {
     if (msg.role === 'user' || msg.role === 'toolResult') {
-      if (Array.isArray(msg.content) && msg.content.some((c) => c.type === 'image')) {return true;}
+      if (Array.isArray(msg.content) && msg.content.some((c) => c.type === 'image')) {
+        return true;
+      }
     }
   }
   return false;

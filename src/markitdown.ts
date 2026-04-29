@@ -13,9 +13,15 @@ function guessExtension({
   mediaType: string | null;
 }): string {
   const ext = filenameHint ? path.extname(filenameHint).toLowerCase() : '';
-  if (ext) {return ext;}
-  if (mediaType === 'text/html' || mediaType === 'application/xhtml+xml') {return '.html';}
-  if (mediaType === 'application/pdf') {return '.pdf';}
+  if (ext) {
+    return ext;
+  }
+  if (mediaType === 'text/html' || mediaType === 'application/xhtml+xml') {
+    return '.html';
+  }
+  if (mediaType === 'application/pdf') {
+    return '.pdf';
+  }
   return '.bin';
 }
 
@@ -25,7 +31,7 @@ async function execFileText(
   args: string[],
   options: ExecFileOptions,
 ): Promise<{ stdout: string; stderr: string }> {
-  return  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     execFileImpl(cmd, args, options, (error, stdout, stderr) => {
       if (error) {
         const stderrText = typeof stderr === 'string' ? stderr : stderr.toString('utf8');

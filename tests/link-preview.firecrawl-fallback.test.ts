@@ -101,9 +101,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
   it('falls back to Firecrawl when extracted HTML looks thin but document is large', async () => {
     const html =
       `<!doctype html><html><head><title>App Shell</title></head><body><main>` +
-      `<div id="root"></div><script>/*${ 
-      'X'.repeat(9000) 
-      }*/</script></main></body></html>`;
+      `<div id="root"></div><script>/*${'X'.repeat(9000)}*/</script></main></body></html>`;
 
     const scrapeWithFirecrawl = vi.fn(async () => ({
       html: '<html><head><title>Firecrawl</title></head><body></body></html>',

@@ -83,7 +83,7 @@ function makeCtx(overrides?: {
   return {
     flags: {
       progressEnabled: overrides?.progressEnabled ?? true,
-      timeoutMs: 2_000,
+      timeoutMs: 2000,
       verbose: false,
       verboseColor: false,
       videoMode: overrides?.videoMode ?? 'auto',
@@ -234,11 +234,11 @@ describe('handleVideoOnlyExtractedContent', () => {
       accent: (text) => text,
       ctx: makeCtx({
         googleConfigured: true,
-        videoMode: 'auto',
-        requestedModelKind: 'auto',
-        summarizeAsset,
         onExtracted,
         onModelChosen,
+        requestedModelKind: 'auto',
+        summarizeAsset,
+        videoMode: 'auto',
         writeViaFooter,
       }),
       extracted: baseExtracted,
@@ -248,21 +248,21 @@ describe('handleVideoOnlyExtractedContent', () => {
       renderStatus: (label, detail = '') => `${label}${detail}`,
       renderStatusWithMeta: (label, meta) => `${label} ${meta}`,
       runSlidesExtraction: vi.fn(async () => ({
-        sourceUrl: baseExtracted.video?.url ?? '',
-        sourceKind: 'video-url',
-        sourceId: 'vid123',
-        slidesDir: '/tmp/slides',
-        sceneThreshold: 0.3,
+        autoTune: { chosenThreshold: 0.3, confidence: 0, enabled: false, strategy: 'none' },
         autoTuneThreshold: true,
-        autoTune: { enabled: false, chosenThreshold: 0.3, confidence: 0, strategy: 'none' },
         maxSlides: 100,
         minSlideDuration: 2,
-        ocrRequested: false,
         ocrAvailable: false,
+        ocrRequested: false,
+        sceneThreshold: 0.3,
         slides: [
           { index: 1, timestamp: 1, imagePath: '/tmp/slide-1.png' },
           { index: 2, timestamp: 2, imagePath: '/tmp/slide-2.png' },
         ],
+        slidesDir: '/tmp/slides',
+        sourceId: 'vid123',
+        sourceKind: 'video-url',
+        sourceUrl: baseExtracted.video?.url ?? '',
         warnings: [],
       })),
       spinner,
@@ -274,7 +274,7 @@ describe('handleVideoOnlyExtractedContent', () => {
     expect(onExtracted).toHaveBeenCalledWith(baseExtracted);
     expect(mocks.loadRemoteAsset).toHaveBeenCalledWith({
       fetchImpl: expect.any(Function),
-      timeoutMs: 2_000,
+      timeoutMs: 2000,
       url: 'https://cdn.example.com/video.mp4',
     });
     expect(mocks.assertAssetMediaTypeSupported).toHaveBeenCalledWith({

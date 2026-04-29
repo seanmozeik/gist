@@ -65,7 +65,9 @@ const silentStderr = new Writable({
         expect(out.getText().trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },

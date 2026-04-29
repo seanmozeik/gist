@@ -27,7 +27,9 @@ describe('link preview extraction (json-ld graph)', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com/graph') {return htmlResponse(html);}
+      if (url === 'https://example.com/graph') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

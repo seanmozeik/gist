@@ -1,10 +1,8 @@
-export type TweetCliClient = 'xurl' | 'bird';
-
 export interface BirdTweetMedia {
   kind: 'video' | 'audio';
   urls: string[];
   preferredUrl: string | null;
-  source: 'extended_entities' | 'card' | 'entities' | 'xurl';
+  source: 'extended_entities' | 'card' | 'entities';
 }
 
 export interface BirdTweetPayload {
@@ -13,5 +11,4 @@ export interface BirdTweetPayload {
   author?: { username?: string; name?: string };
   createdAt?: string;
   media?: BirdTweetMedia | null;
-  client?: TweetCliClient;
 }

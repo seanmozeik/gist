@@ -25,7 +25,9 @@ export function buildExtractFinishLabel(args: {
     const strategy = String(args.extracted.diagnostics.strategy ?? '');
     const firecrawlUsed =
       strategy === 'firecrawl' || Boolean(args.extracted.diagnostics.firecrawl?.used);
-    if (firecrawlUsed) {return `${base} via firecrawl`;}
+    if (firecrawlUsed) {
+      return `${base} via firecrawl`;
+    }
     if (strategy === 'html' && args.markdownMode === 'readability') {
       return `${base} via readability`;
     }
@@ -41,8 +43,12 @@ export function buildExtractFinishLabel(args: {
       return `${base} via readability`;
     }
     if (mdUsed) {
-      if (args.markdownMode === 'readability') {return `${base} via readability`;}
-      if (args.hasMarkdownLlmCall) {return `${base} via llm`;}
+      if (args.markdownMode === 'readability') {
+        return `${base} via readability`;
+      }
+      if (args.hasMarkdownLlmCall) {
+        return `${base} via llm`;
+      }
       return `${base} via markitdown`;
     }
   }
@@ -51,9 +57,15 @@ export function buildExtractFinishLabel(args: {
   if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
     return `${base} via firecrawl`;
   }
-  if (strategy === 'xurl') {return `${base} via xurl`;}
-  if (strategy === 'bird') {return `${base} via bird`;}
-  if (strategy === 'nitter') {return `${base} via nitter`;}
+  if (strategy === 'xurl') {
+    return `${base} via xurl`;
+  }
+  if (strategy === 'bird') {
+    return `${base} via bird`;
+  }
+  if (strategy === 'nitter') {
+    return `${base} via nitter`;
+  }
   return base;
 }
 
@@ -62,9 +74,15 @@ export function buildSummaryFinishLabel(args: {
 }): string | null {
   const strategy = String(args.extracted.diagnostics.strategy ?? '');
   const sources: string[] = [];
-  if (strategy === 'xurl') {sources.push('xurl');}
-  if (strategy === 'bird') {sources.push('bird');}
-  if (strategy === 'nitter') {sources.push('nitter');}
+  if (strategy === 'xurl') {
+    sources.push('xurl');
+  }
+  if (strategy === 'bird') {
+    sources.push('bird');
+  }
+  if (strategy === 'nitter') {
+    sources.push('nitter');
+  }
   if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
     sources.push('firecrawl');
   }
@@ -75,11 +93,19 @@ export function buildSummaryFinishLabel(args: {
       : 0;
   const wordLabel = words > 0 ? `${formatCompactCount(words)} words` : null;
   if (transcriptProvided) {
-    if (sources.length === 0) {return null;}
+    if (sources.length === 0) {
+      return null;
+    }
     return `via ${sources.join('+')}`;
   }
-  if (sources.length === 0 && !wordLabel) {return null;}
-  if (wordLabel && sources.length > 0) {return `${wordLabel} via ${sources.join('+')}`;}
-  if (wordLabel) {return wordLabel;}
+  if (sources.length === 0 && !wordLabel) {
+    return null;
+  }
+  if (wordLabel && sources.length > 0) {
+    return `${wordLabel} via ${sources.join('+')}`;
+  }
+  if (wordLabel) {
+    return wordLabel;
+  }
   return `via ${sources.join('+')}`;
 }

@@ -161,9 +161,9 @@ describe('sidepanel summarize control runtime', () => {
         json: async () => ({
           ok: true,
           tools: {
-            ytDlp: { available: true },
             ffmpeg: { available: false },
             tesseract: { available: true },
+            ytDlp: { available: true },
           },
         }),
         ok: true,

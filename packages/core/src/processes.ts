@@ -7,7 +7,10 @@ import type {
 } from 'node:child_process';
 import { execFile, spawn } from 'node:child_process';
 
-export interface ProcessContext { runId?: string | null; source?: string | null }
+export interface ProcessContext {
+  runId?: string | null;
+  source?: string | null;
+}
 
 type ExecFileCallback = (
   error: ExecFileException | null,
@@ -39,7 +42,9 @@ export interface ProcessHandle {
   }) => void;
 }
 
-export interface ProcessObserver { register: (info: ProcessRegistration) => ProcessHandle }
+export interface ProcessObserver {
+  register: (info: ProcessRegistration) => ProcessHandle;
+}
 
 export type SpawnTrackedOptions = SpawnOptions & {
   label?: string | null;
@@ -65,7 +70,9 @@ export function runWithProcessContext<T>(ctx: ProcessContext, fn: () => T): T {
 }
 
 function registerProcess(info: ProcessRegistration): ProcessHandle | null {
-  if (!processObserver) {return null;}
+  if (!processObserver) {
+    return null;
+  }
   const ctx = getProcessContext();
   return processObserver.register({
     ...info,
@@ -77,7 +84,9 @@ function registerProcess(info: ProcessRegistration): ProcessHandle | null {
 type LineListener = (line: string) => void;
 
 function attachLineReader(stream: NodeJS.ReadableStream | null | undefined, onLine: LineListener) {
-  if (!stream) {return;}
+  if (!stream) {
+    return;
+  }
   let buffer = '';
   stream.setEncoding('utf8');
   stream.on('data', (chunk: string) => {
@@ -85,13 +94,17 @@ function attachLineReader(stream: NodeJS.ReadableStream | null | undefined, onLi
     const lines = buffer.split(/\r?\n/);
     buffer = lines.pop() ?? '';
     for (const line of lines) {
-      if (line === '') {continue;}
+      if (line === '') {
+        continue;
+      }
       onLine(line);
     }
   });
   stream.on('end', () => {
     const line = buffer.trim();
-    if (line) {onLine(line);}
+    if (line) {
+      onLine(line);
+    }
     buffer = '';
   });
 }
@@ -102,13 +115,19 @@ export function trackChildProcess(
   options?: { captureOutput?: boolean },
 ): ProcessHandle | null {
   const handle = registerProcess(info);
-  if (!handle) {return null;}
+  if (!handle) {
+    return null;
+  }
   handle.setPid(proc.pid ?? null);
 
   const captureOutput = options?.captureOutput !== false;
   if (captureOutput) {
-    attachLineReader(proc.stdout, (line) =>{  handle.appendOutput('stdout', line); });
-    attachLineReader(proc.stderr, (line) =>{  handle.appendOutput('stderr', line); });
+    attachLineReader(proc.stdout, (line) => {
+      handle.appendOutput('stdout', line);
+    });
+    attachLineReader(proc.stderr, (line) => {
+      handle.appendOutput('stderr', line);
+    });
   }
 
   let finished = false;
@@ -117,7 +136,9 @@ export function trackChildProcess(
     signal: string | null;
     error?: string | null;
   }) => {
-    if (finished) {return;}
+    if (finished) {
+      return;
+    }
     finished = true;
     handle.finish(result);
   };
@@ -183,11 +204,11 @@ export function execFileTracked(
     }
   }
 
-  const proc = execFile(file, resolvedArgs, resolvedOptions, resolvedCallback!);
+  const proc = execFile(file, resolvedArgs, resolvedOptions, resolvedCallback);
   trackChildProcess(
     proc,
     {
-      args: Array.from(resolvedArgs),
+      args: [...resolvedArgs],
       command: file,
       cwd: resolvedOptions.cwd ? String(resolvedOptions.cwd) : null,
       env: resolvedOptions.env ?? null,

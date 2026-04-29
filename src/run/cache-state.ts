@@ -51,13 +51,19 @@ export async function refreshCacheStoreIfMissing({
   cacheState: CacheState;
   transcriptNamespace?: string | null;
 }): Promise<boolean> {
-  if (cacheState.mode !== 'default') {return false;}
-  const {path} = cacheState;
-  if (!path) {return false;}
+  if (cacheState.mode !== 'default') {
+    return false;
+  }
+  const { path } = cacheState;
+  if (!path) {
+    return false;
+  }
   const fileExists = existsSync(path);
   if (cacheState.store) {
     // Keep the existing store to avoid closing statements while requests are in flight.
-    if (fileExists) {return false;}
+    if (fileExists) {
+      return false;
+    }
     cacheState.store.close();
   }
   cacheState.store = await createCacheStore({

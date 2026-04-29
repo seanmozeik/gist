@@ -162,8 +162,7 @@ Hello from VTT
   });
 
   it(String.raw`extracts Apple Podcasts streamUrl from HTML and decodes \u0026`, async () => {
-    const html =
-      String.raw`<html><head></head><body><script>{"playAction":{"episodeOffer":{"streamUrl":"https://example.com/episode.mp3?x=1\u0026y=2"}}}</script></body></html>`;
+    const html = String.raw`<html><head></head><body><script>{"playAction":{"episodeOffer":{"streamUrl":"https://example.com/episode.mp3?x=1\u0026y=2"}}}</script></body></html>`;
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
@@ -581,8 +580,7 @@ Hello from VTT
   });
 
   it('ignores invalid embedded JSON URLs', async () => {
-    const html =
-      String.raw`<html><body><script>{"playAction":{"episodeOffer":{"streamUrl":"\u00ZZ"}}}</script></body></html>`;
+    const html = String.raw`<html><body><script>{"playAction":{"episodeOffer":{"streamUrl":"\u00ZZ"}}}</script></body></html>`;
 
     const result = await fetchTranscript(
       { html, resourceKey: null, url: 'https://podcasts.apple.com/us/podcast/x/id1?i=2' },

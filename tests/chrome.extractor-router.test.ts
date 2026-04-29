@@ -67,16 +67,16 @@ describe('chrome/extractor-router', () => {
         data: {
           children: [
             {
-              kind: 't3',
               data: {
-                title: 'Useful thread',
-                selftext: 'Original post body',
                 author: 'op',
                 created_utc: 1_700_000_000,
                 num_comments: 2,
-                subreddit: 'summarize',
                 score: 42,
+                selftext: 'Original post body',
+                subreddit: 'summarize',
+                title: 'Useful thread',
               },
+              kind: 't3',
             },
           ],
         },
@@ -86,14 +86,11 @@ describe('chrome/extractor-router', () => {
         data: {
           children: [
             {
-              kind: 't1',
               data: {
-                body: 'Top level comment',
                 author: 'alice',
+                body: 'Top level comment',
                 created_utc: 1_700_000_100,
-                score: 5,
                 replies: {
-                  kind: 'Listing',
                   data: {
                     children: [
                       {
@@ -108,8 +105,11 @@ describe('chrome/extractor-router', () => {
                       },
                     ],
                   },
+                  kind: 'Listing',
                 },
+                score: 5,
               },
+              kind: 't1',
             },
           ],
         },

@@ -1,5 +1,4 @@
-import type { LinkPreviewProgressEvent } from '@steipete/summarize-core/content';
-
+import type { LinkPreviewProgressEvent } from '../../content/index.js';
 import { formatBytes } from './format.js';
 import type { OscProgressController } from './osc-progress.js';
 import { createFetchHtmlProgressRenderer } from './progress/fetch-html.js';
@@ -17,7 +16,9 @@ export function createWebsiteProgress({
   oscProgress?: OscProgressController | null;
   theme?: ThemeRenderer | null;
 }): { stop: () => void; onProgress: (event: LinkPreviewProgressEvent) => void } | null {
-  if (!enabled) {return null;}
+  if (!enabled) {
+    return null;
+  }
 
   const fetchRenderer = createFetchHtmlProgressRenderer({ oscProgress, spinner, theme });
   const transcriptRenderer = createTranscriptProgressRenderer({ oscProgress, spinner, theme });
@@ -36,9 +37,15 @@ export function createWebsiteProgress({
 
   const formatFirecrawlReason = (reason: string) => {
     const lower = reason.toLowerCase();
-    if (lower.includes('forced')) {return 'forced';}
-    if (lower.includes('html fetch failed')) {return 'fallback: HTML fetch failed';}
-    if (lower.includes('blocked') || lower.includes('thin')) {return 'fallback: blocked/thin HTML';}
+    if (lower.includes('forced')) {
+      return 'forced';
+    }
+    if (lower.includes('html fetch failed')) {
+      return 'fallback: HTML fetch failed';
+    }
+    if (lower.includes('blocked') || lower.includes('thin')) {
+      return 'fallback: blocked/thin HTML';
+    }
     return reason;
   };
 

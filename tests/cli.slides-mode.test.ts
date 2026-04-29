@@ -26,7 +26,7 @@ const mocks = vi.hoisted(() => {
     ocrAvailable: false,
     ocrRequested: false,
     sceneThreshold: 0.3,
-    slides: [{ index: 1, timestamp: 12.3, imagePath: '/tmp/slides/slide_0001.png' }],
+    slides: [{ imagePath: '/tmp/slides/slide_0001.png', index: 1, timestamp: 12.3 }],
     slidesDir: '/tmp/slides',
     sourceId: 'video-123',
     sourceKind: 'direct',
@@ -36,9 +36,9 @@ const mocks = vi.hoisted(() => {
   return {
     extractSlidesForSource: vi.fn(async () => slidesResult),
     resolveSlideSourceFromUrl: vi.fn(() => ({
-      url: slidesResult.sourceUrl,
       kind: 'direct',
       sourceId: slidesResult.sourceId,
+      url: slidesResult.sourceUrl,
     })),
     slidesResult,
   };

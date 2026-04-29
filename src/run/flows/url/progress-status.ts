@@ -20,11 +20,15 @@ export function createUrlProgressStatus({
   const state = createUrlProgressStatusState();
 
   const render = (text: string | null) => {
-    if (!enabled || !text) {return;}
+    if (!enabled || !text) {
+      return;
+    }
     spinner.setText(text);
   };
   const refresh = () => {
-    if (!enabled) {return;}
+    if (!enabled) {
+      return;
+    }
     spinner.refresh?.();
   };
 

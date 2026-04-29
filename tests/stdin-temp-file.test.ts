@@ -64,7 +64,7 @@ describe('createTempFileFromStdin', () => {
 
   it('cleans up the temp directory', async () => {
     const temp = await createTempFileFromStdin({ stream: streamFrom('cleanup me') });
-    const {filePath} = temp;
+    const { filePath } = temp;
     await temp.cleanup();
     await expect(access(filePath)).rejects.toThrow();
   });

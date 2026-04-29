@@ -12,7 +12,9 @@ vi.mock('node:child_process', () => ({ execFile: mocks.execFile }));
 const originalFetch = globalThis.fetch;
 function setFetchPid(pid: number | null) {
   globalThis.fetch = (async () => {
-    if (pid === null) {throw new Error('daemon down');}
+    if (pid === null) {
+      throw new Error('daemon down');
+    }
     return new Response(JSON.stringify({ ok: true, pid }), {
       headers: { 'content-type': 'application/json' },
       status: 200,

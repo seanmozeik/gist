@@ -104,7 +104,9 @@ function normalizeLanguageTag(value: string): string {
     .split('-')
     .map((p) => p.trim())
     .filter(Boolean);
-  if (parts.length === 0) {return value;}
+  if (parts.length === 0) {
+    return value;
+  }
   const [headRaw, ...rest] = parts;
   const head = headRaw.toLowerCase();
   const tail = rest.map((p) =>
@@ -115,7 +117,9 @@ function normalizeLanguageTag(value: string): string {
 
 function sanitizeFreeForm(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed) {return '';}
+  if (!trimmed) {
+    return '';
+  }
   return trimmed.replaceAll(/\s+/g, ' ').slice(0, 64);
 }
 
@@ -130,10 +134,14 @@ export function parseOutputLanguage(raw: string): OutputLanguage {
     .replaceAll(NORMALIZE_PATTERN, '-')
     .replaceAll(/-+/g, '-')
     .replaceAll(/^-|-$/g, '');
-  if (compact === 'auto') {return { kind: 'auto' };}
+  if (compact === 'auto') {
+    return { kind: 'auto' };
+  }
 
   const alias = LANGUAGE_ALIASES[compact];
-  if (alias) {return { kind: 'fixed', tag: alias.tag, label: alias.label };}
+  if (alias) {
+    return { kind: 'fixed', label: alias.label, tag: alias.tag };
+  }
 
   if (looksLikeLanguageTag(trimmed)) {
     const tag = normalizeLanguageTag(trimmed);
@@ -146,7 +154,9 @@ export function parseOutputLanguage(raw: string): OutputLanguage {
 
 export function resolveOutputLanguage(raw: string | null | undefined): OutputLanguage {
   const value = typeof raw === 'string' ? raw.trim() : '';
-  if (!value) {return { kind: 'auto' };}
+  if (!value) {
+    return { kind: 'auto' };
+  }
   try {
     return parseOutputLanguage(value);
   } catch {

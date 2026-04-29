@@ -2,7 +2,11 @@ import type { ImageContent, TextContent, UserMessage } from '@mariozechner/pi-ai
 
 import type { Attachment } from './attachments.js';
 
-export interface Prompt { system?: string; userText: string; attachments?: Attachment[] }
+export interface Prompt {
+  system?: string;
+  userText: string;
+  attachments?: Attachment[];
+}
 
 export function userTextMessage(text: string, timestamp = Date.now()): UserMessage {
   return { content: text, role: 'user', timestamp };

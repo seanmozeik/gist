@@ -8,17 +8,21 @@ import { describe, expect, it } from 'vitest';
 import { runDaemonServer } from '../src/daemon/server.js';
 
 const findFreePort = async (): Promise<number> =>
-   new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     const server = createServer();
     server.on('error', reject);
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
       if (!address || typeof address === 'string') {
-        server.close(() =>{  reject(new Error('Failed to resolve port')); });
+        server.close(() => {
+          reject(new Error('Failed to resolve port'));
+        });
         return;
       }
       const { port } = address;
-      server.close((err) =>{ err ? reject(err) : resolve(port); });
+      server.close((err) => {
+        err ? reject(err) : resolve(port);
+      });
     });
   });
 
@@ -74,7 +78,9 @@ describe('daemon redirect e2e', () => {
       rejectChunk = reject;
     });
     const settleChunk = (fn: () => void) => {
-      if (settled) {return;}
+      if (settled) {
+        return;
+      }
       settled = true;
       fn();
     };
@@ -102,7 +108,7 @@ describe('daemon redirect e2e', () => {
           }
           return;
         }
-        if (event.event !== 'chunk') return;
+        if (event.event !== 'chunk') {return;}
         pendingChunks.set(sessionId, event.data.text);
         if (activeSessionId && sessionId === activeSessionId) {
           clearTimeout(timeoutId);
@@ -118,12 +124,12 @@ describe('daemon redirect e2e', () => {
     try {
       const runRes = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
         body: JSON.stringify({
-          url: 'https://t.co/abc',
-          title: null,
-          model: 'cli/codex',
-          length: 'short',
           language: 'auto',
+          length: 'short',
           mode: 'url',
+          model: 'cli/codex',
+          title: null,
+          url: 'https://t.co/abc',
         }),
         headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
         method: 'POST',

@@ -32,7 +32,9 @@ export function parseOpenAiReasoningEffort(
 ): OpenAiReasoningEffort {
   const normalized = raw.trim().toLowerCase();
   const parsed = REASONING_EFFORT_ALIASES[normalized];
-  if (parsed) {return parsed;}
+  if (parsed) {
+    return parsed;
+  }
   throw new Error(`Unsupported ${label}: ${raw} (expected none, low, medium, high, or xhigh)`);
 }
 
@@ -65,22 +67,30 @@ export function mergeModelRequestOptions(
 ): ModelRequestOptions | undefined {
   const merged: ModelRequestOptions = {};
   for (const entry of entries) {
-    if (!entry) {continue;}
+    if (!entry) {
+      continue;
+    }
     if (typeof entry.serviceTier === 'string' && entry.serviceTier.trim().length > 0) {
       merged.serviceTier = entry.serviceTier.trim();
     }
     if (entry.reasoningEffort ?? entry.thinking) {
       merged.reasoningEffort = entry.reasoningEffort ?? entry.thinking;
     }
-    if (entry.textVerbosity) {merged.textVerbosity = entry.textVerbosity;}
+    if (entry.textVerbosity) {
+      merged.textVerbosity = entry.textVerbosity;
+    }
   }
   return Object.keys(merged).length > 0 ? merged : undefined;
 }
 
 export function toOpenAiServiceTierParam(serviceTier: string | undefined): string | undefined {
   const normalized = serviceTier?.trim();
-  if (!normalized) {return undefined;}
+  if (!normalized) {
+    return undefined;
+  }
   const lower = normalized.toLowerCase();
-  if (lower === 'default') {return undefined;}
+  if (lower === 'default') {
+    return undefined;
+  }
   return lower === 'fast' ? 'priority' : normalized;
 }

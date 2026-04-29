@@ -12,13 +12,13 @@ export interface SseSlidesData {
   sourceId: string;
   sourceKind: string;
   ocrAvailable: boolean;
-  slides: Array<{
+  slides: {
     index: number;
     timestamp: number;
     imageUrl: string;
     ocrText?: string | null;
     ocrConfidence?: number | null;
-  }>;
+  }[];
 }
 
 export interface SseMetricsData {
@@ -39,7 +39,10 @@ export type SseEvent =
   | { event: 'done'; data: Record<string, never> }
   | { event: 'error'; data: { message: string } };
 
-export interface RawSseMessage { event: string; data: string }
+export interface RawSseMessage {
+  event: string;
+  data: string;
+}
 
 export function encodeSseEvent(event: SseEvent): string {
   return `event: ${event.event}\ndata: ${JSON.stringify(event.data)}\n\n`;
@@ -48,28 +51,28 @@ export function encodeSseEvent(event: SseEvent): string {
 export function parseSseEvent(message: RawSseMessage): SseEvent | null {
   switch (message.event) {
     case 'meta': {
-      return { event: 'meta', data: JSON.parse(message.data) as SseMetaData };
+      return { data: JSON.parse(message.data) as SseMetaData, event: 'meta' };
     }
     case 'slides': {
-      return { event: 'slides', data: JSON.parse(message.data) as SseSlidesData };
+      return { data: JSON.parse(message.data) as SseSlidesData, event: 'slides' };
     }
     case 'status': {
-      return { event: 'status', data: JSON.parse(message.data) as { text: string } };
+      return { data: JSON.parse(message.data) as { text: string }, event: 'status' };
     }
     case 'chunk': {
-      return { event: 'chunk', data: JSON.parse(message.data) as { text: string } };
+      return { data: JSON.parse(message.data) as { text: string }, event: 'chunk' };
     }
     case 'assistant': {
-      return { event: 'assistant', data: JSON.parse(message.data) as AssistantMessage };
+      return { data: JSON.parse(message.data) as AssistantMessage, event: 'assistant' };
     }
     case 'metrics': {
-      return { event: 'metrics', data: JSON.parse(message.data) as SseMetricsData };
+      return { data: JSON.parse(message.data) as SseMetricsData, event: 'metrics' };
     }
     case 'done': {
-      return { event: 'done', data: JSON.parse(message.data) as Record<string, never> };
+      return { data: JSON.parse(message.data) as Record<string, never>, event: 'done' };
     }
     case 'error': {
-      return { event: 'error', data: JSON.parse(message.data) as { message: string } };
+      return { data: JSON.parse(message.data) as { message: string }, event: 'error' };
     }
     default: {
       return null;

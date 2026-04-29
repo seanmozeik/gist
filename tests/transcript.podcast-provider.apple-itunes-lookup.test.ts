@@ -10,20 +10,20 @@ async function importPodcastProvider() {
     probeMediaDurationSecondsWithFfprobe: async () => null,
     resolveWhisperCppModelNameForDisplay: async () => null,
     transcribeMediaFileWithWhisper: vi.fn(async () => ({
-      text: 'hello from apple (file)',
-      provider: 'openai',
       error: null,
       notes: [],
+      provider: 'openai',
+      text: 'hello from apple (file)',
     })),
     transcribeMediaWithWhisper: vi.fn(async () => ({
-      text: 'hello from apple',
-      provider: 'openai',
       error: null,
       notes: [],
+      provider: 'openai',
+      text: 'hello from apple',
     })),
   }));
 
-  return  import('../packages/core/src/content/transcript/providers/podcast.js');
+  return import('../packages/core/src/content/transcript/providers/podcast.js');
 }
 
 const baseOptions = {

@@ -1,5 +1,7 @@
 declare module 'bun:sqlite' {
-  export interface BunSqliteDatabaseOptions { readonly?: boolean }
+  export interface BunSqliteDatabaseOptions {
+    readonly?: boolean;
+  }
 
   export interface BunSqliteStatement {
     get: (...args: unknown[]) => unknown;

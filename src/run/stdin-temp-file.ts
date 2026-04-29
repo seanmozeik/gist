@@ -7,10 +7,18 @@ import { fileTypeFromBuffer } from 'file-type';
 const DEFAULT_STDIN_MAX_BYTES = 50 * 1024 * 1024;
 
 function toBufferChunk(chunk: unknown): Buffer {
-  if (Buffer.isBuffer(chunk)) {return chunk;}
-  if (chunk instanceof ArrayBuffer) {return Buffer.from(chunk);}
-  if (chunk instanceof Uint8Array) {return Buffer.from(chunk);}
-  if (typeof chunk === 'string') {return Buffer.from(chunk);}
+  if (Buffer.isBuffer(chunk)) {
+    return chunk;
+  }
+  if (chunk instanceof ArrayBuffer) {
+    return Buffer.from(chunk);
+  }
+  if (chunk instanceof Uint8Array) {
+    return Buffer.from(chunk);
+  }
+  if (typeof chunk === 'string') {
+    return Buffer.from(chunk);
+  }
   throw new Error(`Unsupported stdin chunk type: ${typeof chunk}`);
 }
 
@@ -34,7 +42,9 @@ async function readStreamToBuffer(
 }
 
 function decodeUtf8Text(bytes: Buffer): string | null {
-  if (bytes.includes(0x00)) {return null;}
+  if (bytes.includes(0x00)) {
+    return null;
+  }
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch {

@@ -67,7 +67,7 @@ describe('summary finish helpers', () => {
       ...baseExtracted,
       mediaDurationSeconds: 75,
       siteName: 'YouTube',
-      transcriptCharacters: 1_200,
+      transcriptCharacters: 1200,
       transcriptWordCount: 200,
       video: { kind: 'youtube', url: 'https://www.youtube.com/watch?v=abc123' },
     };

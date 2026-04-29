@@ -66,8 +66,8 @@ describe('panel cache controller', () => {
       slides: {
         ocrAvailable: false,
         slides: [
-          { index: 1, timestamp: 0, imageUrl: '' },
-          { index: 2, timestamp: 30, imageUrl: '' },
+          { imageUrl: '', index: 1, timestamp: 0 },
+          { imageUrl: '', index: 2, timestamp: 30 },
         ],
         sourceId: 'youtube-abc123',
         sourceKind: 'youtube',

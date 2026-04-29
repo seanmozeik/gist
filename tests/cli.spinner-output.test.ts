@@ -55,7 +55,9 @@ function stripOsc(text: string): string {
     i += 2;
     while (i < text.length) {
       const c = text[i];
-      if (c === '\u0007') {break;}
+      if (c === '\u0007') {
+        break;
+      }
       if (c === '\u001B' && text[i + 1] === '\\') {
         i += 1;
         break;
@@ -79,7 +81,9 @@ function stripCsi(text: string): string {
     i += 2;
     while (i < text.length) {
       const c = text[i];
-      if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {break;}
+      if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+        break;
+      }
       i += 1;
     }
   }
@@ -112,7 +116,9 @@ function applyCarriageReturnAndClearLine(text: string): string {
     }
     currentLine += ch;
   }
-  if (currentLine.length > 0) {lines.push(currentLine);}
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
   return lines.join('\n');
 }
 
@@ -181,8 +187,8 @@ describe('cli spinner output', () => {
       env: { HOME: root, TERM: 'xterm-256color' },
       fetch: vi.fn(async () => {
         return new Response('<html><body><h1>Example</h1></body></html>', {
-          status: 200,
           headers: { 'content-type': 'text/html; charset=utf-8' },
+          status: 200,
         });
       }) as unknown as typeof fetch,
       stderr: stderr.stream,
@@ -208,8 +214,8 @@ describe('cli spinner output', () => {
       env: { HOME: root, TERM: 'xterm-256color', TERM_PROGRAM: 'wezterm' },
       fetch: vi.fn(async () => {
         return new Response('<html><body><h1>Example</h1></body></html>', {
-          status: 200,
           headers: { 'content-type': 'text/html; charset=utf-8' },
+          status: 200,
         });
       }) as unknown as typeof fetch,
       stderr: stderr.stream,

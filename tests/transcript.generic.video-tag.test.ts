@@ -14,17 +14,17 @@ vi.mock('../packages/core/src/content/transcript/providers/youtube/yt-dlp.js', (
 }));
 
 const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>) => ({
-  fetch,
-  scrapeWithFirecrawl: null,
   apifyApiToken: null,
-  youtubeTranscriptMode: 'auto',
-  mediaTranscriptMode: 'auto',
-  ytDlpPath: '/usr/bin/yt-dlp',
-  groqApiKey: null,
   falApiKey: null,
+  fetch,
+  groqApiKey: null,
+  mediaTranscriptMode: 'auto',
+  onProgress: null,
   openaiApiKey: 'test',
   resolveTwitterCookies: null,
-  onProgress: null,
+  scrapeWithFirecrawl: null,
+  youtubeTranscriptMode: 'auto',
+  ytDlpPath: '/usr/bin/yt-dlp',
   ...overrides,
 });
 

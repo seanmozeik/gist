@@ -48,8 +48,8 @@ const slides: SlideExtractionResult = {
   ocrRequested: true,
   sceneThreshold: 0.7,
   slides: [
-    { index: 1, timestamp: 10, imagePath: '/tmp/slide1.png', ocrText: 'OCR SHOULD NOT BE USED' },
-    { index: 2, timestamp: 50, imagePath: '/tmp/slide2.png', ocrText: 'OCR SHOULD NOT BE USED' },
+    { imagePath: '/tmp/slide1.png', index: 1, ocrText: 'OCR SHOULD NOT BE USED', timestamp: 10 },
+    { imagePath: '/tmp/slide2.png', index: 2, ocrText: 'OCR SHOULD NOT BE USED', timestamp: 50 },
   ],
   slidesDir: '/tmp/slides',
   sourceId: 'abc123',

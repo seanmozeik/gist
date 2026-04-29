@@ -8,17 +8,21 @@ import { describe, expect, it } from 'vitest';
 import { runDaemonServer } from '../src/daemon/server.js';
 
 const findFreePort = async (): Promise<number> =>
-   new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     const server = createServer();
     server.on('error', reject);
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
       if (!address || typeof address === 'string') {
-        server.close(() =>{  reject(new Error('Failed to resolve port')); });
+        server.close(() => {
+          reject(new Error('Failed to resolve port'));
+        });
         return;
       }
       const { port } = address;
-      server.close((err) =>{ err ? reject(err) : resolve(port); });
+      server.close((err) => {
+        err ? reject(err) : resolve(port);
+      });
     });
   });
 
@@ -46,7 +50,7 @@ describe('daemon /v1/summarize extractOnly', () => {
     await ready;
 
     const res = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
-      body: JSON.stringify({ url: 'https://example.com', mode: 'page', extractOnly: true }),
+      body: JSON.stringify({ extractOnly: true, mode: 'page', url: 'https://example.com' }),
       headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       method: 'POST',
     });

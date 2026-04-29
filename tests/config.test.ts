@@ -32,10 +32,10 @@ describe('config loading', () => {
       model: {
         mode: 'auto',
         rules: [
-          { when: ['video'], candidates: ['google/gemini-3-flash-preview'] },
+          { candidates: ['google/gemini-3-flash-preview'], when: ['video'] },
           {
-            when: ['youtube', 'website'],
             candidates: ['openai/gpt-5-nano', 'xai/grok-4-fast-non-reasoning'],
+            when: ['youtube', 'website'],
           },
           { candidates: ['openai/gpt-5-nano', 'openrouter/openai/gpt-5-nano'] },
         ],
@@ -49,10 +49,10 @@ describe('config loading', () => {
       model: {
         mode: 'auto',
         rules: [
-          { when: ['video'], candidates: ['google/gemini-3-flash-preview'] },
+          { candidates: ['google/gemini-3-flash-preview'], when: ['video'] },
           {
-            when: ['youtube', 'website'],
             candidates: ['openai/gpt-5-nano', 'xai/grok-4-fast-non-reasoning'],
+            when: ['youtube', 'website'],
           },
           { candidates: ['openai/gpt-5-nano', 'openrouter/openai/gpt-5-nano'] },
         ],

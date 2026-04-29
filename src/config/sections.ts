@@ -16,6 +16,7 @@ import type {
   CliProvider,
   CliProviderConfig,
   EnvConfig,
+  LocalConfig,
   LoggingConfig,
   MediaCacheConfig,
   MediaCacheVerifyMode,
@@ -28,7 +29,9 @@ export function parseProviderBaseUrlConfig(
   path: string,
   providerName: string,
 ): { baseUrl: string } | undefined {
-  if (raw === undefined) {return undefined;}
+  if (raw === undefined) {
+    return undefined;
+  }
   if (!isRecord(raw)) {
     throw new Error(`Invalid config file ${path}: "${providerName}" must be an object.`);
   }
@@ -47,7 +50,9 @@ function parseCliProviderList(
   const providers: CliProvider[] = [];
   for (const entry of raw) {
     const parsed = parseCliProvider(entry, path);
-    if (!providers.includes(parsed)) {providers.push(parsed);}
+    if (!providers.includes(parsed)) {
+      providers.push(parsed);
+    }
   }
   return providers.length > 0 ? providers : undefined;
 }
@@ -85,23 +90,23 @@ function parseCliAutoFallbackConfig(
   const enabled =
     typeof raw.enabled === 'boolean'
       ? raw.enabled
-      : raw.enabled === undefined
+      : (raw.enabled === undefined
         ? undefined
         : (() => {
             throw new Error(
               `Invalid config file ${path}: "cli.${label}.enabled" must be a boolean.`,
             );
-          })();
+          })());
   const onlyWhenNoApiKeys =
     typeof raw.onlyWhenNoApiKeys === 'boolean'
       ? raw.onlyWhenNoApiKeys
-      : raw.onlyWhenNoApiKeys === undefined
+      : (raw.onlyWhenNoApiKeys === undefined
         ? undefined
         : (() => {
             throw new Error(
               `Invalid config file ${path}: "cli.${label}.onlyWhenNoApiKeys" must be a boolean.`,
             );
-          })();
+          })());
   const order =
     raw.order === undefined
       ? undefined
@@ -114,7 +119,9 @@ function parseCliAutoFallbackConfig(
 }
 
 function parseMediaCacheConfig(raw: unknown, path: string): MediaCacheConfig | undefined {
-  if (raw === undefined) {return undefined;}
+  if (raw === undefined) {
+    return undefined;
+  }
   if (!isRecord(raw)) {
     throw new Error(`Invalid config file ${path}: "cache.media" must be an object.`);
   }
@@ -123,28 +130,28 @@ function parseMediaCacheConfig(raw: unknown, path: string): MediaCacheConfig | u
   const mediaMaxMb =
     typeof mediaMaxRaw === 'number' && Number.isFinite(mediaMaxRaw) && mediaMaxRaw > 0
       ? mediaMaxRaw
-      : mediaMaxRaw === undefined
+      : (mediaMaxRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.maxMb" must be a number.`);
-          })();
+          })());
   const mediaTtlRaw = raw.ttlDays;
   const mediaTtlDays =
     typeof mediaTtlRaw === 'number' && Number.isFinite(mediaTtlRaw) && mediaTtlRaw > 0
       ? mediaTtlRaw
-      : mediaTtlRaw === undefined
+      : (mediaTtlRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.ttlDays" must be a number.`);
-          })();
+          })());
   const mediaPath =
     typeof raw.path === 'string' && raw.path.trim().length > 0
       ? raw.path.trim()
-      : raw.path === undefined
+      : (raw.path === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.path" must be a string.`);
-          })();
+          })());
   const verifyRaw = typeof raw.verify === 'string' ? raw.verify.trim().toLowerCase() : '';
   const verify =
     verifyRaw === 'none' || verifyRaw === 'size' || verifyRaw === 'hash'
@@ -170,7 +177,9 @@ function parseMediaCacheConfig(raw: unknown, path: string): MediaCacheConfig | u
 
 export function parseCacheConfig(root: Record<string, unknown>, path: string) {
   const value = root.cache;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "cache" must be an object.`);
   }
@@ -179,28 +188,28 @@ export function parseCacheConfig(root: Record<string, unknown>, path: string) {
   const maxMb =
     typeof maxMbRaw === 'number' && Number.isFinite(maxMbRaw) && maxMbRaw > 0
       ? maxMbRaw
-      : maxMbRaw === undefined
+      : (maxMbRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.maxMb" must be a number.`);
-          })();
+          })());
   const ttlDaysRaw = value.ttlDays;
   const ttlDays =
     typeof ttlDaysRaw === 'number' && Number.isFinite(ttlDaysRaw) && ttlDaysRaw > 0
       ? ttlDaysRaw
-      : ttlDaysRaw === undefined
+      : (ttlDaysRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.ttlDays" must be a number.`);
-          })();
+          })());
   const pathValue =
     typeof value.path === 'string' && value.path.trim().length > 0
       ? value.path.trim()
-      : value.path === undefined
+      : (value.path === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.path" must be a string.`);
-          })();
+          })());
   const media = parseMediaCacheConfig(value.media, path);
 
   return enabled || maxMb || ttlDays || pathValue || media
@@ -216,7 +225,9 @@ export function parseCacheConfig(root: Record<string, unknown>, path: string) {
 
 export function parseMediaConfig(root: Record<string, unknown>) {
   const value = root.media;
-  if (!isRecord(value)) {return undefined;}
+  if (!isRecord(value)) {
+    return;
+  }
   const videoMode =
     value.videoMode === 'auto' ||
     value.videoMode === 'transcript' ||
@@ -226,71 +237,26 @@ export function parseMediaConfig(root: Record<string, unknown>) {
   return videoMode ? { videoMode } : undefined;
 }
 
-export function parseSlidesConfig(root: Record<string, unknown>, path: string) {
-  const value = root.slides;
-  if (value === undefined) {return undefined;}
-  if (!isRecord(value)) {
-    throw new Error(`Invalid config file ${path}: "slides" must be an object.`);
+export function parseLocalConfig(
+  root: Record<string, unknown>,
+  path: string,
+): LocalConfig | undefined {
+  const value = root.local;
+  if (value === undefined) {
+    return undefined;
   }
-  const enabled = typeof value.enabled === 'boolean' ? value.enabled : undefined;
-  const ocr = typeof value.ocr === 'boolean' ? value.ocr : undefined;
-  const dir =
-    typeof value.dir === 'string' && value.dir.trim().length > 0
-      ? value.dir.trim()
-      : value.dir === undefined
-        ? undefined
-        : (() => {
-            throw new Error(`Invalid config file ${path}: "slides.dir" must be a string.`);
-          })();
-  const sceneRaw = value.sceneThreshold;
-  const sceneThreshold =
-    typeof sceneRaw === 'number' && Number.isFinite(sceneRaw) && sceneRaw >= 0.1 && sceneRaw <= 1
-      ? sceneRaw
-      : sceneRaw === undefined
-        ? undefined
-        : (() => {
-            throw new Error(
-              `Invalid config file ${path}: "slides.sceneThreshold" must be a number between 0.1 and 1.0.`,
-            );
-          })();
-  const maxRaw = value.max;
-  const max =
-    typeof maxRaw === 'number' && Number.isFinite(maxRaw) && Number.isInteger(maxRaw) && maxRaw > 0
-      ? maxRaw
-      : maxRaw === undefined
-        ? undefined
-        : (() => {
-            throw new Error(`Invalid config file ${path}: "slides.max" must be an integer.`);
-          })();
-  const minRaw = value.minDuration;
-  const minDuration =
-    typeof minRaw === 'number' && Number.isFinite(minRaw) && minRaw >= 0
-      ? minRaw
-      : minRaw === undefined
-        ? undefined
-        : (() => {
-            throw new Error(`Invalid config file ${path}: "slides.minDuration" must be a number.`);
-          })();
-  return enabled ||
-    typeof ocr === 'boolean' ||
-    dir ||
-    typeof sceneThreshold === 'number' ||
-    typeof max === 'number' ||
-    typeof minDuration === 'number'
-    ? {
-        ...(typeof enabled === 'boolean' ? { enabled } : {}),
-        ...(typeof ocr === 'boolean' ? { ocr } : {}),
-        ...(typeof dir === 'string' ? { dir } : {}),
-        ...(typeof sceneThreshold === 'number' ? { sceneThreshold } : {}),
-        ...(typeof max === 'number' ? { max } : {}),
-        ...(typeof minDuration === 'number' ? { minDuration } : {}),
-      }
-    : undefined;
+  if (!isRecord(value)) {
+    throw new Error(`Invalid config file ${path}: "local" must be an object.`);
+  }
+  const baseUrl = parseOptionalBaseUrl(value.baseUrl);
+  return typeof baseUrl === 'string' ? { baseUrl } : undefined;
 }
 
 export function parseCliConfig(root: Record<string, unknown>, path: string): CliConfig | undefined {
   const value = root.cli;
-  if (!isRecord(value)) {return undefined;}
+  if (!isRecord(value)) {
+    return undefined;
+  }
 
   if (value.disabled !== undefined) {
     throw new TypeError(
@@ -305,12 +271,7 @@ export function parseCliConfig(root: Record<string, unknown>, path: string): Cli
   const codex = value.codex ? parseCliProviderConfig(value.codex, path, 'codex') : undefined;
   const gemini = value.gemini ? parseCliProviderConfig(value.gemini, path, 'gemini') : undefined;
   const agent = value.agent ? parseCliProviderConfig(value.agent, path, 'agent') : undefined;
-  const openclaw = value.openclaw
-    ? parseCliProviderConfig(value.openclaw, path, 'openclaw')
-    : undefined;
-  const opencode = value.opencode
-    ? parseCliProviderConfig(value.opencode, path, 'opencode')
-    : undefined;
+
   if (value.autoFallback !== undefined && value.magicAuto !== undefined) {
     throw new TypeError(
       `Invalid config file ${path}: use only one of "cli.autoFallback" or legacy "cli.magicAuto".`,
@@ -342,8 +303,6 @@ export function parseCliConfig(root: Record<string, unknown>, path: string): Cli
     codex ||
     gemini ||
     agent ||
-    openclaw ||
-    opencode ||
     autoFallback ||
     promptOverride ||
     typeof allowTools === 'boolean' ||
@@ -355,8 +314,6 @@ export function parseCliConfig(root: Record<string, unknown>, path: string): Cli
         ...(codex ? { codex } : {}),
         ...(gemini ? { gemini } : {}),
         ...(agent ? { agent } : {}),
-        ...(openclaw ? { openclaw } : {}),
-        ...(opencode ? { opencode } : {}),
         ...(autoFallback ? { autoFallback } : {}),
         ...(promptOverride ? { promptOverride } : {}),
         ...(typeof allowTools === 'boolean' ? { allowTools } : {}),
@@ -368,7 +325,9 @@ export function parseCliConfig(root: Record<string, unknown>, path: string): Cli
 
 export function parseOutputConfig(root: Record<string, unknown>, path: string) {
   const value = root.output;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "output" must be an object.`);
   }
@@ -377,7 +336,9 @@ export function parseOutputConfig(root: Record<string, unknown>, path: string) {
       ? value.language.trim()
       : undefined;
   const length = (() => {
-    if (value.length === undefined) {return undefined;}
+    if (value.length === undefined) {
+      return;
+    }
     if (typeof value.length !== 'string') {
       throw new TypeError(`Invalid config file ${path}: "output.length" must be a string.`);
     }
@@ -389,7 +350,8 @@ export function parseOutputConfig(root: Record<string, unknown>, path: string) {
       parseLengthArg(trimmed);
     } catch (error) {
       throw new Error(
-        `Invalid config file ${path}: "output.length" is invalid: ${(error as Error).message}`, { cause: error },
+        `Invalid config file ${path}: "output.length" is invalid: ${(error as Error).message}`,
+        { cause: error },
       );
     }
     return trimmed;
@@ -404,7 +366,9 @@ export function parseOutputConfig(root: Record<string, unknown>, path: string) {
 
 export function parseUiConfig(root: Record<string, unknown>, path: string) {
   const value = root.ui;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "ui" must be an object.`);
   }
@@ -423,41 +387,41 @@ export function parseLoggingConfig(
   path: string,
 ): LoggingConfig | undefined {
   const value = root.logging;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return undefined;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "logging" must be an object.`);
   }
   const enabled = typeof value.enabled === 'boolean' ? value.enabled : undefined;
-  const level =
-    value.level === undefined ? undefined : parseLoggingLevel(value.level, path);
-  const format =
-    value.format === undefined ? undefined : parseLoggingFormat(value.format, path);
+  const level = value.level === undefined ? undefined : parseLoggingLevel(value.level, path);
+  const format = value.format === undefined ? undefined : parseLoggingFormat(value.format, path);
   const file =
     typeof value.file === 'string' && value.file.trim().length > 0
       ? value.file.trim()
-      : value.file === undefined
+      : (value.file === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.file" must be a string.`);
-          })();
+          })());
   const maxMbRaw = value.maxMb;
   const maxMb =
     typeof maxMbRaw === 'number' && Number.isFinite(maxMbRaw) && maxMbRaw > 0
       ? maxMbRaw
-      : maxMbRaw === undefined
+      : (maxMbRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.maxMb" must be a number.`);
-          })();
+          })());
   const maxFilesRaw = value.maxFiles;
   const maxFiles =
     typeof maxFilesRaw === 'number' && Number.isFinite(maxFilesRaw) && maxFilesRaw > 0
       ? Math.trunc(maxFilesRaw)
-      : maxFilesRaw === undefined
+      : (maxFilesRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.maxFiles" must be a number.`);
-          })();
+          })());
   return enabled ||
     level ||
     format ||
@@ -480,7 +444,9 @@ export function parseOpenAiConfig(
   path: string,
 ): OpenAiConfig | undefined {
   const value = root.openai;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return undefined;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "openai" must be an object.`);
   }
@@ -542,7 +508,9 @@ export function parseOpenAiConfig(
 
 export function parseEnvConfig(root: Record<string, unknown>, path: string): EnvConfig | undefined {
   const value = root.env;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return undefined;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "env" must be an object.`);
   }
@@ -565,25 +533,14 @@ export function parseApiKeysConfig(
   path: string,
 ): ApiKeysConfig | undefined {
   const value = root.apiKeys;
-  if (value === undefined) {return undefined;}
+  if (value === undefined) {
+    return undefined;
+  }
   if (!isRecord(value)) {
     throw new Error(`Invalid config file ${path}: "apiKeys" must be an object.`);
   }
   const keys: Record<string, string> = {};
-  const allowed = new Set([
-    'openai',
-    'nvidia',
-    'anthropic',
-    'google',
-    'xai',
-    'openrouter',
-    'zai',
-    'apify',
-    'firecrawl',
-    'fal',
-    'groq',
-    'assemblyai',
-  ]);
+  const allowed = new Set(['openrouter', 'apify', 'firecrawl']);
   for (const [key, val] of Object.entries(value)) {
     const normalizedKey = key.trim().toLowerCase();
     if (!allowed.has(normalizedKey)) {

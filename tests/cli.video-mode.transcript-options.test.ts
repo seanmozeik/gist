@@ -82,9 +82,7 @@ describe('cli --video-mode transcript', () => {
       },
     );
 
-    const options = mocks.fetchLinkContent.mock.calls[0]?.[1] as
-      | Record<string, unknown>
-      | undefined;
+    const options = mocks.fetchLinkContent.mock.calls[0]?.[1];
     expect(options?.mediaTranscript).toBe('prefer');
   });
 });

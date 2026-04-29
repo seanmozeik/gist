@@ -3,17 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { fetchTranscript } from '../packages/core/src/content/transcript/providers/generic.js';
 
 const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>) => ({
-  fetch,
-  scrapeWithFirecrawl: null,
   apifyApiToken: null,
-  youtubeTranscriptMode: 'auto',
-  mediaTranscriptMode: 'auto',
-  ytDlpPath: null,
-  groqApiKey: null,
   falApiKey: null,
+  fetch,
+  groqApiKey: null,
+  mediaTranscriptMode: 'auto',
+  onProgress: null,
   openaiApiKey: null,
   resolveTwitterCookies: null,
-  onProgress: null,
+  scrapeWithFirecrawl: null,
+  youtubeTranscriptMode: 'auto',
+  ytDlpPath: null,
   ...overrides,
 });
 

@@ -22,7 +22,7 @@ function buildOptions(overrides?: Partial<Parameters<typeof executeRunnerInput>[
       envForRun: {},
       execFileImpl: vi.fn() as never,
       preprocessMode: 'auto' as const,
-      timeoutMs: 1_000,
+      timeoutMs: 1000,
     },
     extractMode: false,
     handleFileInputContext: {},
@@ -47,7 +47,7 @@ function buildOptions(overrides?: Partial<Parameters<typeof executeRunnerInput>[
         preprocessMode: 'auto' as const,
         runStartedAtMs: 0,
         shouldComputeReport: false,
-        timeoutMs: 1_000,
+        timeoutMs: 1000,
         verboseColor: false,
       },
       hooks: {
@@ -161,7 +161,7 @@ describe('runner execution', () => {
   it('routes local media files through URL flow when slides are enabled', async () => {
     await executeRunnerInput(
       buildOptions({
-        inputTarget: { kind: 'file', filePath: '/tmp/video.webm' } as never,
+        inputTarget: { filePath: '/tmp/video.webm', kind: 'file' } as never,
         slidesEnabled: true,
         url: null,
       }),

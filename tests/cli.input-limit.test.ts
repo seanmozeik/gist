@@ -9,7 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { runCli } from '../src/run.js';
 import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
 
-interface MockModel { provider: string; id: string; api: Api }
+interface MockModel {
+  provider: string;
+  id: string;
+  api: Api;
+}
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -46,9 +50,9 @@ describe('cli input token limits', () => {
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
         'gpt-5.2': {
-          input_cost_per_token: 0.00000175,
+          input_cost_per_token: 0.000_001_75,
           max_input_tokens: 10,
-          output_cost_per_token: 0.000014,
+          output_cost_per_token: 0.000_014,
         },
       }),
       'utf8',
@@ -65,7 +69,9 @@ describe('cli input token limits', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
-      if (url === 'https://example.com') {return htmlResponse(html);}
+      if (url === 'https://example.com') {
+        return htmlResponse(html);
+      }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 

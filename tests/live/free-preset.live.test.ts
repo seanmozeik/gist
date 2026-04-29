@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { runCli } from '../../src/run.js';
 
 const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
-const ANSI_SGR_RE = /\x1B\[[0-9;]*m/;
+const ANSI_SGR_RE = /\u001B\[[0-9;]*m/;
 
 function shouldSoftSkipLiveError(message: string): boolean {
   return /(rate limit exceeded|free-models-per-min|free-models-per-day|no working :free models|no :free models)/i.test(
@@ -90,7 +90,9 @@ const silentStderr = new Writable({
         expect((payload.summary ?? '').trim().length).toBeGreaterThan(0);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },
@@ -145,7 +147,9 @@ const silentStderr = new Writable({
         expect(text).not.toContain('\u001B[?2026l');
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (shouldSoftSkipLiveError(message)) {return;}
+        if (shouldSoftSkipLiveError(message)) {
+          return;
+        }
         throw error;
       }
     },

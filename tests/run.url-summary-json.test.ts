@@ -45,7 +45,7 @@ describe('run url summary json', () => {
         lengthArg: { kind: 'chars', maxCharacters: 9000 },
         maxOutputTokensArg: null,
         outputLanguage: { kind: 'auto' },
-        timeoutMs: 1_000,
+        timeoutMs: 1000,
         transcriptTimestamps: false,
         youtubeMode: 'auto',
       },

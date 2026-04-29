@@ -11,16 +11,16 @@ describe('podcast transcript provider: local whisper.cpp', () => {
       probeMediaDurationSecondsWithFfprobe: async () => null,
       resolveWhisperCppModelNameForDisplay: async () => 'base',
       transcribeMediaFileWithWhisper: async () => ({
-        text: 'local transcript ok',
-        provider: 'whisper.cpp',
         error: null,
         notes: ['whisper.cpp: used local'],
+        provider: 'whisper.cpp',
+        text: 'local transcript ok',
       }),
       transcribeMediaWithWhisper: async () => ({
-        text: 'local transcript ok',
-        provider: 'whisper.cpp',
         error: null,
         notes: ['whisper.cpp: used local'],
+        provider: 'whisper.cpp',
+        text: 'local transcript ok',
       }),
     }));
 
@@ -35,7 +35,9 @@ describe('podcast transcript provider: local whisper.cpp', () => {
         const url =
           typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
         const method = (init?.method ?? 'GET').toUpperCase();
-        if (url !== enclosureUrl) {throw new Error(`Unexpected fetch: ${method} ${url}`);}
+        if (url !== enclosureUrl) {
+          throw new Error(`Unexpected fetch: ${method} ${url}`);
+        }
 
         if (method === 'HEAD') {
           return new Response(null, {

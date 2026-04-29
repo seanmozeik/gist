@@ -28,11 +28,17 @@ function resolveRequestedCliModelFromConfig(
   requestedModel: RequestedModel,
   config: SummarizeConfig | null,
 ): RequestedModel {
-  if (requestedModel.kind !== 'fixed' || requestedModel.transport !== 'cli') {return requestedModel;}
-  if (requestedModel.cliModel) {return requestedModel;}
+  if (requestedModel.kind !== 'fixed' || requestedModel.transport !== 'cli') {
+    return requestedModel;
+  }
+  if (requestedModel.cliModel) {
+    return requestedModel;
+  }
 
   const configuredModel = resolveConfiguredCliModel(requestedModel.cliProvider, config);
-  if (!configuredModel) {return requestedModel;}
+  if (!configuredModel) {
+    return requestedModel;
+  }
 
   return {
     ...requestedModel,
@@ -45,8 +51,12 @@ function applyModelConfigOptions(
   requestedModel: RequestedModel,
   modelConfig: ModelConfig | null,
 ): RequestedModel {
-  if (requestedModel.kind !== 'fixed' || requestedModel.transport === 'cli') {return requestedModel;}
-  if (!modelConfig || !('id' in modelConfig)) {return requestedModel;}
+  if (requestedModel.kind !== 'fixed' || requestedModel.transport === 'cli') {
+    return requestedModel;
+  }
+  if (!modelConfig || !('id' in modelConfig)) {
+    return requestedModel;
+  }
   const requestOptions = mergeModelRequestOptions(requestedModel.requestOptions, {
     ...(modelConfig.serviceTier ? { serviceTier: modelConfig.serviceTier } : {}),
     ...((modelConfig.reasoningEffort ?? modelConfig.thinking)
@@ -89,7 +99,9 @@ export function resolveModelSelection({
     }
 
     const raw = config?.models;
-    if (!raw) {return out;}
+    if (!raw) {
+      return out;
+    }
     for (const [name, model] of Object.entries(raw)) {
       out.set(name.toLowerCase(), { model, name });
     }
@@ -107,11 +119,15 @@ export function resolveModelSelection({
     if (modelFromConfig) {
       if ('id' in modelFromConfig && typeof modelFromConfig.id === 'string') {
         const id = modelFromConfig.id.trim();
-        if (id.length > 0) {return { value: id, source: 'config' as const };}
+        if (id.length > 0) {
+          return { source: 'config' as const, value: id };
+        }
       }
       if ('name' in modelFromConfig && typeof modelFromConfig.name === 'string') {
         const name = modelFromConfig.name.trim();
-        if (name.length > 0) {return { value: name, source: 'config' as const };}
+        if (name.length > 0) {
+          return { source: 'config' as const, value: name };
+        }
       }
       if ('mode' in modelFromConfig && modelFromConfig.mode === 'auto') {
         return { source: 'config' as const, value: 'auto' };
@@ -151,7 +167,9 @@ export function resolveModelSelection({
           namedModelConfig,
         );
       }
-      if ('mode' in namedModelConfig && namedModelConfig.mode === 'auto') {return { kind: 'auto' };}
+      if ('mode' in namedModelConfig && namedModelConfig.mode === 'auto') {
+        return { kind: 'auto' };
+      }
       throw new Error(
         `Invalid model "${namedModelMatch?.name ?? requestedModelInput}": unsupported model config`,
       );

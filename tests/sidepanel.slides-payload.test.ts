@@ -23,11 +23,11 @@ function buildSlidesPayload({
     slides: Array.from({ length: count }, (_, index) => {
       const slideIndex = index + 1;
       return {
-        index: slideIndex,
-        timestamp: index * 10,
         imageUrl: withImages ? `http://127.0.0.1:8787/v1/slides/${sourceId}/${slideIndex}?v=1` : '',
-        ocrText: `${textPrefix} ${slideIndex}`,
+        index: slideIndex,
         ocrConfidence: 0.9,
+        ocrText: `${textPrefix} ${slideIndex}`,
+        timestamp: index * 10,
       };
     }),
     sourceId,

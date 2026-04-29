@@ -33,12 +33,12 @@ const createDeps = (text: string, media?: { kind?: 'video' | 'audio'; url?: stri
   onProgress: null,
   openaiApiKey: null,
   readTweetWithBird: async () => ({
-    client: 'xurl',
-    text,
     author: { username: 'birdy' },
+    client: 'xurl',
     media: media?.url
       ? { kind: media.kind ?? 'video', urls: [media.url], preferredUrl: media.url, source: 'card' }
       : null,
+    text,
   }),
   resolveTwitterCookies: null,
   scrapeWithFirecrawl: null,

@@ -223,7 +223,7 @@ describe('auto model selection', () => {
       requiresVideoUnderstanding: true,
     });
 
-    expect(attempts.every((a) => ! a.forceOpenRouter)).toBe(true);
+    expect(attempts.every((a) => !a.forceOpenRouter)).toBe(true);
   });
 
   it('respects explicit openrouter/... candidates (no native attempt)', () => {
@@ -274,8 +274,8 @@ describe('auto model selection', () => {
         rules: [
           {
             bands: [
-              { token: { max: 100 }, candidates: ['openai/gpt-5-nano'] },
-              { token: { max: 1000 }, candidates: ['openai/gpt-5-mini'] },
+              { candidates: ['openai/gpt-5-nano'], token: { max: 100 } },
+              { candidates: ['openai/gpt-5-mini'], token: { max: 1000 } },
               { candidates: ['xai/grok-4-fast-non-reasoning'] },
             ],
             when: ['text'],

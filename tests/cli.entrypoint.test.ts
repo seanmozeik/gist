@@ -16,7 +16,9 @@ describe('cli entrypoint', () => {
     runCliMainMock.mockImplementationOnce(
       async (args: { exit: (code: number) => void; setExitCode: (code: number) => void }) => {
         args.setExitCode(123);
-        expect(() =>{  args.exit(0); }).toThrow('process.exit(0)');
+        expect(() => {
+          args.exit(0);
+        }).toThrow('process.exit(0)');
       },
     );
 
