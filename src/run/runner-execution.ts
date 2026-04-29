@@ -51,6 +51,7 @@ export async function executeRunnerInput(options: {
       clearProgressForStdout: () => void;
       restoreProgressAfterStdout?: (() => void) | null;
       buildReport: () => Promise<RunMetricsReport>;
+      estimateCostUsd: () => Promise<number | null>;
     };
     apiStatus: {
       openrouterApiKey: string | null;

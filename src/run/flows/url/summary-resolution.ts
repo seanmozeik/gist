@@ -1,15 +1,9 @@
 import { countTokens } from 'gpt-tokenizer';
 
-import {
-  buildLanguageKey,
-  buildLengthKey,
-  buildPromptContentHash,
-  buildPromptHash,
-  buildSummaryCacheKey,
-} from '../../../cache.js';
+import { buildLengthKey, buildLanguageKey } from '../../../cache-keys.js';
+import { buildSummaryCacheKey } from '../../../cache.js';
 import type { ExtractedLinkContent } from '../../../content/index.js';
 import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url.js';
-import { resolveGitHubModelsApiKey } from '../../../llm/github-models.js';
 import type { Prompt } from '../../../llm/prompt.js';
 import { buildAutoModelAttempts } from '../../../model-auto.js';
 import { SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index.js';
@@ -22,8 +16,8 @@ import { writeVerbose } from '../../logging.js';
 import { runModelAttempts } from '../../model-attempts.js';
 import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter.js';
 import type { ModelAttempt } from '../../types.js';
-import type {} from './summary-finish.js';
-import type {} from './summary-prompt.js';
+import { buildModelMetaFromAttempt } from './summary-finish.js';
+import { shouldBypassShortContentSummary } from './summary-prompt.js';
 import {
   resolveSummaryTimestampUpperBound,
   sanitizeSummaryKeyMoments,
@@ -43,7 +37,7 @@ interface SummaryResolutionSummary {
   summaryAlreadyPrinted: boolean;
   summaryFromCache: boolean;
   usedAttempt: ModelAttempt;
-  modelMeta: ReturnType<typeof buildModelMetaFromAttempt>;
+  modelMeta: { canonical: string; provider: 'openrouter' | 'local' | 'cli' };
   maxOutputTokensForCall: number | null;
 }
 
@@ -61,8 +55,6 @@ export async function resolveUrlSummaryExecution({
   extracted: ExtractedLinkContent;
   prompt: string;
   onModelChosen?: ((modelId: string) => void) | null;
-  slides: unknown;
-  slidesOutput: unknown;
 }): Promise<UrlSummaryResolution> {
   const { io, flags, model, cache: cacheState } = ctx;
   const lastSuccessfulCliProvider = model.isFallbackModel
@@ -71,8 +63,7 @@ export async function resolveUrlSummaryExecution({
 
   const promptPayload: Prompt = { system: SUMMARY_SYSTEM_PROMPT, userText: prompt };
   const promptTokens = countTokens(promptPayload.userText);
-  const kindForAuto =
-    extracted.siteName === 'YouTube' ? ('youtube' as const) : ('website' as const);
+  const kindForAuto = extracted.siteName === 'YouTube' ? ('video' as const) : ('text' as const);
   const sanitizeKeyMoments = shouldSanitizeSummaryKeyMoments({ extracted, hasSlides: false });
   const timestampUpperBound = sanitizeKeyMoments
     ? resolveSummaryTimestampUpperBound(extracted)
@@ -82,7 +73,6 @@ export async function resolveUrlSummaryExecution({
     if (model.isFallbackModel) {
       const list = buildAutoModelAttempts({
         allowAutoCliFallback: model.allowAutoCliFallback,
-        catalog,
         cliAvailability: model.cliAvailability,
         config: model.configForModelSelection,
         desiredOutputTokens: model.desiredOutputTokens,
@@ -131,17 +121,7 @@ export async function resolveUrlSummaryExecution({
         },
       ];
     }
-    const openaiOverrides =
-      model.fixedModelSpec.requiredEnv === 'Z_AI_API_KEY'
-        ? { forceChatCompletions: true }
-        : model.fixedModelSpec.requiredEnv === 'NVIDIA_API_KEY'
-          ? { forceChatCompletions: true }
-          : model.fixedModelSpec.requiredEnv === 'GITHUB_TOKEN'
-            ? {
-                forceChatCompletions: true,
-                openaiApiKeyOverride: resolveGitHubModelsApiKey(io.envForRun),
-              }
-            : {};
+    const openaiOverrides = model.fixedModelSpec.requiredEnv === 'OPENROUTER_API_KEY' ? {} : {};
     return [
       {
         forceOpenRouter: model.fixedModelSpec.forceOpenRouter,
@@ -160,10 +140,11 @@ export async function resolveUrlSummaryExecution({
 
   const cacheStore =
     cacheState.mode === 'default' && !flags.summaryCacheBypass ? cacheState.store : null;
+  // Simplified cache keys
   const contentHash = cacheStore
-    ? buildPromptContentHash({ fallbackContent: extracted.content, prompt })
+    ? `c:${extracted.content.slice(0, 500).replace(/\s+/g, ' ').trim()}`
     : null;
-  const promptHash = cacheStore ? buildPromptHash(prompt) : null;
+  const promptHash = cacheStore ? `p:${prompt.replace(/\s+/g, ' ').trim()}` : null;
   const lengthKey = buildLengthKey(flags.lengthArg);
   const languageKey = buildLanguageKey(flags.outputLanguage);
   const autoSelectionCacheModel = model.isFallbackModel

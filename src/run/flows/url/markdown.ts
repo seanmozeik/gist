@@ -68,21 +68,24 @@ export function createMarkdownConverters(
 
     // Prefer local sidecar if available
     if (ctx.model.apiStatus.localBaseUrl) {
+      const modelId = ctx.model.fixedModelSpec?.llmModelId ?? 'local/default';
       return {
         forceChatCompletions: ctx.model.openaiUseChatCompletions,
         forceOpenRouter: false,
-        llmModelId: ctx.model.fixedModelSpec!.llmModelId,
+        llmModelId: modelId,
         openaiBaseUrlOverride: ctx.model.apiStatus.localBaseUrl,
-        requiredEnv: null,
+        requiredEnv: 'OPENROUTER_API_KEY',
       };
     }
 
     // Fall back to OpenRouter
     if (ctx.model.apiStatus.openrouterApiKey) {
+      const modelId =
+        ctx.model.fixedModelSpec?.llmModelId ?? 'openrouter/meta/llama-3.1-8b-instruct';
       return {
         forceChatCompletions: ctx.model.openaiUseChatCompletions,
         forceOpenRouter: true,
-        llmModelId: ctx.model.fixedModelSpec!.llmModelId,
+        llmModelId: modelId,
         openrouterApiKey: ctx.model.apiStatus.openrouterApiKey,
         requiredEnv: 'OPENROUTER_API_KEY',
       };

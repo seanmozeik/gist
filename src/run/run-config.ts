@@ -65,7 +65,7 @@ export function resolveConfigState({
     if (Array.isArray(config?.cli?.enabled)) {
       return config.cli.enabled;
     }
-    return ['claude', 'gemini', 'codex', 'agent', 'openclaw', 'opencode'];
+    return ['claude', 'gemini', 'codex', 'agent'] as const;
   })();
   const cliConfigForRun = cliEnabledOverride
     ? { ...config?.cli, enabled: cliEnabledOverride }

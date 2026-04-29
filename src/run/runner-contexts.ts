@@ -20,6 +20,7 @@ export function createRunnerFlowContexts(options: {
   setClearProgressBeforeStdout: UrlFlowContext['hooks']['setClearProgressBeforeStdout'];
   clearProgressIfCurrent: UrlFlowContext['hooks']['clearProgressIfCurrent'];
   buildReport: UrlFlowContext['hooks']['buildReport'];
+  estimateCostUsd: UrlFlowContext['hooks']['estimateCostUsd'];
 }) {
   const {
     summarizeMediaFileImpl,
@@ -35,11 +36,13 @@ export function createRunnerFlowContexts(options: {
     setClearProgressBeforeStdout,
     clearProgressIfCurrent,
     buildReport,
+    estimateCostUsd,
   } = options;
 
   const assetSummaryContext = createAssetSummaryContext({
     apiStatus: {
       apifyToken: model.apiStatus.apifyToken,
+      firecrawlApiKey: model.apiStatus.firecrawlApiKey,
       firecrawlConfigured: model.apiStatus.firecrawlConfigured,
       openrouterApiKey: model.apiStatus.openrouterApiKey,
       ytDlpPath: model.apiStatus.ytDlpPath,
@@ -130,6 +133,7 @@ export function createRunnerFlowContexts(options: {
         buildReport,
         clearProgressForStdout,
         clearProgressIfCurrent,
+        estimateCostUsd,
         restoreProgressAfterStdout,
         setClearProgressBeforeStdout,
         setTranscriptionCost,

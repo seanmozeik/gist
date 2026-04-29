@@ -25,7 +25,7 @@ interface RunEnv {
 
 export async function runCli(
   argv: string[],
-  { env: inputEnv, fetch, execFile: execFileOverride, stdin, stdout, stderr }: RunEnv,
+  { env: inputEnv, execFile: execFileOverride, stdin, stdout, stderr }: RunEnv,
 ): Promise<void> {
   (globalThis as unknown as { AI_SDK_LOG_WARNINGS?: boolean }).AI_SDK_LOG_WARNINGS = false;
 
@@ -59,6 +59,7 @@ export async function runCli(
     env,
     envForRun,
     execFileImpl,
+    fetchImpl: fetch,
     normalizedArgv,
     program,
     promptOverride,

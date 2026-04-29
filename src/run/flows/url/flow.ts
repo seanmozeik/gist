@@ -208,7 +208,6 @@ export async function runUrlFlow({
       lengthInstruction: flags.lengthInstruction ?? null,
       outputLanguage: flags.outputLanguage,
       promptOverride: flags.promptOverride ?? null,
-      slides: null,
     });
 
     // Whisper transcription costs need to be folded into the finish line totals.
@@ -258,8 +257,6 @@ export async function runUrlFlow({
         extracted: extractedForOutput,
         extractionUi,
         prompt,
-        slides: null,
-        slidesOutput: null,
         transcriptionCostLabel,
         url,
       });
@@ -281,8 +278,6 @@ export async function runUrlFlow({
       extractionUi,
       onModelChosen,
       prompt,
-      slides: null,
-      slidesOutput: null,
       transcriptionCostLabel,
       url,
     });

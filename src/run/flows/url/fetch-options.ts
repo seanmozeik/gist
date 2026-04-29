@@ -9,7 +9,6 @@ interface UrlFetchFlags {
   videoMode: 'auto' | 'transcript' | 'understand';
   transcriptTimestamps: boolean;
   firecrawlMode: 'off' | 'auto' | 'always';
-  slides: object | null;
 }
 
 interface UrlMarkdownOptions {
@@ -20,13 +19,11 @@ interface UrlMarkdownOptions {
 export function shouldPreferTranscriptForTarget({
   targetUrl,
   videoMode,
-  slides,
 }: {
   targetUrl: string;
   videoMode: UrlFetchFlags['videoMode'];
-  slides: UrlFetchFlags['slides'];
 }): boolean {
-  return videoMode === 'transcript' || (Boolean(slides) && isDirectVideoInput(targetUrl));
+  return videoMode === 'transcript';
 }
 
 export function resolveUrlFetchOptions({
@@ -53,11 +50,7 @@ export function resolveUrlFetchOptions({
         typeof flags.maxExtractCharacters === 'number' && flags.maxExtractCharacters > 0
           ? flags.maxExtractCharacters
           : undefined,
-      mediaTranscript: shouldPreferTranscriptForTarget({
-        slides: flags.slides,
-        targetUrl,
-        videoMode: flags.videoMode,
-      })
+      mediaTranscript: shouldPreferTranscriptForTarget({ targetUrl, videoMode: flags.videoMode })
         ? 'prefer'
         : 'auto',
       timeoutMs: flags.timeoutMs,

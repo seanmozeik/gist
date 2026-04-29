@@ -28,21 +28,17 @@ export function buildUrlJsonInput(options: {
 }
 
 export function buildUrlJsonEnv(apiStatus: {
-  xaiApiKey: string | null;
-  apiKey: string | null;
   openrouterApiKey: string | null;
   apifyToken: string | null;
   firecrawlConfigured: boolean;
-  googleConfigured: boolean;
-  anthropicConfigured: boolean;
+  firecrawlApiKey: string | null;
+  ytDlpPath: string | null;
+  ytDlpCookiesFromBrowser: string | null;
+  localBaseUrl: string | null;
 }) {
   return {
-    hasAnthropicKey: apiStatus.anthropicConfigured,
     hasApifyToken: Boolean(apiStatus.apifyToken),
     hasFirecrawlKey: apiStatus.firecrawlConfigured,
-    hasGoogleKey: apiStatus.googleConfigured,
-    hasOpenAIKey: Boolean(apiStatus.apiKey),
     hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
-    hasXaiKey: Boolean(apiStatus.xaiApiKey),
   };
 }

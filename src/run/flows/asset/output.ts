@@ -46,13 +46,13 @@ export async function outputExtractedAsset({
   attachment: AssetAttachment;
   extracted: AssetExtractResult;
   apiStatus: {
-    xaiApiKey: string | null;
-    apiKey: string | null;
     openrouterApiKey: string | null;
     apifyToken: string | null;
     firecrawlConfigured: boolean;
-    googleConfigured: boolean;
-    anthropicConfigured: boolean;
+    firecrawlApiKey: string | null;
+    ytDlpPath: string | null;
+    ytDlpCookiesFromBrowser: string | null;
+    localBaseUrl: string | null;
   };
 }): Promise<void> {
   hooks.clearProgressForStdout();
@@ -67,13 +67,9 @@ export async function outputExtractedAsset({
     const finishReport = flags.shouldComputeReport ? await hooks.buildReport() : null;
     const payload = {
       env: {
-        hasAnthropicKey: apiStatus.anthropicConfigured,
         hasApifyToken: Boolean(apiStatus.apifyToken),
         hasFirecrawlKey: apiStatus.firecrawlConfigured,
-        hasGoogleKey: apiStatus.googleConfigured,
-        hasOpenAIKey: Boolean(apiStatus.apiKey),
         hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
-        hasXaiKey: Boolean(apiStatus.xaiApiKey),
       },
       extracted: {
         content: extracted.content,

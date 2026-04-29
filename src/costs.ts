@@ -1,8 +1,8 @@
 export interface LlmCall {
   model: string;
-  provider: 'openrouter' | 'local';
-  promptTokens: number;
-  completionTokens: number;
+  provider: 'openrouter' | 'local' | 'cli';
+  promptTokens?: number;
+  completionTokens?: number;
   costUsd?: number | null;
 }
 

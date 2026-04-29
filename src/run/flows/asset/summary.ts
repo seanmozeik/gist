@@ -1,14 +1,8 @@
 import { countTokens } from 'gpt-tokenizer';
 import { render as renderMarkdownAnsi } from 'markdansi';
 
-import {
-  buildLanguageKey,
-  buildLengthKey,
-  buildPromptContentHash,
-  buildPromptHash,
-  buildSummaryCacheKey,
-  type CacheState,
-} from '../../../cache.js';
+import { buildLanguageKey, buildLengthKey } from '../../../cache-keys.js';
+import { buildSummaryCacheKey, type CacheState } from '../../../cache.js';
 import type { CliProvider, SummarizeConfig } from '../../../config.js';
 import type { MediaCache } from '../../../content/index.js';
 import type { LlmCall, RunMetricsReport } from '../../../costs.js';
@@ -442,8 +436,11 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
 
   const cacheStore =
     ctx.cache.mode === 'default' && !ctx.summaryCacheBypass ? ctx.cache.store : null;
-  const contentHash = cacheStore ? buildPromptContentHash({ prompt: promptText }) : null;
-  const promptHash = cacheStore ? buildPromptHash(promptText) : null;
+  // Simplified cache keys
+  const contentHash = cacheStore
+    ? `c:${promptText.slice(0, 500).replace(/\s+/g, ' ').trim()}`
+    : null;
+  const promptHash = cacheStore ? `p:${promptText.replace(/\s+/g, ' ').trim()}` : null;
   const lengthKey = buildLengthKey(ctx.lengthArg);
   const languageKey = buildLanguageKey(ctx.outputLanguage);
   const autoSelectionCacheModel = ctx.isFallbackModel

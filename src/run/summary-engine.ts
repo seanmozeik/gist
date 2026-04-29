@@ -2,6 +2,7 @@ import { countTokens } from 'gpt-tokenizer';
 import { createMarkdownStreamer, render as renderMarkdownAnsi } from 'markdansi';
 
 import type { CliProvider } from '../config.js';
+import type { LlmCall } from '../costs.js';
 import { isCliDisabled, runCliModel } from '../llm/cli.js';
 import { streamTextWithModelId } from '../llm/generate-text.js';
 import { parseGatewayStyleModelId } from '../llm/model-id.js';
@@ -43,13 +44,7 @@ export interface SummaryEngineDeps {
   trackedFetch: typeof fetch;
   resolveMaxOutputTokensForCall: (modelId: string) => Promise<number | null>;
   resolveMaxInputTokensForCall: (modelId: string) => Promise<number | null>;
-  llmCalls: {
-    provider: 'openrouter' | 'local' | 'cli';
-    model: string;
-    usage: Awaited<ReturnType<typeof summarizeWithModelId>>['usage'] | null;
-    costUsd?: number | null;
-    purpose: 'summary' | 'markdown';
-  }[];
+  llmCalls: LlmCall[];
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
   apiKeys: { openrouterApiKey: string | null };
@@ -164,11 +159,11 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       }
       if (result.usage || typeof result.costUsd === 'number') {
         deps.llmCalls.push({
+          completionTokens: result.usage?.completionTokens ?? 0,
           costUsd: result.costUsd ?? null,
           model: attempt.userModelId,
           provider: 'cli',
-          purpose: 'summary',
-          usage: result.usage ?? null,
+          promptTokens: result.usage?.promptTokens ?? 0,
         });
       }
       return {
@@ -249,10 +244,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         timeoutMs: deps.timeoutMs,
       });
       deps.llmCalls.push({
+        completionTokens: result.usage?.completionTokens ?? 0,
         model: result.canonicalModelId,
         provider: result.provider,
-        purpose: 'summary',
-        usage: result.usage,
+        promptTokens: result.usage?.promptTokens ?? 0,
       });
       const summary = result.text.trim();
       if (!summary) {
@@ -320,10 +315,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           timeoutMs: deps.timeoutMs,
         });
         deps.llmCalls.push({
+          completionTokens: result.usage?.completionTokens ?? 0,
           model: result.canonicalModelId,
           provider: result.provider,
-          purpose: 'summary',
-          usage: result.usage,
+          promptTokens: result.usage?.promptTokens ?? 0,
         });
         summary = result.text;
         streamResult = null;
@@ -348,10 +343,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           timeoutMs: deps.timeoutMs,
         });
         deps.llmCalls.push({
+          completionTokens: result.usage?.completionTokens ?? 0,
           model: result.canonicalModelId,
           provider: result.provider,
-          purpose: 'summary',
-          usage: result.usage,
+          promptTokens: result.usage?.promptTokens ?? 0,
         });
         summary = result.text;
         streamResult = null;
@@ -449,10 +444,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       }
       const usage = await streamResult.usage;
       deps.llmCalls.push({
+        completionTokens: usage?.completionTokens ?? 0,
         model: streamResult.canonicalModelId,
         provider: streamResult.provider,
-        purpose: 'summary',
-        usage,
+        promptTokens: usage?.promptTokens ?? 0,
       });
       summary = streamed;
       if (shouldStreamSummaryToStdout) {

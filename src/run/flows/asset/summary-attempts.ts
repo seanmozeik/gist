@@ -112,7 +112,6 @@ export async function buildAssetCliContext({
   const extraArgsByProvider: Partial<Record<CliProvider, string[]>> = {
     codex: args.attachment.kind === 'image' ? ['-i', filePath] : undefined,
     gemini: ['--include-directories', dir],
-    opencode: ['--file', filePath],
   };
 
   return {

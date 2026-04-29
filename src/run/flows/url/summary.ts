@@ -20,7 +20,6 @@ async function writeUrlJsonOutput({
   extracted,
   effectiveMarkdownMode,
   prompt,
-  slides,
   summary,
   llm,
 }: {
@@ -29,7 +28,6 @@ async function writeUrlJsonOutput({
   extracted: ExtractedLinkContent;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   prompt: string;
-  slides: unknown;
   summary: string | null;
   llm: {
     provider: string;
@@ -55,7 +53,6 @@ async function writeUrlJsonOutput({
     llm,
     metrics: flags.metricsEnabled ? finishReport : null,
     prompt,
-    slides,
     summary,
   };
   io.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -115,7 +112,6 @@ export function buildUrlPrompt({
   promptOverride,
   lengthInstruction,
   languageInstruction,
-  slides,
 }: {
   extracted: ExtractedLinkContent;
   outputLanguage: UrlFlowContext['flags']['outputLanguage'];
@@ -123,7 +119,6 @@ export function buildUrlPrompt({
   promptOverride?: string | null;
   lengthInstruction?: string | null;
   languageInstruction?: string | null;
-  slides: unknown;
 }): string {
   return buildSummaryPrompt({
     buildSummaryTimestampLimitInstruction,
@@ -145,7 +140,6 @@ async function outputSummaryFromExtractedContent({
   prompt,
   effectiveMarkdownMode,
   transcriptionCostLabel,
-  slides,
   footerLabel,
   verboseMessage,
 }: {
@@ -156,7 +150,6 @@ async function outputSummaryFromExtractedContent({
   prompt: string;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
-  slides: unknown;
   footerLabel?: string | null;
   verboseMessage?: string | null;
 }) {
@@ -172,7 +165,6 @@ async function outputSummaryFromExtractedContent({
       extracted,
       llm: null,
       prompt,
-      slides,
       summary: extracted.content,
       url,
     });
@@ -209,8 +201,6 @@ export async function outputExtractedUrl({
   prompt,
   effectiveMarkdownMode,
   transcriptionCostLabel,
-  slides,
-  slidesOutput,
 }: {
   ctx: UrlFlowContext;
   url: string;
@@ -219,8 +209,6 @@ export async function outputExtractedUrl({
   prompt: string;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
-  slides: unknown;
-  slidesOutput: unknown;
 }) {
   const { io, flags, model, hooks } = ctx;
 
@@ -240,7 +228,6 @@ export async function outputExtractedUrl({
       extracted,
       llm: null,
       prompt,
-      slides,
       summary: null,
       url,
     });
@@ -304,8 +291,6 @@ export async function summarizeExtractedUrl({
   effectiveMarkdownMode,
   transcriptionCostLabel,
   onModelChosen,
-  slides,
-  slidesOutput,
 }: {
   ctx: UrlFlowContext;
   url: string;
@@ -315,8 +300,6 @@ export async function summarizeExtractedUrl({
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
   onModelChosen?: ((modelId: string) => void) | null;
-  slides: unknown;
-  slidesOutput: unknown;
 }) {
   const { io, flags, model, cache: cacheState, hooks } = ctx;
   const resolution = await resolveUrlSummaryExecution({
@@ -324,8 +307,6 @@ export async function summarizeExtractedUrl({
     extracted,
     onModelChosen,
     prompt,
-    slides,
-    slidesOutput,
     url,
   });
 
@@ -337,7 +318,6 @@ export async function summarizeExtractedUrl({
       extractionUi,
       footerLabel: resolution.footerLabel,
       prompt,
-      slides,
       transcriptionCostLabel,
       url,
       verboseMessage: resolution.verboseMessage,
@@ -365,7 +345,6 @@ export async function summarizeExtractedUrl({
         strategy: 'single',
       },
       prompt,
-      slides,
       summary: normalizedSummary,
       url,
     });

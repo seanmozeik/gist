@@ -31,7 +31,7 @@ export async function fetchLinkContentWithBirdTip({
   try {
     return await client.fetchLinkContent(url, options);
   } catch (error) {
-    throw withBirdTip(error, url, env);
+    throw withBirdTip(error, url);
   }
 }
 

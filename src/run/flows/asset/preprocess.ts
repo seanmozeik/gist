@@ -96,7 +96,7 @@ export function resolveDocumentHandling({
     ) {
       return false;
     }
-    if (fixedModelSpec.provider !== 'openai') {
+    if (fixedModelSpec.provider !== 'openrouter') {
       return true;
     }
     const resolvedOpenAiBaseUrl = fixedModelSpec.openaiBaseUrlOverride ?? openaiBaseUrl ?? null;

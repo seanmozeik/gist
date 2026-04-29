@@ -192,7 +192,7 @@ See: https://github.com/openai/whisper for setup details`);
     env: ctx.envForRun,
     apifyApiToken: ctx.apiStatus.apifyToken,
     ytDlpPath,
-    transcription: { env: ctx.envForRun, groqApiKey: groqKey, openaiApiKey: openaiKey },
+    transcription: { env: ctx.envForRun },
     scrapeWithFirecrawl: firecrawlScraper,
     convertHtmlToMarkdown: null, // Not needed for media
     readTweetWithBird: readTweetWithBirdClient,

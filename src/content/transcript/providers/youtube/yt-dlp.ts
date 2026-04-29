@@ -12,9 +12,7 @@ import type { MediaCache } from '../../../cache/types.js';
 import type { LinkPreviewProgressEvent } from '../../../link-preview/deps.js';
 import { ProgressKind } from '../../../link-preview/deps.js';
 import { resolveLocalDirectMediaSource } from '../../../local-file.js';
-import {
-  type TranscriptionConfig,
-} from '../../transcription-config.js';
+import { type TranscriptionConfig } from '../../transcription-config.js';
 import { resolveTranscriptionStartInfo } from '../transcription-start.js';
 
 const YT_DLP_TIMEOUT_MS = 300_000;

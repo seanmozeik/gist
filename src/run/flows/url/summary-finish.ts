@@ -29,16 +29,6 @@ export function pickModelForFinishLine(
     return lastCall.model;
   }
 
-  const markdownModel = findLastModel('markdown');
-  if (markdownModel) {
-    return markdownModel;
-  }
-
-  const lastCall = llmCalls.at(-1);
-  if (lastCall?.model) {
-    return lastCall.model;
-  }
-
   return fallback;
 }
 

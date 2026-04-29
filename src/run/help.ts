@@ -114,10 +114,10 @@ export function buildProgram() {
       'Use the OpenAI fast service tier for OpenAI models (sends service_tier=priority).',
       false,
     )
-    .addOption(
-      new Option('--service-tier <tier>', 'OpenAI service tier: default, fast, priority, flex.')
-        .choices(['default', 'fast', 'priority', 'flex'])
-        .default(),
+    .option(
+      '--service-tier <tier>',
+      'OpenAI service tier: default, fast, priority, flex.',
+      'default',
     )
     .option(
       '--thinking <effort>',

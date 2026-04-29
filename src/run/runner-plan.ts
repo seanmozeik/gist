@@ -44,17 +44,7 @@ export async function createRunnerPlan(options: {
   stderr: NodeJS.WritableStream;
   promptOverride: string | null;
 }): Promise<RunnerPlan> {
-  const {
-    normalizedArgv,
-    program,
-    env,
-    envForRun,
-    fetchImpl,
-    execFileImpl,
-    stdin,
-    stdout,
-    stderr,
-  } = options;
+  const { normalizedArgv, program, env, envForRun, execFileImpl, stdin, stdout, stderr } = options;
   let { promptOverride } = options;
   const programOpts = program.opts() as Record<string, unknown>;
 
@@ -372,6 +362,7 @@ export async function createRunnerPlan(options: {
       summaryEngine,
       wantsFreeNamedModel,
     },
+    estimateCostUsd: metrics.estimateCostUsd,
     restoreProgressAfterStdout,
     setClearProgressBeforeStdout,
     setTranscriptionCost,
@@ -385,6 +376,7 @@ export async function createRunnerPlan(options: {
       await executeRunnerInput({
         extractAssetContext: { env, envForRun, execFileImpl, preprocessMode, timeoutMs },
         extractMode,
+        slidesEnabled: false,
         handleFileInputContext: assetInputContext,
         inputTarget,
         isYoutubeUrl,
@@ -410,7 +402,12 @@ export async function createRunnerPlan(options: {
             timeoutMs,
             verboseColor,
           },
-          hooks: { buildReport, clearProgressForStdout, restoreProgressAfterStdout },
+          hooks: {
+            buildReport,
+            clearProgressForStdout,
+            estimateCostUsd: metrics.estimateCostUsd,
+            restoreProgressAfterStdout,
+          },
           io: { env, envForRun, stderr, stdout },
         },
         progressEnabled,

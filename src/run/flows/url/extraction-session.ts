@@ -105,7 +105,7 @@ export function createUrlExtractionSession({
           })
         : null;
     if (!bypassExtractCache && cacheKey && cacheStore) {
-      const cached = cacheStore.getJson<ExtractedLinkContent>('extract', cacheKey);
+      const cached = cacheStore.getJson('extract', cacheKey) as ExtractedLinkContent | null;
       if (cached) {
         writeVerbose(
           io.stderr,
