@@ -90,7 +90,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -119,7 +121,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -129,7 +133,11 @@ describe('sidepanel slides stream controller', () => {
 
   it('times out when no events arrive', async () => {
     const errors: string[] = [];
-    const stalledStream = new ReadableStream<Uint8Array>({ start() {} });
+    const stalledStream = new ReadableStream<Uint8Array>({
+      start() {
+        /* empty */
+      },
+    });
 
     const controller = createSlidesStreamController({
       fetchImpl: async () => new Response(stalledStream, { status: 200 }),
@@ -141,7 +149,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -166,7 +176,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -183,7 +195,9 @@ describe('sidepanel slides stream controller', () => {
         return new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 });
       },
       getToken: async () => '',
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -204,7 +218,9 @@ describe('sidepanel slides stream controller', () => {
         return new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 });
       },
       getToken: async () => tokenPromise,
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     const startPromise = controller.start('run-1');
@@ -226,7 +242,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');
@@ -244,7 +262,9 @@ describe('sidepanel slides stream controller', () => {
         errors.push(message);
         return message;
       },
-      onSlides: () => {},
+      onSlides: () => {
+        /* empty */
+      },
     });
 
     await controller.start('run-1');

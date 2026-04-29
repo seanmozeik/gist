@@ -92,7 +92,9 @@ export async function createTempFileFromStdin({
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-stdin-'));
   const filePath = path.join(tempDir, `input${extension}`);
   const cleanup = async () => {
-    await fs.rm(tempDir, { force: true, recursive: true }).catch(() => {});
+    await fs.rm(tempDir, { force: true, recursive: true }).catch(() => {
+      /* empty */
+    });
   };
 
   try {

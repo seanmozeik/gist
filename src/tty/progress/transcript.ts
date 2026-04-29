@@ -1,4 +1,4 @@
-import type { LinkPreviewProgressEvent } from '../../../content/index.js';
+import type { LinkPreviewProgressEvent } from '../../content/index.js';
 import type { OscProgressController } from '../osc-progress.js';
 import type { ThemeRenderer } from '../theme.js';
 import {

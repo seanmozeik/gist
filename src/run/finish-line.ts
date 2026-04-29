@@ -1,3 +1,4 @@
+import type { RunMetricsReport } from '../costs.js';
 import { formatCompactCount, formatElapsedMs } from '../tty/format.js';
 import {
   createThemeRenderer,
@@ -57,15 +58,7 @@ export function writeFinishLine({
   elapsedLabel?: string | null;
   label?: string | null;
   model: string | null;
-  report: {
-    llm: {
-      promptTokens: number | null;
-      completionTokens: number | null;
-      totalTokens: number | null;
-      calls: number;
-    }[];
-    services: { firecrawl: { requests: number }; apify: { requests: number } };
-  };
+  report: RunMetricsReport;
   costUsd: number | null;
   detailed: boolean;
   extraParts?: string[] | null;
@@ -113,15 +106,7 @@ export function buildFinishLineText({
   elapsedLabel?: string | null;
   label?: string | null;
   model: string | null;
-  report: {
-    llm: {
-      promptTokens: number | null;
-      completionTokens: number | null;
-      totalTokens: number | null;
-      calls: number;
-    }[];
-    services: { firecrawl: { requests: number }; apify: { requests: number } };
-  };
+  report: RunMetricsReport;
   costUsd: number | null;
   detailed: boolean;
   extraParts?: string[] | null;
@@ -152,15 +137,7 @@ export function buildFinishLineVariants({
   elapsedLabel?: string | null;
   label?: string | null;
   model: string | null;
-  report: {
-    llm: {
-      promptTokens: number | null;
-      completionTokens: number | null;
-      totalTokens: number | null;
-      calls: number;
-    }[];
-    services: { firecrawl: { requests: number }; apify: { requests: number } };
-  };
+  report: RunMetricsReport;
   costUsd: number | null;
   compactExtraParts?: string[] | null;
   detailedExtraParts?: string[] | null;
@@ -209,15 +186,7 @@ export function buildFinishLineModel({
   elapsedLabel?: string | null;
   label?: string | null;
   model: string | null;
-  report: {
-    llm: {
-      promptTokens: number | null;
-      completionTokens: number | null;
-      totalTokens: number | null;
-      calls: number;
-    }[];
-    services: { firecrawl: { requests: number }; apify: { requests: number } };
-  };
+  report: RunMetricsReport;
   costUsd: number | null;
   extraParts?: string[] | null;
 }): FinishLineModel {
@@ -225,9 +194,11 @@ export function buildFinishLineModel({
     typeof elapsedLabel === 'string' && elapsedLabel.trim().length > 0
       ? elapsedLabel
       : formatElapsedMs(elapsedMs);
-  const promptTokens = sumNumbersOrNull(report.llm.map((row) => row.promptTokens));
-  const completionTokens = sumNumbersOrNull(report.llm.map((row) => row.completionTokens));
-  const totalTokens = sumNumbersOrNull(report.llm.map((row) => row.totalTokens));
+  const promptTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.promptTokens));
+  const completionTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.completionTokens));
+  const totalTokens = sumNumbersOrNull(
+    report.llmCalls.map((c) => c.promptTokens + c.completionTokens),
+  );
 
   const hasAnyTokens = promptTokens !== null || completionTokens !== null || totalTokens !== null;
   const tokensPart = hasAnyTokens
@@ -298,7 +269,7 @@ export function buildFinishLineModel({
   ];
   const lineParts = summaryParts.filter((part): part is string => typeof part === 'string');
 
-  const totalCalls = report.llm.reduce((sum, row) => sum + row.calls, 0);
+  const totalCalls = report.llmCalls.length;
   const lenParts =
     filteredExtraParts?.filter(
       (part) => part.startsWith('input=') || part.startsWith('transcript='),
@@ -314,16 +285,6 @@ export function buildFinishLineModel({
   }
   if (totalCalls > 1) {
     line2Segments.push(`calls=${formatCompactCount(totalCalls)}`);
-  }
-  if (report.services.firecrawl.requests > 0 || report.services.apify.requests > 0) {
-    const svcParts: string[] = [];
-    if (report.services.firecrawl.requests > 0) {
-      svcParts.push(`firecrawl=${formatCompactCount(report.services.firecrawl.requests)}`);
-    }
-    if (report.services.apify.requests > 0) {
-      svcParts.push(`apify=${formatCompactCount(report.services.apify.requests)}`);
-    }
-    line2Segments.push(`svc ${svcParts.join(' ')}`);
   }
   if (miscParts.length > 0) {
     line2Segments.push(...miscParts);

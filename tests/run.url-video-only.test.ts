@@ -256,8 +256,8 @@ describe('handleVideoOnlyExtractedContent', () => {
         ocrRequested: false,
         sceneThreshold: 0.3,
         slides: [
-          { index: 1, timestamp: 1, imagePath: '/tmp/slide-1.png' },
-          { index: 2, timestamp: 2, imagePath: '/tmp/slide-2.png' },
+          { imagePath: '/tmp/slide-1.png', index: 1, timestamp: 1 },
+          { imagePath: '/tmp/slide-2.png', index: 2, timestamp: 2 },
         ],
         slidesDir: '/tmp/slides',
         sourceId: 'vid123',

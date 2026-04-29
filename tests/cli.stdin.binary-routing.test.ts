@@ -8,7 +8,9 @@ const seen = vi.hoisted(() => ({ bytes: null as Buffer | null, filePath: null as
 
 vi.mock('../src/run/flows/asset/input.js', () => ({
   handleFileInput: vi.fn(async (_ctx, inputTarget) => {
-    if (inputTarget.kind !== 'file') {return false;}
+    if (inputTarget.kind !== 'file') {
+      return false;
+    }
     seen.filePath = inputTarget.filePath;
     seen.bytes = await readFile(inputTarget.filePath);
     return true;
@@ -22,8 +24,8 @@ import { runCli } from '../src/run.js';
 const noopStream = () =>
   new Writable({
     write(chunk, encoding, callback) {
-      void chunk;
-      void encoding;
+      undefined;
+      undefined;
       callback();
     },
   });

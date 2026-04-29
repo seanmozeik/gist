@@ -55,7 +55,9 @@ export async function readFirstBytes(filePath: string, maxBytes: number): Promis
     const read = await handle.read(buffer, 0, maxBytes, 0);
     return new Uint8Array(buffer.slice(0, read.bytesRead));
   } finally {
-    await handle.close().catch(() => {});
+    await handle.close().catch(() => {
+      /* empty */
+    });
   }
 }
 

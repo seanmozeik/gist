@@ -14,7 +14,9 @@ vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller', 
   createStreamController: (options: StreamControllerOptions) => {
     streamOptions = options;
     streamOptionsList.push(options);
-    streamStartSpy = vi.fn(async () => {});
+    streamStartSpy = vi.fn(async () => {
+      /* empty */
+    });
     streamAbortSpy = vi.fn();
     streamAbortSpies.push(streamAbortSpy);
     return { abort: streamAbortSpy, isStreaming: vi.fn(() => false), start: streamStartSpy };

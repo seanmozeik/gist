@@ -38,7 +38,9 @@ describe('extractAssetContent', () => {
         ctx: {
           env: {},
           envForRun: {},
-          execFileImpl: (() => {}) as never,
+          execFileImpl: (() => {
+            /* empty */
+          }) as never,
           preprocessMode: 'auto',
           timeoutMs: 1000,
         },
@@ -58,7 +60,9 @@ describe('extractAssetContent', () => {
         ctx: {
           env: {},
           envForRun: {},
-          execFileImpl: (() => {}) as never,
+          execFileImpl: (() => {
+            /* empty */
+          }) as never,
           preprocessMode: 'off',
           timeoutMs: 1000,
         },
@@ -78,7 +82,9 @@ describe('extractAssetContent', () => {
         ctx: {
           env: { PATH: '' },
           envForRun: { PATH: '' },
-          execFileImpl: (() => {}) as never,
+          execFileImpl: (() => {
+            /* empty */
+          }) as never,
           preprocessMode: 'auto',
           timeoutMs: 1000,
         },

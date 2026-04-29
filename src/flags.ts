@@ -23,16 +23,26 @@ const MAX_RETRIES = 5;
 
 export function parseYoutubeMode(raw: string): YoutubeMode {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === 'autp') {return 'auto';}
-  if (normalized === 'auto' || normalized === 'web' || normalized === 'apify') {return normalized;}
-  if (normalized === 'yt-dlp') {return 'yt-dlp';}
-  if (normalized === 'no-auto') {return 'no-auto';}
+  if (normalized === 'autp') {
+    return 'auto';
+  }
+  if (normalized === 'auto' || normalized === 'web' || normalized === 'apify') {
+    return normalized;
+  }
+  if (normalized === 'yt-dlp') {
+    return 'yt-dlp';
+  }
+  if (normalized === 'no-auto') {
+    return 'no-auto';
+  }
   throw new Error(`Unsupported --youtube: ${raw}`);
 }
 
 export function parseFirecrawlMode(raw: string): FirecrawlMode {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === 'off' || normalized === 'auto' || normalized === 'always') {return normalized;}
+  if (normalized === 'off' || normalized === 'auto' || normalized === 'always') {
+    return normalized;
+  }
   throw new Error(`Unsupported --firecrawl: ${raw}`);
 }
 
@@ -43,15 +53,20 @@ export function parseMarkdownMode(raw: string): MarkdownMode {
     normalized === 'auto' ||
     normalized === 'llm' ||
     normalized === 'readability'
-  )
-    {return normalized;}
+  ) {
+    return normalized;
+  }
   throw new Error(`Unsupported --markdown-mode: ${raw}`);
 }
 
 export function parseExtractFormat(raw: string): ExtractFormat {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === 'text' || normalized === 'txt' || normalized === 'plain') {return 'text';}
-  if (normalized === 'md' || normalized === 'markdown') {return 'markdown';}
+  if (normalized === 'text' || normalized === 'txt' || normalized === 'plain') {
+    return 'text';
+  }
+  if (normalized === 'md' || normalized === 'markdown') {
+    return 'markdown';
+  }
   throw new Error(`Unsupported --format: ${raw}`);
 }
 
@@ -60,13 +75,17 @@ export function parsePreprocessMode(raw: string): PreprocessMode {
   if (normalized === 'off' || normalized === 'auto' || normalized === 'always') {
     return normalized as PreprocessMode;
   }
-  if (normalized === 'on') {return 'always';}
+  if (normalized === 'on') {
+    return 'always';
+  }
   throw new Error(`Unsupported --preprocess: ${raw}`);
 }
 
 export function parseStreamMode(raw: string): StreamMode {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === 'auto' || normalized === 'on' || normalized === 'off') {return normalized;}
+  if (normalized === 'auto' || normalized === 'on' || normalized === 'off') {
+    return normalized;
+  }
   throw new Error(`Unsupported --stream: ${raw}`);
 }
 
@@ -125,7 +144,7 @@ export function parseLengthArg(raw: string): LengthArg {
   }
 
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxCharacters = Math.floor(numeric * multiplier);
   if (maxCharacters < MIN_LENGTH_CHARS) {
     throw new Error(`Unsupported --length: ${raw} (minimum ${MIN_LENGTH_CHARS} chars)`);
@@ -153,7 +172,7 @@ export function parseMaxExtractCharactersArg(raw: string | undefined): number | 
     return null;
   }
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxCharacters = Math.floor(numeric * multiplier);
   if (maxCharacters < MIN_LENGTH_CHARS) {
     throw new Error(
@@ -183,7 +202,7 @@ export function parseMaxOutputTokensArg(raw: string | undefined): number | null 
   }
 
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxOutputTokens = Math.floor(numeric * multiplier);
   if (maxOutputTokens < MIN_MAX_OUTPUT_TOKENS) {
     throw new Error(`Unsupported --max-output-tokens: ${raw} (minimum ${MIN_MAX_OUTPUT_TOKENS})`);

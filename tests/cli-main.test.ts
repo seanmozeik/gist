@@ -6,7 +6,9 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-const runCliMock = vi.fn(async () => {});
+const runCliMock = vi.fn(async () => {
+  /* empty */
+});
 
 vi.mock('../src/run.js', () => ({ runCli: runCliMock }));
 
@@ -28,7 +30,9 @@ describe('cli main wiring', async () => {
     await runCliMain({
       argv: [],
       env: {},
-      exit: () => {},
+      exit: () => {
+        /* empty */
+      },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
         exitCode = code;
@@ -72,7 +76,9 @@ describe('cli main wiring', async () => {
     await runCliMain({
       argv: [],
       env: {},
-      exit: () => {},
+      exit: () => {
+        /* empty */
+      },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
         exitCode = code;
@@ -102,7 +108,9 @@ describe('cli main wiring', async () => {
 
   it('rethrows non-EPIPE stream errors', () => {
     const stream = new EventEmitter() as unknown as NodeJS.WritableStream;
-    handlePipeErrors(stream, () => {});
+    handlePipeErrors(stream, () => {
+      /* empty */
+    });
 
     const handler = stream.listeners('error')[0];
     expect(handler).toBeTypeOf('function');
@@ -130,7 +138,9 @@ describe('cli main wiring', async () => {
     await runCliMain({
       argv: ['--verbose=true'],
       env: {},
-      exit: () => {},
+      exit: () => {
+        /* empty */
+      },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
         exitCode = code;
@@ -163,7 +173,9 @@ describe('cli main wiring', async () => {
     await runCliMain({
       argv: ['--verbose'],
       env: {},
-      exit: () => {},
+      exit: () => {
+        /* empty */
+      },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
         exitCode = code;
@@ -195,7 +207,9 @@ describe('cli main wiring', async () => {
     await runCliMain({
       argv: [],
       env: {},
-      exit: () => {},
+      exit: () => {
+        /* empty */
+      },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
         exitCode = code;
@@ -232,9 +246,13 @@ describe('cli main wiring', async () => {
       await runCliMain({
         argv: [],
         env: process.env,
-        exit: () => {},
+        exit: () => {
+          /* empty */
+        },
         fetch: globalThis.fetch.bind(globalThis),
-        setExitCode: () => {},
+        setExitCode: () => {
+          /* empty */
+        },
         stderr: new Writable({
           write(_c, _e, cb) {
             cb();

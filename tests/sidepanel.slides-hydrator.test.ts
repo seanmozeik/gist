@@ -47,8 +47,7 @@ describe('sidepanel slides hydrator', () => {
     const hydrator = createSlidesHydrator({
       getToken: async () => 'token',
       onSlides: (slides) => received.push(slides),
-      snapshotFetchImpl: async () =>
-        new Response(JSON.stringify({ ok: true, slides: payload }), { status: 200 }),
+      snapshotFetchImpl: async () => Response.json({ ok: true, slides: payload }, { status: 200 }),
       streamFetchImpl: async () =>
         new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 }),
     });
@@ -119,11 +118,11 @@ describe('sidepanel slides hydrator', () => {
       },
     });
 
-    void hydrator.start('run-1');
+    undefined;
     await waitFor(() => snapshotRequested);
     await hydrator.start('run-2');
 
-    resolveSnapshot?.(new Response(JSON.stringify({ ok: true, slides: payload }), { status: 200 }));
+    resolveSnapshot?.(Response.json({ ok: true, slides: payload }, { status: 200 }));
     await snapshotPromise;
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -153,7 +152,7 @@ describe('sidepanel slides hydrator', () => {
       onSlides: (slides) => received.push(slides),
       snapshotFetchImpl: async () => {
         snapshotCalls += 1;
-        return new Response(JSON.stringify({ ok: true, slides: payload }), { status: 200 });
+        return Response.json({ ok: true, slides: payload }, { status: 200 });
       },
       streamFetchImpl: async () =>
         new Response(streamFromEvents([{ data: {}, event: 'done' }]), { status: 200 }),

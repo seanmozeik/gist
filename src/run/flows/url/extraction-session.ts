@@ -7,10 +7,9 @@ import {
 } from '../../../content/index.js';
 import * as urlUtils from '../../../content/url.js';
 import { createFirecrawlScraper } from '../../../firecrawl.js';
-import { resolveSlideSource } from '../../../slides/index.js';
 import { readTweetWithPreferredClient } from '../../bird.js';
 import { resolveTwitterCookies } from '../../cookies/twitter.js';
-import { hasBirdCli, hasXurlCli } from '../../env.js';
+import { hasBirdCli } from '../../env.js';
 import { writeVerbose } from '../../logging.js';
 import { fetchLinkContentWithBirdTip } from './extract.js';
 import { resolveUrlFetchOptions } from './fetch-options.js';
@@ -51,11 +50,10 @@ export function createUrlExtractionSession({
       ? createFirecrawlScraper({ apiKey: firecrawlApiKey, fetchImpl: io.fetch })
       : null;
 
-  const readTweetWithBirdClient =
-    hasXurlCli(io.env) || hasBirdCli(io.env)
-      ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
-          readTweetWithPreferredClient({ env: io.env, timeoutMs, url })
-      : null;
+  const readTweetWithBirdClient = hasBirdCli(io.env)
+    ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
+        readTweetWithPreferredClient({ env: io.env, timeoutMs, url })
+    : null;
 
   const client = createLinkPreviewClient({
     apifyApiToken: model.apiStatus.apifyToken,
@@ -75,14 +73,7 @@ export function createUrlExtractionSession({
     },
     scrapeWithFirecrawl,
     transcriptCache,
-    transcription: {
-      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
-      env: io.envForRun,
-      falApiKey: model.apiStatus.falApiKey,
-      geminiApiKey: model.apiStatus.googleApiKey,
-      groqApiKey: model.apiStatus.groqApiKey,
-      openaiApiKey: model.apiStatus.openaiApiKey,
-    },
+    transcription: null,
     ytDlpPath: model.apiStatus.ytDlpPath,
   });
 
@@ -160,7 +151,9 @@ export function createUrlExtractionSession({
           : false;
       const isTwitter = urlUtils.isTwitterStatusUrl?.(targetUrl) ?? false;
       const isPodcast = urlUtils.isPodcastHost?.(targetUrl) ?? false;
-      if (!preferUrlMode || isTwitter || isPodcast) {throw error;}
+      if (!preferUrlMode || isTwitter || isPodcast) {
+        throw error;
+      }
       writeVerbose(
         io.stderr,
         flags.verbose,
@@ -216,24 +209,7 @@ export function createUrlExtractionSession({
   };
 
   const fetchInitialExtract = async (url: string): Promise<ExtractedLinkContent> => {
-    let extracted = await fetchWithCache(url);
-    if (flags.slides && !resolveSlideSource({ extracted, url })) {
-      const isTwitter = urlUtils.isTwitterStatusUrl?.(url) ?? false;
-      if (isTwitter) {
-        const refreshed = await fetchWithCache(url, { bypassExtractCache: true });
-        if (resolveSlideSource({ extracted: refreshed, url })) {
-          writeVerbose(
-            io.stderr,
-            flags.verbose,
-            'extract refresh for slides',
-            flags.verboseColor,
-            io.envForRun,
-          );
-          extracted = refreshed;
-        }
-      }
-    }
-    return extracted;
+    return fetchWithCache(url);
   };
 
   return { cacheStore, fetchInitialExtract, fetchWithCache };

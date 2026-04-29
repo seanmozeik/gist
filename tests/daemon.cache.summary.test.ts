@@ -66,7 +66,9 @@ describe('daemon summary cache', () => {
     const runOnce = async () => {
       let out = '';
       const sink = {
-        onModelChosen: () => {},
+        onModelChosen: () => {
+          /* empty */
+        },
         writeChunk: (text: string) => {
           out += text;
         },

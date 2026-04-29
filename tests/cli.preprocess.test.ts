@@ -55,8 +55,8 @@ describe('cli preprocess / markitdown integration', () => {
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
     const execFileMock = vi.fn((file, args, _opts, cb) => {
-      void file;
-      void args;
+      undefined;
+      undefined;
       cb(new Error('boom'), '', '');
     });
 
@@ -144,17 +144,14 @@ describe('cli preprocess / markitdown integration', () => {
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%PDF minimal\n%%EOF\n', 'utf8'));
 
     const execFileMock = vi.fn((file, args, _opts, cb) => {
-      void file;
-      void args;
+      undefined;
+      undefined;
       cb(null, '# Converted\n\nShould not run\n', '');
     });
 
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          content: [{ text: 'OK', type: 'text' }],
-          usage: { input_tokens: 1, output_tokens: 1 },
-        }),
+      return Response.json(
+        { content: [{ text: 'OK', type: 'text' }], usage: { input_tokens: 1, output_tokens: 1 } },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -205,17 +202,14 @@ describe('cli preprocess / markitdown integration', () => {
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%PDF minimal\n%%EOF\n', 'utf8'));
 
     const execFileMock = vi.fn((file, args, _opts, cb) => {
-      void file;
-      void args;
+      undefined;
+      undefined;
       cb(null, '# Converted\n\nShould not run\n', '');
     });
 
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          output_text: 'OK',
-          usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 },
-        }),
+      return Response.json(
+        { output_text: 'OK', usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 } },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -305,8 +299,8 @@ describe('cli preprocess / markitdown integration', () => {
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
     const execFileMock = vi.fn((file, args, _opts, cb) => {
-      void file;
-      void args;
+      undefined;
+      undefined;
       cb(null, '# Converted\n\nAlways\n', '');
     });
 

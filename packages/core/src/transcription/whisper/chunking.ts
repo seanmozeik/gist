@@ -79,6 +79,8 @@ export async function transcribeChunkedFile({
 
     return { error: null, notes, provider: usedProvider, text: parts.join('\n\n') };
   } finally {
-    await fs.rm(dir, { force: true, recursive: true }).catch(() => {});
+    await fs.rm(dir, { force: true, recursive: true }).catch(() => {
+      /* empty */
+    });
   }
 }

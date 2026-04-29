@@ -21,8 +21,8 @@ describe('transcription/whisper gemini', () => {
       };
       expect(body.contents?.[0]?.parts?.[1]?.inline_data?.mime_type).toBe('audio/mpeg');
       expect(body.contents?.[0]?.parts?.[1]?.inline_data?.data).toBeTypeOf('string');
-      return new Response(
-        JSON.stringify({ candidates: [{ content: { parts: [{ text: 'gemini transcript' }] } }] }),
+      return Response.json(
+        { candidates: [{ content: { parts: [{ text: 'gemini transcript' }] } }] },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -51,13 +51,13 @@ describe('transcription/whisper gemini', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       if (url.includes('generativelanguage.googleapis.com')) {
-        return new Response(JSON.stringify({ error: { message: 'boom' } }), { status: 500 });
+        return Response.json({ error: { message: 'boom' } }, { status: 500 });
       }
       if (url.includes('/audio/transcriptions')) {
-        return new Response(JSON.stringify({ text: 'openai fallback' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { text: 'openai fallback' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       throw new Error(`Unexpected fetch: ${url}`);
     });
@@ -91,21 +91,21 @@ describe('transcription/whisper gemini', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
       if (url.endsWith('/upload/v1beta/files')) {
-        return new Response(JSON.stringify({}), {
-          headers: { 'x-goog-upload-url': 'https://upload.example/files/123' },
-          status: 200,
-        });
+        return Response.json(
+          {},
+          { headers: { 'x-goog-upload-url': 'https://upload.example/files/123' }, status: 200 },
+        );
       }
       if (url === 'https://upload.example/files/123') {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             file: {
               mimeType: 'audio/mpeg',
               name: 'files/123',
               state: 'ACTIVE',
               uri: 'https://files.example/audio',
             },
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -116,10 +116,8 @@ describe('transcription/whisper gemini', () => {
         expect(body.contents?.[0]?.parts?.[1]?.file_data?.file_uri).toBe(
           'https://files.example/audio',
         );
-        return new Response(
-          JSON.stringify({
-            candidates: [{ content: { parts: [{ text: 'uploaded transcript' }] } }],
-          }),
+        return Response.json(
+          { candidates: [{ content: { parts: [{ text: 'uploaded transcript' }] } }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -150,7 +148,9 @@ describe('transcription/whisper gemini', () => {
         fetchMock.mock.calls.some(([input]) => String(input).includes('/upload/v1beta/files')),
       ).toBe(true);
     } finally {
-      await rm(root, { force: true, recursive: true }).catch(() => {});
+      await rm(root, { force: true, recursive: true }).catch(() => {
+        /* empty */
+      });
     }
   });
 });

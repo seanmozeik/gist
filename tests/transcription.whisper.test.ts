@@ -50,7 +50,9 @@ describe('transcription/whisper', () => {
         }
 
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
@@ -85,7 +87,7 @@ describe('transcription/whisper', () => {
             .then(() => {
               close(0);
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
               queueMicrotask(() => handlers.get('error')?.(error));
               close(1);
             });
@@ -102,7 +104,7 @@ describe('transcription/whisper', () => {
           .then(() => {
             close(0);
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
             queueMicrotask(() => handlers.get('error')?.(error));
             close(1);
           });
@@ -128,9 +130,7 @@ describe('transcription/whisper', () => {
         callback: (error: Error | null, stdout: string, stderr: string) => void,
       ) => {
         const outputPath = args[args.indexOf('-o') + 1];
-        void writeFile(outputPath, responseBody, 'utf8').then(() => {
-          callback(null, String(statusCode), '');
-        });
+        undefined;
         return {} as ChildProcess;
       },
       spawn: () => {
@@ -148,10 +148,10 @@ describe('transcription/whisper', () => {
         throw new TypeError('expected file.name');
       }
       expect(file.name).toBe('audio.ogg');
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -188,10 +188,10 @@ describe('transcription/whisper', () => {
         throw new TypeError('expected file.name');
       }
       expect(file.name).toBe(row.expected);
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -242,10 +242,10 @@ describe('transcription/whisper', () => {
     vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'from file' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'from file' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -269,7 +269,9 @@ describe('transcription/whisper', () => {
       expect(progress).toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
-      await rm(root, { force: true, recursive: true }).catch(() => {});
+      await rm(root, { force: true, recursive: true }).catch(() => {
+        /* empty */
+      });
     }
   });
 
@@ -380,7 +382,7 @@ describe('transcription/whisper', () => {
 
   it('wraps non-Error OpenAI failures', async () => {
     const openaiFetch = vi.fn(async () => {
-      throw 'boom';
+      throw new Error('boom');
     });
 
     try {
@@ -418,10 +420,10 @@ describe('transcription/whisper', () => {
       if (typeof file?.name !== 'string') {
         throw new TypeError('expected file.name');
       }
-      return new Response(JSON.stringify({ text: `T:${file.name}` }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: `T:${file.name}` },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -525,10 +527,10 @@ describe('transcription/whisper', () => {
     await truncate(path, whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
 
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -561,10 +563,10 @@ describe('transcription/whisper', () => {
           status: 400,
         });
       }
-      return new Response(JSON.stringify({ text: 'after transcode' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'after transcode' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -622,7 +624,9 @@ describe('transcription/whisper', () => {
         }
 
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
@@ -665,7 +669,9 @@ describe('transcription/whisper', () => {
         }),
       ).rejects.toThrow(/ffmpeg failed/i);
     } finally {
-      await rm(root, { force: true, recursive: true }).catch(() => {});
+      await rm(root, { force: true, recursive: true }).catch(() => {
+        /* empty */
+      });
     }
   });
 
@@ -692,7 +698,9 @@ describe('transcription/whisper', () => {
             throw new Error(`Unexpected spawn: ${_cmd}`);
           }
           const stderr = new EventEmitter();
-          stderr.setEncoding = () => {};
+          stderr.setEncoding = () => {
+            /* empty */
+          };
 
           const handlers = new Map<string, (value?: unknown) => void>();
           const proc = {
@@ -747,10 +755,10 @@ describe('transcription/whisper', () => {
         throw new TypeError('expected file.size');
       }
       expect(file.size).toBe(whisper.MAX_OPENAI_UPLOAD_BYTES);
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
     const big = new Uint8Array(whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
 
@@ -825,12 +833,15 @@ describe('transcription/whisper', () => {
 
   it('times out FAL subscriptions', async () => {
     vi.useFakeTimers();
-    falMocks.createFalClient
-      .mockReset()
-      .mockReturnValue({
-        storage: { upload: vi.fn(async () => 'https://fal.example/audio') },
-        subscribe: vi.fn(async () => new Promise(() => {})),
-      });
+    falMocks.createFalClient.mockReset().mockReturnValue({
+      storage: { upload: vi.fn(async () => 'https://fal.example/audio') },
+      subscribe: vi.fn(
+        async () =>
+          new Promise(() => {
+            /* empty */
+          }),
+      ),
+    });
 
     const { transcribeMediaWithWhisper } =
       await import('../packages/core/src/transcription/whisper.js');
@@ -858,10 +869,10 @@ describe('transcription/whisper', () => {
       expect(url).toContain('groq.com');
       const form = init?.body as FormData;
       expect(form.get('model')).toBe('whisper-large-v3-turbo');
-      return new Response(JSON.stringify({ text: 'groq result' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'groq result' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -888,7 +899,7 @@ describe('transcription/whisper', () => {
   it('falls back to OpenAI when Groq fails', async () => {
     let callCount = 0;
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      callCount++;
+      callCount += 1;
       const url = typeof input === 'string' ? input : input.toString();
       if (url.includes('groq.com')) {
         return new Response('rate limit exceeded', {
@@ -896,10 +907,10 @@ describe('transcription/whisper', () => {
           status: 429,
         });
       }
-      return new Response(JSON.stringify({ text: 'openai fallback' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'openai fallback' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -961,10 +972,10 @@ describe('transcription/whisper', () => {
 
   it('returns null from Groq when payload has no text field', async () => {
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ foo: 'bar' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { foo: 'bar' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1029,10 +1040,10 @@ describe('transcription/whisper', () => {
           status: 400,
         });
       }
-      return new Response(JSON.stringify({ text: 'after transcode' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'after transcode' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1058,10 +1069,10 @@ describe('transcription/whisper', () => {
 
   it('Groq returns null for empty trimmed text', async () => {
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: '   ' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: '   ' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1090,10 +1101,10 @@ describe('transcription/whisper', () => {
       if (url.includes('groq.com')) {
         return new Response(longBody, { headers: { 'content-type': 'text/plain' }, status: 500 });
       }
-      return new Response(JSON.stringify({ text: 'openai ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'openai ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1123,10 +1134,10 @@ describe('transcription/whisper', () => {
       if (url.includes('groq.com')) {
         return new Response('', { headers: { 'content-type': 'text/plain' }, status: 500 });
       }
-      return new Response(JSON.stringify({ text: 'openai ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'openai ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1165,10 +1176,10 @@ describe('transcription/whisper', () => {
       const file = form.get('file') as unknown as { name?: unknown };
       expect(typeof file?.name).toBe('string');
       expect((file?.name as string).startsWith('media')).toBe(true);
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1209,10 +1220,10 @@ describe('transcription/whisper', () => {
       }
       if (url.includes('openai.com')) {
         openaiCalls += 1;
-        return new Response(JSON.stringify({ text: 'openai fallback' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { text: 'openai fallback' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       throw new Error(`Unexpected fetch URL: ${url}`);
     });
@@ -1290,10 +1301,10 @@ describe('transcription/whisper', () => {
       if (typeof file?.name !== 'string') {
         throw new TypeError('expected file.name');
       }
-      return new Response(JSON.stringify({ text: `G:${file.name}` }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: `G:${file.name}` },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -1341,10 +1352,10 @@ describe('transcription/whisper', () => {
           throw new TypeError('expected file.name');
         }
         expect(file.name).toBe(c.expected);
-        return new Response(JSON.stringify({ text: 'ok' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { text: 'ok' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       });
 
       try {

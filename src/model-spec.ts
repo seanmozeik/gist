@@ -6,7 +6,6 @@ import {
   DEFAULT_CLI_MODELS,
   type RequiredModelEnv,
   requiredEnvForCliProvider,
-  resolveRequiredEnvForModelId,
 } from './llm/provider-capabilities.js';
 
 export type FixedModelSpec =
@@ -17,14 +16,7 @@ export type FixedModelSpec =
       provider: LlmProvider;
       openrouterProviders: string[] | null;
       forceOpenRouter: false;
-      requiredEnv:
-        | 'XAI_API_KEY'
-        | 'OPENAI_API_KEY'
-        | 'GEMINI_API_KEY'
-        | 'ANTHROPIC_API_KEY'
-        | 'Z_AI_API_KEY'
-        | 'NVIDIA_API_KEY'
-        | 'GITHUB_TOKEN';
+      requiredEnv: 'OPENROUTER_API_KEY';
       openaiBaseUrlOverride?: string | null;
       forceChatCompletions?: boolean;
       requestOptions?: ModelRequestOptions;
@@ -45,13 +37,7 @@ export type FixedModelSpec =
       llmModelId: null;
       openrouterProviders: null;
       forceOpenRouter: false;
-      requiredEnv:
-        | 'CLI_CLAUDE'
-        | 'CLI_CODEX'
-        | 'CLI_GEMINI'
-        | 'CLI_AGENT'
-        | 'CLI_OPENCLAW'
-        | 'CLI_OPENCODE';
+      requiredEnv: 'CLI_CLAUDE' | 'CLI_CODEX' | 'CLI_GEMINI' | 'CLI_AGENT';
       cliProvider: CliProvider;
       cliModel: string | null;
     };
@@ -102,25 +88,6 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     };
   }
 
-  if (lower.startsWith('zai/')) {
-    const model = trimmed.slice('zai/'.length).trim();
-    if (model.length === 0) {
-      throw new Error('Invalid model id: zai/… is missing the model id');
-    }
-    return {
-      forceChatCompletions: true,
-      forceOpenRouter: false,
-      kind: 'fixed',
-      llmModelId: `zai/${model}`,
-      openaiBaseUrlOverride: 'https://api.z.ai/api/paas/v4',
-      openrouterProviders: null,
-      provider: 'zai',
-      requiredEnv: 'Z_AI_API_KEY',
-      transport: 'native',
-      userModelId: `zai/${model}`,
-    };
-  }
-
   if (lower.startsWith('nvidia/')) {
     const model = trimmed.slice('nvidia/'.length).trim();
     if (model.length === 0) {
@@ -131,33 +98,12 @@ export function parseRequestedModelId(raw: string): RequestedModel {
       transport: 'native',
       userModelId: `nvidia/${model}`,
       llmModelId: `nvidia/${model}`,
-      provider: 'nvidia',
+      provider: 'local',
       openrouterProviders: null,
       forceOpenRouter: false,
-      requiredEnv: 'NVIDIA_API_KEY',
-      // Default; can be overridden at runtime via NVIDIA_BASE_URL / config.nvidia.baseUrl.
-      openaiBaseUrlOverride: 'https://integrate.api.nvidia.com/v1',
+      requiredEnv: 'OPENROUTER_API_KEY',
+      openaiBaseUrlOverride: null,
       forceChatCompletions: true,
-    };
-  }
-
-  if (lower.startsWith('github-copilot/')) {
-    const model = trimmed.slice('github-copilot/'.length).trim();
-    if (model.length === 0) {
-      throw new Error('Invalid model id: github-copilot/… is missing the model id');
-    }
-    const userModelId = normalizeGatewayStyleModelId(`github-copilot/${model}`);
-    return {
-      forceChatCompletions: true,
-      forceOpenRouter: false,
-      kind: 'fixed',
-      llmModelId: userModelId,
-      openaiBaseUrlOverride: 'https://models.github.ai/inference',
-      openrouterProviders: null,
-      provider: 'github-copilot',
-      requiredEnv: 'GITHUB_TOKEN',
-      transport: 'native',
-      userModelId,
     };
   }
 
@@ -171,9 +117,7 @@ export function parseRequestedModelId(raw: string): RequestedModel {
       providerRaw !== 'claude' &&
       providerRaw !== 'codex' &&
       providerRaw !== 'gemini' &&
-      providerRaw !== 'agent' &&
-      providerRaw !== 'openclaw' &&
-      providerRaw !== 'opencode'
+      providerRaw !== 'agent'
     ) {
       throw new Error(`Invalid CLI model id "${trimmed}". Expected cli/<provider>/<model>.`);
     }
@@ -182,7 +126,7 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     const cliModel = requestedModel.length > 0 ? requestedModel : DEFAULT_CLI_MODELS[cliProvider];
     const requiredEnv = requiredEnvForCliProvider(cliProvider) as Extract<
       RequiredModelEnv,
-      'CLI_CLAUDE' | 'CLI_CODEX' | 'CLI_GEMINI' | 'CLI_AGENT' | 'CLI_OPENCLAW' | 'CLI_OPENCODE'
+      'CLI_CLAUDE' | 'CLI_CODEX' | 'CLI_GEMINI' | 'CLI_AGENT'
     >;
     const userModelId = cliModel ? `cli/${cliProvider}/${cliModel}` : `cli/${cliProvider}`;
     return {
@@ -198,21 +142,6 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     };
   }
 
-  if (lower.startsWith('openclaw/')) {
-    const model = trimmed.slice('openclaw/'.length).trim() || 'main';
-    return {
-      cliModel: model,
-      cliProvider: 'openclaw',
-      forceOpenRouter: false,
-      kind: 'fixed',
-      llmModelId: null,
-      openrouterProviders: null,
-      requiredEnv: 'CLI_OPENCLAW',
-      transport: 'cli',
-      userModelId: `openclaw/${model}`,
-    };
-  }
-
   if (!trimmed.includes('/')) {
     const fastOpenAi = resolveOpenAiFastModelId(trimmed);
     if (fastOpenAi) {
@@ -221,32 +150,22 @@ export function parseRequestedModelId(raw: string): RequestedModel {
         kind: 'fixed',
         llmModelId: `openai/${fastOpenAi.modelId}`,
         openrouterProviders: null,
-        provider: 'openai',
+        provider: 'local',
         requestOptions: fastOpenAi.options,
-        requiredEnv: 'OPENAI_API_KEY',
+        requiredEnv: 'OPENROUTER_API_KEY',
         transport: 'native',
         userModelId: trimmed,
       };
     }
     throw new Error(
-      `Unknown model "${trimmed}". Expected "auto" or a provider-prefixed id like openai/..., google/..., anthropic/..., xai/..., zai/..., openrouter/... or cli/....`,
+      `Unknown model "${trimmed}". Expected "auto" or a provider-prefixed id like openrouter/... or cli/....`,
     );
   }
 
   const userModelId = normalizeGatewayStyleModelId(trimmed);
   const parsed = parseGatewayStyleModelId(userModelId);
-  const fastOpenAi = parsed.provider === 'openai' ? resolveOpenAiFastModelId(parsed.model) : null;
-  const llmModelId = fastOpenAi ? `openai/${fastOpenAi.modelId}` : userModelId;
-  const requiredEnv = resolveRequiredEnvForModelId(userModelId) as Extract<
-    RequiredModelEnv,
-    | 'XAI_API_KEY'
-    | 'OPENAI_API_KEY'
-    | 'GEMINI_API_KEY'
-    | 'ANTHROPIC_API_KEY'
-    | 'Z_AI_API_KEY'
-    | 'NVIDIA_API_KEY'
-    | 'GITHUB_TOKEN'
-  >;
+  const llmModelId = userModelId;
+  const requiredEnv = 'OPENROUTER_API_KEY' as const;
   return {
     forceOpenRouter: false,
     kind: 'fixed',
@@ -256,6 +175,5 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     requiredEnv,
     transport: 'native',
     userModelId,
-    ...(fastOpenAi ? { requestOptions: fastOpenAi.options } : {}),
   };
 }

@@ -278,7 +278,9 @@ export async function transcribeMediaUrl({
     }
     return { error: transcript.error, provider: transcript.provider, text: transcript.text };
   } finally {
-    await fs.unlink(tmpFile).catch(() => {});
+    await fs.unlink(tmpFile).catch(() => {
+      /* empty */
+    });
   }
 }
 
@@ -350,7 +352,9 @@ export async function downloadCappedBytes(
       }
     }
   } finally {
-    await reader.cancel().catch(() => {});
+    await reader.cancel().catch(() => {
+      /* empty */
+    });
   }
   options?.onProgress?.(total);
 
@@ -407,10 +411,14 @@ export async function downloadToFile(
       }
       options?.onProgress?.(downloadedBytes);
     } finally {
-      await reader.cancel().catch(() => {});
+      await reader.cancel().catch(() => {
+        /* empty */
+      });
     }
   } finally {
-    await handle.close().catch(() => {});
+    await handle.close().catch(() => {
+      /* empty */
+    });
   }
   return downloadedBytes;
 }

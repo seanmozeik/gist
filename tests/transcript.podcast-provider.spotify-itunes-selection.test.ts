@@ -31,21 +31,21 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response(embedHtml, { headers: { 'content-type': 'text/html' }, status: 200 });
       }
       if (url.startsWith('https://itunes.apple.com/search')) {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             resultCount: 2,
             results: [
               { collectionName: 'Cafe Unicode Something', feedUrl: feedUrl1 },
               { collectionName: 'Cafe Unicode', feedUrl: feedUrl2 },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -71,10 +71,10 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -110,15 +110,15 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response(embedHtml, { headers: { 'content-type': 'text/html' }, status: 200 });
       }
       if (url.startsWith('https://itunes.apple.com/search')) {
-        return new Response(
-          JSON.stringify({ resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] }),
+        return Response.json(
+          { resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -144,10 +144,10 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -180,7 +180,7 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === 'https://open.spotify.com/embed/episode/abc') {
@@ -188,8 +188,8 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
       }
       if (url.startsWith('https://itunes.apple.com/search')) {
         if (url.includes('entity=podcastEpisode')) {
-          return new Response(
-            JSON.stringify({
+          return Response.json(
+            {
               resultCount: 1,
               results: [
                 {
@@ -199,12 +199,12 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
                   trackTimeMillis: 90_000,
                 },
               ],
-            }),
+            },
             { headers: { 'content-type': 'application/json' }, status: 200 },
           );
         }
-        return new Response(
-          JSON.stringify({ resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] }),
+        return Response.json(
+          { resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -230,10 +230,10 @@ describe('podcast transcript provider - Spotify iTunes feed resolution', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {

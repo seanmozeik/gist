@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 
 import { describe, expect, it } from 'vitest';
 
@@ -14,7 +13,16 @@ const makeStub = (handler: (args: string[]) => { stdout?: string; stderr?: strin
     if (cb) {
       cb(null, stdout, stderr);
     }
-    return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+    return {
+      stdin: {
+        end: () => {
+          /* empty */
+        },
+        write: () => {
+          /* empty */
+        },
+      },
+    } as unknown as ReturnType<ExecFileFn>;
   }) as ExecFileFn;
   return execFileStub;
 };
@@ -92,7 +100,16 @@ describe('runCliModel', () => {
     const execFileImpl: ExecFileFn = ((_cmd, _args, options, cb) => {
       seenEnv = (options as { env?: Record<string, unknown> } | null)?.env ?? null;
       cb?.(null, JSON.stringify({ response: 'ok' }), '');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     await runCliModel({
@@ -235,7 +252,9 @@ describe('runCliModel', () => {
       );
       return {
         stdin: {
-          end: () => {},
+          end: () => {
+            /* empty */
+          },
           write: (chunk: string | Buffer) => {
             stdinText += String(chunk);
           },
@@ -275,7 +294,16 @@ describe('runCliModel', () => {
         JSON.stringify({ part: { text: 'ok from config model', type: 'text' }, type: 'text' }),
         '',
       );
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     const result = await runCliModel({
@@ -304,7 +332,9 @@ describe('runCliModel', () => {
       cb?.(null, JSON.stringify({ part: { text: 'ok', type: 'text' }, type: 'text' }), '');
       return {
         stdin: {
-          end: () => {},
+          end: () => {
+            /* empty */
+          },
           write: (chunk: string | Buffer) => {
             stdinText += String(chunk);
           },
@@ -385,13 +415,28 @@ describe('runCliModel', () => {
       const outputPath = outputIndex === -1 ? null : args[outputIndex + 1];
       if (!outputPath) {
         cb?.(new Error('missing output path'), '', '');
-        return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+        return {
+          stdin: {
+            end: () => {
+              /* empty */
+            },
+            write: () => {
+              /* empty */
+            },
+          },
+        } as unknown as ReturnType<ExecFileFn>;
       }
-      void fs.writeFile(outputPath, 'ok', 'utf8').then(
-        () => cb?.(null, '', ''),
-        (error) => cb?.(error as Error, '', ''),
-      );
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      undefined;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     const result = await runCliModel({
@@ -415,13 +460,28 @@ describe('runCliModel', () => {
       const outputPath = outputIndex === -1 ? null : args[outputIndex + 1];
       if (!outputPath) {
         cb?.(new Error('missing output path'), '', '');
-        return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+        return {
+          stdin: {
+            end: () => {
+              /* empty */
+            },
+            write: () => {
+              /* empty */
+            },
+          },
+        } as unknown as ReturnType<ExecFileFn>;
       }
-      void fs.writeFile(outputPath, 'ok', 'utf8').then(
-        () => cb?.(null, '', ''),
-        (error) => cb?.(error as Error, '', ''),
-      );
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      undefined;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     const result = await runCliModel({
@@ -550,7 +610,16 @@ describe('runCliModel', () => {
   it('surfaces exec errors with stderr', async () => {
     const execFileImpl: ExecFileFn = ((_cmd, _args, _options, cb) => {
       cb?.(new Error('boom'), '', 'nope');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     await expect(

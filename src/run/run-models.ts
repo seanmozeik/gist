@@ -18,9 +18,7 @@ function resolveConfiguredCliModel(
           ? cli?.gemini?.model
           : provider === 'agent'
             ? cli?.agent?.model
-            : provider === 'openclaw'
-              ? cli?.openclaw?.model
-              : cli?.opencode?.model;
+            : null;
   return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : null;
 }
 
@@ -150,9 +148,9 @@ export function resolveModelSelection({
   const selectedModelConfig =
     isNamedModelSelection && namedModelConfig
       ? namedModelConfig
-      : (requestedModelSource === 'config'
+      : requestedModelSource === 'config'
         ? (config?.model ?? null)
-        : null);
+        : null;
 
   const configForModelSelection =
     isNamedModelSelection && namedModelConfig
@@ -191,9 +189,9 @@ export function resolveModelSelection({
 
   const requestedModelLabel = isNamedModelSelection
     ? requestedModelInput
-    : (requestedModelResolved.kind === 'auto'
+    : requestedModelResolved.kind === 'auto'
       ? 'auto'
-      : requestedModelResolved.userModelId);
+      : requestedModelResolved.userModelId;
 
   const isFallbackModel = requestedModelResolved.kind === 'auto';
   const isImplicitAutoSelection =

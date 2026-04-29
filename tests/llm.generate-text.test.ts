@@ -241,11 +241,8 @@ describe('llm generate/stream', () => {
     mocks.completeSimple.mockClear();
 
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          content: [{ text: 'ok', type: 'text' }],
-          usage: { input_tokens: 3, output_tokens: 4 },
-        }),
+      return Response.json(
+        { content: [{ text: 'ok', type: 'text' }], usage: { input_tokens: 3, output_tokens: 4 } },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -286,11 +283,8 @@ describe('llm generate/stream', () => {
     process.env.OPENAI_BASE_URL = '';
 
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          output_text: 'ok',
-          usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 },
-        }),
+      return Response.json(
+        { output_text: 'ok', usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 } },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -329,11 +323,11 @@ describe('llm generate/stream', () => {
     mocks.completeSimple.mockClear();
 
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           candidates: [{ content: { parts: [{ text: 'ok' }] } }],
           usageMetadata: { candidatesTokenCount: 2, promptTokenCount: 1, totalTokenCount: 3 },
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -490,16 +484,16 @@ describe('llm generate/stream', () => {
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { max_output_tokens?: number };
         expect(body.max_output_tokens).toBe(200);
-        return new Response(JSON.stringify({ output: [{ content: [{ text: '   ' }] }] }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { output: [{ content: [{ text: '   ' }] }] },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       })
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { max_output_tokens?: number };
         expect(body).not.toHaveProperty('max_output_tokens');
-        return new Response(
-          JSON.stringify({ output: [{ content: [{ text: 'ok without cap' }] }] }),
+        return Response.json(
+          { output: [{ content: [{ text: 'ok without cap' }] }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -530,16 +524,16 @@ describe('llm generate/stream', () => {
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { max_tokens?: number };
         expect(body.max_tokens).toBe(200);
-        return new Response(JSON.stringify({ choices: [{ message: { content: null } }] }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { choices: [{ message: { content: null } }] },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       })
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { max_tokens?: number };
         expect(body).not.toHaveProperty('max_tokens');
-        return new Response(
-          JSON.stringify({ choices: [{ message: { content: 'ok from openrouter without cap' } }] }),
+        return Response.json(
+          { choices: [{ message: { content: 'ok from openrouter without cap' } }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -660,10 +654,7 @@ describe('llm generate/stream', () => {
             candidates: [{ content: { parts: [{ text: 'ok from document fallback' }] } }],
             usageMetadata: { candidatesTokenCount: 2, promptTokenCount: 1, totalTokenCount: 3 },
           };
-      return new Response(JSON.stringify(body), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(body, { headers: { 'content-type': 'application/json' }, status: 200 });
     });
 
     const pdfBytes = buildMinimalPdf('Hello PDF');
@@ -872,7 +863,7 @@ describe('llm generate/stream', () => {
         };
         expect(body.model).toBe('openai/gpt-5.4');
         expect(body.messages.at(-1)).toEqual({ content: 'hi', role: 'user' });
-        return new Response(JSON.stringify({ error: 'server error' }), { status: 500 });
+        return Response.json({ error: 'server error' }, { status: 500 });
       })
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as {
@@ -881,11 +872,11 @@ describe('llm generate/stream', () => {
         };
         expect(body.model).toBe('openai/gpt-5-chat');
         expect(body.messages.at(-1)).toEqual({ content: 'hi', role: 'user' });
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             choices: [{ message: { content: 'ok from github models', role: 'assistant' } }],
             usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -920,11 +911,11 @@ describe('llm generate/stream', () => {
       const body = JSON.parse(String(init?.body)) as { model: string; temperature?: number };
       expect(body.model).toBe('openai/gpt-5');
       expect(body).not.toHaveProperty('temperature');
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           choices: [{ message: { content: 'ok from gpt-5', role: 'assistant' } }],
           usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -1095,7 +1086,9 @@ describe('llm generate/stream', () => {
   it('times out when a stream stalls before yielding', async () => {
     mocks.streamSimple.mockImplementationOnce(() => ({
       async *[Symbol.asyncIterator]() {
-        await new Promise(() => {});
+        await new Promise(() => {
+          /* empty */
+        });
       },
       result: async () => makeAssistantMessage({ text: 'ok' }),
     }));
@@ -1126,7 +1119,9 @@ describe('llm generate/stream', () => {
         yield { message: finalMessage, reason: 'stop' as const, type: 'done' as const };
       },
       async result() {
-        await new Promise(() => {});
+        await new Promise(() => {
+          /* empty */
+        });
       },
     }));
 

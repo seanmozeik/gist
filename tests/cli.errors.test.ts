@@ -11,8 +11,8 @@ import { runCli } from '../src/run.js';
 const noopStream = () =>
   new Writable({
     write(chunk, encoding, callback) {
-      void chunk;
-      void encoding;
+      undefined;
+      undefined;
       callback();
     },
   });

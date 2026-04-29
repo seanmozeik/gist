@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { createMediaCache } from '../src/media-cache.js';
 
 const makeTempDir = async (prefix: string) => {
-  return  mkdtemp(join(tmpdir(), prefix));
+  return mkdtemp(join(tmpdir(), prefix));
 };
 
 describe('media cache', () => {

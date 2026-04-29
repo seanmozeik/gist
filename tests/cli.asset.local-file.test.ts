@@ -43,8 +43,8 @@ vi.mock('@mariozechner/pi-ai', () => ({
 }));
 
 const execFileMock: ExecFileFn = ((file, args, _options, callback) => {
-  void file;
-  void args;
+  undefined;
+  undefined;
   callback(null, '# converted\n\nhello\n', '');
   return { pid: 123 } as unknown as ChildProcess;
 }) as ExecFileFn;
@@ -82,7 +82,7 @@ describe('cli asset inputs (local file)', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('https://api.openai.com/v1/responses')) {
         const body = JSON.parse(String(init?.body ?? '{}')) as {
           input?: { content?: { type?: string; file_data?: string }[] }[];
@@ -90,10 +90,10 @@ describe('cli asset inputs (local file)', () => {
         const fileBlock = body.input?.[0]?.content?.[0];
         expect(fileBlock?.type).toBe('input_file');
         expect(fileBlock?.file_data).toMatch(/^data:application\/pdf;base64,/);
-        return new Response(JSON.stringify({ output_text: 'OK' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { output_text: 'OK' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       throw new Error(`unexpected fetch: ${url}`);
     });
@@ -336,7 +336,7 @@ describe('cli asset inputs (local file)', () => {
     const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-zip-'));
     const zipPath = join(root, 'JetBrainsMono-2.304.zip');
     // ZIP local file header: PK\x03\x04
-    writeFileSync(zipPath, Buffer.from([0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]));
+    writeFileSync(zipPath, Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]));
 
     const run = () =>
       runCli(['--model', 'google/gemini-3-flash-preview', '--timeout', '2s', zipPath], {

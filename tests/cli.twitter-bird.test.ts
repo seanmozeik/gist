@@ -71,7 +71,9 @@ vi.mock('ora', () => {
   const ora = (opts: { text: string; stream: NodeJS.WritableStream }) => {
     let currentText = opts.text;
     const spinner = {
-      clear() {},
+      clear() {
+        /* empty */
+      },
       isSpinning: true,
       start() {
         opts.stream.write(`- ${spinner.text}`);

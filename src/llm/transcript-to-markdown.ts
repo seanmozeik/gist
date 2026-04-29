@@ -55,7 +55,6 @@ export function createTranscriptToMarkdownConverter({
   modelId,
   forceOpenRouter,
   openaiBaseUrlOverride,
-
   openrouterApiKey,
   fetchImpl,
   forceChatCompletions,
@@ -66,15 +65,8 @@ export function createTranscriptToMarkdownConverter({
 }: {
   modelId: string;
   forceOpenRouter?: boolean;
-  xaiApiKey: string | null;
-  googleApiKey: string | null;
-  openaiApiKey: string | null;
   openaiBaseUrlOverride?: string | null;
-  anthropicBaseUrlOverride?: string | null;
-  googleBaseUrlOverride?: string | null;
-  xaiBaseUrlOverride?: string | null;
   fetchImpl: typeof fetch;
-  anthropicApiKey: string | null;
   openrouterApiKey: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;

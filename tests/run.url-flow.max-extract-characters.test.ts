@@ -17,7 +17,7 @@ describe('runUrlFlow', () => {
 
     const fetchImpl: typeof fetch = async (input) => {
       const requestUrl =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (requestUrl !== url) {
         throw new Error(`unexpected fetch: ${requestUrl}`);
       }
@@ -45,7 +45,11 @@ describe('runUrlFlow', () => {
       modelOverride: 'openai/gpt-5.2',
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     ctx.flags.extractMode = true;
@@ -64,7 +68,7 @@ describe('runUrlFlow', () => {
 
     const fetchImpl: typeof fetch = async (input) => {
       const requestUrl =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (requestUrl !== url) {
         throw new Error(`unexpected fetch: ${requestUrl}`);
       }
@@ -93,7 +97,11 @@ describe('runUrlFlow', () => {
       modelOverride: 'openai/gpt-5.2',
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     await runUrlFlow({ ctx, isYoutubeUrl: false, url });

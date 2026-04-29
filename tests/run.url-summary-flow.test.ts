@@ -43,7 +43,7 @@ const extracted: ExtractedLinkContent = {
   transcriptLines: 2,
   transcriptMetadata: null,
   transcriptSegments: [
-    { endMs: 4_000, startMs: 0, text: 'hello' },
+    { endMs: 4000, startMs: 0, text: 'hello' },
     { endMs: 775_000, startMs: 772_000, text: 'final line' },
   ],
   transcriptSource: 'captionTracks',
@@ -68,8 +68,12 @@ describe('summarizeExtractedUrl timestamp guard', () => {
 
     let allowStreamingSeen: boolean | null = null;
     const cacheStore: CacheStore = {
-      clear: () => {},
-      close: () => {},
+      clear: () => {
+        /* empty */
+      },
+      close: () => {
+        /* empty */
+      },
       getJson: () => null,
       getText: () => null,
       setJson: (_kind, _key, value) => {
@@ -78,7 +82,12 @@ describe('summarizeExtractedUrl timestamp guard', () => {
       setText: (_kind, _key, value) => {
         writes.text.push(value);
       },
-      transcriptCache: { get: () => null, set: () => {} },
+      transcriptCache: {
+        get: () => null,
+        set: () => {
+          /* empty */
+        },
+      },
     };
 
     const ctx: UrlFlowContext = {
@@ -121,8 +130,12 @@ describe('summarizeExtractedUrl timestamp guard', () => {
       },
       hooks: {
         buildReport: async () => ({ calls: 0, durationMs: 0, tokens: 0 }),
-        clearProgressForStdout: () => {},
-        clearProgressIfCurrent: () => {},
+        clearProgressForStdout: () => {
+          /* empty */
+        },
+        clearProgressIfCurrent: () => {
+          /* empty */
+        },
         estimateCostUsd: async () => null,
         onExtracted: null,
         onLinkPreviewProgress: null,
@@ -132,10 +145,18 @@ describe('summarizeExtractedUrl timestamp guard', () => {
         onSlidesProgress: null,
         onSummaryCached: null,
         restoreProgressAfterStdout: null,
-        setClearProgressBeforeStdout: () => {},
-        setTranscriptionCost: () => {},
-        summarizeAsset: async () => {},
-        writeViaFooter: () => {},
+        setClearProgressBeforeStdout: () => {
+          /* empty */
+        },
+        setTranscriptionCost: () => {
+          /* empty */
+        },
+        summarizeAsset: async () => {
+          /* empty */
+        },
+        writeViaFooter: () => {
+          /* empty */
+        },
       },
       io: {
         env: {},

@@ -38,7 +38,7 @@ describe('podcast transcript provider - spotify audio url selection branches', (
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response(embedHtml, { headers: { 'content-type': 'text/html' }, status: 200 });
@@ -59,10 +59,10 @@ describe('podcast transcript provider - spotify audio url selection branches', (
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: longTranscript }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: longTranscript },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {

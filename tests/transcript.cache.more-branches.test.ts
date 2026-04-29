@@ -39,7 +39,9 @@ describe('transcript cache - more branches', () => {
         metadata: { a: 1 },
         source: 'youtubei',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const bypass = await readTranscriptCache({
@@ -104,7 +106,9 @@ describe('transcript cache - more branches', () => {
         metadata: { episode: 12 },
         source: 'podcastTranscript',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const hit = await readTranscriptCache({
@@ -124,7 +128,12 @@ describe('transcript cache - more branches', () => {
   });
 
   it('writes cache entries with correct TTL + resolved source', async () => {
-    const cache: TranscriptCache = { get: vi.fn(async () => null), set: vi.fn(async () => {}) };
+    const cache: TranscriptCache = {
+      get: vi.fn(async () => null),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
+    };
 
     await writeTranscriptCache({
       resourceKey: null,

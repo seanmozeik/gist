@@ -10,8 +10,8 @@ import { runCli } from '../src/run.js';
 const noopStream = () =>
   new Writable({
     write(chunk, encoding, callback) {
-      void chunk;
-      void encoding;
+      undefined;
+      undefined;
       callback();
     },
   });
@@ -26,7 +26,7 @@ const collectStream = () => {
     getText: () => text,
     stream: new Writable({
       write(chunk, encoding, callback) {
-        void encoding;
+        undefined;
         text += chunk.toString();
         callback();
       },

@@ -47,13 +47,13 @@ describe('cli empty summary handling', () => {
 
     const stdout = new Writable({
       write(chunk, _encoding, callback) {
-        void chunk;
+        undefined;
         callback();
       },
     });
     const stderr = new Writable({
       write(chunk, _encoding, callback) {
-        void chunk;
+        undefined;
         callback();
       },
     });

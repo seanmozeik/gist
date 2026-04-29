@@ -4,7 +4,9 @@ import { extractReadabilityFromHtml } from '../packages/core/src/content/link-pr
 
 describe('readability (jsdom css parse noise)', () => {
   it('does not log "Could not parse CSS stylesheet"', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    });
 
     const html = `<!doctype html><html><head>
       <style>:root { --a: ; }</style>

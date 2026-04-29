@@ -108,7 +108,9 @@ describe('daemon redirect e2e', () => {
           }
           return;
         }
-        if (event.event !== 'chunk') {return;}
+        if (event.event !== 'chunk') {
+          return;
+        }
         pendingChunks.set(sessionId, event.data.text);
         if (activeSessionId && sessionId === activeSessionId) {
           clearTimeout(timeoutId);

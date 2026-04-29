@@ -79,9 +79,9 @@ describe('refresh-free', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://openrouter.ai/api/v1/models') {
-        return new Response(JSON.stringify(buildModelsPayload(['a/model:free', 'b/model:free'])), {
+        return Response.json(buildModelsPayload(['a/model:free', 'b/model:free']), {
           headers: { 'content-type': 'application/json' },
           status: 200,
         });
@@ -116,7 +116,7 @@ describe('refresh-free', () => {
     const { stream: stderr } = createCaptureStream();
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:paid'])), {
+      return Response.json(buildModelsPayload(['a/model:paid']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -156,7 +156,7 @@ describe('refresh-free', () => {
     const { stream: stderr } = createCaptureStream();
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -196,15 +196,15 @@ describe('refresh-free', () => {
     const tooOldSec = nowSec - 400 * 24 * 60 * 60;
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           data: [
             { created: nowSec, id: 'a/model-70b:free', name: 'A 70B' },
             { created: nowSec, id: 'b/model-1b:free', name: 'B 1B' },
             { created: tooOldSec, id: 'c/model-70b:free', name: 'C 70B old' },
             { id: 'd/model-70b:free', name: 'D 70B missing created' },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -230,10 +230,10 @@ describe('refresh-free', () => {
     const { stream: stderr, read: readStderr } = createCaptureStream();
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(
-        JSON.stringify(buildModelsPayload(['a/model:free', 'b/model:free', 'c/model:free'])),
-        { headers: { 'content-type': 'application/json' }, status: 200 },
-      );
+      return Response.json(buildModelsPayload(['a/model:free', 'b/model:free', 'c/model:free']), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
     });
 
     llmMocks.generateTextWithModelId
@@ -274,7 +274,7 @@ describe('refresh-free', () => {
     (stderr as unknown as { isTTY?: boolean }).isTTY = true;
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -296,7 +296,7 @@ describe('refresh-free', () => {
     const { stream: stderr } = createCaptureStream();
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free', 'b/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free', 'b/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -335,7 +335,7 @@ describe('refresh-free', () => {
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -363,7 +363,7 @@ describe('refresh-free', () => {
       const { stream: stderr, read: readStderr } = createCaptureStream();
 
       const fetchImpl = vi.fn(async () => {
-        return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+        return Response.json(buildModelsPayload(['a/model:free']), {
           headers: { 'content-type': 'application/json' },
           status: 200,
         });
@@ -408,7 +408,7 @@ describe('refresh-free', () => {
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -435,7 +435,7 @@ describe('refresh-free', () => {
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
     const fetchImpl = vi.fn(async () => {
-      return new Response(JSON.stringify(buildModelsPayload(['a/model:free', 'b/model:free'])), {
+      return Response.json(buildModelsPayload(['a/model:free', 'b/model:free']), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -463,7 +463,7 @@ describe('refresh-free', () => {
       const { stream: stderr, read: readStderr } = createCaptureStream();
 
       const fetchImpl = vi.fn(async () => {
-        return new Response(JSON.stringify(buildModelsPayload(['a/model:free'])), {
+        return Response.json(buildModelsPayload(['a/model:free']), {
           headers: { 'content-type': 'application/json' },
           status: 200,
         });
@@ -504,10 +504,8 @@ describe('refresh-free', () => {
     const { stream: stderr } = createCaptureStream();
 
     const fetchImpl = vi.fn(async () => {
-      return new Response(
-        JSON.stringify(
-          buildModelsPayload(['x/model-e2b:free', 'y/model-1.5b:free', 'z/model-3b:free']),
-        ),
+      return Response.json(
+        buildModelsPayload(['x/model-e2b:free', 'y/model-1.5b:free', 'z/model-3b:free']),
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });

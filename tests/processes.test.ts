@@ -18,11 +18,19 @@ const createObserver = (capture: {
     capture.registrations.push(info);
     return {
       appendOutput: (stream, line) => capture.outputs.push({ line, stream }),
-      finish: () => {},
+      finish: () => {
+        /* empty */
+      },
       id: info.command,
-      setPid: () => {},
-      setProgress: () => {},
-      setStatus: () => {},
+      setPid: () => {
+        /* empty */
+      },
+      setProgress: () => {
+        /* empty */
+      },
+      setStatus: () => {
+        /* empty */
+      },
     };
   },
 });

@@ -32,15 +32,7 @@ export async function runCli(
   const { normalizedArgv, envForRun } = prepareRunEnvironment(argv, inputEnv);
   const env = envForRun;
 
-  if (
-    await handleImmediateCliRequests({
-      envForRun,
-      fetchImpl: fetch,
-      normalizedArgv,
-      stderr,
-      stdout,
-    })
-  ) {
+  if (await handleImmediateCliRequests({ envForRun, normalizedArgv, stderr, stdout })) {
     return;
   }
   const execFileImpl = execFileOverride ?? execFile;
@@ -67,7 +59,6 @@ export async function runCli(
     env,
     envForRun,
     execFileImpl,
-    fetchImpl: fetch,
     normalizedArgv,
     program,
     promptOverride,

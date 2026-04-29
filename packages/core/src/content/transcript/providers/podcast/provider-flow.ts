@@ -1,4 +1,3 @@
-import type { TranscriptionConfig } from '../../transcription-config.js';
 import type { ProviderResult } from '../../types.js';
 import { fetchTranscriptWithYtDlp } from '../youtube/yt-dlp.js';
 import type { PodcastFlowContext } from './flow-context.js';

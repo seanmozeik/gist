@@ -36,7 +36,7 @@ describe('YouTube captionTracks Android fallback + empty-body branches', () => {
     const fetchMock = vi.fn<[RequestInfo | URL, RequestInit?], Promise<Response>>((input) => {
       const url = typeof input === 'string' ? input : input.url;
       if (url.includes('youtubei/v1/player')) {
-        return Promise.resolve(new Response(JSON.stringify('nope'), { status: 200 }));
+        return Promise.resolve(Response.json('nope', { status: 200 }));
       }
       return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
     });

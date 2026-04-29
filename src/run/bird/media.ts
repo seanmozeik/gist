@@ -65,7 +65,9 @@ export function extractMediaFromBirdRaw(raw: unknown): BirdTweetMedia | null {
         if (contentType.includes('video/mp4') && bitrate >= preferredBitrate) {
           preferredBitrate = bitrate;
           preferredUrl = url;
-        } else {preferredUrl ??= url;}
+        } else {
+          preferredUrl ??= url;
+        }
       }
     }
 

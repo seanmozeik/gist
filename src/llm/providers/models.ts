@@ -22,9 +22,9 @@ export function resolveOpenAiModel({
         'HTTP-Referer': 'https://github.com/steipete/summarize',
         'X-Title': 'summarize',
       }
-    : (openaiConfig.extraHeaders
+    : openaiConfig.extraHeaders
       ? { ...(base?.headers ?? {}), ...openaiConfig.extraHeaders }
-      : base?.headers);
+      : base?.headers;
   return {
     ...(base ?? createSyntheticModel({ allowImages, api, baseUrl, modelId, provider: 'openai' })),
     api,

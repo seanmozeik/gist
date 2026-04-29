@@ -3,42 +3,7 @@ import { startSpinner } from '../../../tty/spinner.js';
 import type { createThemeRenderer } from '../../../tty/theme.js';
 import { createWebsiteProgress } from '../../../tty/website-progress.js';
 import { createUrlProgressStatus } from './progress-status.js';
-import { composeUrlFlowHooks, type UrlFlowContext } from './types.js';
-
-function isMissingSlidesDependencyError(message: string): boolean {
-  const lower = message.toLowerCase();
-  return (
-    lower.includes('missing ffmpeg') ||
-    lower.includes('install ffmpeg') ||
-    lower.includes('require yt-dlp') ||
-    lower.includes('install yt-dlp') ||
-    lower.includes('missing tesseract')
-  );
-}
-
-export function writeSlidesBackgroundFailureWarning({
-  ctx,
-  theme,
-  message,
-}: {
-  ctx: Pick<UrlFlowContext, 'io' | 'flags' | 'hooks'>;
-  theme: ReturnType<typeof createThemeRenderer>;
-  message: string;
-}) {
-  if (ctx.flags.json || ctx.flags.extractMode) {
-    return;
-  }
-  ctx.hooks.clearProgressForStdout();
-  ctx.io.stderr.write(
-    `${theme.warning('Warning:')} --slides could not extract slide images: ${message}\n`,
-  );
-  if (isMissingSlidesDependencyError(message)) {
-    ctx.io.stderr.write(
-      `${theme.dim('Install ffmpeg + yt-dlp for --slides, and tesseract for --slides-ocr.')}\n`,
-    );
-  }
-  ctx.hooks.restoreProgressAfterStdout?.();
-}
+import { type UrlFlowContext } from './types.js';
 
 export function createUrlFlowProgress({
   ctx,
@@ -66,13 +31,6 @@ export function createUrlFlowProgress({
   const renderStatus = (label: string, detail = '…') => `${styleLabel(label)}${styleDim(detail)}`;
   const renderStatusWithMeta = (label: string, meta: string, suffix = '…') =>
     `${styleLabel(label)} ${meta}${styleDim(suffix)}`;
-  const renderStatusFromText = (text: string) => {
-    const match = /^([^:]+):(.*)$/.exec(text);
-    if (!match) {
-      return styleLabel(text);
-    }
-    return `${styleLabel(match[1])}${styleDim(`:${match[2]}`)}`;
-  };
   const progressStatus = createUrlProgressStatus({
     enabled: flags.progressEnabled,
     oscProgress,
@@ -98,19 +56,7 @@ export function createUrlFlowProgress({
     process.once('SIGINT', handleSigint);
     process.once('SIGTERM', handleSigterm);
   }
-  const progressHooks =
-    !hooks.onSlidesProgress && flags.progressEnabled
-      ? composeUrlFlowHooks(hooks, {
-          onSlidesProgress: (text: string) => {
-            const match = /(\d{1,3})%/.exec(text);
-            const percent = match ? Number(match[1]) : null;
-            progressStatus.setSlides(
-              renderStatusFromText(text),
-              Number.isFinite(percent) && percent !== null ? percent : null,
-            );
-          },
-        })
-      : hooks;
+  const progressHooks = hooks;
   const websiteProgress = createWebsiteProgress({
     enabled: flags.progressEnabled,
     oscProgress,
@@ -145,7 +91,6 @@ export function createUrlFlowProgress({
     },
     progressStatus,
     renderStatus,
-    renderStatusFromText,
     renderStatusWithMeta,
     spinner,
     stopProgress,

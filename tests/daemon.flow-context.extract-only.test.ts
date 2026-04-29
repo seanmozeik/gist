@@ -23,7 +23,11 @@ describe('daemon/flow-context extractOnly', () => {
       modelOverride: 'openai/gpt-5-mini',
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.extractMode).toBe(true);

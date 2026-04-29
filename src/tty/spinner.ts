@@ -29,13 +29,27 @@ export function startSpinner({
 } {
   if (!enabled) {
     return {
-      clear: () => {},
-      pause: () => {},
-      refresh: () => {},
-      resume: () => {},
-      setText: () => {},
-      stop: () => {},
-      stopAndClear: () => {},
+      clear: () => {
+        /* empty */
+      },
+      pause: () => {
+        /* empty */
+      },
+      refresh: () => {
+        /* empty */
+      },
+      resume: () => {
+        /* empty */
+      },
+      setText: () => {
+        /* empty */
+      },
+      stop: () => {
+        /* empty */
+      },
+      stopAndClear: () => {
+        /* empty */
+      },
     };
   }
 
@@ -50,13 +64,19 @@ export function startSpinner({
   };
 
   if (typeof oraStream.cursorTo !== 'function') {
-    oraStream.cursorTo = () => {};
+    oraStream.cursorTo = () => {
+      /* empty */
+    };
   }
   if (typeof oraStream.clearLine !== 'function') {
-    oraStream.clearLine = () => {};
+    oraStream.clearLine = () => {
+      /* empty */
+    };
   }
   if (typeof oraStream.moveCursor !== 'function') {
-    oraStream.moveCursor = () => {};
+    oraStream.moveCursor = () => {
+      /* empty */
+    };
   }
 
   const clear = () => {

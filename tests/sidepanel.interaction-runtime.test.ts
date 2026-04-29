@@ -182,7 +182,9 @@ describe('sidepanel interaction runtime', () => {
       readCurrentModelValue: vi.fn(() => 'openai/gpt-5.4'),
       restoreChatInput: vi.fn(),
       retryChat: vi.fn(),
-      sendRawMessage: async () => {},
+      sendRawMessage: async () => {
+        /* empty */
+      },
       setChatInputHeight: vi.fn(),
       setLastAction: vi.fn(),
       startChatMessage: vi.fn(),

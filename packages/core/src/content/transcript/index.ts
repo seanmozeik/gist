@@ -157,7 +157,9 @@ export const resolveTranscriptForLink = async (
       if (providerResult.segments && providerResult.segments.length > 0) {
         nextMeta.timestamps = true;
         nextMeta.segments = providerResult.segments;
-      } else {nextMeta.timestamps ??= false;}
+      } else {
+        nextMeta.timestamps ??= false;
+      }
       providerResult.metadata = nextMeta;
     } else if (providerResult.segments && providerResult.segments.length > 0) {
       providerResult.metadata = { ...providerResult.metadata, segments: providerResult.segments };

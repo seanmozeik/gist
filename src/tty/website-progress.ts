@@ -1,4 +1,4 @@
-import type { LinkPreviewProgressEvent } from '../../content/index.js';
+import type { LinkPreviewProgressEvent } from '../content/index.js';
 import { formatBytes } from './format.js';
 import type { OscProgressController } from './osc-progress.js';
 import { createFetchHtmlProgressRenderer } from './progress/fetch-html.js';
@@ -28,7 +28,7 @@ export function createWebsiteProgress({
   const renderStatus = (label: string, detail: string) =>
     theme ? `${styleLabel(label)}${styleDim(detail)}` : `${label}${detail}`;
   const renderTweetCliLabel = (client?: 'xurl' | 'bird' | null) =>
-    client === 'xurl' ? 'Xurl' : (client === 'bird' ? 'Bird' : 'X');
+    client === 'xurl' ? 'Xurl' : client === 'bird' ? 'Bird' : 'X';
 
   const stopAll = () => {
     fetchRenderer.stop();

@@ -39,7 +39,9 @@ describe('chrome native input guard', () => {
   });
 
   it('arms before execution and disarms after success', async () => {
-    const sendMessage = vi.fn(async () => {});
+    const sendMessage = vi.fn(async () => {
+      /* empty */
+    });
     const run = vi.fn(async () => 'ok');
 
     await expect(
@@ -54,7 +56,9 @@ describe('chrome native input guard', () => {
   });
 
   it('disarms even when execution fails', async () => {
-    const sendMessage = vi.fn(async () => {});
+    const sendMessage = vi.fn(async () => {
+      /* empty */
+    });
     const run = vi.fn(async () => {
       throw new Error('boom');
     });

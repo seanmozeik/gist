@@ -22,7 +22,6 @@ import type { OutputLanguage } from '../language.js';
 import { resolveOutputLanguage } from '../language.js';
 import { formatPresetLengthGuidance, type SummaryLengthTarget } from '../prompts/index.js';
 import {
-  parseCliProvider,
   parseOptionalBoolean,
   parseOptionalCliProviderOrder,
   parseOptionalSetting,
@@ -293,9 +292,9 @@ export function resolveRunOverrides(
     '--auto-cli-fallback',
   );
   // Kept for backward compatibility with older extension payloads. Ignored now.
-  void autoCliRememberLastSuccess;
+  undefined;
   // Kept for backward compatibility with older extension payloads. Ignored now.
-  void magicCliRememberLastSuccess;
+  undefined;
   const autoCliOrderResolved = parseOptionalCliProviderOrder(
     autoCliOrder !== undefined ? autoCliOrder : magicCliOrder,
     strict,

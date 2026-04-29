@@ -79,7 +79,7 @@ describe('yt-dlp transcript helper', () => {
     const filePath = join(root, 'local-video.webm');
     await writeFile(filePath, new Uint8Array([1, 2, 3]));
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({ text: 'Local transcript' }), { status: 200 }),
+      Response.json({ text: 'Local transcript' }, { status: 200 }),
     );
 
     try {
@@ -194,7 +194,7 @@ describe('yt-dlp transcript helper', () => {
   it('passes --no-playlist to yt-dlp', async () => {
     mockSpawnSuccess();
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({ text: 'OpenAI transcript' }), { status: 200 }),
+      Response.json({ text: 'OpenAI transcript' }, { status: 200 }),
     );
 
     await fetchTranscriptWithYtDlp({
@@ -231,7 +231,7 @@ describe('yt-dlp transcript helper', () => {
       return proc;
     });
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({ text: 'OpenAI transcript' }), { status: 200 }),
+      Response.json({ text: 'OpenAI transcript' }, { status: 200 }),
     );
 
     const events: { kind: string; downloadedBytes?: number; totalBytes?: number | null }[] = [];
@@ -259,7 +259,7 @@ describe('yt-dlp transcript helper', () => {
   it('uses OpenAI when available', async () => {
     mockSpawnSuccess();
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({ text: 'OpenAI transcript' }), { status: 200 }),
+      Response.json({ text: 'OpenAI transcript' }, { status: 200 }),
     );
 
     const result = await fetchTranscriptWithYtDlp({
@@ -282,25 +282,23 @@ describe('yt-dlp transcript helper', () => {
     globalThis.fetch = (async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       if (url.endsWith('/upload')) {
-        return new Response(JSON.stringify({ upload_url: 'https://upload.example/audio' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { upload_url: 'https://upload.example/audio' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       if (url.endsWith('/transcript')) {
-        return new Response(JSON.stringify({ id: 'tr_assembly', status: 'queued' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { id: 'tr_assembly', status: 'queued' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       if (url.endsWith('/transcript/tr_assembly')) {
         polls += 1;
-        return new Response(
-          JSON.stringify(
-            polls === 1
-              ? { id: 'tr_assembly', status: 'processing' }
-              : { id: 'tr_assembly', status: 'completed', text: 'Assembly transcript' },
-          ),
+        return Response.json(
+          polls === 1
+            ? { id: 'tr_assembly', status: 'processing' }
+            : { id: 'tr_assembly', status: 'completed', text: 'Assembly transcript' },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -324,7 +322,7 @@ describe('yt-dlp transcript helper', () => {
   it('falls back to FAL when OpenAI fails', async () => {
     mockSpawnSuccess();
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({ text: '' }), { status: 200 }),
+      Response.json({ text: '' }, { status: 200 }),
     );
     falMock.createFalClient.mockReturnValue({
       storage: { upload: vi.fn().mockResolvedValue('https://fal.ai/audio') },

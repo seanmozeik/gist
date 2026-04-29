@@ -126,7 +126,9 @@ function applyCarriageReturnAndClearLine(text: string): string {
 vi.mock('ora', () => {
   const ora = (opts: { text: string; stream: NodeJS.WritableStream }) => {
     const spinner = {
-      clear() {},
+      clear() {
+        /* empty */
+      },
       isSpinning: true,
       start() {
         opts.stream.write(`- ${spinner.text}`);

@@ -292,11 +292,7 @@ export function buildUnavailableResult(flow: YouTubeProviderFlow): ProviderResul
   flow.attemptedProviders.push('unavailable');
   return {
     attemptedProviders: flow.attemptedProviders,
-    metadata: {
-      provider: 'youtube',
-      reason: 'no_transcript_available',
-      ...flow.durationMetadata,
-    },
+    metadata: { provider: 'youtube', reason: 'no_transcript_available', ...flow.durationMetadata },
     notes: joinNotes(flow.notes),
     source: 'unavailable',
     text: null,

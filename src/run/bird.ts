@@ -107,6 +107,14 @@ export async function readTweet(args: {
   }
 }
 
+export async function readTweetWithPreferredClient(args: {
+  url: string;
+  timeoutMs: number;
+  env: Record<string, string | undefined>;
+}): Promise<BirdTweetPayload> {
+  return readTweet({ env: args.env, timeoutMs: args.timeoutMs, url: args.url });
+}
+
 export function withBirdTip(error: unknown, url: string | null): Error {
   if (!url || !isTwitterStatusUrl(url)) {
     return error instanceof Error ? error : new Error(String(error));

@@ -16,7 +16,9 @@ describe('transcript cache helpers', () => {
         metadata: null,
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -39,7 +41,9 @@ describe('transcript cache helpers', () => {
         metadata: { timestamps: true },
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -61,7 +65,9 @@ describe('transcript cache helpers', () => {
         metadata: { timestamps: false },
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -88,7 +94,9 @@ describe('transcript cache helpers', () => {
         },
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -112,7 +120,9 @@ describe('transcript cache helpers', () => {
         metadata: null,
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -128,7 +138,9 @@ describe('transcript cache helpers', () => {
   it('writes negative cache entries with shorter TTL', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     await writeTranscriptCache({
@@ -156,7 +168,9 @@ describe('transcript cache integration', () => {
         metadata: null,
         source: 'captionTracks',
       })),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const fetchMock = vi.fn(async () => new Response('nope', { status: 500 }));

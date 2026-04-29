@@ -50,7 +50,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === embedUrl && method === 'GET') {
         return new Response('no', { headers: { 'content-type': 'text/html' }, status: 503 });
@@ -75,7 +75,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === embedUrl && method === 'GET') {
         return new Response('<html>captcha</html>', {
@@ -109,7 +109,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === embedUrl && method === 'GET') {
         return new Response('<html>captcha</html>', {
@@ -165,7 +165,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === embedUrl && method === 'GET') {
@@ -173,10 +173,10 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
       }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
-        return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { results: [{ collectionName: 'Show', feedUrl }] },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
 
       if (url === feedUrl && method === 'GET') {
@@ -238,7 +238,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === embedUrl && method === 'GET') {
@@ -246,10 +246,10 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
       }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
-        return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { results: [{ collectionName: 'Show', feedUrl }] },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
 
       if (url === feedUrl && method === 'GET') {
@@ -311,7 +311,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === embedUrl && method === 'GET') {
@@ -319,10 +319,10 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
       }
 
       if (url.startsWith('https://itunes.apple.com/search') && method === 'GET') {
-        return new Response(JSON.stringify({ results: [{ collectionName: 'Show', feedUrl }] }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { results: [{ collectionName: 'Show', feedUrl }] },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
 
       if (url === feedUrl && method === 'GET') {
@@ -369,12 +369,12 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === lookupUrl && method === 'GET') {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             results: [
               { feedUrl: 'https://example.com/feed.xml', kind: 'podcast', wrapperType: 'track' },
               {
@@ -390,7 +390,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
                 wrapperType: 'podcastEpisode',
               },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -428,7 +428,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, { headers: { 'content-type': 'audio/mpeg' }, status: 200 });
@@ -458,7 +458,7 @@ describe('podcast provider extra branches (spotify/apple/transcribe)', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {

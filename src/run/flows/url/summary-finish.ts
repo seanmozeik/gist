@@ -24,19 +24,9 @@ export function pickModelForFinishLine(
   llmCalls: UrlFlowContext['model']['llmCalls'],
   fallback: string | null,
 ) {
-  const findLastModel = (purpose: (typeof llmCalls)[number]['purpose']): string | null => {
-    for (let i = llmCalls.length - 1; i >= 0; i -= 1) {
-      const call = llmCalls[i];
-      if (call?.purpose === purpose) {
-        return call.model;
-      }
-    }
-    return null;
-  };
-
-  const summaryModel = findLastModel('summary');
-  if (summaryModel) {
-    return summaryModel;
+  const lastCall = llmCalls[llmCalls.length - 1];
+  if (lastCall?.model) {
+    return lastCall.model;
   }
 
   const markdownModel = findLastModel('markdown');

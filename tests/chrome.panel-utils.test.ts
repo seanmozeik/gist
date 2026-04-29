@@ -15,11 +15,15 @@ describe('chrome panel utils', () => {
       runtime: {
         getManifest: () => ({ options_ui: { page: 'advanced.html' } }),
         getURL: (value: string) => `chrome-extension://test/${value}`,
-        openOptionsPage: vi.fn(async () => {}),
+        openOptionsPage: vi.fn(async () => {
+          /* empty */
+        }),
       },
       tabs: { query: vi.fn(async () => [{ id: 1, url: 'https://example.com' }]) },
       windows: {
-        create: vi.fn(async () => {}),
+        create: vi.fn(async () => {
+          /* empty */
+        }),
         getCurrent: vi.fn(async () => ({ height: 620, width: 900 })),
       },
     });

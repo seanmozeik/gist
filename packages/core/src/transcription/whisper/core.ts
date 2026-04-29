@@ -123,17 +123,17 @@ export async function transcribeMediaWithWhisper({
         onProgress,
         transcribeFile: ({ filePath, mediaType, filename, onProgress }) =>
           transcribeMediaFileWithWhisper({
-            filePath,
-            mediaType,
-            filename,
-            groqApiKey,
             assemblyaiApiKey,
-            geminiApiKey,
-            openaiApiKey,
-            falApiKey,
-            segmentSeconds: DEFAULT_SEGMENT_SECONDS,
-            onProgress,
             env,
+            falApiKey,
+            filePath,
+            filename,
+            geminiApiKey,
+            groqApiKey,
+            mediaType,
+            onProgress,
+            openaiApiKey,
+            segmentSeconds: DEFAULT_SEGMENT_SECONDS,
           }),
       }),
   });
@@ -231,16 +231,16 @@ export async function transcribeMediaFileWithWhisper({
         totalDurationSeconds,
         transcribeSegment: ({ bytes, filename }) =>
           transcribeMediaWithWhisper({
-            bytes,
-            mediaType: 'audio/mpeg',
-            filename,
-            groqApiKey,
-            skipGroq: skipGroqInNestedCalls,
             assemblyaiApiKey,
-            geminiApiKey,
-            openaiApiKey,
-            falApiKey,
+            bytes,
             env,
+            falApiKey,
+            filename,
+            geminiApiKey,
+            groqApiKey,
+            mediaType: 'audio/mpeg',
+            openaiApiKey,
+            skipGroq: skipGroqInNestedCalls,
           }),
       }),
   });
@@ -546,7 +546,9 @@ async function transcribeWithLocalWhisperBytes({
     }
     return null;
   } finally {
-    await fs.unlink(tempFile).catch(() => {});
+    await fs.unlink(tempFile).catch(() => {
+      /* empty */
+    });
   }
 }
 

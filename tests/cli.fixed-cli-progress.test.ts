@@ -21,7 +21,16 @@ describe('--model cli/... progress', () => {
 
     const execFileImpl: ExecFileFn = ((_cmd, _args, _options, cb) => {
       cb?.(null, JSON.stringify({ response: 'ok' }), '');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     let stdoutText = '';
@@ -66,7 +75,16 @@ describe('--model cli/... progress', () => {
 
     const execFileImpl: ExecFileFn = ((_cmd, _args, _options, cb) => {
       cb?.(null, JSON.stringify({ response: 'ok' }), '');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     let stdoutText = '';
@@ -108,7 +126,16 @@ describe('--model cli/... progress', () => {
 
     const execFileImpl: ExecFileFn = ((_cmd, _args, _options, cb) => {
       cb?.(null, JSON.stringify({ response: 'ok' }), '');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     let stdoutText = '';
@@ -150,7 +177,16 @@ describe('--model cli/... progress', () => {
 
     const execFileImpl: ExecFileFn = ((_cmd, _args, _options, cb) => {
       cb?.(null, JSON.stringify({ response: 'ok' }), '');
-      return { stdin: { end: () => {}, write: () => {} } } as unknown as ReturnType<ExecFileFn>;
+      return {
+        stdin: {
+          end: () => {
+            /* empty */
+          },
+          write: () => {
+            /* empty */
+          },
+        },
+      } as unknown as ReturnType<ExecFileFn>;
     }) as ExecFileFn;
 
     let stdoutText = '';

@@ -20,7 +20,6 @@ export function createRunnerFlowContexts(options: {
   setClearProgressBeforeStdout: UrlFlowContext['hooks']['setClearProgressBeforeStdout'];
   clearProgressIfCurrent: UrlFlowContext['hooks']['clearProgressIfCurrent'];
   buildReport: UrlFlowContext['hooks']['buildReport'];
-  estimateCostUsd: UrlFlowContext['hooks']['estimateCostUsd'];
 }) {
   const {
     summarizeMediaFileImpl,
@@ -36,34 +35,19 @@ export function createRunnerFlowContexts(options: {
     setClearProgressBeforeStdout,
     clearProgressIfCurrent,
     buildReport,
-    estimateCostUsd,
   } = options;
 
   const assetSummaryContext = createAssetSummaryContext({
     apiStatus: {
-      anthropicConfigured: model.apiStatus.anthropicConfigured,
-      apiKey: model.apiStatus.apiKey,
       apifyToken: model.apiStatus.apifyToken,
-      assemblyaiApiKey: model.apiStatus.assemblyaiApiKey,
       firecrawlConfigured: model.apiStatus.firecrawlConfigured,
-      googleConfigured: model.apiStatus.googleConfigured,
-      nvidiaApiKey: model.apiStatus.nvidiaApiKey,
-      nvidiaBaseUrl: model.apiStatus.nvidiaBaseUrl,
-      openaiApiKey: model.apiStatus.openaiApiKey,
       openrouterApiKey: model.apiStatus.openrouterApiKey,
-      providerBaseUrls: model.apiStatus.providerBaseUrls,
-      xaiApiKey: model.apiStatus.xaiApiKey,
-      zaiApiKey: model.apiStatus.zaiApiKey,
-      zaiBaseUrl: model.apiStatus.zaiBaseUrl,
+      ytDlpPath: model.apiStatus.ytDlpPath,
+      ytDlpCookiesFromBrowser: model.apiStatus.ytDlpCookiesFromBrowser,
+      localBaseUrl: model.apiStatus.localBaseUrl,
     },
     cache: { cache: cacheState, mediaCache },
-    hooks: {
-      buildReport,
-      clearProgressForStdout,
-      estimateCostUsd,
-      restoreProgressAfterStdout,
-      writeViaFooter,
-    },
+    hooks: { buildReport, clearProgressForStdout, restoreProgressAfterStdout, writeViaFooter },
     io: {
       env: io.env,
       envForRun: io.envForRun,
@@ -79,7 +63,6 @@ export function createRunnerFlowContexts(options: {
       desiredOutputTokens: model.desiredOutputTokens,
       envForAuto: model.envForAuto,
       fixedModelSpec: model.fixedModelSpec,
-      getLiteLlmCatalog: model.getLiteLlmCatalog,
       isFallbackModel: model.isFallbackModel,
       isImplicitAutoSelection: model.isImplicitAutoSelection,
       isNamedModelSelection: model.isNamedModelSelection,
@@ -147,7 +130,6 @@ export function createRunnerFlowContexts(options: {
         buildReport,
         clearProgressForStdout,
         clearProgressIfCurrent,
-        estimateCostUsd,
         restoreProgressAfterStdout,
         setClearProgressBeforeStdout,
         setTranscriptionCost,

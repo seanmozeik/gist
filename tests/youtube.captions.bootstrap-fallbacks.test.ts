@@ -32,7 +32,7 @@ describe('YouTube captionTracks bootstrap fallbacks', () => {
       }
       if (url.startsWith('https://example.com/captions') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'OK' }] }] }), { status: 200 }),
+          Response.json({ events: [{ segs: [{ utf8: 'OK' }] }] }, { status: 200 }),
         );
       }
       throw new Error(`Unexpected fetch call: ${url}`);
@@ -73,7 +73,7 @@ describe('YouTube captionTracks bootstrap fallbacks', () => {
       }
       if (url.startsWith('https://example.com/captions') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'OK' }] }] }), { status: 200 }),
+          Response.json({ events: [{ segs: [{ utf8: 'OK' }] }] }, { status: 200 }),
         );
       }
       throw new Error(`Unexpected fetch call: ${url}`);
@@ -102,9 +102,7 @@ describe('YouTube captionTracks bootstrap fallbacks', () => {
       }
       if (url === 'https://example.com/captions?lang=en') {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'From xml json' }] }] }), {
-            status: 200,
-          }),
+          Response.json({ events: [{ segs: [{ utf8: 'From xml json' }] }] }, { status: 200 }),
         );
       }
       throw new Error(`Unexpected fetch call: ${url}`);

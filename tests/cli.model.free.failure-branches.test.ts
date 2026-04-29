@@ -131,7 +131,7 @@ describe('cli run.ts free preset error branches', () => {
     });
 
     mocks.generateTextWithModelId.mockImplementation(async () => {
-      throw 'boom string';
+      throw new Error('boom string');
     });
 
     const stdout = collectStream();

@@ -69,7 +69,9 @@ describe('sidepanel summary renderer', () => {
   it('copies rendered markdown text to the clipboard', async () => {
     const hostEl = document.createElement('div');
     const setStatus = vi.fn();
-    const writeText = vi.fn(async () => {});
+    const writeText = vi.fn(async () => {
+      /* empty */
+    });
     Object.assign(navigator, { clipboard: { writeText } });
 
     renderSummaryMarkdownDisplay({
@@ -101,7 +103,9 @@ describe('sidepanel summary renderer', () => {
   it('reports empty copy attempts without touching the clipboard', async () => {
     const hostEl = document.createElement('div');
     const setStatus = vi.fn();
-    const writeText = vi.fn(async () => {});
+    const writeText = vi.fn(async () => {
+      /* empty */
+    });
     Object.assign(navigator, { clipboard: { writeText } });
 
     renderSummaryMarkdownDisplay({
@@ -260,7 +264,7 @@ describe('sidepanel summary renderer', () => {
       markdown: 'body',
       md: {
         render: () => {
-          throw 'bad markdown';
+          throw new Error('bad markdown');
         },
       },
       phase: 'done',

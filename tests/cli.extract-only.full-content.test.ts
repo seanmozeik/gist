@@ -9,13 +9,13 @@ describe('cli --extract', () => {
     const body = 'A'.repeat(60_000);
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.url;
-      void init;
+      undefined;
       if (url === 'https://api.openai.com/v1/chat/completions') {
         throw new Error('Unexpected OpenAI call in --extract mode');
       }
       if (url === 'https://api.firecrawl.dev/v1/scrape') {
-        return new Response(
-          JSON.stringify({ data: { html: null, markdown: `# Example\n\n${body}` }, success: true }),
+        return Response.json(
+          { data: { html: null, markdown: `# Example\n\n${body}` }, success: true },
           { headers: { 'Content-Type': 'application/json' }, status: 200 },
         );
       }

@@ -107,7 +107,7 @@ function createTimedTextStream({
           const cleanup = iterator.return();
           const cleanupPromise = cleanup === undefined ? undefined : (cleanup as Promise<unknown>);
           if (typeof cleanupPromise?.catch === 'function') {
-            void cleanupPromise.catch(() => {});
+            undefined;
           }
         }
       }
@@ -225,10 +225,10 @@ export async function streamTextWithContext({
         controller,
         setLastError,
         textStream: collectTextDeltas({
-          stream: model,
           onError: (error) => {
             lastError = error;
           },
+          stream: model,
         }),
         timeoutMs,
       }),

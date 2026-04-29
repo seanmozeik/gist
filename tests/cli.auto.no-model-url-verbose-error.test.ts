@@ -25,10 +25,10 @@ describe('--model auto no-model-url-verbose-error', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.includes('generativelanguage.googleapis.com')) {
-        return new Response(
-          JSON.stringify({ models: [{ name: 'models/gemini-3-flash-preview' }] }),
+        return Response.json(
+          { models: [{ name: 'models/gemini-3-flash-preview' }] },
           { headers: { 'Content-Type': 'application/json' }, status: 200 },
         );
       }

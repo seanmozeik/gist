@@ -1,6 +1,6 @@
 import type { CliProvider, SummarizeConfig } from '../config.js';
+import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from '../openai/base-url.js';
 import { resolveCliAvailability, resolveExecutableInPath } from './env.js';
-import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from './index.js';
 
 export interface EnvState {
   apiKey: string | null;
@@ -50,36 +50,36 @@ export function resolveEnvState({
     envValue: envForRun.OPENAI_BASE_URL,
   });
   const nvidiaBaseUrl = resolveConfiguredBaseUrl({
-    configValue: configForCli?.nvidia?.baseUrl,
+    configValue: null,
     envValue: envForRun.NVIDIA_BASE_URL,
   });
   const anthropicBaseUrl = resolveConfiguredBaseUrl({
-    configValue: configForCli?.anthropic?.baseUrl,
+    configValue: null,
     envValue: envForRun.ANTHROPIC_BASE_URL,
   });
   const googleBaseUrl = resolveConfiguredBaseUrl({
-    configValue: configForCli?.google?.baseUrl,
+    configValue: null,
     envValue: envForRun.GOOGLE_BASE_URL ?? envForRun.GEMINI_BASE_URL,
   });
   const xaiBaseUrl = resolveConfiguredBaseUrl({
-    configValue: configForCli?.xai?.baseUrl,
+    configValue: null,
     envValue: envForRun.XAI_BASE_URL,
   });
   const zaiBaseUrl = resolveConfiguredBaseUrl({
-    configValue: configForCli?.zai?.baseUrl,
+    configValue: null,
     envValue:
       typeof envForRun.Z_AI_BASE_URL === 'string'
         ? envForRun.Z_AI_BASE_URL
-        : (typeof envForRun.ZAI_BASE_URL === 'string'
+        : typeof envForRun.ZAI_BASE_URL === 'string'
           ? envForRun.ZAI_BASE_URL
-          : null),
+          : null,
   });
   const zaiKeyRaw =
     typeof envForRun.Z_AI_API_KEY === 'string'
       ? envForRun.Z_AI_API_KEY
-      : (typeof envForRun.ZAI_API_KEY === 'string'
+      : typeof envForRun.ZAI_API_KEY === 'string'
         ? envForRun.ZAI_API_KEY
-        : null);
+        : null;
   const openRouterKeyRaw =
     typeof envForRun.OPENROUTER_API_KEY === 'string' ? envForRun.OPENROUTER_API_KEY : null;
   const openaiKeyRaw =
@@ -87,9 +87,9 @@ export function resolveEnvState({
   const nvidiaKeyRaw =
     typeof envForRun.NVIDIA_API_KEY === 'string'
       ? envForRun.NVIDIA_API_KEY
-      : (typeof envForRun.NGC_API_KEY === 'string'
+      : typeof envForRun.NGC_API_KEY === 'string'
         ? envForRun.NGC_API_KEY
-        : null);
+        : null;
   const apiKey =
     typeof openaiBaseUrl === 'string' && isOpenRouterBaseUrl(openaiBaseUrl)
       ? (openRouterKeyRaw ?? openaiKeyRaw)
@@ -107,9 +107,9 @@ export function resolveEnvState({
     const raw =
       typeof envForRun.SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER === 'string'
         ? envForRun.SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER
-        : (typeof envForRun.YT_DLP_COOKIES_FROM_BROWSER === 'string'
+        : typeof envForRun.YT_DLP_COOKIES_FROM_BROWSER === 'string'
           ? envForRun.YT_DLP_COOKIES_FROM_BROWSER
-          : '');
+          : '';
     const value = raw.trim();
     return value.length > 0 ? value : null;
   })();

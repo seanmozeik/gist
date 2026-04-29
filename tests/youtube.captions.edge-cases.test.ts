@@ -54,10 +54,10 @@ describe('YouTube captionTracks edge cases', () => {
 
       if (url === 'https://example.com/captions?lang=en') {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'From xml url' }] }] }), {
-            headers: { 'Content-Type': 'application/json' },
-            status: 200,
-          }),
+          Response.json(
+            { events: [{ segs: [{ utf8: 'From xml url' }] }] },
+            { headers: { 'Content-Type': 'application/json' }, status: 200 },
+          ),
         );
       }
 

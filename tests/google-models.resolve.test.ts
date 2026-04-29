@@ -6,7 +6,7 @@ describe('google model resolution (Gemini API ListModels)', () => {
   it('skips ListModels for stable model ids', async () => {
     const fetchMock = vi.fn();
 
-    const result = await resolveGoogleModelForUsage({
+    const result = resolveGoogleModelForUsage({
       apiKey: 'test',
       fetchImpl: fetchMock as unknown as typeof fetch,
       requestedModelId: 'gemini-1.5-pro',
@@ -21,20 +21,20 @@ describe('google model resolution (Gemini API ListModels)', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       expect(url).toContain('generativelanguage.googleapis.com/v1beta/models');
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           models: [
             {
               name: 'models/gemini-3.0-flash',
               supportedGenerationMethods: ['generateContent', 'streamGenerateContent'],
             },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
 
-    const result = await resolveGoogleModelForUsage({
+    const result = resolveGoogleModelForUsage({
       apiKey: 'test',
       fetchImpl: fetchMock as unknown as typeof fetch,
       requestedModelId: 'gemini-3.0-flash-preview',
@@ -48,13 +48,13 @@ describe('google model resolution (Gemini API ListModels)', () => {
 
   it('keeps exact preview ids when present', async () => {
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({ models: [{ name: 'models/gemini-3.0-flash-preview' }] }),
+      return Response.json(
+        { models: [{ name: 'models/gemini-3.0-flash-preview' }] },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
 
-    const result = await resolveGoogleModelForUsage({
+    const result = resolveGoogleModelForUsage({
       apiKey: 'test',
       fetchImpl: fetchMock as unknown as typeof fetch,
       requestedModelId: 'gemini-3.0-flash-preview',
@@ -68,8 +68,8 @@ describe('google model resolution (Gemini API ListModels)', () => {
 
   it('throws a helpful error with suggestions when model is missing', async () => {
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           models: [
             {
               name: 'models/gemini-2.0-flash',
@@ -81,7 +81,7 @@ describe('google model resolution (Gemini API ListModels)', () => {
               supportedGenerationMethods: ['generateContent'],
             },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -98,10 +98,10 @@ describe('google model resolution (Gemini API ListModels)', () => {
 
   it('returns a generic hint when ListModels is empty', async () => {
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ models: [] }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { models: [] },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     await expect(

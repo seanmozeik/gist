@@ -24,7 +24,6 @@ export async function extractReadabilityFromHtml(
       if (message.includes('Could not parse CSS stylesheet')) {
         return;
       }
-      console.error(err);
     });
 
     const dom = new JSDOM(cleanedHtml, { ...(url ? { url } : undefined), virtualConsole });

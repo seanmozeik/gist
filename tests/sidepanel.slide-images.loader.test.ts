@@ -173,9 +173,15 @@ describe('slide image loader', () => {
         this.callback = callback;
         observer = this;
       }
-      observe() {}
-      unobserve() {}
-      disconnect() {}
+      observe() {
+        /* empty */
+      }
+      unobserve() {
+        /* empty */
+      }
+      disconnect() {
+        /* empty */
+      }
       takeRecords() {
         return [];
       }
@@ -221,9 +227,15 @@ describe('slide image loader', () => {
       constructor(_callback: IntersectionObserverCallback) {
         observerInstanceCount += 1;
       }
-      observe() {}
-      unobserve() {}
-      disconnect() {}
+      observe() {
+        /* empty */
+      }
+      unobserve() {
+        /* empty */
+      }
+      disconnect() {
+        /* empty */
+      }
       takeRecords() {
         return [];
       }
@@ -268,9 +280,15 @@ describe('slide image loader', () => {
     vi.useFakeTimers();
 
     class MockIntersectionObserver {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
+      observe() {
+        /* empty */
+      }
+      unobserve() {
+        /* empty */
+      }
+      disconnect() {
+        /* empty */
+      }
       takeRecords() {
         return [];
       }
@@ -327,7 +345,9 @@ describe('slide image loader', () => {
 
   it('stops retrying when the retry window has elapsed', async () => {
     globalThis.IntersectionObserver = undefined;
-    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {
+      /* empty */
+    });
     globalThis.fetch = vi.fn(async () => createSlideFetchResponse({ body: 'wait', ready: '0' }));
 
     const loader = createSlideImageLoader({
@@ -355,7 +375,9 @@ describe('slide image loader', () => {
     globalThis.fetch = fetchSpy;
     const objectUrls = ['blob:1', 'blob:2', 'blob:3'];
     mockCreateObjectUrl(() => objectUrls.shift() ?? 'blob:next');
-    const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {
+      /* empty */
+    });
 
     const loader = createSlideImageLoader({
       loadSettings: async () => ({ extendedLogging: false, token: 't' }) as Settings,

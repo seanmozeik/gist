@@ -60,13 +60,15 @@ const TRANSCRIPT_SOURCES = new Set<TranscriptSource>([
 ]);
 
 function normalizeTranscriptSource(value: unknown): TranscriptSource | null {
-  if (typeof value !== 'string') {return null;}
+  if (typeof value !== 'string') {
+    return null;
+  }
   return TRANSCRIPT_SOURCES.has(value as TranscriptSource) ? (value as TranscriptSource) : null;
 }
 
 export interface CacheStore {
   getText: (kind: CacheKind, key: string) => string | null;
-  getJson: <T>(kind: CacheKind, key: string) => T | null;
+  getJson: (kind: CacheKind, key: string) => unknown | null;
   setText: (kind: CacheKind, key: string, value: string, ttlMs: number | null) => void;
   setJson: (kind: CacheKind, key: string, value: unknown, ttlMs: number | null) => void;
   clear: () => void;
@@ -102,17 +104,17 @@ const installSqliteWarningFilter = () => {
     const message =
       typeof warning === 'string'
         ? warning
-        : (warning && typeof (warning as { message?: unknown }).message === 'string'
+        : warning && typeof (warning as { message?: unknown }).message === 'string'
           ? String((warning as { message?: unknown }).message)
-          : '');
+          : '';
     const type =
       typeof args[0] === 'string' ? args[0] : (args[0] as { type?: unknown } | undefined)?.type;
     const name = (warning as { name?: unknown } | undefined)?.name;
-    const normalizedType = typeof type === 'string' ? type : (typeof name === 'string' ? name : '');
+    const normalizedType = typeof type === 'string' ? type : typeof name === 'string' ? name : '';
     if (normalizedType === 'ExperimentalWarning' && message.toLowerCase().includes('sqlite')) {
       return;
     }
-     original(warning as never, ...(args as [never]));
+    original(warning as never, ...(args as [never]));
   }) as typeof process.emitWarning;
 };
 
@@ -154,7 +156,7 @@ export function resolveCachePath({
       const expanded = raw === '~' ? home : join(home, raw.slice(2));
       return resolvePath(expanded);
     }
-    return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : null);
+    return isAbsolute(raw) ? raw : home ? resolvePath(join(home, raw)) : null;
   }
   if (!home) {
     return null;
@@ -284,13 +286,13 @@ export async function createCacheStore({
     return row.value;
   };
 
-  const getJson = <T>(kind: CacheKind, key: string): T | null => {
+  const getJson = (kind: CacheKind, key: string): unknown | null => {
     const text = getText(kind, key);
     if (!text) {
       return null;
     }
     try {
-      return JSON.parse(text) as T;
+      return JSON.parse(text) as unknown;
     } catch {
       return null;
     }

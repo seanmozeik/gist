@@ -23,7 +23,7 @@ vi.mock('../src/llm/generate-text.js', () => {
       canonicalModelId: 'openai/gpt-5-mini',
       lastError: () => null,
       provider: 'openai',
-      textStream: (async function*  textStream() {
+      textStream: (async function* textStream() {
         yield 'hello';
       })(),
       usage: Promise.resolve({ completionTokens: 1, promptTokens: 1, totalTokens: 2 }),
@@ -79,7 +79,9 @@ describe('daemon/chat', () => {
 
     await streamChatResponse({
       configForCli: { openai: { useChatCompletions: true } },
-      emitMeta: () => {},
+      emitMeta: () => {
+        /* empty */
+      },
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
       messages: [{ content: 'Hi', role: 'user' }],
@@ -87,7 +89,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's-openai-chat',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -112,7 +116,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's-gh',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -179,7 +185,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's-opencode-fixed',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -205,7 +213,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: null,
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's2',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -246,7 +256,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: null,
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's3',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -277,7 +289,9 @@ describe('daemon/chat', () => {
 
     await streamChatResponse({
       configForCli: { openai: { useChatCompletions: true } },
-      emitMeta: () => {},
+      emitMeta: () => {
+        /* empty */
+      },
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
       messages: [{ content: 'Hi', role: 'user' }],
@@ -285,7 +299,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: null,
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's-auto-openai-chat',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },
@@ -328,7 +344,9 @@ describe('daemon/chat', () => {
       pageContent: 'Hello world',
       pageTitle: null,
       pageUrl: 'https://example.com',
-      pushToSession: () => {},
+      pushToSession: () => {
+        /* empty */
+      },
       session: {
         id: 's4',
         lastMeta: { inputSummary: null, model: null, modelLabel: null, summaryFromCache: null },

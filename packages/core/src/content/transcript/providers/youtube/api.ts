@@ -83,9 +83,9 @@ export const extractYoutubeiTranscriptConfig = (html: string): YoutubeTranscript
     const clientName =
       typeof clientNameCandidate === 'number'
         ? String(clientNameCandidate)
-        : (typeof clientNameCandidate === 'string'
+        : typeof clientNameCandidate === 'string'
           ? clientNameCandidate
-          : null);
+          : null;
     const clientVersionCandidate = typedBootstrap.INNERTUBE_CONTEXT_CLIENT_VERSION;
     const clientVersion =
       typeof clientVersionCandidate === 'string' ? clientVersionCandidate : null;
@@ -313,9 +313,9 @@ export const extractYoutubeiBootstrap = (
     const clientName =
       typeof clientNameCandidate === 'number'
         ? String(clientNameCandidate)
-        : (typeof clientNameCandidate === 'string'
+        : typeof clientNameCandidate === 'string'
           ? clientNameCandidate
-          : null);
+          : null;
     const contextClientCandidate = context!.client;
     const contextClient = isRecord(contextClientCandidate) ? contextClientCandidate : null;
     const visitorDataCandidate = contextClient?.visitorData;

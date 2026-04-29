@@ -86,9 +86,9 @@ function parseSegmentsFromJsonArray(items: unknown[]): TranscriptSegment[] {
     const text =
       typeof record.text === 'string'
         ? record.text
-        : (typeof record.utf8 === 'string'
+        : typeof record.utf8 === 'string'
           ? record.utf8
-          : null);
+          : null;
     if (!text) {
       continue;
     }
@@ -101,7 +101,11 @@ function parseSegmentsFromJsonArray(items: unknown[]): TranscriptSegment[] {
     if (start == null) {
       continue;
     }
-    segments.push({ endMs: end ?? null, startMs: start, text: text.replaceAll(/\s+/g, ' ').trim() });
+    segments.push({
+      endMs: end ?? null,
+      startMs: start,
+      text: text.replaceAll(/\s+/g, ' ').trim(),
+    });
   }
   return segments;
 }

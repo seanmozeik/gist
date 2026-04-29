@@ -116,9 +116,9 @@ export function buildLinkSummaryPrompt({
   const effectiveSummaryLength: SummaryLengthTarget =
     typeof summaryLength === 'string'
       ? summaryLength
-      : (contentCharacters > 0 && summaryLength.maxCharacters > contentCharacters
+      : contentCharacters > 0 && summaryLength.maxCharacters > contentCharacters
         ? { maxCharacters: contentCharacters }
-        : summaryLength);
+        : summaryLength;
   const preset =
     typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength
@@ -138,9 +138,9 @@ export function buildLinkSummaryPrompt({
   const headingInstruction =
     slides && slides.count > 0
       ? 'Do not create a dedicated Slides section or list.'
-      : (needsHeadings
+      : needsHeadings
         ? 'Use Markdown headings with the "### " prefix to break sections. Include at least 3 headings and start with a heading. Do not use bold for headings.'
-        : '');
+        : '';
   const maxCharactersLine =
     typeof effectiveSummaryLength === 'string'
       ? ''

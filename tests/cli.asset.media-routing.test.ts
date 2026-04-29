@@ -11,7 +11,9 @@ describe('media URL routing', () => {
         callback();
       },
     });
-    const summarizeMediaFile = vi.fn(async () => {});
+    const summarizeMediaFile = vi.fn(async () => {
+      /* empty */
+    });
     const ctx = {
       clearProgressIfCurrent: vi.fn(),
       env: {},

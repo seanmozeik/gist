@@ -1,36 +1,18 @@
 import { render as renderMarkdownAnsi } from 'markdansi';
 
 import type { ExtractedLinkContent } from '../../../content/index.js';
-import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url.js';
 import type { RunMetricsReport } from '../../../costs.js';
 import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
 import { writeVerbose } from '../../logging.js';
 import { prepareMarkdownForTerminal } from '../../markdown.js';
 import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
 import type { UrlExtractionUi } from './extract.js';
-import type { SlidesTerminalOutput } from './slides-output.js';
-import {
-  coerceSummaryWithSlides,
-  interleaveSlidesIntoTranscript,
-  normalizeSummarySlideHeadings,
-} from './slides-text.js';
-import {
-  buildFinishExtras,
-  buildModelMetaFromAttempt,
-  pickModelForFinishLine,
-} from './summary-finish.js';
+import { buildFinishExtras, pickModelForFinishLine } from './summary-finish.js';
 import { buildUrlJsonEnv, buildUrlJsonInput } from './summary-json.js';
-import {
-  buildUrlPrompt as buildSummaryPrompt,
-  shouldBypassShortContentSummary,
-} from './summary-prompt.js';
+import { buildUrlPrompt as buildSummaryPrompt } from './summary-prompt.js';
 import { resolveUrlSummaryExecution } from './summary-resolution.js';
 import { buildSummaryTimestampLimitInstruction } from './summary-timestamps.js';
 import type { UrlFlowContext } from './types.js';
-
-type SlidesResult = Awaited<
-  ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
->;
 
 async function writeUrlJsonOutput({
   ctx,
@@ -47,7 +29,7 @@ async function writeUrlJsonOutput({
   extracted: ExtractedLinkContent;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   prompt: string;
-  slides?: SlidesResult | null;
+  slides: unknown;
   summary: string | null;
   llm: {
     provider: string;
@@ -107,10 +89,9 @@ async function writeUrlMetricsFinishLine({
   if (clearProgress) {
     hooks.clearProgressForStdout();
   }
-  const costUsd = await hooks.estimateCostUsd();
   writeFinishLine({
     color: flags.verboseColor,
-    costUsd,
+    costUsd: null,
     detailed: flags.metricsDetailed,
     elapsedLabel: elapsedLabel ?? null,
     elapsedMs: Date.now() - flags.runStartedAtMs,
@@ -142,7 +123,7 @@ export function buildUrlPrompt({
   promptOverride?: string | null;
   lengthInstruction?: string | null;
   languageInstruction?: string | null;
-  slides?: SlidesResult | null;
+  slides: unknown;
 }): string {
   return buildSummaryPrompt({
     buildSummaryTimestampLimitInstruction,
@@ -152,7 +133,7 @@ export function buildUrlPrompt({
     lengthInstruction,
     outputLanguage,
     promptOverride,
-    slides,
+    slides: null,
   });
 }
 
@@ -175,9 +156,7 @@ async function outputSummaryFromExtractedContent({
   prompt: string;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
-  slides?: Awaited<
-    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
-  > | null;
+  slides: unknown;
   footerLabel?: string | null;
   verboseMessage?: string | null;
 }) {
@@ -240,10 +219,8 @@ export async function outputExtractedUrl({
   prompt: string;
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
-  slides?: Awaited<
-    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
-  > | null;
-  slidesOutput?: SlidesTerminalOutput | null;
+  slides: unknown;
+  slidesOutput: unknown;
 }) {
   const { io, flags, model, hooks } = ctx;
 
@@ -251,7 +228,7 @@ export async function outputExtractedUrl({
   const finishLabel = buildExtractFinishLabel({
     extracted: { diagnostics: extracted.diagnostics },
     format: flags.format,
-    hasMarkdownLlmCall: model.llmCalls.some((call) => call.purpose === 'markdown'),
+    hasMarkdownLlmCall: model.llmCalls.some((call) => true),
     markdownMode: effectiveMarkdownMode,
   });
   const finishModel = pickModelForFinishLine(model.llmCalls, null);
@@ -286,51 +263,6 @@ export async function outputExtractedUrl({
       ? `Transcript:\n${extracted.transcriptTimedText}`
       : extracted.content;
 
-  const slideTags =
-    slides?.slides && slides.slides.length > 0
-      ? slides.slides.map((slide) => `[slide:${slide.index}]`).join('\n')
-      : '';
-
-  if (slidesOutput && slides?.slides && slides.slides.length > 0) {
-    const transcriptText = extracted.transcriptTimedText
-      ? `Transcript:\n${extracted.transcriptTimedText}`
-      : null;
-    const interleaved = transcriptText
-      ? interleaveSlidesIntoTranscript({
-          slides: slides.slides.map((slide) => ({
-            index: slide.index,
-            timestamp: slide.timestamp,
-          })),
-          transcriptTimedText: transcriptText,
-        })
-      : `${extractCandidate.trimEnd()}\n\n${slideTags}`;
-    await slidesOutput.renderFromText(interleaved);
-    hooks.restoreProgressAfterStdout?.();
-    const slideFooter = slides ? [`slides ${slides.slides.length}`] : [];
-    hooks.writeViaFooter([...extractionUi.footerParts, ...slideFooter]);
-    const report = flags.shouldComputeReport ? await hooks.buildReport() : null;
-    if (flags.metricsEnabled && report) {
-      const costUsd = await hooks.estimateCostUsd();
-      writeFinishLine({
-        color: flags.verboseColor,
-        costUsd,
-        detailed: flags.metricsDetailed,
-        elapsedMs: Date.now() - flags.runStartedAtMs,
-        env: io.envForRun,
-        extraParts: buildFinishExtras({
-          extracted,
-          metricsDetailed: flags.metricsDetailed,
-          transcriptionCostLabel,
-        }),
-        label: finishLabel,
-        model: finishModel,
-        report,
-        stderr: io.stderr,
-      });
-    }
-    return;
-  }
-
   const renderedExtract =
     flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)
       ? renderMarkdownAnsi(prepareMarkdownForTerminal(extractCandidate), {
@@ -350,8 +282,7 @@ export async function outputExtractedUrl({
     io.stdout.write('\n');
   }
   hooks.restoreProgressAfterStdout?.();
-  const slideFooter = slides ? [`slides ${slides.slides.length}`] : [];
-  hooks.writeViaFooter([...extractionUi.footerParts, ...slideFooter]);
+  hooks.writeViaFooter(extractionUi.footerParts);
   const report = flags.shouldComputeReport ? await hooks.buildReport() : null;
   await writeUrlMetricsFinishLine({
     clearProgress: true,
@@ -384,10 +315,8 @@ export async function summarizeExtractedUrl({
   effectiveMarkdownMode: 'off' | 'auto' | 'llm' | 'readability';
   transcriptionCostLabel: string | null;
   onModelChosen?: ((modelId: string) => void) | null;
-  slides?: Awaited<
-    ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
-  > | null;
-  slidesOutput?: SlidesTerminalOutput | null;
+  slides: unknown;
+  slidesOutput: unknown;
 }) {
   const { io, flags, model, cache: cacheState, hooks } = ctx;
   const resolution = await resolveUrlSummaryExecution({
@@ -452,23 +381,7 @@ export async function summarizeExtractedUrl({
     return;
   }
 
-  if (slidesOutput) {
-    if (!summaryAlreadyPrinted) {
-      const summaryForSlides =
-        slides && slides.slides.length > 0
-          ? coerceSummaryWithSlides({
-              lengthArg: flags.lengthArg,
-              markdown: normalizedSummary,
-              slides: slides.slides.map((slide) => ({
-                index: slide.index,
-                timestamp: slide.timestamp,
-              })),
-              transcriptTimedText: extracted.transcriptTimedText ?? null,
-            })
-          : normalizedSummary;
-      await slidesOutput.renderFromText(summaryForSlides);
-    }
-  } else if (!summaryAlreadyPrinted) {
+  if (!summaryAlreadyPrinted) {
     hooks.clearProgressForStdout();
     const rendered =
       !flags.plain && isRichTty(io.stdout)

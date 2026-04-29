@@ -37,7 +37,9 @@ const silentStderr = new Writable({
     'zai/glm-4.7 returns text',
     async () => {
       if (!ZAI_KEY) {
-        it.skip('requires Z_AI_API_KEY (or ZAI_API_KEY)', () => {});
+        it.skip('requires Z_AI_API_KEY (or ZAI_API_KEY)', () => {
+          /* empty */
+        });
         return;
       }
       try {

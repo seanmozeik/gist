@@ -5,17 +5,14 @@ import { basename, join } from 'node:path';
 
 import { spawnTracked } from '../../../../processes.js';
 import {
-  probeMediaDurationSecondsWithFfprobe,
-  type TranscriptionProvider,
   transcribeMediaFileWithWhisper,
-} from '../../../../transcription/whisper.js';
-import { buildMissingTranscriptionProviderMessage } from '../../../../transcription/whisper/provider-setup.js';
+  type TranscriptionProgressEvent,
+} from '../../../../transcription/endpoint.js';
 import type { MediaCache } from '../../../cache/types.js';
 import type { LinkPreviewProgressEvent } from '../../../link-preview/deps.js';
 import { ProgressKind } from '../../../link-preview/deps.js';
 import { resolveLocalDirectMediaSource } from '../../../local-file.js';
 import {
-  resolveTranscriptionConfig,
   type TranscriptionConfig,
 } from '../../transcription-config.js';
 import { resolveTranscriptionStartInfo } from '../transcription-start.js';
@@ -27,7 +24,7 @@ const DEFAULT_AUDIO_FORMAT =
 
 interface YtDlpTranscriptResult {
   text: string | null;
-  provider: TranscriptionProvider | null;
+  provider: string | null;
   error: Error | null;
   notes: string[];
 }
@@ -56,13 +53,7 @@ interface YtDlpDurationRequest {
 
 export const fetchTranscriptWithYtDlp = async ({
   ytDlpPath,
-  transcription,
   env,
-  groqApiKey,
-  assemblyaiApiKey,
-  geminiApiKey,
-  openaiApiKey,
-  falApiKey,
   url,
   onProgress,
   service = 'youtube',
@@ -71,15 +62,6 @@ export const fetchTranscriptWithYtDlp = async ({
   extraArgs,
 }: YtDlpRequest): Promise<YtDlpTranscriptResult> => {
   const notes: string[] = [];
-  const effectiveTranscription = resolveTranscriptionConfig({
-    assemblyaiApiKey,
-    env,
-    falApiKey,
-    geminiApiKey,
-    groqApiKey,
-    openaiApiKey,
-    transcription,
-  });
 
   if (!ytDlpPath) {
     return {
@@ -89,12 +71,12 @@ export const fetchTranscriptWithYtDlp = async ({
       text: null,
     };
   }
-  const effectiveEnv = effectiveTranscription.env ?? process.env;
-  const startInfo = await resolveTranscriptionStartInfo({ transcription: effectiveTranscription });
+  const effectiveEnv = env ?? process.env;
+  const startInfo = await resolveTranscriptionStartInfo({ env: effectiveEnv });
 
   if (!startInfo.availability.hasAnyProvider) {
     return {
-      error: new Error(buildMissingTranscriptionProviderMessage()),
+      error: new Error('No transcription provider available. Set SUMMARIZE_LOCAL_BASE_URL.'),
       notes,
       provider: null,
       text: null,
@@ -105,7 +87,7 @@ export const fetchTranscriptWithYtDlp = async ({
   const { providerHint } = startInfo;
   const { modelId } = startInfo;
   const localFileInput = resolveLocalDirectMediaSource(url, mediaKind);
-  const cachedMedia = localFileInput ? null : (mediaCache ? await mediaCache.get({ url }) : null);
+  const cachedMedia = localFileInput ? null : mediaCache ? await mediaCache.get({ url }) : null;
 
   const outputFile = join(tmpdir(), `summarize-${randomUUID()}.mp3`);
   let filePath = localFileInput?.filePath ?? cachedMedia?.filePath ?? outputFile;
@@ -189,26 +171,20 @@ export const fetchTranscriptWithYtDlp = async ({
       }
     }
 
-    const probedDurationSeconds = await probeMediaDurationSecondsWithFfprobe(filePath);
     progress?.({
       kind: ProgressKind.TranscriptWhisperStart,
       modelId,
       parts: null,
       providerHint,
       service,
-      totalDurationSeconds: probedDurationSeconds,
+      totalDurationSeconds: null,
       url,
     });
     const result = await transcribeMediaFileWithWhisper({
-      assemblyaiApiKey: effectiveTranscription.assemblyaiApiKey,
-      env: effectiveEnv,
-      falApiKey: effectiveTranscription.falApiKey,
       filePath,
-      filename,
-      geminiApiKey: effectiveTranscription.geminiApiKey,
-      groqApiKey: effectiveTranscription.groqApiKey,
       mediaType,
-      onProgress: (event) => {
+      filename,
+      onProgress: (event: TranscriptionProgressEvent) => {
         progress?.({
           kind: ProgressKind.TranscriptWhisperProgress,
           partIndex: event.partIndex,
@@ -219,8 +195,7 @@ export const fetchTranscriptWithYtDlp = async ({
           url,
         });
       },
-      openaiApiKey: effectiveTranscription.openaiApiKey,
-      totalDurationSeconds: probedDurationSeconds,
+      env: effectiveEnv,
     });
     if (result.notes.length > 0) {
       notes.push(...result.notes);
@@ -246,7 +221,9 @@ export const fetchTranscriptWithYtDlp = async ({
     };
   } finally {
     if (shouldCleanup) {
-      await fs.unlink(filePath).catch(() => {});
+      await fs.unlink(filePath).catch(() => {
+        /* empty */
+      });
     }
   }
 };
@@ -452,18 +429,18 @@ function emitProgressFromLine(
   }
   const payload = trimmed.slice('progress:'.length);
   const [downloadedRaw, totalRaw, estimateRaw] = payload.split('|') as [string?, string?, string?];
-  const downloaded = Number.parseFloat(downloadedRaw);
+  const downloaded = Number.parseFloat(downloadedRaw ?? '');
   if (!Number.isFinite(downloaded) || downloaded < 0) {
     return;
   }
-  const totalCandidate = Number.parseFloat(totalRaw);
-  const estimateCandidate = Number.parseFloat(estimateRaw);
+  const totalCandidate = Number.parseFloat(totalRaw ?? '');
+  const estimateCandidate = Number.parseFloat(estimateRaw ?? '');
   const totalBytes =
     Number.isFinite(totalCandidate) && totalCandidate > 0
       ? totalCandidate
-      : (Number.isFinite(estimateCandidate) && estimateCandidate > 0
+      : Number.isFinite(estimateCandidate) && estimateCandidate > 0
         ? estimateCandidate
-        : null);
+        : null;
   onProgress(downloaded, totalBytes);
 }
 

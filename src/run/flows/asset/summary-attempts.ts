@@ -1,7 +1,6 @@
 import path from 'node:path';
 
 import type { CliProvider } from '../../../config.js';
-import { resolveGitHubModelsApiKey } from '../../../llm/github-models.js';
 import { buildAutoModelAttempts } from '../../../model-auto.js';
 import { buildPathSummaryPrompt } from '../../../prompts/index.js';
 import { ensureCliAttachmentPath } from '../../attachments.js';
@@ -23,10 +22,8 @@ export async function buildAssetModelAttempts({
   lastSuccessfulCliProvider: CliProvider | null;
 }): Promise<ModelAttempt[]> {
   if (ctx.isFallbackModel) {
-    const catalog = await ctx.getLiteLlmCatalog();
     const all = buildAutoModelAttempts({
       allowAutoCliFallback: ctx.allowAutoCliFallback,
-      catalog,
       cliAvailability: ctx.cliAvailability,
       config: ctx.configForModelSelection,
       desiredOutputTokens: ctx.desiredOutputTokens,
@@ -43,7 +40,7 @@ export async function buildAssetModelAttempts({
         return ctx.summaryEngine.applyOpenAiGatewayOverrides(attempt);
       }
       const parsed = parseCliUserModelId(attempt.userModelId);
-      return { ...attempt, cliModel: parsed.model, cliProvider: parsed.provider };
+      return Object.assign(attempt, { cliModel: parsed.model, cliProvider: parsed.provider });
     });
   }
 
@@ -65,26 +62,6 @@ export async function buildAssetModelAttempts({
       },
     ];
   }
-  const openaiOverrides =
-    ctx.fixedModelSpec.requiredEnv === 'Z_AI_API_KEY'
-      ? {
-          forceChatCompletions: true,
-          openaiApiKeyOverride: ctx.apiStatus.zaiApiKey,
-          openaiBaseUrlOverride: ctx.apiStatus.zaiBaseUrl,
-        }
-      : ctx.fixedModelSpec.requiredEnv === 'NVIDIA_API_KEY'
-        ? {
-            forceChatCompletions: true,
-            openaiApiKeyOverride: ctx.apiStatus.nvidiaApiKey,
-            openaiBaseUrlOverride: ctx.apiStatus.nvidiaBaseUrl,
-          }
-        : ctx.fixedModelSpec.requiredEnv === 'GITHUB_TOKEN'
-          ? {
-              forceChatCompletions: true,
-              openaiApiKeyOverride: resolveGitHubModelsApiKey(ctx.env),
-              openaiBaseUrlOverride: ctx.fixedModelSpec.openaiBaseUrlOverride ?? null,
-            }
-          : {};
   return [
     {
       forceOpenRouter: ctx.fixedModelSpec.forceOpenRouter,
@@ -96,7 +73,6 @@ export async function buildAssetModelAttempts({
       ...(ctx.fixedModelSpec.requestOptions
         ? { requestOptions: ctx.fixedModelSpec.requestOptions }
         : {}),
-      ...openaiOverrides,
     },
   ];
 }

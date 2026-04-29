@@ -5,8 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createChatUiRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-ui-runtime';
 
 class MockResizeObserver {
-  observe() {}
-  disconnect() {}
+  observe() {
+    /* empty */
+  }
+  disconnect() {
+    /* empty */
+  }
 }
 
 function setScrollMetrics(
@@ -48,10 +52,16 @@ describe('sidepanel chat ui runtime', () => {
     const chatEnabled = false;
     const clearMetrics = vi.fn();
     const clearQueuedMessages = vi.fn();
-    const clearHistory = vi.fn(async () => {});
+    const clearHistory = vi.fn(async () => {
+      /* empty */
+    });
     const loadHistory = vi.fn(async () => null);
-    const persistHistory = vi.fn(async () => {});
-    const restoreHistory = vi.fn(async () => {});
+    const persistHistory = vi.fn(async () => {
+      /* empty */
+    });
+    const restoreHistory = vi.fn(async () => {
+      /* empty */
+    });
     const resetChatController = vi.fn();
     const resetChatSession = vi.fn();
     const runtime = createChatUiRuntime({
@@ -97,10 +107,16 @@ describe('sidepanel chat ui runtime', () => {
     chatDockEl.getBoundingClientRect = () => ({ height: 32 }) as DOMRect;
 
     const focusSpy = vi.spyOn(chatInputEl, 'focus');
-    const clearHistory = vi.fn(async () => {});
+    const clearHistory = vi.fn(async () => {
+      /* empty */
+    });
     const loadHistory = vi.fn(async () => [{ id: '1' }]);
-    const persistHistory = vi.fn(async () => {});
-    const restoreHistory = vi.fn(async () => {});
+    const persistHistory = vi.fn(async () => {
+      /* empty */
+    });
+    const restoreHistory = vi.fn(async () => {
+      /* empty */
+    });
 
     const runtime = createChatUiRuntime({
       chatContainerEl,

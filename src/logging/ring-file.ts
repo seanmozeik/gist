@@ -62,7 +62,9 @@ export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
   let chain = Promise.resolve();
 
   const enqueue = (task: () => Promise<void>) => {
-    chain = chain.then(task).catch(() => {});
+    chain = chain.then(task).catch(() => {
+      /* empty */
+    });
   };
 
   const write = (line: string) => {

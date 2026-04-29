@@ -28,7 +28,7 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved.startsWith('https://open.spotify.com/episode/')) {
@@ -40,8 +40,8 @@ describe('Spotify episode short-circuit', () => {
       }
 
       if (resolved.startsWith('https://itunes.apple.com/search')) {
-        return new Response(
-          JSON.stringify({ resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] }),
+        return Response.json(
+          { resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -71,12 +71,12 @@ describe('Spotify episode short-circuit', () => {
 
     const openaiFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       expect(resolved).toContain('https://api.openai.com/v1/audio/transcriptions');
-      return new Response(JSON.stringify({ text: 'hello world from spotify' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'hello world from spotify' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -164,15 +164,15 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved === `https://open.spotify.com/embed/episode/${episodeId}`) {
         return new Response(embedHtml, { headers: { 'content-type': 'text/html' }, status: 200 });
       }
       if (resolved.startsWith('https://itunes.apple.com/search')) {
-        return new Response(
-          JSON.stringify({ resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] }),
+        return Response.json(
+          { resultCount: 1, results: [{ collectionName: showTitle, feedUrl }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -199,12 +199,10 @@ describe('Spotify episode short-circuit', () => {
 
     const geminiFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       expect(resolved).toContain('generativelanguage.googleapis.com');
-      return new Response(
-        JSON.stringify({
-          candidates: [{ content: { parts: [{ text: 'hello world from gemini spotify' }] } }],
-        }),
+      return Response.json(
+        { candidates: [{ content: { parts: [{ text: 'hello world from gemini spotify' }] } }] },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });

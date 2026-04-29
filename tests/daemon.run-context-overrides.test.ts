@@ -38,7 +38,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.lengthArg).toEqual({ kind: 'preset', preset: 'xl' });
@@ -58,7 +62,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.lengthArg).toEqual({ kind: 'chars', maxCharacters: 20_000 });
@@ -81,7 +89,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
     expect(configCtx.flags.outputLanguage.kind).toBe('fixed');
     expect(
@@ -98,7 +110,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
     expect(requestCtx.flags.outputLanguage.kind).toBe('fixed');
     expect(
@@ -120,7 +136,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
     expect(configCtx.flags.lengthArg).toEqual({ kind: 'preset', preset: 'short' });
 
@@ -134,7 +154,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
     expect(requestCtx.flags.lengthArg).toEqual({ kind: 'chars', maxCharacters: 20_000 });
   });
@@ -153,7 +177,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: 'Explain for a kid.',
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.lengthInstruction).toContain('Target length: around 900 characters');
@@ -187,7 +215,11 @@ describe('daemon/flow-context (overrides)', () => {
       },
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.firecrawlMode).toBe('auto');
@@ -213,7 +245,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     expect(ctx.flags.markdownMode).toBe('readability');
@@ -231,7 +267,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
     const xlCtx = createDaemonUrlFlowContext({
       cache: makeCacheState(),
@@ -243,7 +283,11 @@ describe('daemon/flow-context (overrides)', () => {
       modelOverride: null,
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     const shortTokens = shortCtx.model.desiredOutputTokens;

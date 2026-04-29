@@ -35,8 +35,8 @@ describe('refresh-free', () => {
 
     const created = Math.floor(Date.now() / 1000);
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           data: [
             {
               context_length: 1234,
@@ -46,7 +46,7 @@ describe('refresh-free', () => {
             },
             { context_length: 5678, created, id: 'google/gemma-3-27b-it:free', name: 'Gemma 27B' },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -76,8 +76,8 @@ describe('refresh-free', () => {
 
     const created = Math.floor(Date.now() / 1000);
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({ data: [{ created, id: 'google/gemma-3-27b-it:free' }] }),
+      return Response.json(
+        { data: [{ created, id: 'google/gemma-3-27b-it:free' }] },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -117,8 +117,8 @@ describe('refresh-free', () => {
 
       const created = Math.floor(Date.now() / 1000);
       const fetchMock = vi.fn(async () => {
-        return new Response(
-          JSON.stringify({ data: [{ created, id: 'google/gemma-3-27b-it:free' }] }),
+        return Response.json(
+          { data: [{ created, id: 'google/gemma-3-27b-it:free' }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -150,8 +150,8 @@ describe('refresh-free', () => {
 
     const created = Math.floor(Date.now() / 1000);
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           data: [
             { context_length: 1000, created, id: 'acme/tiny-13b:free', name: 'Tiny 13B' },
             {
@@ -164,7 +164,7 @@ describe('refresh-free', () => {
               top_provider: { max_completion_tokens: 2048 },
             },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -205,10 +205,10 @@ describe('refresh-free', () => {
     }));
 
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ data: models }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { data: models },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     await runCli(['refresh-free', '--runs', '0', '--min-params', '27b'], {
@@ -242,13 +242,13 @@ describe('refresh-free', () => {
       const olderThan180d = nowSec - 200 * 24 * 60 * 60;
 
       const fetchMock = vi.fn(async () => {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             data: [
               { created: within180d, id: 'acme/new-27b:free', name: 'New 27B' },
               { created: olderThan180d, id: 'acme/old-70b:free', name: 'Old 70B' },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -301,10 +301,10 @@ describe('refresh-free', () => {
 
     const created = Math.floor(Date.now() / 1000);
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ data: [{ created, id: 'acme/big-27b:free' }] }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { data: [{ created, id: 'acme/big-27b:free' }] },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     await runCli(['refresh-free', '--runs', '0', '--min-params', '0b', '--set-default'], {
@@ -332,8 +332,8 @@ describe('refresh-free', () => {
 
     const created = Math.floor(Date.now() / 1000);
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           data: [
             {
               architecture: { modality: 'text' },
@@ -345,7 +345,7 @@ describe('refresh-free', () => {
               top_provider: { max_completion_tokens: 2345 },
             },
           ],
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });

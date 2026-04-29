@@ -7,10 +7,14 @@ function createMockPort() {
   const onDisconnectListeners: (() => void)[] = [];
   return {
     disconnect() {
-      for (const listener of onDisconnectListeners) {listener();}
+      for (const listener of onDisconnectListeners) {
+        listener();
+      }
     },
     emitMessage(message: unknown) {
-      for (const listener of onMessageListeners) {listener(message);}
+      for (const listener of onMessageListeners) {
+        listener(message);
+      }
     },
     onDisconnect: {
       addListener(listener: () => void) {
@@ -40,7 +44,9 @@ describe('sidepanel panel port runtime', () => {
     const runtime = createPanelPortRuntime({
       connect,
       getCurrentWindowId: async () => 17,
-      onMessage: () => {},
+      onMessage: () => {
+        /* empty */
+      },
     });
 
     await runtime.ensure();
@@ -80,7 +86,9 @@ describe('sidepanel panel port runtime', () => {
     const runtime = createPanelPortRuntime({
       connect,
       getCurrentWindowId: async () => null,
-      onMessage: () => {},
+      onMessage: () => {
+        /* empty */
+      },
     });
 
     await runtime.send({ type: 'panel:ready' });
@@ -95,7 +103,9 @@ describe('sidepanel panel port runtime', () => {
     const runtime = createPanelPortRuntime({
       connect: () => port,
       getCurrentWindowId: async () => 17,
-      onMessage: () => {},
+      onMessage: () => {
+        /* empty */
+      },
     });
 
     await expect(runtime.send({ type: 'panel:ready' })).resolves.toBeUndefined();

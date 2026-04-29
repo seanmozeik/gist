@@ -58,7 +58,9 @@ function buildRuntime() {
     seedPlannedSlidesForPendingRun: vi.fn(),
     setPhase: vi.fn(),
     setSlidesBusy: vi.fn(),
-    syncWithActiveTab: vi.fn(async () => {}),
+    syncWithActiveTab: vi.fn(async () => {
+      /* empty */
+    }),
   };
 
   const runtime = createSummaryStreamRuntime({
@@ -206,7 +208,9 @@ describe('sidepanel summary stream runtime', () => {
       setPhase,
       setSlidesBusy: vi.fn(),
       shouldRebuildSlideDescriptions: vi.fn(() => false),
-      syncWithActiveTab: vi.fn(async () => {}),
+      syncWithActiveTab: vi.fn(async () => {
+        /* empty */
+      }),
     });
 
     const message = capturedOptions?.onError?.(new Error('boom'));

@@ -16,7 +16,9 @@ const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
         process.env.GOOGLE_API_KEY ??
         null;
       if (!googleApiKey) {
-        it.skip('requires GEMINI_API_KEY', () => {});
+        it.skip('requires GEMINI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
 

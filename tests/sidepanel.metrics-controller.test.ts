@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMetricsController } from '../apps/chrome-extension/src/entrypoints/sidepanel/metrics-controller.js';
 
 class MockResizeObserver {
-  observe() {}
+  observe() {
+    /* empty */
+  }
 }
 
 describe('sidepanel metrics controller', () => {
@@ -21,11 +23,7 @@ describe('sidepanel metrics controller', () => {
     document.body.append(metricsHomeEl, chatMetricsSlotEl);
     metricsHomeEl.append(metricsEl);
 
-    const controller = createMetricsController({
-      chatMetricsSlotEl,
-      metricsEl,
-      metricsHomeEl,
-    });
+    const controller = createMetricsController({ chatMetricsSlotEl, metricsEl, metricsHomeEl });
 
     controller.setForMode(
       'summary',
@@ -48,11 +46,7 @@ describe('sidepanel metrics controller', () => {
     document.body.append(metricsHomeEl, chatMetricsSlotEl);
     metricsHomeEl.append(metricsEl);
 
-    const controller = createMetricsController({
-      chatMetricsSlotEl,
-      metricsEl,
-      metricsHomeEl,
-    });
+    const controller = createMetricsController({ chatMetricsSlotEl, metricsEl, metricsHomeEl });
 
     controller.setForMode('chat', 'Cached · example.com', null, null);
     controller.setActiveMode('chat');

@@ -94,7 +94,7 @@ describe('cli media API key mapping', () => {
     const testKey = 'test-openai-transcription-key';
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : ('url' in input ? input.url : input.toString());
+      const url = typeof input === 'string' ? input : 'url' in input ? input.url : input.toString();
       if (url === 'https://example.com') {
         return new Response('<!doctype html><html><body>Hi</body></html>', {
           headers: { 'Content-Type': 'text/html' },

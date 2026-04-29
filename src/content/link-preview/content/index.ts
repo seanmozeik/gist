@@ -1,6 +1,5 @@
 import { resolveTranscriptForLink } from '../../transcript/index.js';
 import { resolveTranscriptionAvailability } from '../../transcript/providers/transcription-start.js';
-import { resolveTranscriptionConfig } from '../../transcript/transcription-config.js';
 import { isDirectMediaUrl, isYouTubeUrl } from '../../url.js';
 import type { FirecrawlScrapeResult, LinkPreviewDeps } from '../deps.js';
 import type { CacheMode, FirecrawlDiagnostics, TranscriptResolution } from '../types.js';
@@ -53,15 +52,6 @@ export async function fetchLinkContent(
   options: FetchLinkContentOptions | undefined,
   deps: LinkPreviewDeps,
 ): Promise<ExtractedLinkContent> {
-  const transcription = resolveTranscriptionConfig({
-    assemblyaiApiKey: deps.assemblyaiApiKey,
-    env: deps.env,
-    falApiKey: deps.falApiKey,
-    geminiApiKey: deps.geminiApiKey,
-    groqApiKey: deps.groqApiKey,
-    openaiApiKey: deps.openaiApiKey,
-    transcription: deps.transcription ?? null,
-  });
   const timeoutMs = resolveTimeoutMs(options);
   const cacheMode = resolveCacheMode(options);
   const maxCharacters = resolveMaxCharacters(options);
@@ -78,7 +68,7 @@ export async function fetchLinkContent(
 
   const spotifyEpisodeId = extractSpotifyEpisodeId(url);
   if (spotifyEpisodeId) {
-    const transcriptionAvailability = await resolveTranscriptionAvailability({ transcription });
+    const transcriptionAvailability = await resolveTranscriptionAvailability({ env: deps.env });
     if (!transcriptionAvailability.hasAnyProvider) {
       throw new Error(
         'Spotify episode transcription requires a transcription provider (install whisper-cpp or set GROQ_API_KEY, ASSEMBLYAI_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, or FAL_KEY); otherwise you may only get a captcha/recaptcha HTML page.',
@@ -139,7 +129,7 @@ export async function fetchLinkContent(
 
   const appleIds = extractApplePodcastIds(url);
   if (appleIds) {
-    const transcriptionAvailability = await resolveTranscriptionAvailability({ transcription });
+    const transcriptionAvailability = await resolveTranscriptionAvailability({ env: deps.env });
     if (!transcriptionAvailability.hasAnyProvider) {
       throw new Error(
         'Apple Podcasts transcription requires a transcription provider (install whisper-cpp or set GROQ_API_KEY, ASSEMBLYAI_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, or FAL_KEY); otherwise you may only get a slow/blocked HTML page.',
@@ -604,14 +594,14 @@ export async function fetchLinkContent(
   if (twitterStatus && isBlockedTwitterContent(htmlExtracted.content)) {
     const birdNote = !deps.readTweetWithBird
       ? 'X CLI not available'
-      : (birdError
+      : birdError
         ? `X CLI failed: ${birdError instanceof Error ? birdError.message : String(birdError)}`
-        : 'X CLI returned no text');
+        : 'X CLI returned no text';
     const nitterNote =
       nitterUrls.length > 0
-        ? (nitterError
+        ? nitterError
           ? `Nitter failed: ${nitterError instanceof Error ? nitterError.message : String(nitterError)}`
-          : 'Nitter returned no text')
+          : 'Nitter returned no text'
         : 'Nitter not available';
     throw new Error(`Unable to fetch tweet content from X. ${birdNote}. ${nitterNote}.`);
   }

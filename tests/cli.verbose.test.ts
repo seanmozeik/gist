@@ -28,8 +28,8 @@ describe('--verbose', () => {
 
     const stdout = new Writable({
       write(chunk, encoding, callback) {
-        void chunk;
-        void encoding;
+        undefined;
+        undefined;
         callback();
       },
     });
@@ -82,8 +82,8 @@ describe('--verbose', () => {
 
     const stdout = new Writable({
       write(chunk, encoding, callback) {
-        void chunk;
-        void encoding;
+        undefined;
+        undefined;
         callback();
       },
     });
@@ -135,8 +135,8 @@ describe('--debug', () => {
 
     const stdout = new Writable({
       write(chunk, encoding, callback) {
-        void chunk;
-        void encoding;
+        undefined;
+        undefined;
         callback();
       },
     });

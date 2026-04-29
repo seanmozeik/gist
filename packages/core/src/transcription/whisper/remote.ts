@@ -366,6 +366,8 @@ export async function transcribeOversizedBytesViaTempFile({
     await fs.writeFile(tempFile, bytes);
     return await transcribeFile({ filePath: tempFile, filename, mediaType, onProgress });
   } finally {
-    await fs.unlink(tempFile).catch(() => {});
+    await fs.unlink(tempFile).catch(() => {
+      /* empty */
+    });
   }
 }

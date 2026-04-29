@@ -17,10 +17,10 @@ describe('transcription/whisper assemblyai', () => {
       if (url.endsWith('/upload')) {
         expect(new Headers(init?.headers).get('authorization')).toBe('AAI');
         expect(new Headers(init?.headers).get('content-type')).toBe('audio/mpeg');
-        return new Response(JSON.stringify({ upload_url: 'https://upload.example/audio' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { upload_url: 'https://upload.example/audio' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       if (url.endsWith('/transcript')) {
         expect(init?.method).toBe('POST');
@@ -28,19 +28,17 @@ describe('transcription/whisper assemblyai', () => {
           audio_url: 'https://upload.example/audio',
           speech_models: ['universal-2'],
         });
-        return new Response(JSON.stringify({ id: 'tr_123', status: 'queued' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { id: 'tr_123', status: 'queued' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       if (url.endsWith('/transcript/tr_123')) {
         polls += 1;
-        return new Response(
-          JSON.stringify(
-            polls === 1
-              ? { id: 'tr_123', status: 'processing' }
-              : { id: 'tr_123', status: 'completed', text: 'AssemblyAI transcript' },
-          ),
+        return Response.json(
+          polls === 1
+            ? { id: 'tr_123', status: 'processing' }
+            : { id: 'tr_123', status: 'completed', text: 'AssemblyAI transcript' },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -76,14 +74,14 @@ describe('transcription/whisper assemblyai', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       if (url.endsWith('/upload')) {
-        return new Response(JSON.stringify({ upload_url: 'https://upload.example/file' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { upload_url: 'https://upload.example/file' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       if (url.endsWith('/transcript')) {
-        return new Response(
-          JSON.stringify({ id: 'tr_file', status: 'completed', text: 'File transcript' }),
+        return Response.json(
+          { id: 'tr_file', status: 'completed', text: 'File transcript' },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -110,7 +108,9 @@ describe('transcription/whisper assemblyai', () => {
       expect(result.provider).toBe('assemblyai');
       expect(result.error).toBeNull();
     } finally {
-      await rm(root, { force: true, recursive: true }).catch(() => {});
+      await rm(root, { force: true, recursive: true }).catch(() => {
+        /* empty */
+      });
     }
   });
 
@@ -122,10 +122,10 @@ describe('transcription/whisper assemblyai', () => {
       }
       if (url.endsWith('/audio/transcriptions')) {
         expect(init?.body).toBeInstanceOf(FormData);
-        return new Response(JSON.stringify({ text: 'OpenAI transcript' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { text: 'OpenAI transcript' },
+          { headers: { 'content-type': 'application/json' }, status: 200 },
+        );
       }
       throw new Error(`Unexpected fetch: ${url}`);
     });

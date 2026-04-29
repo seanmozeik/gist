@@ -86,7 +86,11 @@ describe('runUrlFlow transcription wiring', () => {
       modelOverride: 'google/gemini-3-flash',
       promptOverride: null,
       runStartedAtMs: Date.now(),
-      stdoutSink: { writeChunk: () => {} },
+      stdoutSink: {
+        writeChunk: () => {
+          /* empty */
+        },
+      },
     });
 
     ctx.model.apiStatus.googleApiKey = 'gemini-key';

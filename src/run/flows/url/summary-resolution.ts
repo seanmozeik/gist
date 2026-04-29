@@ -22,20 +22,14 @@ import { writeVerbose } from '../../logging.js';
 import { runModelAttempts } from '../../model-attempts.js';
 import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter.js';
 import type { ModelAttempt } from '../../types.js';
-import type { SlidesTerminalOutput } from './slides-output.js';
-import { normalizeSummarySlideHeadings } from './slides-text.js';
-import { buildModelMetaFromAttempt } from './summary-finish.js';
-import { shouldBypassShortContentSummary } from './summary-prompt.js';
+import type {} from './summary-finish.js';
+import type {} from './summary-prompt.js';
 import {
   resolveSummaryTimestampUpperBound,
   sanitizeSummaryKeyMoments,
   shouldSanitizeSummaryKeyMoments,
 } from './summary-timestamps.js';
 import type { UrlFlowContext } from './types.js';
-
-type SlidesResult = Awaited<
-  ReturnType<typeof import('../../../slides/index.js').extractSlidesForSource>
->;
 
 interface SummaryResolutionUseExtracted {
   kind: 'use-extracted';
@@ -61,16 +55,14 @@ export async function resolveUrlSummaryExecution({
   extracted,
   prompt,
   onModelChosen,
-  slides,
-  slidesOutput,
 }: {
   ctx: UrlFlowContext;
   url: string;
   extracted: ExtractedLinkContent;
   prompt: string;
   onModelChosen?: ((modelId: string) => void) | null;
-  slides?: SlidesResult | null;
-  slidesOutput?: SlidesTerminalOutput | null;
+  slides: unknown;
+  slidesOutput: unknown;
 }): Promise<UrlSummaryResolution> {
   const { io, flags, model, cache: cacheState } = ctx;
   const lastSuccessfulCliProvider = model.isFallbackModel
@@ -81,15 +73,13 @@ export async function resolveUrlSummaryExecution({
   const promptTokens = countTokens(promptPayload.userText);
   const kindForAuto =
     extracted.siteName === 'YouTube' ? ('youtube' as const) : ('website' as const);
-  const hasSlides = Boolean(slides && slides.slides.length > 0);
-  const sanitizeKeyMoments = shouldSanitizeSummaryKeyMoments({ extracted, hasSlides });
+  const sanitizeKeyMoments = shouldSanitizeSummaryKeyMoments({ extracted, hasSlides: false });
   const timestampUpperBound = sanitizeKeyMoments
     ? resolveSummaryTimestampUpperBound(extracted)
     : null;
 
   const attempts: ModelAttempt[] = await (async () => {
     if (model.isFallbackModel) {
-      const catalog = await model.getLiteLlmCatalog();
       const list = buildAutoModelAttempts({
         allowAutoCliFallback: model.allowAutoCliFallback,
         catalog,
@@ -109,7 +99,7 @@ export async function resolveUrlSummaryExecution({
           writeVerbose(
             io.stderr,
             flags.verbose,
-            `auto candidate ${attempt.debug}`,
+            `auto candidate ${attempt.userModelId}`,
             flags.verboseColor,
             io.envForRun,
           );
@@ -120,7 +110,7 @@ export async function resolveUrlSummaryExecution({
           return model.summaryEngine.applyOpenAiGatewayOverrides(attempt);
         }
         const parsed = parseCliUserModelId(attempt.userModelId);
-        return { ...attempt, cliModel: parsed.model, cliProvider: parsed.provider };
+        return Object.assign(attempt, { cliModel: parsed.model, cliProvider: parsed.provider });
       });
     }
     /* V8 ignore next */
@@ -143,22 +133,13 @@ export async function resolveUrlSummaryExecution({
     }
     const openaiOverrides =
       model.fixedModelSpec.requiredEnv === 'Z_AI_API_KEY'
-        ? {
-            forceChatCompletions: true,
-            openaiApiKeyOverride: model.apiStatus.zaiApiKey,
-            openaiBaseUrlOverride: model.apiStatus.zaiBaseUrl,
-          }
+        ? { forceChatCompletions: true }
         : model.fixedModelSpec.requiredEnv === 'NVIDIA_API_KEY'
-          ? {
-              forceChatCompletions: true,
-              openaiApiKeyOverride: model.apiStatus.nvidiaApiKey,
-              openaiBaseUrlOverride: model.apiStatus.nvidiaBaseUrl,
-            }
+          ? { forceChatCompletions: true }
           : model.fixedModelSpec.requiredEnv === 'GITHUB_TOKEN'
             ? {
                 forceChatCompletions: true,
                 openaiApiKeyOverride: resolveGitHubModelsApiKey(io.envForRun),
-                openaiBaseUrlOverride: model.fixedModelSpec.openaiBaseUrlOverride ?? null,
               }
             : {};
     return [
@@ -201,12 +182,10 @@ export async function resolveUrlSummaryExecution({
     Boolean(extracted.video) ||
     (extracted.transcriptSource != null && extracted.transcriptSource !== 'unavailable') ||
     (typeof extracted.mediaDurationSeconds === 'number' && extracted.mediaDurationSeconds > 0) ||
-    
     extracted.isVideoOnly;
   const autoBypass = ctx.model.isFallbackModel && !ctx.model.isNamedModelSelection;
   const canBypassShortContent =
     (autoBypass || isTweet) &&
-    !flags.slides &&
     !hasMedia &&
     flags.streamMode !== 'on' &&
     !isYouTube &&
@@ -237,10 +216,12 @@ export async function resolveUrlSummaryExecution({
         model: autoSelectionCacheModel,
         promptHash,
       });
-      const cached = cacheStore.getJson<{ summary?: unknown; model?: unknown }>('summary', key);
+      const cachedRaw = cacheStore.getJson('summary', key);
+      const cached = cachedRaw as { summary?: unknown; model?: unknown } | null;
       const cachedSummary =
-        cached && typeof cached.summary === 'string' ? cached.summary.trim() : null;
-      const cachedModelId = cached && typeof cached.model === 'string' ? cached.model.trim() : null;
+        cached && typeof cached.summary === 'string' ? (cached.summary as string).trim() : null;
+      const cachedModelId =
+        cached && typeof cached.model === 'string' ? (cached.model as string).trim() : null;
       if (cachedSummary) {
         const cachedAttempt = cachedModelId
           ? (attempts.find((attempt) => attempt.userModelId === cachedModelId) ?? null)
@@ -354,7 +335,7 @@ export async function resolveUrlSummaryExecution({
           attempt,
           onModelChosen: onModelChosen ?? null,
           prompt: promptPayload,
-          streamHandler: slidesOutput?.streamHandler ?? null,
+          streamHandler: null,
         }),
     });
     summaryResult = attemptOutcome.result;
@@ -405,8 +386,7 @@ export async function resolveUrlSummaryExecution({
   }
 
   const { summary, summaryAlreadyPrinted, modelMeta, maxOutputTokensForCall } = summaryResult;
-  const normalizedSummaryBase =
-    slides && slides.slides.length > 0 ? normalizeSummarySlideHeadings(summary) : summary;
+  const normalizedSummaryBase = summary;
   const normalizedSummary = sanitizeSummaryKeyMoments({
     markdown: normalizedSummaryBase,
     maxSeconds: timestampUpperBound,

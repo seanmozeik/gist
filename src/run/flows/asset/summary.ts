@@ -131,13 +131,9 @@ async function outputBypassedAssetSummary({
           };
     const payload = {
       env: {
-        hasAnthropicKey: ctx.apiStatus.anthropicConfigured,
         hasApifyToken: Boolean(ctx.apiStatus.apifyToken),
         hasFirecrawlKey: ctx.apiStatus.firecrawlConfigured,
-        hasGoogleKey: ctx.apiStatus.googleConfigured,
-        hasOpenAIKey: Boolean(ctx.apiStatus.apiKey),
         hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey),
-        hasXaiKey: Boolean(ctx.apiStatus.xaiApiKey),
       },
       extracted,
       input,
@@ -149,7 +145,7 @@ async function outputBypassedAssetSummary({
     ctx.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     ctx.restoreProgressAfterStdout?.();
     if (ctx.metricsEnabled && finishReport) {
-      const costUsd = await ctx.estimateCostUsd();
+      const costUsd: number | null = null;
       writeFinishLine({
         color: ctx.verboseColor,
         costUsd,
@@ -195,7 +191,7 @@ async function outputBypassedAssetSummary({
 
   const report = ctx.shouldComputeReport ? await ctx.buildReport() : null;
   if (ctx.metricsEnabled && report) {
-    const costUsd = await ctx.estimateCostUsd();
+    const costUsd: number | null = null;
     writeFinishLine({
       color: ctx.verboseColor,
       costUsd,
@@ -256,36 +252,19 @@ export interface AssetSummaryContext {
   writeViaFooter: (parts: string[]) => void;
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
-  getLiteLlmCatalog: () => Promise<
-    Awaited<ReturnType<typeof import('../../../pricing/litellm.js').loadLiteLlmCatalog>>['catalog']
-  >;
   buildReport: () => Promise<RunMetricsReport>;
-  estimateCostUsd: () => Promise<number | null>;
   llmCalls: LlmCall[];
   cache: CacheState;
   summaryCacheBypass: boolean;
   mediaCache: MediaCache | null;
   apiStatus: {
-    xaiApiKey: string | null;
-    apiKey: string | null;
-    nvidiaApiKey: string | null;
     openrouterApiKey: string | null;
     apifyToken: string | null;
     firecrawlConfigured: boolean;
-    googleConfigured: boolean;
-    anthropicConfigured: boolean;
-    providerBaseUrls: {
-      openai: string | null;
-      nvidia: string | null;
-      anthropic: string | null;
-      google: string | null;
-      xai: string | null;
-    };
-    zaiApiKey: string | null;
-    zaiBaseUrl: string;
-    nvidiaBaseUrl: string;
-    assemblyaiApiKey: string | null;
-    openaiApiKey: string | null;
+    firecrawlApiKey: string | null;
+    ytDlpPath: string | null;
+    ytDlpCookiesFromBrowser: string | null;
+    localBaseUrl: string | null;
   };
 }
 
@@ -326,7 +305,6 @@ export interface AssetSummaryContextInput {
     | 'wantsFreeNamedModel'
     | 'isNamedModelSelection'
     | 'summaryEngine'
-    | 'getLiteLlmCatalog'
     | 'llmCalls'
   >;
   output: Pick<
@@ -343,11 +321,7 @@ export interface AssetSummaryContextInput {
   >;
   hooks: Pick<
     AssetSummaryContext,
-    | 'writeViaFooter'
-    | 'clearProgressForStdout'
-    | 'restoreProgressAfterStdout'
-    | 'buildReport'
-    | 'estimateCostUsd'
+    'writeViaFooter' | 'clearProgressForStdout' | 'restoreProgressAfterStdout' | 'buildReport'
   >;
   cache: Pick<AssetSummaryContext, 'cache' | 'mediaCache'>;
   apiStatus: AssetSummaryContext['apiStatus'];
@@ -491,10 +465,12 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
         model: autoSelectionCacheModel,
         promptHash,
       });
-      const cached = cacheStore.getJson<{ summary?: unknown; model?: unknown }>('summary', key);
+      const cachedRaw = cacheStore.getJson('summary', key);
+      const cached = cachedRaw as { summary?: unknown; model?: unknown } | null;
       const cachedSummary =
-        cached && typeof cached.summary === 'string' ? cached.summary.trim() : null;
-      const cachedModelId = cached && typeof cached.model === 'string' ? cached.model.trim() : null;
+        cached && typeof cached.summary === 'string' ? (cached.summary as string).trim() : null;
+      const cachedModelId =
+        cached && typeof cached.model === 'string' ? (cached.model as string).trim() : null;
       if (cachedSummary) {
         const cachedAttempt = cachedModelId
           ? (attempts.find((attempt) => attempt.userModelId === cachedModelId) ?? null)
@@ -755,13 +731,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
           };
     const payload = {
       env: {
-        hasAnthropicKey: ctx.apiStatus.anthropicConfigured,
         hasApifyToken: Boolean(ctx.apiStatus.apifyToken),
         hasFirecrawlKey: ctx.apiStatus.firecrawlConfigured,
-        hasGoogleKey: ctx.apiStatus.googleConfigured,
-        hasOpenAIKey: Boolean(ctx.apiStatus.apiKey),
         hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey),
-        hasXaiKey: Boolean(ctx.apiStatus.xaiApiKey),
       },
       extracted,
       input,
@@ -778,10 +750,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
     ctx.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     ctx.restoreProgressAfterStdout?.();
     if (ctx.metricsEnabled && finishReport) {
-      const costUsd = await ctx.estimateCostUsd();
       writeFinishLine({
         color: ctx.verboseColor,
-        costUsd,
+        costUsd: null,
         detailed: ctx.metricsDetailed,
         elapsedLabel: summaryFromCache ? 'Cached' : null,
         elapsedMs: Date.now() - ctx.runStartedAtMs,
@@ -825,10 +796,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
 
   const report = ctx.shouldComputeReport ? await ctx.buildReport() : null;
   if (ctx.metricsEnabled && report) {
-    const costUsd = await ctx.estimateCostUsd();
     writeFinishLine({
       color: ctx.verboseColor,
-      costUsd,
+      costUsd: null,
       detailed: ctx.metricsDetailed,
       elapsedLabel: summaryFromCache ? 'Cached' : null,
       elapsedMs: Date.now() - ctx.runStartedAtMs,

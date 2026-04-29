@@ -41,7 +41,9 @@ const silentStderr = new Writable({
     async () => {
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
-        it.skip('requires OPENROUTER_API_KEY', () => {});
+        it.skip('requires OPENROUTER_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
 
@@ -104,7 +106,9 @@ const silentStderr = new Writable({
     async () => {
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
-        it.skip('requires OPENROUTER_API_KEY', () => {});
+        it.skip('requires OPENROUTER_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
 

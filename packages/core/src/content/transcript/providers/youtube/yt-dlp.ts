@@ -105,7 +105,7 @@ export const fetchTranscriptWithYtDlp = async ({
   const { providerHint } = startInfo;
   const { modelId } = startInfo;
   const localFileInput = resolveLocalDirectMediaSource(url, mediaKind);
-  const cachedMedia = localFileInput ? null : (mediaCache ? await mediaCache.get({ url }) : null);
+  const cachedMedia = localFileInput ? null : mediaCache ? await mediaCache.get({ url }) : null;
 
   const outputFile = join(tmpdir(), `summarize-${randomUUID()}.mp3`);
   let filePath = localFileInput?.filePath ?? cachedMedia?.filePath ?? outputFile;
@@ -246,7 +246,9 @@ export const fetchTranscriptWithYtDlp = async ({
     };
   } finally {
     if (shouldCleanup) {
-      await fs.unlink(filePath).catch(() => {});
+      await fs.unlink(filePath).catch(() => {
+        /* empty */
+      });
     }
   }
 };
@@ -461,9 +463,9 @@ function emitProgressFromLine(
   const totalBytes =
     Number.isFinite(totalCandidate) && totalCandidate > 0
       ? totalCandidate
-      : (Number.isFinite(estimateCandidate) && estimateCandidate > 0
+      : Number.isFinite(estimateCandidate) && estimateCandidate > 0
         ? estimateCandidate
-        : null);
+        : null;
   onProgress(downloaded, totalBytes);
 }
 

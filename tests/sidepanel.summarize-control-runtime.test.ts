@@ -74,7 +74,9 @@ function buildRuntime(
     loadSettings: vi.fn(async () => ({ token: 'token' })),
     maybeApplyPendingSlidesSummary: vi.fn(),
     maybeStartPendingSlidesForUrl: vi.fn(),
-    patchSettings: vi.fn(async (_patch: Partial<Settings>) => {}),
+    patchSettings: vi.fn(async (_patch: Partial<Settings>) => {
+      /* empty */
+    }),
     queueSlidesRender: vi.fn(),
     renderInlineSlidesFallback: vi.fn(),
     renderMarkdownDisplay: vi.fn(),

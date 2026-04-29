@@ -38,7 +38,9 @@ describe('chrome panel session actions', () => {
 
   it('clears cached extracts when the panel closes', () => {
     const clearPending = vi.fn();
-    const clearCachedExtractsForWindow = vi.fn(async () => {});
+    const clearCachedExtractsForWindow = vi.fn(async () => {
+      /* empty */
+    });
 
     handlePanelClosed(
       {
@@ -59,7 +61,9 @@ describe('chrome panel session actions', () => {
   });
 
   it('persists auto summarize and reruns when enabled', async () => {
-    const patchSettings = vi.fn(async () => {});
+    const patchSettings = vi.fn(async () => {
+      /* empty */
+    });
     const emitState = vi.fn();
     const summarizeActiveTab = vi.fn();
 
@@ -76,7 +80,9 @@ describe('chrome panel session actions', () => {
   });
 
   it('persists auto summarize without rerunning when disabled', async () => {
-    const patchSettings = vi.fn(async () => {});
+    const patchSettings = vi.fn(async () => {
+      /* empty */
+    });
     const emitState = vi.fn();
     const summarizeActiveTab = vi.fn();
 
@@ -94,7 +100,9 @@ describe('chrome panel session actions', () => {
 
   it('skips rerun when the length setting is unchanged', async () => {
     const loadSettings = vi.fn(async () => ({ length: 'medium' }));
-    const patchSettings = vi.fn(async () => {});
+    const patchSettings = vi.fn(async () => {
+      /* empty */
+    });
     const emitState = vi.fn();
     const summarizeActiveTab = vi.fn();
 
@@ -113,7 +121,9 @@ describe('chrome panel session actions', () => {
 
   it('persists changed length and reruns', async () => {
     const loadSettings = vi.fn(async () => ({ length: 'short' }));
-    const patchSettings = vi.fn(async () => {});
+    const patchSettings = vi.fn(async () => {
+      /* empty */
+    });
     const emitState = vi.fn();
     const summarizeActiveTab = vi.fn();
 

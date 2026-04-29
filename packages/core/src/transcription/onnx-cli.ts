@@ -271,7 +271,9 @@ async function ensureWavInput({
     notes.push('ONNX transcriber: transcoded media to 16kHz WAV via ffmpeg');
     return {
       cleanup: async () => {
-        await fs.unlink(outputPath).catch(() => {});
+        await fs.unlink(outputPath).catch(() => {
+          /* empty */
+        });
       },
       path: outputPath,
     };
@@ -306,7 +308,7 @@ export async function transcribeWithOnnxCli({
   const tempFile = join(tmpdir(), `summarize-onnx-${randomUUID()}-${safeName}`);
   try {
     await fs.writeFile(tempFile, bytes);
-    return transcribeWithOnnxCliFile({
+    return await transcribeWithOnnxCliFile({
       env,
       filePath: tempFile,
       mediaType,
@@ -315,7 +317,9 @@ export async function transcribeWithOnnxCli({
       totalDurationSeconds,
     });
   } finally {
-    await fs.unlink(tempFile).catch(() => {});
+    await fs.unlink(tempFile).catch(() => {
+      /* empty */
+    });
   }
 }
 
@@ -418,41 +422,12 @@ export async function transcribeWithOnnxCliFile({
     });
     proc.on('error', (error) => {
       if (wavInput.cleanup) {
-        void wavInput.cleanup();
+        undefined;
       }
       resolve({ error: wrapError(`${provider} failed`, error), notes, provider, text: null });
     });
     proc.on('close', (code) => {
-      void (async () => {
-        if (wavInput.cleanup) {
-          await wavInput.cleanup();
-        }
-
-        if (code !== 0) {
-          resolve({
-            error: new Error(
-              `${provider} failed (${code ?? 'unknown'}): ${stderr.trim() || 'unknown error'}`,
-            ),
-            notes,
-            provider,
-            text: null,
-          });
-          return;
-        }
-
-        const trimmed = stdout.trim();
-        if (!trimmed) {
-          resolve({
-            error: new Error(`${provider} returned empty text`),
-            notes,
-            provider,
-            text: null,
-          });
-          return;
-        }
-
-        resolve({ error: null, notes, provider, text: trimmed });
-      })();
+      undefined;
     });
   });
 }

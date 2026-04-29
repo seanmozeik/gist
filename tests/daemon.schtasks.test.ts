@@ -15,10 +15,10 @@ function setFetchPid(pid: number | null) {
     if (pid === null) {
       throw new Error('daemon down');
     }
-    return new Response(JSON.stringify({ ok: true, pid }), {
-      headers: { 'content-type': 'application/json' },
-      status: 200,
-    });
+    return Response.json(
+      { ok: true, pid },
+      { headers: { 'content-type': 'application/json' }, status: 200 },
+    );
   }) as typeof fetch;
 }
 function clearFetch() {

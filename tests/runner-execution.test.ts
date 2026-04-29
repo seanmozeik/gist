@@ -79,7 +79,9 @@ describe('runner execution', () => {
   });
 
   it('handles stdin via a temp file and cleans up', async () => {
-    const cleanup = vi.fn(async () => {});
+    const cleanup = vi.fn(async () => {
+      /* empty */
+    });
     createTempFileFromStdin.mockResolvedValue({ cleanup, filePath: '/tmp/stdin.txt' });
     handleFileInput.mockResolvedValueOnce(true);
 
@@ -90,7 +92,9 @@ describe('runner execution', () => {
   });
 
   it('throws when stdin conversion still cannot be handled', async () => {
-    const cleanup = vi.fn(async () => {});
+    const cleanup = vi.fn(async () => {
+      /* empty */
+    });
     createTempFileFromStdin.mockResolvedValue({ cleanup, filePath: '/tmp/stdin.txt' });
     handleFileInput.mockResolvedValueOnce(false);
 

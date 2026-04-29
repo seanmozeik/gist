@@ -51,17 +51,15 @@ export async function executeRunnerInput(options: {
       clearProgressForStdout: () => void;
       restoreProgressAfterStdout?: (() => void) | null;
       buildReport: () => Promise<RunMetricsReport>;
-      estimateCostUsd: () => Promise<number | null>;
     };
     apiStatus: {
-      xaiApiKey: string | null;
-      apiKey: string | null;
       openrouterApiKey: string | null;
       apifyToken: string | null;
       firecrawlConfigured: boolean;
-      googleConfigured: boolean;
-      anthropicConfigured: boolean;
-      openaiApiKey: string | null;
+      firecrawlApiKey: string | null;
+      ytDlpPath: string | null;
+      ytDlpCookiesFromBrowser: string | null;
+      localBaseUrl: string | null;
     };
   };
   summarizeAsset: (args: SummarizeAssetArgs) => Promise<void>;
@@ -87,9 +85,9 @@ export async function executeRunnerInput(options: {
   const slidesDirectInputUrl =
     slidesEnabled && inputTarget.kind === 'file' && isDirectVideoInput(inputTarget.filePath)
       ? pathToFileURL(inputTarget.filePath).href
-      : (slidesEnabled && url && isDirectVideoInput(url)
+      : slidesEnabled && url && isDirectVideoInput(url)
         ? url
-        : null);
+        : null;
 
   if (inputTarget.kind === 'stdin') {
     const stdinTempFile = await createTempFileFromStdin({ stream: stdin });
@@ -190,7 +188,9 @@ export async function executeRunnerInput(options: {
         await summarizeAsset({
           attachment: loaded.attachment,
           onModelChosen: (modelId) => {
-            if (!progressEnabled) {return;}
+            if (!progressEnabled) {
+              return;
+            }
             spinner.setText(renderSpinnerStatusWithModel('Summarizing', modelId));
           },
           sourceKind: 'asset-url',

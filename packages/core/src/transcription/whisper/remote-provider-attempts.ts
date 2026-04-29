@@ -131,10 +131,9 @@ const BYTE_PROVIDER_EXECUTORS: Record<
       };
     } catch (error) {
       return {
-        state,
+        error: error instanceof Error ? error : wrapError('AssemblyAI transcription failed', error),
         result: null,
-        error:
-          error instanceof Error ? error : wrapError('AssemblyAI transcription failed', error),
+        state,
       };
     }
   },
@@ -150,7 +149,7 @@ const BYTE_PROVIDER_EXECUTORS: Record<
       }
       return { error: new Error('FAL transcription returned empty text'), result: null, state };
     } catch (error) {
-      return { state, result: null, error: wrapError('FAL transcription failed', error) };
+      return { error: wrapError('FAL transcription failed', error), result: null, state };
     }
   },
   gemini: async ({ state, geminiApiKey, env }) => {
@@ -167,7 +166,7 @@ const BYTE_PROVIDER_EXECUTORS: Record<
       }
       return { error: new Error('Gemini transcription returned empty text'), result: null, state };
     } catch (error) {
-      return { state, result: null, error: wrapError('Gemini transcription failed', error) };
+      return { error: wrapError('Gemini transcription failed', error), result: null, state };
     }
   },
   openai: async ({
@@ -190,8 +189,8 @@ const BYTE_PROVIDER_EXECUTORS: Record<
           error: null,
           result: await transcribeOversizedBytesWithChunking({
             bytes: nextState.bytes,
-            mediaType: nextState.mediaType,
             filename: nextState.filename,
+            mediaType: nextState.mediaType,
             onProgress,
           }),
           state: nextState,

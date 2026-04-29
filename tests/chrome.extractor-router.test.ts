@@ -94,14 +94,14 @@ describe('chrome/extractor-router', () => {
                   data: {
                     children: [
                       {
-                        kind: 't1',
                         data: {
-                          body: 'Nested reply',
                           author: 'bob',
+                          body: 'Nested reply',
                           created_utc: 1_700_000_200,
-                          score: 3,
                           replies: '',
+                          score: 3,
                         },
+                        kind: 't1',
                       },
                     ],
                   },

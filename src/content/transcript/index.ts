@@ -106,25 +106,17 @@ export const resolveTranscriptForLink = async (
 
   const transcription = resolveTranscriptionConfig({
     env: deps.env,
-    falApiKey: deps.falApiKey,
-    geminiApiKey: deps.geminiApiKey,
-    groqApiKey: deps.groqApiKey,
-    openaiApiKey: deps.openaiApiKey,
     transcription: deps.transcription ?? null,
   });
 
   const providerResult = await executeProvider(provider, baseContext, {
     apifyApiToken: deps.apifyApiToken,
     env: deps.env,
-    falApiKey: transcription.falApiKey,
     fetch: deps.fetch,
-    geminiApiKey: transcription.geminiApiKey,
-    groqApiKey: transcription.groqApiKey,
     mediaCache: deps.mediaCache ?? null,
     mediaKindHint: mediaKindHint ?? null,
     mediaTranscriptMode: mediaTranscriptMode ?? 'auto',
     onProgress: deps.onProgress ?? null,
-    openaiApiKey: transcription.openaiApiKey,
     resolveTwitterCookies: deps.resolveTwitterCookies ?? null,
     scrapeWithFirecrawl: deps.scrapeWithFirecrawl,
     transcriptTimestamps: transcriptTimestamps ?? false,
@@ -157,7 +149,9 @@ export const resolveTranscriptForLink = async (
       if (providerResult.segments && providerResult.segments.length > 0) {
         nextMeta.timestamps = true;
         nextMeta.segments = providerResult.segments;
-      } else {nextMeta.timestamps ??= false;}
+      } else {
+        nextMeta.timestamps ??= false;
+      }
       providerResult.metadata = nextMeta;
     } else if (providerResult.segments && providerResult.segments.length > 0) {
       providerResult.metadata = { ...providerResult.metadata, segments: providerResult.segments };

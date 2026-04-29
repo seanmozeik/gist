@@ -26,7 +26,9 @@ function createFakeElement() {
     hidden: false,
     textContent: '',
     toggleAttribute(name: string, force?: boolean) {
-      if (name === 'hidden') {this.hidden = Boolean(force);}
+      if (name === 'hidden') {
+        this.hidden = Boolean(force);
+      }
     },
   } as unknown as HTMLElement;
 }
@@ -90,7 +92,13 @@ describe('options support', () => {
   it('copies token via clipboard when available', async () => {
     const tokenEl = createFakeInput('  abc123  ');
     const flashStatus = vi.fn();
-    vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => {}) } });
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText: vi.fn(async () => {
+          /* empty */
+        }),
+      },
+    });
 
     await copyTokenToClipboard({ flashStatus, tokenEl });
 

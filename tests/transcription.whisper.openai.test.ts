@@ -14,10 +14,10 @@ describe('transcription/whisper openai', () => {
       expect(typeof file.name).toBe('string');
       expect(file.name).toBe('clip.mp4');
 
-      return new Response(JSON.stringify({ text: 'hello' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'hello' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -72,10 +72,10 @@ describe('transcription/whisper openai', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       expect(url).toBe(expectedUrl);
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -104,10 +104,10 @@ describe('transcription/whisper openai', () => {
 
   it('returns an OpenAI error when the payload has no usable text', async () => {
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ foo: 'bar' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { foo: 'bar' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {

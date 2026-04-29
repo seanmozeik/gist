@@ -54,7 +54,9 @@ describe('sidepanel stream controller error handling', () => {
           status: 200,
         }),
       getToken: async () => 'token',
-      onMeta: () => {},
+      onMeta: () => {
+        /* empty */
+      },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
     });
@@ -74,9 +76,13 @@ describe('sidepanel stream controller error handling', () => {
         throw new Error('connection refused');
       },
       getToken: async () => 'token',
-      onMeta: () => {},
+      onMeta: () => {
+        /* empty */
+      },
       onPhaseChange: (phase) => phases.push(phase),
-      onStatus: () => {},
+      onStatus: () => {
+        /* empty */
+      },
     });
 
     await controller.start(run);
@@ -95,7 +101,9 @@ describe('sidepanel stream controller error handling', () => {
           status: 200,
         }),
       getToken: async () => 'token',
-      onMeta: () => {},
+      onMeta: () => {
+        /* empty */
+      },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
     });
@@ -109,14 +117,20 @@ describe('sidepanel stream controller error handling', () => {
   it('keeps error phase when the stream stalls without output', async () => {
     const phases: string[] = [];
     const statuses: string[] = [];
-    const stalledStream = new ReadableStream<Uint8Array>({ start() {} });
+    const stalledStream = new ReadableStream<Uint8Array>({
+      start() {
+        /* empty */
+      },
+    });
 
     const controller = createStreamController({
       fetchImpl: async () => new Response(stalledStream, { status: 200 }),
       getToken: async () => 'token',
       idleTimeoutMessage: 'Timed out waiting for daemon output.',
       idleTimeoutMs: 25,
-      onMeta: () => {},
+      onMeta: () => {
+        /* empty */
+      },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
     });
@@ -147,7 +161,9 @@ describe('sidepanel stream controller error handling', () => {
       getToken: async () => 'token',
       idleTimeoutMessage: 'Timed out waiting for daemon output.',
       idleTimeoutMs: 25,
-      onMeta: () => {},
+      onMeta: () => {
+        /* empty */
+      },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
     });

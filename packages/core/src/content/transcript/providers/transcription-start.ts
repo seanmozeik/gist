@@ -116,18 +116,18 @@ export async function resolveTranscriptionStartInfo({
 
   const providerHint: TranscriptionProviderHint = availability.onnxReady
     ? 'onnx'
-    : (availability.hasLocalWhisper
+    : availability.hasLocalWhisper
       ? 'cpp'
-      : resolveCloudProviderHint(availability));
+      : resolveCloudProviderHint(availability);
 
   const modelId =
     providerHint === 'onnx'
-      ? (availability.preferredOnnxModel
+      ? availability.preferredOnnxModel
         ? `onnx/${availability.preferredOnnxModel}`
-        : 'onnx')
-      : (providerHint === 'cpp'
+        : 'onnx'
+      : providerHint === 'cpp'
         ? ((await resolveWhisperCppModelNameForDisplay(availability.effectiveEnv)) ?? 'whisper.cpp')
-        : resolveCloudModelId(availability));
+        : resolveCloudModelId(availability);
 
   return { availability, modelId, providerHint };
 }

@@ -19,7 +19,16 @@ describe('llm/cli extra branches', () => {
           ].join('\n'),
           '',
         );
-        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
+        return {
+          stdin: {
+            end() {
+              /* empty */
+            },
+            write() {
+              /* empty */
+            },
+          },
+        } as unknown as ChildProcess;
       },
       model: 'gemini-2.0',
       prompt: 'hi',
@@ -47,7 +56,16 @@ describe('llm/cli extra branches', () => {
           ].join('\n'),
           '',
         );
-        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
+        return {
+          stdin: {
+            end() {
+              /* empty */
+            },
+            write() {
+              /* empty */
+            },
+          },
+        } as unknown as ChildProcess;
       },
       model: 'claude-sonnet',
       prompt: 'hi',

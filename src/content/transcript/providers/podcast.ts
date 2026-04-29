@@ -9,7 +9,6 @@ import { FEED_HINT_URL_PATTERN, PODCAST_PLATFORM_HOST_PATTERN } from './podcast/
 import type { PodcastFlowContext } from './podcast/flow-context.js';
 import { resolvePodcastFeedUrlFromItunesSearch } from './podcast/itunes.js';
 import {
-  downloadCappedBytes,
   downloadToFile,
   filenameFromUrl,
   formatBytes,
@@ -89,7 +88,7 @@ export const fetchTranscript = async (
   };
 
   const transcribe = (request: TranscribeRequest): Promise<TranscriptionResult> =>
-    transcribeMediaUrl({ fetchImpl: options.fetch, notes, progress, transcription, ...request });
+    transcribeMediaUrl({ fetchImpl: options.fetch, notes, progress, env: options.env, ...request });
 
   const flow: PodcastFlowContext = {
     attemptedProviders,
@@ -143,7 +142,6 @@ export const fetchTranscript = async (
 
 // Test-only exports (not part of the public API; may change without notice).
 export const __test__ = {
-  downloadCappedBytes,
   downloadToFile,
   extractEnclosureForEpisode,
   extractItemDurationSeconds,

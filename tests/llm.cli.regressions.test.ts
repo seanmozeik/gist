@@ -15,7 +15,9 @@ describe('runCliModel regressions', () => {
       cb?.(null, JSON.stringify({ result: { payloads: [{ text: 'hello from openclaw' }] } }), '');
       return {
         stdin: {
-          end() {},
+          end() {
+            /* empty */
+          },
           write(value: string) {
             stdinWrites.push(value);
           },
@@ -45,7 +47,16 @@ describe('runCliModel regressions', () => {
   it('rejects oversized OpenClaw prompts before passing them through argv', async () => {
     const execFileImpl = vi.fn(((_cmd, _args, _opts, cb) => {
       cb?.(null, '', '');
-      return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
+      return {
+        stdin: {
+          end() {
+            /* empty */
+          },
+          write() {
+            /* empty */
+          },
+        },
+      } as unknown as ChildProcess;
     }) as ExecFileFn);
 
     await expect(
@@ -71,7 +82,9 @@ describe('runCliModel regressions', () => {
       execFileImpl: (_cmd, args, _opts, cb) => {
         const outputIndex = args.indexOf('--output-last-message');
         const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
-        if (!outputPath) {throw new Error('missing output path');}
+        if (!outputPath) {
+          throw new Error('missing output path');
+        }
         writeFileSync(outputPath, '   ', 'utf8');
         cb(
           null,
@@ -82,7 +95,16 @@ describe('runCliModel regressions', () => {
           ].join('\n'),
           '',
         );
-        return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
+        return {
+          stdin: {
+            end() {
+              /* empty */
+            },
+            write() {
+              /* empty */
+            },
+          },
+        } as unknown as ChildProcess;
       },
       model: null,
       prompt: 'hi',
@@ -102,7 +124,9 @@ describe('runCliModel regressions', () => {
         execFileImpl: (_cmd, args, _opts, cb) => {
           const outputIndex = args.indexOf('--output-last-message');
           const outputPath = outputIndex !== -1 ? args[outputIndex + 1] : null;
-          if (!outputPath) {throw new Error('missing output path');}
+          if (!outputPath) {
+            throw new Error('missing output path');
+          }
           writeFileSync(outputPath, '   ', 'utf8');
           cb(
             null,
@@ -112,7 +136,16 @@ describe('runCliModel regressions', () => {
             ].join('\n'),
             '',
           );
-          return { stdin: { end() {}, write() {} } } as unknown as ChildProcess;
+          return {
+            stdin: {
+              end() {
+                /* empty */
+              },
+              write() {
+                /* empty */
+              },
+            },
+          } as unknown as ChildProcess;
         },
         model: null,
         prompt: 'hi',

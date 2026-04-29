@@ -46,7 +46,9 @@ export async function transcribeWithGemini(
       model: options?.model ?? null,
     });
   } finally {
-    await deleteGeminiFile(upload, apiKey, options?.env).catch(() => {});
+    await deleteGeminiFile(upload, apiKey, options?.env).catch(() => {
+      /* empty */
+    });
   }
 }
 
@@ -75,7 +77,9 @@ export async function transcribeFileWithGemini({
   try {
     return await generateFileTranscript({ apiKey, env, file: upload, mediaType, model });
   } finally {
-    await deleteGeminiFile(upload, apiKey, env).catch(() => {});
+    await deleteGeminiFile(upload, apiKey, env).catch(() => {
+      /* empty */
+    });
   }
 }
 

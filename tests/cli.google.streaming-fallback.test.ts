@@ -61,8 +61,8 @@ function collectStream() {
 }
 
 const execFileMock: ExecFileFn = ((file, args, _options, callback) => {
-  void file;
-  void args;
+  undefined;
+  undefined;
   callback(null, '# converted\n\nhello\n', '');
   return { pid: 123 } as unknown as ChildProcess;
 }) as ExecFileFn;
@@ -97,18 +97,18 @@ describe('cli google streaming fallback', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models?key=')) {
         expect(init?.method ?? 'GET').toBe('GET');
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             models: [
               {
                 name: 'models/gemini-3-flash-preview',
                 supportedGenerationMethods: ['generateContent'],
               },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -175,18 +175,18 @@ describe('cli google streaming fallback', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models?key=')) {
         expect(init?.method ?? 'GET').toBe('GET');
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             models: [
               {
                 name: 'models/gemini-3-flash-preview',
                 supportedGenerationMethods: ['generateContent'],
               },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }
@@ -264,18 +264,18 @@ describe('cli google streaming fallback', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models?key=')) {
         expect(init?.method ?? 'GET').toBe('GET');
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             models: [
               {
                 name: 'models/gemini-3-flash-preview',
                 supportedGenerationMethods: ['generateContent'],
               },
             ],
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       }

@@ -28,7 +28,7 @@ export function isYouTubeVideoUrl(rawUrl: string): boolean {
     const hostname = url.hostname.toLowerCase();
 
     if (hostname === 'youtu.be') {
-      return Boolean(url.pathname.split('/').filter(Boolean)[0]);
+      return Boolean(url.pathname.split('/').find(Boolean));
     }
 
     if (hostname !== 'youtube.com' && !hostname.endsWith('.youtube.com')) {

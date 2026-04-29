@@ -46,9 +46,13 @@ vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator', ()
     hydrator = {
       handlePayload: vi.fn(),
       handleSummaryFromCache: vi.fn(),
-      hydrateSnapshot: vi.fn(async () => {}),
+      hydrateSnapshot: vi.fn(async () => {
+        /* empty */
+      }),
       isStreaming: vi.fn(() => false),
-      start: vi.fn(async () => {}),
+      start: vi.fn(async () => {
+        /* empty */
+      }),
       stop: vi.fn(),
       syncFromCache: vi.fn(),
     };

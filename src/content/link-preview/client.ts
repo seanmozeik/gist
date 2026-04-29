@@ -26,9 +26,7 @@ export interface LinkPreviewClientOptions {
   apifyApiToken?: string | null;
   ytDlpPath?: string | null;
   transcription?: Partial<TranscriptionConfig> | null;
-  falApiKey?: string | null;
   groqApiKey?: string | null;
-  assemblyaiApiKey?: string | null;
   geminiApiKey?: string | null;
   openaiApiKey?: string | null;
   convertHtmlToMarkdown?: ConvertHtmlToMarkdown | null;
@@ -47,19 +45,8 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
   const scrape: ScrapeWithFirecrawl | null = options.scrapeWithFirecrawl ?? null;
   const apifyApiToken = typeof options.apifyApiToken === 'string' ? options.apifyApiToken : null;
   const ytDlpPath = typeof options.ytDlpPath === 'string' ? options.ytDlpPath : null;
-  const falApiKey = typeof options.falApiKey === 'string' ? options.falApiKey : null;
-  const groqApiKey = typeof options.groqApiKey === 'string' ? options.groqApiKey : null;
-  const assemblyaiApiKey =
-    typeof options.assemblyaiApiKey === 'string' ? options.assemblyaiApiKey : null;
-  const geminiApiKey = typeof options.geminiApiKey === 'string' ? options.geminiApiKey : null;
-  const openaiApiKey = typeof options.openaiApiKey === 'string' ? options.openaiApiKey : null;
   const transcription = resolveTranscriptionConfig({
-    assemblyaiApiKey,
     env,
-    falApiKey,
-    geminiApiKey,
-    groqApiKey,
-    openaiApiKey,
     transcription: options.transcription ?? null,
   });
   const convertHtmlToMarkdown: ConvertHtmlToMarkdown | null = options.convertHtmlToMarkdown ?? null;
@@ -75,16 +62,11 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
     fetchLinkContent: (url: string, contentOptions?: FetchLinkContentOptions) =>
       fetchLinkContent(url, contentOptions, {
         apifyApiToken,
-        assemblyaiApiKey,
         convertHtmlToMarkdown,
         env,
-        falApiKey,
         fetch: fetchImpl,
-        geminiApiKey,
-        groqApiKey,
         mediaCache,
         onProgress,
-        openaiApiKey,
         readTweetWithBird,
         resolveTwitterCookies,
         scrapeWithFirecrawl: scrape,

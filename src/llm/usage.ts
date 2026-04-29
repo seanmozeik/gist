@@ -60,9 +60,9 @@ export function normalizeOpenAiUsage(raw: unknown): LlmTokenUsage | null {
   const totalTokens =
     typeof usage.total_tokens === 'number' && Number.isFinite(usage.total_tokens)
       ? usage.total_tokens
-      : (typeof promptTokens === 'number' && typeof completionTokens === 'number'
+      : typeof promptTokens === 'number' && typeof completionTokens === 'number'
         ? promptTokens + completionTokens
-        : null);
+        : null;
   if (promptTokens === null && completionTokens === null && totalTokens === null) {
     return null;
   }
@@ -89,9 +89,9 @@ export function normalizeGoogleUsage(raw: unknown): LlmTokenUsage | null {
   const totalTokens =
     typeof usage.totalTokenCount === 'number' && Number.isFinite(usage.totalTokenCount)
       ? usage.totalTokenCount
-      : (typeof promptTokens === 'number' && typeof completionTokens === 'number'
+      : typeof promptTokens === 'number' && typeof completionTokens === 'number'
         ? promptTokens + completionTokens
-        : null);
+        : null;
   if (promptTokens === null && completionTokens === null && totalTokens === null) {
     return null;
   }

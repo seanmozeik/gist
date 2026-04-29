@@ -70,8 +70,12 @@ describe('podcast transcript provider - streaming download branches', () => {
         },
         async read() {
           i += 1;
-          if (i === 1) {return { done: false, value: undefined as unknown as Uint8Array };}
-          if (i === 2) {return { done: false, value: new Uint8Array(MAX_OPENAI_UPLOAD_BYTES + 10) };}
+          if (i === 1) {
+            return { done: false, value: undefined as unknown as Uint8Array };
+          }
+          if (i === 2) {
+            return { done: false, value: new Uint8Array(MAX_OPENAI_UPLOAD_BYTES + 10) };
+          }
           return { done: true, value: undefined as unknown as Uint8Array };
         },
       };
@@ -94,10 +98,10 @@ describe('podcast transcript provider - streaming download branches', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -127,8 +131,12 @@ describe('podcast transcript provider - streaming download branches', () => {
         },
         async read() {
           i += 1;
-          if (i === 1) {return { done: false, value: undefined as unknown as Uint8Array };}
-          if (i === 2) {return { done: false, value: new Uint8Array([1, 2, 3]) };}
+          if (i === 1) {
+            return { done: false, value: undefined as unknown as Uint8Array };
+          }
+          if (i === 2) {
+            return { done: false, value: new Uint8Array([1, 2, 3]) };
+          }
           return { done: true, value: undefined as unknown as Uint8Array };
         },
       };
@@ -151,10 +159,10 @@ describe('podcast transcript provider - streaming download branches', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {

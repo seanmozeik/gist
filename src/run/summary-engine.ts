@@ -9,7 +9,7 @@ import { mergeModelRequestOptions } from '../llm/model-options.js';
 import type { ModelRequestOptions } from '../llm/model-options.js';
 import type { Prompt } from '../llm/prompt.js';
 import { formatCompactCount } from '../tty/format.js';
-import { createRetryLogger, writeVerbose } from './logging.js';
+import { writeVerbose } from './logging.js';
 import { prepareMarkdownForTerminalStreaming } from './markdown.js';
 import { createStreamOutputGate, type StreamOutputMode } from './stream-output.js';
 import {
@@ -66,32 +66,6 @@ export interface SummaryStreamHandler {
 
 export function createSummaryEngine(deps: SummaryEngineDeps) {
   const applyOpenAiGatewayOverrides = (attempt: ModelAttempt): ModelAttempt => {
-    const modelIdLower = attempt.userModelId.toLowerCase();
-    if (modelIdLower.startsWith('zai/')) {
-      return {
-        ...attempt,
-        forceChatCompletions: true,
-        openaiApiKeyOverride: deps.zai.apiKey,
-        openaiBaseUrlOverride: deps.zai.baseUrl,
-      };
-    }
-    if (modelIdLower.startsWith('nvidia/')) {
-      return {
-        ...attempt,
-        forceChatCompletions: true,
-        openaiApiKeyOverride: deps.nvidia.apiKey,
-        openaiBaseUrlOverride: deps.nvidia.baseUrl,
-      };
-    }
-    if (modelIdLower.startsWith('github-copilot/')) {
-      return {
-        ...attempt,
-        forceChatCompletions: true,
-        openaiApiKeyOverride: resolveGitHubModelsApiKey(deps.envForRun),
-        openaiBaseUrlOverride:
-          attempt.openaiBaseUrlOverride ?? 'https://models.github.ai/inference',
-      };
-    }
     return attempt;
   };
 
@@ -108,34 +82,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     if (requiredEnv === 'CLI_AGENT') {
       return Boolean(deps.cliAvailability.agent);
     }
-    if (requiredEnv === 'CLI_OPENCLAW') {
-      return Boolean(deps.cliAvailability.openclaw);
-    }
-    if (requiredEnv === 'CLI_OPENCODE') {
-      return Boolean(deps.cliAvailability.opencode);
-    }
-    if (requiredEnv === 'GEMINI_API_KEY') {
-      return deps.keyFlags.googleConfigured;
-    }
     if (requiredEnv === 'OPENROUTER_API_KEY') {
-      return deps.keyFlags.openrouterConfigured;
+      return Boolean(deps.apiKeys.openrouterApiKey);
     }
-    if (requiredEnv === 'OPENAI_API_KEY') {
-      return Boolean(deps.apiKeys.openaiApiKey);
-    }
-    if (requiredEnv === 'GITHUB_TOKEN') {
-      return Boolean(resolveGitHubModelsApiKey(deps.envForRun));
-    }
-    if (requiredEnv === 'NVIDIA_API_KEY') {
-      return Boolean(deps.nvidia.apiKey);
-    }
-    if (requiredEnv === 'Z_AI_API_KEY') {
-      return Boolean(deps.zai.apiKey);
-    }
-    if (requiredEnv === 'XAI_API_KEY') {
-      return Boolean(deps.apiKeys.xaiApiKey);
-    }
-    return Boolean(deps.apiKeys.anthropicApiKey);
+    return false;
   };
 
   const formatMissingModelError = (attempt: ModelAttempt): string => {
@@ -233,20 +183,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       throw new Error(`Missing model id for ${attempt.userModelId}.`);
     }
     const parsedModel = parseGatewayStyleModelId(attempt.llmModelId);
-    const apiKeysForLlm = {
-      anthropicApiKey: deps.keyFlags.anthropicConfigured ? deps.apiKeys.anthropicApiKey : null,
-      googleApiKey: deps.keyFlags.googleConfigured ? deps.apiKeys.googleApiKey : null,
-      openaiApiKey: attempt.openaiApiKeyOverride ?? deps.apiKeys.openaiApiKey,
-      openrouterApiKey: deps.keyFlags.openrouterConfigured ? deps.apiKeys.openrouterApiKey : null,
-      xaiApiKey: deps.apiKeys.xaiApiKey,
-    };
 
-    const modelResolution = await resolveModelIdForLlmCall({
-      apiKeys: { googleApiKey: apiKeysForLlm.googleApiKey },
-      fetchImpl: deps.trackedFetch,
-      parsedModel,
-      timeoutMs: deps.timeoutMs,
-    });
+    const modelResolution = await resolveModelIdForLlmCall({ parsedModel });
     if (modelResolution.note && deps.verbose) {
       writeVerbose(
         deps.stderr,
@@ -262,8 +200,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       attempt.requestOptions,
       deps.openaiRequestOptionsOverride,
     );
-    const hasOpenAiRequestOptions =
-      parsedModelEffective.provider === 'openai' && Boolean(requestOptions);
+    const hasOpenAiRequestOptions = false;
     const streamingEnabledForCall =
       allowStreaming &&
       deps.streamingEnabled &&
@@ -274,9 +211,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         provider: parsedModelEffective.provider,
         transport: attempt.transport === 'openrouter' ? 'openrouter' : 'native',
       });
-    const forceChatCompletions =
-      Boolean(attempt.forceChatCompletions) ||
-      (deps.openaiUseChatCompletions && parsedModelEffective.provider === 'openai');
+    const forceChatCompletions = Boolean(attempt.forceChatCompletions) || false;
 
     const maxOutputTokensForCall = await deps.resolveMaxOutputTokensForCall(
       parsedModelEffective.canonical,
@@ -300,28 +235,18 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
 
     if (!streamingEnabledForCall) {
       const result = await summarizeWithModelId({
-        anthropicBaseUrlOverride: deps.providerBaseUrls.anthropic,
-        apiKeys: apiKeysForLlm,
+        apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
         fetchImpl: deps.trackedFetch,
         forceChatCompletions,
         forceOpenRouter: attempt.forceOpenRouter,
-        googleBaseUrlOverride: deps.providerBaseUrls.google,
+
         maxOutputTokens: maxOutputTokensForCall ?? undefined,
         modelId: parsedModelEffective.canonical,
-        onRetry: createRetryLogger({
-          color: deps.verboseColor,
-          env: deps.envForRun,
-          modelId: parsedModelEffective.canonical,
-          stderr: deps.stderr,
-          verbose: deps.verbose,
-        }),
-        openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
+        openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? null,
         prompt,
         requestOptions,
-        retries: deps.retries,
+
         timeoutMs: deps.timeoutMs,
-        xaiBaseUrlOverride: deps.providerBaseUrls.xai,
-        zaiBaseUrlOverride: deps.zai.baseUrl,
       });
       deps.llmCalls.push({
         model: result.canonicalModelId,
@@ -358,20 +283,18 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     let streamResult: Awaited<ReturnType<typeof streamTextWithModelId>> | null = null;
     try {
       streamResult = await streamTextWithModelId({
-        anthropicBaseUrlOverride: deps.providerBaseUrls.anthropic,
-        apiKeys: apiKeysForLlm,
+        apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
         fetchImpl: deps.trackedFetch,
         forceChatCompletions,
         forceOpenRouter: attempt.forceOpenRouter,
-        googleBaseUrlOverride: deps.providerBaseUrls.google,
+
         maxOutputTokens: maxOutputTokensForCall ?? undefined,
         modelId: parsedModelEffective.canonical,
-        openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
+        openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? null,
         prompt,
         requestOptions,
         temperature: 0,
         timeoutMs: deps.timeoutMs,
-        xaiBaseUrlOverride: deps.providerBaseUrls.xai,
       });
     } catch (error) {
       if (isStreamingTimeoutError(error)) {
@@ -383,28 +306,18 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           deps.envForRun,
         );
         const result = await summarizeWithModelId({
-          anthropicBaseUrlOverride: deps.providerBaseUrls.anthropic,
-          apiKeys: apiKeysForLlm,
+          apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
           fetchImpl: deps.trackedFetch,
           forceChatCompletions,
           forceOpenRouter: attempt.forceOpenRouter,
-          googleBaseUrlOverride: deps.providerBaseUrls.google,
+
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,
-          onRetry: createRetryLogger({
-            color: deps.verboseColor,
-            env: deps.envForRun,
-            modelId: parsedModelEffective.canonical,
-            stderr: deps.stderr,
-            verbose: deps.verbose,
-          }),
-          openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
+          openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? null,
           prompt,
           requestOptions,
-          retries: deps.retries,
+
           timeoutMs: deps.timeoutMs,
-          xaiBaseUrlOverride: deps.providerBaseUrls.xai,
-          zaiBaseUrlOverride: deps.zai.baseUrl,
         });
         deps.llmCalls.push({
           model: result.canonicalModelId,
@@ -414,10 +327,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         });
         summary = result.text;
         streamResult = null;
-      } else if (
-        parsedModelEffective.provider === 'google' &&
-        isGoogleStreamingUnsupportedError(error)
-      ) {
+      } else if (false && isGoogleStreamingUnsupportedError(error)) {
         writeVerbose(
           deps.stderr,
           deps.verbose,
@@ -426,26 +336,16 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           deps.envForRun,
         );
         const result = await summarizeWithModelId({
-          anthropicBaseUrlOverride: deps.providerBaseUrls.anthropic,
-          apiKeys: apiKeysForLlm,
+          apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
           fetchImpl: deps.trackedFetch,
           forceOpenRouter: attempt.forceOpenRouter,
-          googleBaseUrlOverride: deps.providerBaseUrls.google,
+
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,
-          onRetry: createRetryLogger({
-            color: deps.verboseColor,
-            env: deps.envForRun,
-            modelId: parsedModelEffective.canonical,
-            stderr: deps.stderr,
-            verbose: deps.verbose,
-          }),
-          openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? deps.providerBaseUrls.openai,
+          openaiBaseUrlOverride: attempt.openaiBaseUrlOverride ?? null,
           prompt,
-          retries: deps.retries,
+
           timeoutMs: deps.timeoutMs,
-          xaiBaseUrlOverride: deps.providerBaseUrls.xai,
-          zaiBaseUrlOverride: deps.zai.baseUrl,
         });
         deps.llmCalls.push({
           model: result.canonicalModelId,

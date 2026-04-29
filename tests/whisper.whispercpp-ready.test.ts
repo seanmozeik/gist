@@ -11,7 +11,11 @@ vi.mock('node:child_process', () => {
   return {
     spawn: (_bin: string, args: string[]) => {
       const proc: MockProc = Object.assign(new EventEmitter(), {
-        stderr: Object.assign(new EventEmitter(), { setEncoding: () => {} }),
+        stderr: Object.assign(new EventEmitter(), {
+          setEncoding: () => {
+            /* empty */
+          },
+        }),
       });
 
       // Validate we only use this mock for availability checks in these tests.

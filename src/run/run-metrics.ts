@@ -59,8 +59,8 @@ export function createRunMetrics({
   };
 
   const buildReport = async () => {
-    const promptTokens = llmCalls.reduce((sum, c) => sum + (c.usage?.promptTokens ?? 0), 0);
-    const completionTokens = llmCalls.reduce((sum, c) => sum + (c.usage?.completionTokens ?? 0), 0);
+    const promptTokens = llmCalls.reduce((sum, c) => sum + (c.promptTokens ?? 0), 0);
+    const completionTokens = llmCalls.reduce((sum, c) => sum + (c.completionTokens ?? 0), 0);
     const costUsd = (await estimateCostUsd()) ?? 0;
     return {
       durationMs: 0,
@@ -73,7 +73,7 @@ export function createRunMetrics({
 
   const trackedFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
-      typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     let hostname: string | null = null;
     try {
       hostname = new URL(url).hostname.toLowerCase();

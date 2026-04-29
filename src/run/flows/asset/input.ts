@@ -7,6 +7,7 @@ import {
   loadLocalAsset,
   loadRemoteAsset,
 } from '../../../content/asset.js';
+import { isDirectMediaExtension, isDirectMediaUrl } from '../../../content/url.js';
 import { formatBytes } from '../../../tty/format.js';
 import { startOscProgress } from '../../../tty/osc-progress.js';
 import { startSpinner } from '../../../tty/spinner.js';
@@ -16,7 +17,6 @@ import {
   resolveTrueColor,
 } from '../../../tty/theme.js';
 import { assertAssetMediaTypeSupported } from '../../attachments.js';
-import { isDirectMediaExtension, isDirectMediaUrl } from '../../content/url.js';
 import type { SummarizeAssetArgs } from './summary.js';
 
 /**
@@ -136,7 +136,9 @@ async function runMediaTranscription({
       bytes: new Uint8Array(0), // Placeholder - summarizeMediaFile reads from path directly
     },
     onModelChosen: (modelId) => {
-      if (!ctx.progressEnabled) {return;}
+      if (!ctx.progressEnabled) {
+        return;
+      }
       setTranscribingSpinnerText({ meta, modelId, spinner, theme });
     },
     sourceKind,
@@ -249,7 +251,9 @@ export async function handleFileInput(
     await handler({
       attachment: loaded.attachment,
       onModelChosen: (modelId) => {
-        if (!ctx.progressEnabled) {return;}
+        if (!ctx.progressEnabled) {
+          return;
+        }
         const mt = loaded.attachment.mediaType;
         const name = loaded.attachment.filename;
         const details = sizeLabel ? `${mt}, ${sizeLabel}` : mt;
@@ -411,7 +415,9 @@ export async function handleUrlAsset(
     await ctx.summarizeAsset({
       attachment: loaded.attachment,
       onModelChosen: (modelId) => {
-        if (!ctx.progressEnabled) {return;}
+        if (!ctx.progressEnabled) {
+          return;
+        }
         const modelLabel = renderModelSuffix(theme, modelId);
         spinner.setText(renderStatusWithMeta(theme, 'Summarizing', `${dim('file')}${modelLabel}`));
       },

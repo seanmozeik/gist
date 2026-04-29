@@ -28,7 +28,9 @@ vi.mock('ora', () => {
 
   const ora = (opts: { text: string; stream: NodeJS.WritableStream }) => {
     const spinner: MockSpinner = {
-      clear() {},
+      clear() {
+        /* empty */
+      },
       isSpinning: true,
       setText(text: string) {
         spinner.text = text;

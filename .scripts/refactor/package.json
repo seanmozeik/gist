@@ -1,0 +1,9 @@
+{
+  "name": "gist-refactor",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@typescript-eslint/typescript-estree": "^8.0.0",
+    "ts-morph": "^25.0.0"
+  }
+}

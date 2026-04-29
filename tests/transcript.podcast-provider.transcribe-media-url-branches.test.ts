@@ -77,7 +77,7 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {
@@ -94,10 +94,10 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -123,7 +123,7 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         throw new Error('no head');
@@ -136,10 +136,10 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -209,10 +209,10 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {
@@ -257,10 +257,10 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
     });
 
     const openaiFetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     try {

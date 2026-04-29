@@ -48,7 +48,7 @@ function rotateHosts<T>(values: T[], seed: number): T[] {
 function hashSeed(input: string): number {
   let hash = 0;
   for (let i = 0; i < input.length; i += 1) {
-    hash = (hash * 31 + input.codePointAt(i)) | 0;
+    hash = Math.trunc(hash * 31 + input.codePointAt(i));
   }
   return hash;
 }

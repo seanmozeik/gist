@@ -20,14 +20,14 @@ describe('YouTube captionTracks extra branches', () => {
 
       if (url.startsWith('https://example.com/captions') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(
-            JSON.stringify({
+          Response.json(
+            {
               events: [
                 { segs: [{ utf8: 'Hello' }, { utf8: ' world' }] },
                 { segs: [{ utf8: '   ' }] },
                 { foo: 'bar' },
               ],
-            }),
+            },
             { headers: { 'Content-Type': 'application/json' }, status: 200 },
           ),
         );
@@ -35,9 +35,7 @@ describe('YouTube captionTracks extra branches', () => {
 
       if (url.startsWith('https://example.com/captions-de') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'Hallo' }] }] }), {
-            status: 200,
-          }),
+          Response.json({ events: [{ segs: [{ utf8: 'Hallo' }] }] }, { status: 200 }),
         );
       }
 
@@ -66,19 +64,19 @@ describe('YouTube captionTracks extra branches', () => {
 
       if (url.startsWith('https://example.com/captions-asr') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'Auto' }] }] }), {
-            headers: { 'Content-Type': 'application/json' },
-            status: 200,
-          }),
+          Response.json(
+            { events: [{ segs: [{ utf8: 'Auto' }] }] },
+            { headers: { 'Content-Type': 'application/json' }, status: 200 },
+          ),
         );
       }
 
       if (url.startsWith('https://example.com/captions-manual') && url.includes('fmt=json3')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'Manual' }] }] }), {
-            headers: { 'Content-Type': 'application/json' },
-            status: 200,
-          }),
+          Response.json(
+            { events: [{ segs: [{ utf8: 'Manual' }] }] },
+            { headers: { 'Content-Type': 'application/json' }, status: 200 },
+          ),
         );
       }
 
@@ -169,10 +167,10 @@ describe('YouTube captionTracks extra branches', () => {
 
           if (url.startsWith('https://example.com/captions') && url.includes('fmt=json3')) {
             return Promise.resolve(
-              new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'Hello' }] }] }), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 200,
-              }),
+              Response.json(
+                { events: [{ segs: [{ utf8: 'Hello' }] }] },
+                { headers: { 'Content-Type': 'application/json' }, status: 200 },
+              ),
             );
           }
 

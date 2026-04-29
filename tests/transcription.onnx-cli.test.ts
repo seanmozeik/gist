@@ -27,7 +27,7 @@ describe('onnx cli transcriber', () => {
 
     const responses = [new Response('dummy-model'), new Response('dummy-vocab')];
     const fetchMock = vi
-      .spyOn(global, 'fetch')
+      .spyOn(globalThis, 'fetch')
       .mockImplementation(async () => responses.shift() ?? new Response('', { status: 404 }));
 
     const filePath = join(tmpdir(), `onnx-${randomUUID()}.wav`);
@@ -58,7 +58,7 @@ describe('onnx cli transcriber', () => {
     process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
     process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
-    vi.spyOn(global, 'fetch').mockImplementation(async () => new Response('noop'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
     process.env.SUMMARIZE_ONNX_PARAKEET_CMD = "cat {input} >/dev/null; printf 'hello world'";
 
@@ -86,7 +86,7 @@ describe('onnx cli transcriber', () => {
     process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
     process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
-    vi.spyOn(global, 'fetch').mockImplementation(async () => new Response('noop'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
     process.env.SUMMARIZE_ONNX_PARAKEET_CMD = JSON.stringify([
       'node',
@@ -118,7 +118,7 @@ describe('onnx cli transcriber', () => {
     process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
     process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
-    vi.spyOn(global, 'fetch').mockImplementation(async () => new Response('noop'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
     process.env.SUMMARIZE_ONNX_PARAKEET_CMD =
       'node -e "process.stdout.write(process.argv[process.argv.length - 1] ?? \'\')" -- {input}';
@@ -151,7 +151,7 @@ describe('onnx cli transcriber', () => {
       SUMMARIZE_ONNX_PARAKEET_CMD: "cat {input} >/dev/null; printf 'ok'",
     };
 
-    vi.spyOn(global, 'fetch').mockImplementation(async () => new Response('noop'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
     const result = await transcribeWithOnnxCliFile({
       env,

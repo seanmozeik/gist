@@ -335,7 +335,7 @@ export async function prepareAssetPrompt({
     throw new Error('Internal error: no prompt text could be built for asset');
   }
 
-  void ctx.fixedModelSpec;
+  undefined;
 
   return { assetFooterParts, attachments, promptText, textContent };
 }

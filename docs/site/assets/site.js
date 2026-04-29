@@ -3,19 +3,19 @@ const redirectHostnames = new Set(['summarize.is', 'www.summarize.is']);
 
 const maybeRedirect = () => {
   try {
-    const { hostname, pathname, search, hash } = window.location;
+    const { hostname, pathname, search, hash } = globalThis.location;
     if (!redirectHostnames.has(hostname)) {
       return;
     }
     const target = `https://${canonicalHost}${pathname}${search}${hash}`;
-    window.location.replace(target);
+    globalThis.location.replace(target);
   } catch {
     // Ignore
   }
 };
 
 const highlightNav = () => {
-  const path = window.location.pathname;
+  const path = globalThis.location.pathname;
   const isDocs = path.includes('/docs/');
   const navDocs = document.querySelector('a[data-nav="docs"]');
   const navHome = document.querySelector('a[data-nav="home"]');
@@ -53,7 +53,7 @@ const wireCopyButtons = () => {
       const prev = button.textContent ?? '';
       button.textContent = 'Copied';
       button.dataset.copied = '1';
-      window.setTimeout(() => {
+      globalThis.setTimeout(() => {
         button.textContent = prev;
         delete button.dataset.copied;
       }, 900);
@@ -63,7 +63,7 @@ const wireCopyButtons = () => {
   };
   for (const button of buttons) {
     button.addEventListener('click', () => {
-      void handleCopyClick(button);
+      undefined;
     });
   }
 };
@@ -73,10 +73,10 @@ const reveal = () => {
   let i = 0;
   for (const el of items) {
     const delay = Math.min(380, i * 70);
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       el.classList.add('is-on');
     }, delay);
-    i++;
+    i += 1;
   }
 };
 

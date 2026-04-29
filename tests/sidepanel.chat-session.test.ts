@@ -8,7 +8,9 @@ describe('sidepanel chat session', () => {
   });
 
   it('routes agent responses and chunks to the matching pending request', async () => {
-    const send = vi.fn(async () => {});
+    const send = vi.fn(async () => {
+      /* empty */
+    });
     const chunks: string[] = [];
     const session = createChatSession({ send });
     const request = session.requestAgent([], ['navigate'], 'summary', {
@@ -18,7 +20,7 @@ describe('sidepanel chat session', () => {
     const requestId = vi.mocked(send).mock.calls[0]?.[0]?.requestId;
     session.handleAgentChunk({ requestId, text: 'Hello' });
     session.handleAgentResponse({
-      assistant: { content: [{ type: 'text', text: 'Done' }], role: 'assistant' } as never,
+      assistant: { content: [{ text: 'Done', type: 'text' }], role: 'assistant' } as never,
       ok: true,
       requestId,
     });
@@ -34,17 +36,25 @@ describe('sidepanel chat session', () => {
   it('times out requests and aborts active agent work', async () => {
     vi.useFakeTimers();
     const setStatus = vi.fn();
-    const hideReplOverlay = vi.fn(async () => {});
-    const send = vi.fn(async () => {});
+    const hideReplOverlay = vi.fn(async () => {
+      /* empty */
+    });
+    const send = vi.fn(async () => {
+      /* empty */
+    });
     const session = createChatSession({ agentTimeoutMs: 10, hideReplOverlay, send, setStatus });
 
     const request = session.requestAgent([], [], null);
-    request.catch(() => {});
+    request.catch(() => {
+      /* empty */
+    });
     await vi.advanceTimersByTimeAsync(10);
     await expect(request).rejects.toThrow('Agent request timed out');
 
     const second = session.requestAgent([], [], null);
-    second.catch(() => {});
+    second.catch(() => {
+      /* empty */
+    });
     session.requestAbort('Stopped');
     await expect(second).rejects.toThrow('Stopped');
     expect(session.isAbortRequested()).toBe(true);
@@ -53,7 +63,9 @@ describe('sidepanel chat session', () => {
   });
 
   it('loads chat history responses and supports reset', async () => {
-    const send = vi.fn(async () => {});
+    const send = vi.fn(async () => {
+      /* empty */
+    });
     const session = createChatSession({ send });
     const request = session.requestChatHistory('summary');
     const requestId = vi.mocked(send).mock.calls[0]?.[0]?.requestId;

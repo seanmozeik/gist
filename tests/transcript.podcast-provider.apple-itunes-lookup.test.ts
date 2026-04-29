@@ -63,11 +63,11 @@ describe('podcast provider - Apple Podcasts iTunes lookup', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === lookupUrl && method === 'GET') {
-        return new Response(JSON.stringify(lookupPayload), {
+        return Response.json(lookupPayload, {
           headers: { 'content-type': 'application/json' },
           status: 200,
         });

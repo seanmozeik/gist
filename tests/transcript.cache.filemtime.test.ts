@@ -19,7 +19,9 @@ describe('transcript cache with file modification time', () => {
           source: 'openai',
         };
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const fileMtime = 1_704_268_800_000; // Some timestamp
@@ -52,7 +54,9 @@ describe('transcript cache with file modification time', () => {
         // Different mtime = different cache key = miss
         return null;
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     // First read with mtime 1000
@@ -90,7 +94,9 @@ describe('transcript cache with file modification time', () => {
           source: 'yt-dlp',
         };
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -110,7 +116,9 @@ describe('transcript cache with file modification time', () => {
         // Should work even if fileMtime not provided
         return { content: 'transcript', expired: false, metadata: null, source: 'openai' };
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -129,7 +137,9 @@ describe('transcript cache with file modification time', () => {
   it('handles cache miss with fileMtime (file is new)', async () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null), // No cached transcript
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const outcome = await readTranscriptCache({
@@ -152,7 +162,9 @@ describe('transcript cache with file modification time', () => {
         getCallArgs.push(args);
         return null;
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const fileMtime = 1_704_268_800_000;
@@ -173,7 +185,9 @@ describe('transcript cache with file modification time', () => {
     // Verify that cache.set receives all expected parameters including fileMtime
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const url = 'file:///Users/test/audio.mp3';
@@ -229,7 +243,9 @@ describe('transcript cache with file modification time', () => {
         }
         return null;
       }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => {
+        /* empty */
+      }),
     };
 
     const url = 'file:///Users/test/audio.mp3';

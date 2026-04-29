@@ -11,7 +11,7 @@ describe('url summary timestamp sanitization', () => {
     expect(
       resolveSummaryTimestampUpperBound({
         mediaDurationSeconds: 1173,
-        transcriptSegments: [{ endMs: 10_000, startMs: 1_000, text: 'hello' }],
+        transcriptSegments: [{ endMs: 10_000, startMs: 1000, text: 'hello' }],
         transcriptTimedText: '[19:32] final line',
       }),
     ).toBe(1173);

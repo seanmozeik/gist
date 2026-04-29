@@ -117,10 +117,10 @@ describe('link preview extraction (YouTube)', () => {
       }
       if (url.startsWith('https://example.com/captions')) {
         return Promise.resolve(
-          new Response(JSON.stringify({ events: [{ segs: [{ utf8: 'Hello from captions' }] }] }), {
-            headers: { 'Content-Type': 'application/json' },
-            status: 200,
-          }),
+          Response.json(
+            { events: [{ segs: [{ utf8: 'Hello from captions' }] }] },
+            { headers: { 'Content-Type': 'application/json' }, status: 200 },
+          ),
         );
       }
       if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
@@ -141,9 +141,7 @@ describe('link preview extraction (YouTube)', () => {
   it('uses ytInitialPlayerResponse shortDescription when transcripts are unavailable', async () => {
     const html =
       `<!doctype html><html><head><title>Sample</title>` +
-      `<script>ytcfg.set({"INNERTUBE_API_KEY":"TEST_KEY","INNERTUBE_CONTEXT":{"client":{"clientName":"WEB","clientVersion":"1.0"}}});</script>${ 
-      String.raw`<script>var ytInitialPlayerResponse = {"videoDetails":{"shortDescription":"Line one\n\nLine two"}};</script>` 
-      }</head><body><main><p>Fallback paragraph</p></main></body></html>`;
+      `<script>ytcfg.set({"INNERTUBE_API_KEY":"TEST_KEY","INNERTUBE_CONTEXT":{"client":{"clientName":"WEB","clientVersion":"1.0"}}});</script>${String.raw`<script>var ytInitialPlayerResponse = {"videoDetails":{"shortDescription":"Line one\n\nLine two"}};</script>`}</head><body><main><p>Fallback paragraph</p></main></body></html>`;
 
     const fetchMock = vi.fn<[RequestInfo | URL, RequestInit?], Promise<Response>>((input) => {
       const url = typeof input === 'string' ? input : (input?.url ?? '');

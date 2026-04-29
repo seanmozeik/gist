@@ -9,7 +9,9 @@ describe('sidepanel chat history runtime', () => {
       setMessages: vi.fn(),
     };
     const chatHistoryStore = {
-      clear: vi.fn(async () => {}),
+      clear: vi.fn(async () => {
+        /* empty */
+      }),
       load: vi.fn(async () => null),
       persist: vi.fn(async (_tabId, messages) => messages),
     };
@@ -37,7 +39,9 @@ describe('sidepanel chat history runtime', () => {
     const history = [{ content: 'cached', id: '1', role: 'user', timestamp: 1 }];
     const chatController = { getMessages: vi.fn(() => []), setMessages: vi.fn() };
     const chatHistoryStore = {
-      clear: vi.fn(async () => {}),
+      clear: vi.fn(async () => {
+        /* empty */
+      }),
       load: vi.fn(async () => history as never),
       persist: vi.fn(async (_tabId, messages) => messages),
     };
@@ -60,7 +64,9 @@ describe('sidepanel chat history runtime', () => {
   it('falls back to daemon history and ignores invalid payloads', async () => {
     const chatController = { getMessages: vi.fn(() => []), setMessages: vi.fn() };
     const chatHistoryStore = {
-      clear: vi.fn(async () => {}),
+      clear: vi.fn(async () => {
+        /* empty */
+      }),
       load: vi.fn(async () => null),
       persist: vi.fn(async (_tabId, messages) => messages),
     };

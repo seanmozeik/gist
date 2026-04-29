@@ -1,6 +1,5 @@
 import { loadRemoteAsset } from '../../../content/asset.js';
 import type { ExtractedLinkContent } from '../../../content/index.js';
-import type { SlideExtractionResult } from '../../../slides/index.js';
 import { assertAssetMediaTypeSupported } from '../../attachments.js';
 import { writeVerbose } from '../../logging.js';
 import { deriveExtractionUi, type UrlExtractionUi } from './extract.js';
@@ -16,7 +15,6 @@ export async function handleVideoOnlyExtractedContent({
   extractionUi,
   isYoutubeUrl,
   fetchWithCache,
-  runSlidesExtraction,
   renderStatus,
   renderStatusWithMeta,
   spinner,
@@ -29,7 +27,6 @@ export async function handleVideoOnlyExtractedContent({
   extractionUi: UrlExtractionUi;
   isYoutubeUrl: boolean;
   fetchWithCache: (url: string) => Promise<ExtractedLinkContent>;
-  runSlidesExtraction: () => Promise<SlideExtractionResult | null>;
   renderStatus: (label: string, detail?: string) => string;
   renderStatusWithMeta: (label: string, meta: string, suffix?: string) => string;
   spinner: { setText: (text: string) => void };
@@ -64,13 +61,12 @@ export async function handleVideoOnlyExtractedContent({
     };
   }
 
-  const directVideoSlides = await runSlidesExtraction();
   const wantsVideoUnderstanding = flags.videoMode === 'understand' || flags.videoMode === 'auto';
   const canVideoUnderstand =
     wantsVideoUnderstanding &&
-    model.apiStatus.googleConfigured &&
+    false &&
     (model.requestedModel.kind === 'auto' ||
-      (model.fixedModelSpec?.transport === 'native' && model.fixedModelSpec.provider === 'google'));
+      (model.fixedModelSpec?.transport === 'native' && false));
 
   if (!canVideoUnderstand) {
     return { extracted, extractionUi, handled: false };
@@ -104,11 +100,9 @@ export async function handleVideoOnlyExtractedContent({
     sourceKind: 'asset-url',
     sourceLabel: loadedVideo.sourceLabel,
   });
-  const slideCount = directVideoSlides ? directVideoSlides.slides.length : null;
   hooks.writeViaFooter([
     ...extractionUi.footerParts,
     ...(chosenModel ? [`model ${chosenModel}`] : []),
-    ...(slideCount != null ? [`slides ${slideCount}`] : []),
   ]);
   updateSummaryProgress();
   return { handled: true };

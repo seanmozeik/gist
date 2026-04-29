@@ -70,7 +70,9 @@ describe('slides ingest', () => {
   });
 
   it('downloads direct remote video and preserves cleanup', async () => {
-    const cleanup = vi.fn(async () => {});
+    const cleanup = vi.fn(async () => {
+      /* empty */
+    });
     const downloadRemoteVideo = vi.fn(async () => ({ cleanup, filePath: '/tmp/direct.mp4' }));
     const put = vi.fn(async ({ filePath }: { filePath: string }) => ({
       filePath,

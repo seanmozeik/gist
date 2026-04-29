@@ -134,8 +134,12 @@ describe('options skills controller', () => {
       setStatus: vi.fn(),
     });
     const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
-    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {
+      /* empty */
+    });
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {
+      /* empty */
+    });
 
     controller.bind();
     await controller.load();

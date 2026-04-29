@@ -75,7 +75,6 @@ export async function createRunnerPlan(options: {
     extractMode,
     json,
     forceSummary,
-    slidesDebug,
     streamMode,
     plain,
     verbose,
@@ -115,9 +114,9 @@ export async function createRunnerPlan(options: {
   }
   const explicitModelArg = cliProviderArg
     ? `cli/${cliProviderArg}`
-    : (cliFlagPresent
+    : cliFlagPresent
       ? 'auto'
-      : modelArg);
+      : modelArg;
 
   const {
     config,
@@ -131,28 +130,12 @@ export async function createRunnerPlan(options: {
     openaiRequestOptions,
     openaiRequestOptionsOverride,
     configModelLabel,
-    apiKey,
     openrouterApiKey,
-    openrouterConfigured,
-    groqApiKey,
-    assemblyaiApiKey,
-    openaiApiKey,
-    xaiApiKey,
-    googleApiKey,
-    anthropicApiKey,
-    zaiApiKey,
-    zaiBaseUrl,
-    nvidiaApiKey,
-    nvidiaBaseUrl,
-    providerBaseUrls,
     firecrawlApiKey,
     firecrawlConfigured,
-    googleConfigured,
-    anthropicConfigured,
     apifyToken,
     ytDlpPath,
     ytDlpCookiesFromBrowser,
-    falApiKey,
     cliAvailability,
     envForAuto,
   } = resolveRunContextState({
@@ -216,13 +199,11 @@ export async function createRunnerPlan(options: {
     );
   }
 
-  const metrics = createRunMetrics({ env, fetchImpl, maxOutputTokensArg });
+  const metrics = createRunMetrics({ maxOutputTokensArg });
   const {
     llmCalls,
     trackedFetch,
     buildReport,
-    estimateCostUsd,
-    getLiteLlmCatalog,
     resolveMaxOutputTokensForCall,
     resolveMaxInputTokensForCall,
     setTranscriptionCost,
@@ -324,7 +305,6 @@ export async function createRunnerPlan(options: {
     cacheState,
     clearProgressForStdout,
     clearProgressIfCurrent,
-    estimateCostUsd,
     flags: {
       configModelLabel,
       configPath,
@@ -370,7 +350,6 @@ export async function createRunnerPlan(options: {
         firecrawlConfigured,
         localBaseUrl: envForRun.SUMMARIZE_LOCAL_BASE_URL ?? null,
         openrouterApiKey,
-        openrouterConfigured,
         ytDlpCookiesFromBrowser,
         ytDlpPath,
       },
@@ -379,7 +358,6 @@ export async function createRunnerPlan(options: {
       desiredOutputTokens,
       envForAuto,
       fixedModelSpec,
-      getLiteLlmCatalog,
       isFallbackModel,
       isImplicitAutoSelection,
       isNamedModelSelection,
@@ -411,7 +389,15 @@ export async function createRunnerPlan(options: {
         inputTarget,
         isYoutubeUrl,
         outputExtractedAssetContext: {
-          apiStatus: { apifyToken, firecrawlConfigured, openrouterApiKey },
+          apiStatus: {
+            openrouterApiKey,
+            apifyToken,
+            firecrawlConfigured,
+            firecrawlApiKey: null,
+            ytDlpPath: null,
+            ytDlpCookiesFromBrowser: null,
+            localBaseUrl: null,
+          },
           flags: {
             format,
             json,
@@ -424,12 +410,7 @@ export async function createRunnerPlan(options: {
             timeoutMs,
             verboseColor,
           },
-          hooks: {
-            buildReport,
-            clearProgressForStdout,
-            estimateCostUsd,
-            restoreProgressAfterStdout,
-          },
+          hooks: { buildReport, clearProgressForStdout, restoreProgressAfterStdout },
           io: { env, envForRun, stderr, stdout },
         },
         progressEnabled,

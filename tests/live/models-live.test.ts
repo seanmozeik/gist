@@ -28,7 +28,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'OpenAI (gpt-5.2) returns text',
     async () => {
       if (!apiKeys.openaiApiKey) {
-        it.skip('requires OPENAI_API_KEY', () => {});
+        it.skip('requires OPENAI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -56,7 +58,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'OpenAI (gpt-5.2) streams text (temperature ignored)',
     async () => {
       if (!apiKeys.openaiApiKey) {
-        it.skip('requires OPENAI_API_KEY', () => {});
+        it.skip('requires OPENAI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -92,7 +96,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'OpenAI (gpt-5-mini) streams text',
     async () => {
       if (!apiKeys.openaiApiKey) {
-        it.skip('requires OPENAI_API_KEY', () => {});
+        it.skip('requires OPENAI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -128,7 +134,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'Anthropic (opus 4.5) returns text',
     async () => {
       if (!apiKeys.anthropicApiKey) {
-        it.skip('requires ANTHROPIC_API_KEY', () => {});
+        it.skip('requires ANTHROPIC_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -156,7 +164,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'Anthropic (sonnet 4.5) returns text',
     async () => {
       if (!apiKeys.anthropicApiKey) {
-        it.skip('requires ANTHROPIC_API_KEY', () => {});
+        it.skip('requires ANTHROPIC_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -184,7 +194,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'xAI (grok 4.1 fast) returns text',
     async () => {
       if (!apiKeys.xaiApiKey) {
-        it.skip('requires XAI_API_KEY', () => {});
+        it.skip('requires XAI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {
@@ -212,7 +224,9 @@ function shouldSoftSkipLiveError(message: string): boolean {
     'Google (Gemini 3 Flash) returns text',
     async () => {
       if (!apiKeys.googleApiKey) {
-        it.skip('requires GEMINI_API_KEY', () => {});
+        it.skip('requires GEMINI_API_KEY', () => {
+          /* empty */
+        });
         return;
       }
       try {

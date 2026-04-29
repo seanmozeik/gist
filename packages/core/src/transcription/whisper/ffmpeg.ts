@@ -230,8 +230,12 @@ export async function transcodeBytesToMp3(bytes: Uint8Array): Promise<Uint8Array
     }
     return new Uint8Array(await fs.readFile(outputPath));
   } finally {
-    await fs.unlink(inputPath).catch(() => {});
-    await fs.unlink(outputPath).catch(() => {});
+    await fs.unlink(inputPath).catch(() => {
+      /* empty */
+    });
+    await fs.unlink(outputPath).catch(() => {
+      /* empty */
+    });
   }
 }
 
@@ -288,7 +292,11 @@ export async function transcodeBytesToWav(bytes: Uint8Array): Promise<Uint8Array
     await runFfmpegTranscodeToWav({ inputPath, outputPath });
     return new Uint8Array(await fs.readFile(outputPath));
   } finally {
-    await fs.unlink(inputPath).catch(() => {});
-    await fs.unlink(outputPath).catch(() => {});
+    await fs.unlink(inputPath).catch(() => {
+      /* empty */
+    });
+    await fs.unlink(outputPath).catch(() => {
+      /* empty */
+    });
   }
 }

@@ -25,7 +25,7 @@ function collectStream() {
 }
 
 function requestUrl(input: RequestInfo | URL): string {
-  return typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url);
+  return typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 }
 
 const mocks = vi.hoisted(() => ({
@@ -85,12 +85,10 @@ describe('cli --no-cache bug reproduction', () => {
         return htmlResponse('<!doctype html><html><body>First fetch</body></html>');
       }
       if (url.includes('api.openai.com')) {
-        return new Response(
-          JSON.stringify({
-            output_text: 'Summary content.',
-            usage: { completion_tokens: 1, prompt_tokens: 1, total_tokens: 2 },
-          }),
-        );
+        return Response.json({
+          output_text: 'Summary content.',
+          usage: { completion_tokens: 1, prompt_tokens: 1, total_tokens: 2 },
+        });
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });
@@ -116,12 +114,10 @@ describe('cli --no-cache bug reproduction', () => {
         return htmlResponse('<!doctype html><html><body>Second fetch</body></html>');
       }
       if (url.includes('api.openai.com')) {
-        return new Response(
-          JSON.stringify({
-            output_text: 'New summary content.',
-            usage: { completion_tokens: 1, prompt_tokens: 1, total_tokens: 2 },
-          }),
-        );
+        return Response.json({
+          output_text: 'New summary content.',
+          usage: { completion_tokens: 1, prompt_tokens: 1, total_tokens: 2 },
+        });
       }
       throw new Error(`Unexpected fetch call: ${url}`);
     });

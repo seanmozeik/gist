@@ -12,7 +12,7 @@ export interface ParsedModelId {
   canonical: string;
 }
 
-const PROVIDERS: LlmProvider[] = new Set(['openrouter', 'local']);
+const PROVIDERS = new Set(['openrouter', 'local'] as LlmProvider[]);
 
 /**
  * Parse a model ID into provider + model name.
@@ -33,7 +33,7 @@ export function normalizeGatewayStyleModelId(raw: string): string {
 
   if (slash === -1) {
     // No prefix — default to openrouter for backwards compatibility
-    return `openai/${trimmed}`;
+    return `openrouter/${trimmed}`;
   }
 
   const provider = lower.slice(0, slash) as LlmProvider;

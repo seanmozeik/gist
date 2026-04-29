@@ -11,7 +11,9 @@ export function createProgressGate(): ProgressGate {
 
   return {
     clearProgressForStdout: () => {
-      if (!clearFn) {return;}
+      if (!clearFn) {
+        return;
+      }
       const restore = clearFn();
       if (typeof restore === 'function') {
         restoreFn = restore;
@@ -26,7 +28,9 @@ export function createProgressGate(): ProgressGate {
       }
     },
     restoreProgressAfterStdout: () => {
-      if (!restoreFn) {return;}
+      if (!restoreFn) {
+        return;
+      }
       const restore = restoreFn;
       restoreFn = null;
       restore();

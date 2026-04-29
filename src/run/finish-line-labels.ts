@@ -15,16 +15,15 @@ export function buildExtractFinishLabel(args: {
 }): string {
   const base = args.format === 'markdown' ? 'markdown' : 'text';
 
-  const transcriptProvided = Boolean(args.extracted.diagnostics.transcript?.textProvided);
+  const transcriptProvided = args.extracted.diagnostics.transcript?.textProvided;
   if (transcriptProvided) {
     const provider = args.extracted.diagnostics.transcript?.provider;
     return provider ? `${base} via transcript/${provider}` : `${base} via transcript`;
   }
 
   if (args.format === 'markdown') {
-    const strategy = String(args.extracted.diagnostics.strategy ?? '');
-    const firecrawlUsed =
-      strategy === 'firecrawl' || Boolean(args.extracted.diagnostics.firecrawl?.used);
+    const strategy = args.extracted.diagnostics.strategy ?? '';
+    const firecrawlUsed = strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used;
     if (firecrawlUsed) {
       return `${base} via firecrawl`;
     }
@@ -32,14 +31,14 @@ export function buildExtractFinishLabel(args: {
       return `${base} via readability`;
     }
 
-    const mdUsed = Boolean(args.extracted.diagnostics.markdown?.used);
+    const mdUsed = args.extracted.diagnostics.markdown?.used;
     const mdProvider = args.extracted.diagnostics.markdown.provider;
     const mdNotes = args.extracted.diagnostics.markdown.notes ?? null;
 
     if (mdUsed && mdProvider === 'firecrawl') {
       return `${base} via firecrawl`;
     }
-    if (mdUsed && mdNotes && mdNotes.toLowerCase().includes('readability html used')) {
+    if (mdUsed && mdNotes?.toLowerCase?.()?.includes('readability html used')) {
       return `${base} via readability`;
     }
     if (mdUsed) {
@@ -53,7 +52,7 @@ export function buildExtractFinishLabel(args: {
     }
   }
 
-  const strategy = String(args.extracted.diagnostics.strategy ?? '');
+  const strategy = args.extracted.diagnostics.strategy ?? '';
   if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
     return `${base} via firecrawl`;
   }
@@ -72,7 +71,7 @@ export function buildExtractFinishLabel(args: {
 export function buildSummaryFinishLabel(args: {
   extracted: { diagnostics: ExtractDiagnosticsForFinishLine; wordCount: number };
 }): string | null {
-  const strategy = String(args.extracted.diagnostics.strategy ?? '');
+  const strategy = args.extracted.diagnostics.strategy ?? '';
   const sources: string[] = [];
   if (strategy === 'xurl') {
     sources.push('xurl');
@@ -86,7 +85,7 @@ export function buildSummaryFinishLabel(args: {
   if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
     sources.push('firecrawl');
   }
-  const transcriptProvided = Boolean(args.extracted.diagnostics.transcript?.textProvided);
+  const transcriptProvided = args.extracted.diagnostics.transcript?.textProvided;
   const words =
     typeof args.extracted.wordCount === 'number' && Number.isFinite(args.extracted.wordCount)
       ? args.extracted.wordCount

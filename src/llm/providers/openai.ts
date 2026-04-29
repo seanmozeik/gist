@@ -245,12 +245,12 @@ function contextToChatCompletionMessages(context: Context): { role: string; cont
     const content =
       typeof message.content === 'string'
         ? message.content.trim()
-        : (Array.isArray(message.content)
+        : Array.isArray(message.content)
           ? message.content
               .map((part) => (part.type === 'text' ? part.text : ''))
               .join('')
               .trim()
-          : '');
+          : '';
     if (!content) {
       continue;
     }
@@ -575,11 +575,11 @@ export async function completeOpenAiDocument({
       {
         content: [
           {
-            type: 'input_file',
-            filename,
             file_data: `data:${document.mediaType};base64,${bytesToBase64(document.bytes)}`,
+            filename,
+            type: 'input_file',
           },
-          { type: 'input_text', text: promptText },
+          { text: promptText, type: 'input_text' },
         ],
         role: 'user',
       },

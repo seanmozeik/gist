@@ -8,7 +8,9 @@ const mocks = vi.hoisted(() => ({
   buildProgram: vi.fn(() => ({ configureOutput: vi.fn(), outputHelp: vi.fn() })),
   buildRefreshFreeHelp: vi.fn(() => 'REFRESH_FREE_HELP'),
   handleDaemonRequest: vi.fn(async () => false),
-  refreshFree: vi.fn(async () => {}),
+  refreshFree: vi.fn(async () => {
+    /* empty */
+  }),
 }));
 
 vi.mock('../src/refresh-free.js', () => ({ refreshFree: mocks.refreshFree }));

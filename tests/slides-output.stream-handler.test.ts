@@ -11,7 +11,7 @@ const makeStdout = (isTTY: boolean) => {
   const stream = {
     isTTY,
     write: (chunk: string) => {
-      chunks.push(String(chunk));
+      chunks.push(chunk);
       return true;
     },
   } as unknown as NodeJS.WritableStream;
@@ -23,7 +23,9 @@ describe('slides summary stream handler', () => {
     const { stream, chunks } = makeStdout(true);
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       env: { TERM: 'xterm' },
       envForRun: { TERM: 'xterm' },
       getSlideIndexOrder: () => [1],
@@ -52,7 +54,9 @@ describe('slides summary stream handler', () => {
     const { stream, chunks } = makeStdout(false);
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       env: {},
       envForRun: {},
       getSlideIndexOrder: () => [1],
@@ -81,7 +85,9 @@ describe('slides summary stream handler', () => {
     const { stream, chunks } = makeStdout(false);
     const titles: (string | null)[] = [];
     const handler = createSlidesSummaryStreamHandler({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       env: {},
       envForRun: {},
       getSlideIndexOrder: () => [1],
@@ -108,7 +114,9 @@ describe('slides summary stream handler', () => {
     const { stream, chunks } = makeStdout(false);
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       env: {},
       envForRun: {},
       getSlideIndexOrder: () => [2],
@@ -136,13 +144,17 @@ describe('slides summary stream handler', () => {
   it('handles delta output mode and appends a newline on finalize', async () => {
     const { stream, chunks } = makeStdout(false);
     const handler = createSlidesSummaryStreamHandler({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       env: {},
       envForRun: {},
       getSlideIndexOrder: () => [],
       outputMode: 'delta',
       plain: true,
-      renderSlide: async () => {},
+      renderSlide: async () => {
+        /* empty */
+      },
       stdout: stream,
     });
 
@@ -182,7 +194,9 @@ describe('slides summary stream handler', () => {
     };
 
     const output = createSlidesTerminalOutput({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       enabled: false,
       extracted,
       flags: { lengthArg: { kind: 'preset', preset: 'short' }, plain: true },
@@ -239,7 +253,9 @@ describe('slides summary stream handler', () => {
     };
 
     const output = createSlidesTerminalOutput({
-      clearProgressForStdout: () => {},
+      clearProgressForStdout: () => {
+        /* empty */
+      },
       enabled: true,
       extracted,
       flags: { lengthArg: { kind: 'preset', preset: 'short' }, plain: true },

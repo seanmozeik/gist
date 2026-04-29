@@ -78,11 +78,11 @@ describe('openai provider helpers', () => {
   it('builds OpenAI document response URLs for /responses, /v1, and root bases', async () => {
     const pdfBytes = buildMinimalPdf('Hello PDF');
     const fetchMock = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           output: [{ content: [{ text: 'ok' }] }],
           usage: { input_tokens: 1, output_tokens: 2, total_tokens: 3 },
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -196,8 +196,7 @@ describe('openai provider helpers', () => {
     await expect(
       completeOpenAiDocument({
         document,
-        fetchImpl: (async () =>
-          new Response(JSON.stringify({ error: 'boom' }), { status: 500 })) as typeof fetch,
+        fetchImpl: (async () => Response.json({ error: 'boom' }, { status: 500 })) as typeof fetch,
         modelId: 'gpt-5.2',
         openaiConfig: {
           apiKey: 'oa-key',
@@ -214,9 +213,10 @@ describe('openai provider helpers', () => {
       completeOpenAiDocument({
         document,
         fetchImpl: (async () =>
-          new Response(JSON.stringify({ output: [{ content: [{ text: '   ' }] }] }), {
-            status: 200,
-          })) as typeof fetch,
+          Response.json(
+            { output: [{ content: [{ text: '   ' }] }] },
+            { status: 200 },
+          )) as typeof fetch,
         modelId: 'gpt-5.2',
         openaiConfig: {
           apiKey: 'oa-key',
@@ -234,8 +234,8 @@ describe('openai provider helpers', () => {
     const fetchMock = vi
       .fn()
       .mockImplementationOnce(async () => {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             choices: [
               {
                 message: {
@@ -247,15 +247,13 @@ describe('openai provider helpers', () => {
               },
             ],
             usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       })
       .mockImplementationOnce(async () => {
-        return new Response(
-          JSON.stringify({
-            choices: [{ message: { content: [{ image_url: 'x', type: 'image' }] } }],
-          }),
+        return Response.json(
+          { choices: [{ message: { content: [{ image_url: 'x', type: 'image' }] } }] },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -266,7 +264,7 @@ describe('openai provider helpers', () => {
       const context = {
         messages: [
           { content: 'hello', role: 'user' as const },
-          { content: [{ type: 'text' as const, text: 'seen' }], role: 'assistant' as const },
+          { content: [{ text: 'seen', type: 'text' as const }], role: 'assistant' as const },
         ],
         systemPrompt: 'system',
       };
@@ -318,11 +316,11 @@ describe('openai provider helpers', () => {
         { content: [{ text: 'hello', type: 'input_text' }], role: 'user' },
         { content: [{ text: 'seen', type: 'input_text' }], role: 'assistant' },
       ]);
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           output: [{ content: [{ text: 'Hello from responses' }] }],
           usage: { input_tokens: 1, output_tokens: 2, total_tokens: 3 },
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -331,7 +329,7 @@ describe('openai provider helpers', () => {
       context: {
         messages: [
           { content: 'hello', role: 'user' },
-          { content: [{ type: 'text', text: 'seen' }], role: 'assistant' },
+          { content: [{ text: 'seen', type: 'text' }], role: 'assistant' },
         ],
         systemPrompt: 'system',
       },
@@ -360,10 +358,10 @@ describe('openai provider helpers', () => {
       expect(body.service_tier).toBe('priority');
       expect(body.reasoning?.effort).toBe('medium');
       expect(body.text?.verbosity).toBe('low');
-      return new Response(JSON.stringify({ output_text: 'ok' }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { output_text: 'ok' },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     const result = await completeOpenAiText({
@@ -393,10 +391,10 @@ describe('openai provider helpers', () => {
       expect(body.service_tier).toBe('priority');
       expect(body.reasoning_effort).toBe('low');
       expect(body.verbosity).toBe('high');
-      return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
-        headers: { 'content-type': 'application/json' },
-        status: 200,
-      });
+      return Response.json(
+        { choices: [{ message: { content: 'ok' } }] },
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      );
     });
 
     const result = await completeOpenAiText({
@@ -429,11 +427,11 @@ describe('openai provider helpers', () => {
       };
       expect(body.model).toBe('openai/gpt-5-mini');
       expect(body.messages).toEqual([{ content: 'hello', role: 'user' }]);
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           choices: [{ message: { content: 'Hello from OpenRouter' } }],
           usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
-        }),
+        },
         { headers: { 'content-type': 'application/json' }, status: 200 },
       );
     });
@@ -461,16 +459,16 @@ describe('openai provider helpers', () => {
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { model: string };
         expect(body.model).toBe('openai/gpt-5.4');
-        return new Response(JSON.stringify({ error: 'server error' }), { status: 500 });
+        return Response.json({ error: 'server error' }, { status: 500 });
       })
       .mockImplementationOnce(async (_input: RequestInfo | URL, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body)) as { model: string };
         expect(body.model).toBe('openai/gpt-5-chat');
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             choices: [{ message: { content: 'Hello from GitHub compat' } }],
             usage: { completion_tokens: 2, prompt_tokens: 1, total_tokens: 3 },
-          }),
+          },
           { headers: { 'content-type': 'application/json' }, status: 200 },
         );
       });
@@ -496,7 +494,7 @@ describe('openai provider helpers', () => {
     const originalFetch = globalThis.fetch;
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ error: 'denied' }), { status: 403 })),
+      vi.fn(async () => Response.json({ error: 'denied' }, { status: 403 })),
     );
     try {
       await expect(
@@ -521,7 +519,7 @@ describe('openai provider helpers', () => {
     const originalFetch = globalThis.fetch;
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429 })),
+      vi.fn(async () => Response.json({ error: 'rate_limited' }, { status: 429 })),
     );
     try {
       await expect(

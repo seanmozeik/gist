@@ -45,8 +45,8 @@ describe('cli --extract with local PDF files', () => {
       const stderr = collectStream();
 
       const execFileMock = vi.fn(((file, args, _options, callback) => {
-        void file;
-        void args;
+        undefined;
+        undefined;
         callback(null, '# Extracted Heading\n\nExtracted PDF content.\n', '');
         return { pid: 123 } as unknown as ChildProcess;
       }) as ExecFileFn);

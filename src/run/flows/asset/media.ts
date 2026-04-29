@@ -13,7 +13,7 @@ import { createFirecrawlScraper } from '../../../firecrawl.js';
 import type { AssetAttachment } from '../../attachments.js';
 import { readTweetWithPreferredClient } from '../../bird.js';
 import { resolveTwitterCookies } from '../../cookies/twitter.js';
-import { hasBirdCli, hasXurlCli } from '../../env.js';
+import { hasBirdCli } from '../../env.js';
 import { writeVerbose } from '../../logging.js';
 import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from './media-policy.js';
 import type { AssetSummaryContext, SummarizeAssetArgs } from './summary.js';
@@ -88,7 +88,7 @@ export async function summarizeMediaFile(
     : await isBinaryAvailable('whisper-cli');
 
   const hasAnyTranscriptionProvider =
-    (((groqKey ?? assemblyaiKey) ?? geminiKey) || openaiKey ?? falKey) ?? hasLocalWhisper;
+    groqKey ?? assemblyaiKey ?? geminiKey ?? openaiKey ?? falKey ?? hasLocalWhisper;
 
   if (!hasAnyTranscriptionProvider) {
     throw new Error(`Media file transcription requires one of the following:
@@ -179,11 +179,10 @@ See: https://github.com/openai/whisper for setup details`);
       : null;
 
   // Create reader for X tweets (for completeness, not used for media)
-  const readTweetWithBirdClient =
-    hasXurlCli(ctx.env) || hasBirdCli(ctx.env)
-      ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
-          readTweetWithPreferredClient({ env: ctx.env, timeoutMs, url })
-      : null;
+  const readTweetWithBirdClient = hasBirdCli(ctx.env)
+    ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
+        readTweetWithPreferredClient({ env: ctx.env, timeoutMs, url })
+    : null;
 
   // Create link preview client for transcript resolution
   const transcriptCache =
@@ -193,13 +192,7 @@ See: https://github.com/openai/whisper for setup details`);
     env: ctx.envForRun,
     apifyApiToken: ctx.apiStatus.apifyToken,
     ytDlpPath,
-    transcription: {
-      assemblyaiApiKey: assemblyaiKey ?? ctx.apiStatus.assemblyaiApiKey,
-      env: ctx.envForRun,
-      falApiKey: falKey,
-      groqApiKey: groqKey,
-      openaiApiKey: openaiKey,
-    },
+    transcription: { env: ctx.envForRun, groqApiKey: groqKey, openaiApiKey: openaiKey },
     scrapeWithFirecrawl: firecrawlScraper,
     convertHtmlToMarkdown: null, // Not needed for media
     readTweetWithBird: readTweetWithBirdClient,

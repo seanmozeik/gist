@@ -45,7 +45,11 @@ describe('sidepanel bootstrap runtime', () => {
       applyChatEnabled: () => calls.push('apply-chat'),
       applySlidesLayout: () => calls.push('apply-layout'),
       bindSettingsStorage: { getSettingsHydrated: () => true } as never,
-      bindSidepanelLifecycle: { sendReady: () => {} } as never,
+      bindSidepanelLifecycle: {
+        sendReady: () => {
+          /* empty */
+        },
+      } as never,
       clearPendingSettingsSnapshot: () => {
         calls.push('clear-pending');
       },
@@ -101,7 +105,11 @@ describe('sidepanel bootstrap runtime', () => {
       applyChatEnabled: () => calls.push('apply-chat'),
       applySlidesLayout: () => calls.push('apply-layout'),
       bindSettingsStorage: { getSettingsHydrated: () => true } as never,
-      bindSidepanelLifecycle: { sendReady: () => {} } as never,
+      bindSidepanelLifecycle: {
+        sendReady: () => {
+          /* empty */
+        },
+      } as never,
       clearPendingSettingsSnapshot: () => {
         calls.push('clear-pending');
       },

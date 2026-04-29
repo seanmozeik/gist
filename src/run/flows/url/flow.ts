@@ -1,4 +1,3 @@
-import type { SlideExtractionResult } from '../../../slides/index.js';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
@@ -15,9 +14,8 @@ import {
 import { writeVerbose } from '../../logging.js';
 import { deriveExtractionUi, logExtractionDiagnostics } from './extract.js';
 import { createUrlExtractionSession } from './extraction-session.js';
-import { createUrlFlowProgress, writeSlidesBackgroundFailureWarning } from './flow-progress.js';
+import { createUrlFlowProgress } from './flow-progress.js';
 import { createMarkdownConverters } from './markdown.js';
-import { createUrlSlidesSession } from './slides-session.js';
 import { buildUrlPrompt, outputExtractedUrl, summarizeExtractedUrl } from './summary.js';
 import type { UrlFlowContext } from './types.js';
 import { handleVideoOnlyExtractedContent } from './video-only.js';
@@ -75,7 +73,7 @@ export async function runUrlFlow({
   writeVerbose(
     io.stderr,
     flags.verbose,
-    `env xaiKey=${Boolean(model.apiStatus.xaiApiKey)} openaiKey=${Boolean(model.apiStatus.apiKey)} zaiKey=${Boolean(model.apiStatus.zaiApiKey)} googleKey=${model.apiStatus.googleConfigured} anthropicKey=${model.apiStatus.anthropicConfigured} openrouterKey=${model.apiStatus.openrouterConfigured} apifyToken=${Boolean(model.apiStatus.apifyToken)} firecrawlKey=${model.apiStatus.firecrawlConfigured}`,
+    `env openrouterKey=${model.apiStatus.openrouterApiKey ? 'configured' : 'missing'} apifyToken=${Boolean(model.apiStatus.apifyToken)} firecrawlKey=${model.apiStatus.firecrawlConfigured}`,
     flags.verboseColor,
     io.envForRun,
   );
@@ -95,7 +93,6 @@ export async function runUrlFlow({
     pauseProgress,
     progressStatus,
     renderStatus,
-    renderStatusFromText,
     renderStatusWithMeta,
     spinner,
     stopProgress,
@@ -152,17 +149,6 @@ export async function runUrlFlow({
       );
     };
 
-    const slidesSession = createUrlSlidesSession({
-      cacheStore: extractionSession.cacheStore,
-      ctx: flowCtx,
-      extracted,
-      progressStatus,
-      renderStatus,
-      renderStatusFromText,
-      updateSummaryProgress,
-      url,
-    });
-
     updateSummaryProgress();
     logExtractionDiagnostics({
       env: io.envForRun,
@@ -202,7 +188,6 @@ export async function runUrlFlow({
       isYoutubeUrl,
       renderStatus,
       renderStatusWithMeta,
-      runSlidesExtraction: slidesSession.runSlidesExtraction,
       spinner,
       styleDim,
       updateSummaryProgress,
@@ -212,29 +197,9 @@ export async function runUrlFlow({
     }
     ({ extracted } = videoOnlyResult);
     ({ extractionUi } = videoOnlyResult);
-    slidesSession.setExtracted(extracted);
     updateSummaryProgress();
 
-    if (flags.slides) {
-      void slidesSession.runSlidesExtraction().catch((error) => {
-        const message = error instanceof Error ? error.message : String(error);
-        writeSlidesBackgroundFailureWarning({ ctx, message, theme });
-        writeVerbose(
-          io.stderr,
-          flags.verbose,
-          `slides failed: ${message}`,
-          flags.verboseColor,
-          io.envForRun,
-        );
-      });
-    }
-
     activeHooks.onExtracted?.(extracted);
-
-    let slidesForPrompt: SlideExtractionResult | null = null;
-    if (slidesSession.slidesTimelinePromise) {
-      slidesForPrompt = await slidesSession.slidesTimelinePromise;
-    }
 
     const prompt = buildUrlPrompt({
       extracted,
@@ -243,7 +208,7 @@ export async function runUrlFlow({
       lengthInstruction: flags.lengthInstruction ?? null,
       outputLanguage: flags.outputLanguage,
       promptOverride: flags.promptOverride ?? null,
-      slides: slidesForPrompt ?? slidesSession.getSlidesExtracted() ?? null,
+      slides: null,
     });
 
     // Whisper transcription costs need to be folded into the finish line totals.
@@ -293,8 +258,8 @@ export async function runUrlFlow({
         extracted: extractedForOutput,
         extractionUi,
         prompt,
-        slides: slidesSession.getSlidesExtracted() ?? slidesForPrompt ?? null,
-        slidesOutput: slidesSession.slidesOutput,
+        slides: null,
+        slidesOutput: null,
         transcriptionCostLabel,
         url,
       });
@@ -316,8 +281,8 @@ export async function runUrlFlow({
       extractionUi,
       onModelChosen,
       prompt,
-      slides: slidesSession.getSlidesExtracted() ?? slidesForPrompt ?? null,
-      slidesOutput: slidesSession.slidesOutput,
+      slides: null,
+      slidesOutput: null,
       transcriptionCostLabel,
       url,
     });

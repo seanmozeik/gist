@@ -42,7 +42,6 @@ async function extractReadabilityText(html: string): Promise<string> {
       if (message.includes('Could not parse CSS stylesheet')) {
         return;
       }
-      console.error(err);
     });
 
     const dom = new JSDOM(cleanedHtml, { virtualConsole });

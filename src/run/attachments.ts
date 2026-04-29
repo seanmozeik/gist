@@ -126,9 +126,9 @@ export async function ensureCliAttachmentPath({
   const ext =
     attachment.filename && path.extname(attachment.filename)
       ? path.extname(attachment.filename)
-      : (attachment.mediaType
+      : attachment.mediaType
         ? `.${mime.getExtension(attachment.mediaType) ?? 'bin'}`
-        : '.bin');
+        : '.bin';
   const filename = attachment.filename?.trim() ?? `asset${ext}`;
   const dir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-cli-asset-'));
   const filePath = path.join(dir, filename);
@@ -187,7 +187,7 @@ export function assertProviderSupportsAttachment({
   modelId: string;
   attachment: { kind: 'image' | 'file'; mediaType: string };
 }) {
-  void provider;
-  void modelId;
-  void attachment;
+  undefined;
+  undefined;
+  undefined;
 }

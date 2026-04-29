@@ -36,7 +36,7 @@ const createDeps = (text: string, media?: { kind?: 'video' | 'audio'; url?: stri
     author: { username: 'birdy' },
     client: 'xurl',
     media: media?.url
-      ? { kind: media.kind ?? 'video', urls: [media.url], preferredUrl: media.url, source: 'card' }
+      ? { kind: media.kind ?? 'video', preferredUrl: media.url, source: 'card', urls: [media.url] }
       : null,
     text,
   }),

@@ -604,14 +604,14 @@ export async function fetchLinkContent(
   if (twitterStatus && isBlockedTwitterContent(htmlExtracted.content)) {
     const birdNote = !deps.readTweetWithBird
       ? 'X CLI not available'
-      : (birdError
+      : birdError
         ? `X CLI failed: ${birdError instanceof Error ? birdError.message : String(birdError)}`
-        : 'X CLI returned no text');
+        : 'X CLI returned no text';
     const nitterNote =
       nitterUrls.length > 0
-        ? (nitterError
+        ? nitterError
           ? `Nitter failed: ${nitterError instanceof Error ? nitterError.message : String(nitterError)}`
-          : 'Nitter returned no text')
+          : 'Nitter returned no text'
         : 'Nitter not available';
     throw new Error(`Unable to fetch tweet content from X. ${birdNote}. ${nitterNote}.`);
   }

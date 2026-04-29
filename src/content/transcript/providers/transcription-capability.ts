@@ -1,10 +1,11 @@
-import { buildMissingTranscriptionProviderNote } from '../../../transcription/whisper/provider-setup.js';
 import type { TranscriptionConfig } from '../transcription-config.js';
 import type { ProviderResult, TranscriptSource } from '../types.js';
 import {
   resolveTranscriptionAvailability,
   type TranscriptionAvailability,
 } from './transcription-start.js';
+
+const MISSING_PROVIDER_NOTE = 'No transcription provider available. Set SUMMARIZE_LOCAL_BASE_URL.';
 
 export interface TranscriptProviderCapabilities {
   availability: TranscriptionAvailability;
@@ -20,12 +21,12 @@ export async function resolveTranscriptProviderCapabilities({
   transcription: TranscriptionConfig;
   ytDlpPath?: string | null;
 }): Promise<TranscriptProviderCapabilities> {
-  const availability = await resolveTranscriptionAvailability({ transcription });
+  const availability = await resolveTranscriptionAvailability({ env: transcription.env });
   return {
     availability,
     canRunYtDlp: Boolean(ytDlpPath && availability.hasAnyProvider),
     canTranscribe: availability.hasAnyProvider,
-    missingProviderNote: buildMissingTranscriptionProviderNote(),
+    missingProviderNote: MISSING_PROVIDER_NOTE,
   };
 }
 
@@ -38,7 +39,7 @@ export function buildMissingTranscriptionProviderResult(args: {
   return {
     attemptedProviders: args.attemptedProviders,
     metadata: args.metadata,
-    notes: [buildMissingTranscriptionProviderNote(), ...notes].join('; '),
+    notes: [MISSING_PROVIDER_NOTE, ...notes].join('; '),
     source: null,
     text: null,
   };

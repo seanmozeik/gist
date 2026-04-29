@@ -37,7 +37,9 @@ describe('transcription/whisper local whisper.cpp', () => {
         }
 
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
@@ -60,13 +62,7 @@ describe('transcription/whisper local whisper.cpp', () => {
         if (!base || typeof base !== 'string') {
           throw new Error('missing --output-file arg');
         }
-        void writeFile(`${base}.txt`, 'hello from whisper.cpp\n')
-          .then(() => {
-            queueMicrotask(() => handlers.get('close')?.(0));
-          })
-          .catch((error) => {
-            queueMicrotask(() => handlers.get('error')?.(error));
-          });
+        undefined;
         return proc;
       },
     }));
@@ -113,7 +109,9 @@ describe('transcription/whisper local whisper.cpp', () => {
         }
 
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
@@ -134,13 +132,7 @@ describe('transcription/whisper local whisper.cpp', () => {
         if (!base || typeof base !== 'string') {
           throw new Error('missing --output-file arg');
         }
-        void writeFile(`${base}.txt`, `ok ${mediaType}\n`)
-          .then(() => {
-            queueMicrotask(() => handlers.get('close')?.(0));
-          })
-          .catch((error) => {
-            queueMicrotask(() => handlers.get('error')?.(error));
-          });
+        undefined;
         return proc;
       },
     }));
@@ -179,7 +171,9 @@ describe('transcription/whisper local whisper.cpp', () => {
         }
 
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const handlers = new Map<string, (value?: unknown) => void>();
         const proc = {
@@ -200,15 +194,7 @@ describe('transcription/whisper local whisper.cpp', () => {
         if (!base || typeof base !== 'string') {
           throw new Error('missing --output-file arg');
         }
-        void writeFile(`${base}.txt`, 'file mode ok\n')
-          .then(() => {
-            // Progress output from `whisper-cli --print-progress` arrives on stderr.
-            stderr.emit('data', String.raw`whisper_print_progress_callback: progress = 50%\n`);
-            queueMicrotask(() => handlers.get('close')?.(0));
-          })
-          .catch((error) => {
-            queueMicrotask(() => handlers.get('error')?.(error));
-          });
+        undefined;
         return proc;
       },
     }));
@@ -255,10 +241,10 @@ describe('transcription/whisper local whisper.cpp', () => {
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url.includes('/v1/audio/transcriptions')) {
-          return new Response(JSON.stringify({ text: 'from openai' }), {
-            headers: { 'content-type': 'application/json' },
-            status: 200,
-          });
+          return Response.json(
+            { text: 'from openai' },
+            { headers: { 'content-type': 'application/json' }, status: 200 },
+          );
         }
         throw new Error(`Unexpected fetch: ${url}`);
       }) as unknown as typeof fetch;
@@ -270,7 +256,9 @@ describe('transcription/whisper local whisper.cpp', () => {
           }
 
           const stderr = new EventEmitter();
-          stderr.setEncoding = () => {};
+          stderr.setEncoding = () => {
+            /* empty */
+          };
 
           const handlers = new Map<string, (value?: unknown) => void>();
           const proc = {
@@ -417,10 +405,10 @@ describe('transcription/whisper local whisper.cpp', () => {
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url.includes('/v1/audio/transcriptions')) {
-          return new Response(JSON.stringify({ text: 'openai took over' }), {
-            headers: { 'content-type': 'application/json' },
-            status: 200,
-          });
+          return Response.json(
+            { text: 'openai took over' },
+            { headers: { 'content-type': 'application/json' }, status: 200 },
+          );
         }
         throw new Error(`Unexpected fetch: ${url}`);
       }) as unknown as typeof fetch;
@@ -488,10 +476,10 @@ describe('transcription/whisper local whisper.cpp', () => {
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url.includes('/v1/audio/transcriptions')) {
-          return new Response(JSON.stringify({ text: 'openai fallback' }), {
-            headers: { 'content-type': 'application/json' },
-            status: 200,
-          });
+          return Response.json(
+            { text: 'openai fallback' },
+            { headers: { 'content-type': 'application/json' }, status: 200 },
+          );
         }
         throw new Error(`Unexpected fetch: ${url}`);
       }) as unknown as typeof fetch;
@@ -503,7 +491,9 @@ describe('transcription/whisper local whisper.cpp', () => {
           }
 
           const stderr = new EventEmitter();
-          stderr.setEncoding = () => {};
+          stderr.setEncoding = () => {
+            /* empty */
+          };
 
           const handlers = new Map<string, (value?: unknown) => void>();
           const proc = {
@@ -524,13 +514,7 @@ describe('transcription/whisper local whisper.cpp', () => {
           if (!base || typeof base !== 'string') {
             throw new Error('missing --output-file arg');
           }
-          void writeFile(`${base}.txt`, '   \n')
-            .then(() => {
-              queueMicrotask(() => handlers.get('close')?.(0));
-            })
-            .catch((error) => {
-              queueMicrotask(() => handlers.get('error')?.(error));
-            });
+          undefined;
           return proc;
         },
       }));
@@ -611,7 +595,9 @@ describe('transcription/whisper local whisper.cpp', () => {
       spawn: (_cmd: string, args: string[]) => {
         const handlers = new Map<string, (value?: unknown) => void>();
         const stderr = new EventEmitter();
-        stderr.setEncoding = () => {};
+        stderr.setEncoding = () => {
+          /* empty */
+        };
 
         const proc = {
           on(event: string, handler: (value?: unknown) => void) {
@@ -637,9 +623,7 @@ describe('transcription/whisper local whisper.cpp', () => {
 
         if (_cmd === 'ffmpeg') {
           const output = args.at(-1) ?? '';
-          void writeFile(output, new Uint8Array([9, 9, 9])).then(() => {
-            close(0);
-          });
+          undefined;
           return proc;
         }
 
@@ -649,9 +633,7 @@ describe('transcription/whisper local whisper.cpp', () => {
           if (!base || typeof base !== 'string') {
             throw new Error('missing --output-file arg');
           }
-          void writeFile(`${base}.txt`, 'transcoded ok\n').then(() => {
-            close(0);
-          });
+          undefined;
           return proc;
         }
 

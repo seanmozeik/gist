@@ -49,7 +49,7 @@ describe('cli asset inputs (media files)', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'summarize-audio-no-provider-'));
     const mp3Path = join(root, 'test-audio.mp3');
-    writeFileSync(mp3Path, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(mp3Path, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -77,7 +77,7 @@ describe('cli asset inputs (media files)', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'summarize-audio-provider-error-'));
     const mp3Path = join(root, 'test-audio.mp3');
-    writeFileSync(mp3Path, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(mp3Path, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -150,7 +150,7 @@ describe('cli asset inputs (media files)', () => {
     for (const ext of audioExtensions) {
       const root = mkdtempSync(join(tmpdir(), `summarize-audio-${ext}-ext-`));
       const audioPath = join(root, `test.${ext}`);
-      writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+      writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
       const stdout = collectStream();
       const stderr = collectStream();
@@ -179,7 +179,7 @@ describe('cli asset inputs (media files)', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'summarize-audio-file-url-conversion-'));
     const audioPath = join(root, 'relative-path-test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -207,7 +207,7 @@ describe('cli asset inputs (media files)', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'summarize-audio-cache-mtime-'));
     const audioPath = join(root, 'audio-with-mtime.mp3');
-    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();

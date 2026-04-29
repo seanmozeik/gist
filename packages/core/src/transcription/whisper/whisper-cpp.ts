@@ -83,7 +83,9 @@ export async function transcribeWithWhisperCppFile({
     const mp3Path = join(tmpdir(), `summarize-whisper-cpp-${randomUUID()}.mp3`);
     return {
       cleanup: async () => {
-        await fs.unlink(mp3Path).catch(() => {});
+        await fs.unlink(mp3Path).catch(() => {
+          /* empty */
+        });
       },
       path: mp3Path,
     };
@@ -193,7 +195,9 @@ export async function transcribeWithWhisperCppFile({
     }
 
     const raw = await fs.readFile(outputTxt, 'utf8').catch(() => '');
-    await fs.unlink(outputTxt).catch(() => {});
+    await fs.unlink(outputTxt).catch(() => {
+      /* empty */
+    });
     const text = raw.trim();
     if (!text) {
       return {
@@ -206,7 +210,9 @@ export async function transcribeWithWhisperCppFile({
     notes.push(`whisper.cpp: model=${resolveWhisperCppModelLabelFromPath(modelPath)}`);
     return { error: null, notes, provider: 'whisper.cpp', text };
   } finally {
-    await effectivePath.cleanup?.().catch(() => {});
+    await effectivePath.cleanup?.().catch(() => {
+      /* empty */
+    });
   }
 }
 

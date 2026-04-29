@@ -117,7 +117,7 @@ async function tryGroqCurlFallback({
             reject(error);
             return;
           }
-          resolve(String(stdoutText ?? ''));
+          resolve(stdoutText ?? '');
         },
       ),
     );
@@ -135,6 +135,8 @@ async function tryGroqCurlFallback({
   } catch {
     return null;
   } finally {
-    await rm(root, { force: true, recursive: true }).catch(() => {});
+    await rm(root, { force: true, recursive: true }).catch(() => {
+      /* empty */
+    });
   }
 }

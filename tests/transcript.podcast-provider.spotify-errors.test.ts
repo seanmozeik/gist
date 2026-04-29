@@ -17,7 +17,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
   it('handles non-OK Spotify embed fetch', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('nope', { headers: { 'content-type': 'text/html' }, status: 403 });
       }
@@ -37,7 +37,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
   it('does not require Firecrawl when the embed page is blocked but Firecrawl is not configured', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('<html><body>captcha</body></html>', {
           headers: { 'content-type': 'text/html' },
@@ -60,7 +60,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
   it('errors when Firecrawl fallback returns empty content', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('<html><body>captcha</body></html>', {
           headers: { 'content-type': 'text/html' },
@@ -88,7 +88,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
   it('errors when Spotify embed is blocked even via Firecrawl', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('<html><body>captcha</body></html>', {
           headers: { 'content-type': 'text/html' },
@@ -119,7 +119,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
   it('errors when embed HTML lacks usable titles in __NEXT_DATA__', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input : new URL(input.url));
+        typeof input === 'string' ? input : input instanceof URL ? input : new URL(input.url);
       if (url.toString() === 'https://open.spotify.com/embed/episode/abc') {
         return new Response(
           '<script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"state":{"data":{"entity":{"title":"","subtitle":""}}}}}}</script>',
@@ -149,7 +149,7 @@ describe('podcast transcript provider - Spotify error modes', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response(embedHtml, { headers: { 'content-type': 'text/html' }, status: 200 });
       }
