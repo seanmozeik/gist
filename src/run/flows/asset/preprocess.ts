@@ -3,6 +3,7 @@ import type { Attachment } from '../../../llm/attachments.js';
 import { resolveOpenAiClientConfig } from '../../../llm/providers/openai.js';
 import { convertToMarkdownWithMarkitdown } from '../../../markitdown.js';
 import type { FixedModelSpec } from '../../../model-spec.js';
+import { convertPdfToMarkdown } from '../../../pdf/convert.js';
 import { buildFileSummaryPrompt, buildFileTextSummaryPrompt } from '../../../prompts/index.js';
 import type { SummaryLength } from '../../../shared/contracts.js';
 import { formatBytes } from '../../../tty/format.js';
@@ -34,6 +35,7 @@ export interface AssetPreprocessContext {
   openaiApiKey?: string | null;
   openrouterApiKey?: string | null;
   openaiBaseUrl?: string | null;
+  localBaseUrl?: string | null;
 }
 
 export interface AssetPreprocessResult {
@@ -274,44 +276,67 @@ export async function prepareAssetPrompt({
   // Non-text file attachments require preprocessing (pi-ai message format supports images, but not generic files).
   if (attachment.kind === 'file' && !textContent && documentHandling.mode === 'preprocess') {
     if (!fileBytes) {
-      throw new Error('Internal error: missing file bytes for markitdown preprocessing');
+      throw new Error('Internal error: missing file bytes for preprocessing');
     }
-    if (!shouldMarkitdownConvertMediaType(attachment.mediaType)) {
+    const isPdf = attachment.mediaType === 'application/pdf';
+
+    // Prefer sidecar PDF conversion for PDFs when available
+    if (isPdf && ctx.localBaseUrl) {
+      try {
+        const result = await convertPdfToMarkdown({
+          bytes: fileBytes,
+          filename: attachment.filename,
+          baseUrl: ctx.localBaseUrl,
+        });
+        preprocessedMarkdown = result.markdown;
+        usingPreprocessedMarkdown = true;
+        assetFooterParts.push(`sidecar-pdf(${attachment.filename ?? 'document'})`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`PDF conversion via sidecar failed: ${message}.`, { cause: error });
+      }
+    } else if (!shouldMarkitdownConvertMediaType(attachment.mediaType)) {
       throw new Error(
         `Unsupported file type: ${attachment.filename ?? 'file'} (${attachment.mediaType})\n` +
           `This build can only send text or images to the model. Try a text-like file, an image, or convert this file to text first.`,
       );
-    }
-    if (!hasUvxCli(ctx.env)) {
-      throw withUvxTip(
-        new Error(`Missing uvx/markitdown for preprocessing ${attachment.mediaType}.`),
-        ctx.env,
-      );
+    } else {
+      if (!hasUvxCli(ctx.env)) {
+        throw withUvxTip(
+          new Error(`Missing uvx/markitdown for preprocessing ${attachment.mediaType}.`),
+          ctx.env,
+        );
+      }
+
+      try {
+        preprocessedMarkdown = await convertToMarkdownWithMarkitdown({
+          bytes: fileBytes,
+          env: ctx.env,
+          execFileImpl: ctx.execFileImpl,
+          filenameHint: attachment.filename,
+          mediaTypeHint: attachment.mediaType,
+          timeoutMs: ctx.timeoutMs,
+          uvxCommand: ctx.envForRun.UVX_PATH,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`,
+          { cause: error },
+        );
+      }
+      usingPreprocessedMarkdown = true;
+      assetFooterParts.push(`markitdown(${attachment.mediaType})`);
     }
 
-    try {
-      preprocessedMarkdown = await convertToMarkdownWithMarkitdown({
-        bytes: fileBytes,
-        env: ctx.env,
-        execFileImpl: ctx.execFileImpl,
-        filenameHint: attachment.filename,
-        mediaTypeHint: attachment.mediaType,
-        timeoutMs: ctx.timeoutMs,
-        uvxCommand: ctx.envForRun.UVX_PATH,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to preprocess ${attachment.mediaType} with markitdown: ${message}.`, {
-        cause: error,
-      });
-    }
-    if (Buffer.byteLength(preprocessedMarkdown, 'utf8') > MAX_TEXT_BYTES_DEFAULT) {
+    if (
+      preprocessedMarkdown &&
+      Buffer.byteLength(preprocessedMarkdown, 'utf8') > MAX_TEXT_BYTES_DEFAULT
+    ) {
       throw new Error(
         `Preprocessed Markdown too large (${formatBytes(Buffer.byteLength(preprocessedMarkdown, 'utf8'))}). Limit is ${formatBytes(MAX_TEXT_BYTES_DEFAULT)}.`,
       );
     }
-    usingPreprocessedMarkdown = true;
-    assetFooterParts.push(`markitdown(${attachment.mediaType})`);
   }
 
   if (attachment.kind === 'image') {

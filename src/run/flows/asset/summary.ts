@@ -356,6 +356,7 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
       languageInstruction: ctx.languageInstruction ?? null,
       lengthArg: ctx.lengthArg,
       lengthInstruction: ctx.lengthInstruction ?? null,
+      localBaseUrl: ctx.apiStatus.localBaseUrl,
       outputLanguage: ctx.outputLanguage,
       preprocessMode: ctx.preprocessMode,
       promptOverride: ctx.promptOverride ?? null,
