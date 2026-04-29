@@ -48,6 +48,7 @@ export interface SummaryEngineDeps {
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
   apiKeys: { openrouterApiKey: string | null };
+  localBaseUrl?: string | null;
 }
 
 export interface SummaryStreamHandler {
@@ -80,6 +81,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     if (requiredEnv === 'OPENROUTER_API_KEY') {
       return Boolean(deps.apiKeys.openrouterApiKey);
     }
+    // null = no env var required (local sidecar)
+    if (requiredEnv === null) {
+      return true;
+    }
     return false;
   };
 
@@ -95,6 +100,10 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     }
     if (attempt.requiredEnv === 'CLI_AGENT') {
       return `Cursor Agent CLI not found for model ${attempt.userModelId}. Install Cursor CLI or set AGENT_PATH.`;
+    }
+
+    if (attempt.requiredEnv === null) {
+      return `Local sidecar not configured for model ${attempt.userModelId}. Set SUMMARIZE_LOCAL_BASE_URL.`;
     }
 
     return `Missing ${attempt.requiredEnv} for model ${attempt.userModelId}. Set the env var or choose a different --model.`;
@@ -234,6 +243,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         fetchImpl: deps.trackedFetch,
         forceChatCompletions,
         forceOpenRouter: attempt.forceOpenRouter,
+        localBaseUrl:
+          parsedModelEffective.provider === 'local' ? (deps.localBaseUrl ?? null) : null,
 
         maxOutputTokens: maxOutputTokensForCall ?? undefined,
         modelId: parsedModelEffective.canonical,
@@ -305,6 +316,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           fetchImpl: deps.trackedFetch,
           forceChatCompletions,
           forceOpenRouter: attempt.forceOpenRouter,
+          localBaseUrl:
+            parsedModelEffective.provider === 'local' ? (deps.localBaseUrl ?? null) : null,
 
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,
@@ -334,6 +347,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
           fetchImpl: deps.trackedFetch,
           forceOpenRouter: attempt.forceOpenRouter,
+          localBaseUrl:
+            parsedModelEffective.provider === 'local' ? (deps.localBaseUrl ?? null) : null,
 
           maxOutputTokens: maxOutputTokensForCall ?? undefined,
           modelId: parsedModelEffective.canonical,

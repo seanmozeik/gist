@@ -260,6 +260,7 @@ export async function createRunnerPlan(options: {
     envForRun,
     execFileImpl,
     llmCalls,
+    localBaseUrl: envForRun.SUMMARIZE_LOCAL_BASE_URL?.trim() || null,
     openaiRequestOptions,
     openaiRequestOptionsOverride,
     openaiUseChatCompletions,

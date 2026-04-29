@@ -11,7 +11,9 @@ import { Project } from 'ts-morph';
 const GIST_ROOT = '/home/yolo/gist';
 const SRC = path.join(GIST_ROOT, 'src');
 
-function log(msg: string) { /* empty */ }
+function log(msg: string) {
+  /* empty */
+}
 
 // ─── Step 1: Fix cache.ts missing re-exports ────────────────────────────────
 
@@ -184,8 +186,6 @@ function handleCookiesTwitter(): void {
       neededBy.push(path.relative(SRC, filePath));
     }
   }
-
-  
 }
 
 // ─── Step 6: Fix bird module imports ────────────────────────────────────────

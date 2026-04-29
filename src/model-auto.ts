@@ -55,7 +55,7 @@ export function buildAutoModelAttempts(options: {
       forceOpenRouter: false,
       llmModelId: null,
       openrouterProviders: null,
-      requiredEnv: 'OPENROUTER_API_KEY' as ModelAttempt['requiredEnv'],
+      requiredEnv: null,
       transport: 'native',
       userModelId: 'local/qwen2.5-7b', // Placeholder — local doesn't need API key
     });

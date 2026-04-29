@@ -21,6 +21,7 @@ export async function summarizeWithModelId({
   fetchImpl,
   forceOpenRouter,
   openaiBaseUrlOverride,
+  localBaseUrl,
   forceChatCompletions,
   requestOptions,
 }: {
@@ -33,6 +34,7 @@ export async function summarizeWithModelId({
   fetchImpl: typeof fetch;
   forceOpenRouter?: boolean;
   openaiBaseUrlOverride?: string | null;
+  localBaseUrl?: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
 }) {
@@ -41,6 +43,7 @@ export async function summarizeWithModelId({
     fetchImpl,
     forceChatCompletions,
     forceOpenRouter,
+    localBaseUrl,
     maxOutputTokens,
     modelId,
     openaiBaseUrlOverride,

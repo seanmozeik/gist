@@ -16,7 +16,7 @@ export type FixedModelSpec =
       provider: LlmProvider;
       openrouterProviders: string[] | null;
       forceOpenRouter: false;
-      requiredEnv: 'OPENROUTER_API_KEY';
+      requiredEnv: 'OPENROUTER_API_KEY' | null;
       openaiBaseUrlOverride?: string | null;
       forceChatCompletions?: boolean;
       requestOptions?: ModelRequestOptions;
@@ -165,7 +165,7 @@ export function parseRequestedModelId(raw: string): RequestedModel {
   const userModelId = normalizeGatewayStyleModelId(trimmed);
   const parsed = parseGatewayStyleModelId(userModelId);
   const llmModelId = userModelId;
-  const requiredEnv = 'OPENROUTER_API_KEY' as const;
+  const requiredEnv = parsed.provider === 'local' ? null : ('OPENROUTER_API_KEY' as const);
   return {
     forceOpenRouter: false,
     kind: 'fixed',

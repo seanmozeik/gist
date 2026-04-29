@@ -44,6 +44,7 @@ export async function generateTextWithModelId({
   timeoutMs,
   fetchImpl,
   forceOpenRouter,
+  localBaseUrl,
 
   forceChatCompletions,
   requestOptions,
@@ -59,6 +60,7 @@ export async function generateTextWithModelId({
   fetchImpl: typeof fetch;
   forceOpenRouter?: boolean;
   openaiBaseUrlOverride?: string | null;
+  localBaseUrl?: string | null;
   forceChatCompletions?: boolean;
   requestOptions?: ModelRequestOptions;
   retries?: number;
@@ -128,9 +130,11 @@ export async function generateTextWithModelId({
 
   while (attempt <= maxRetries) {
     const controller = new AbortController();
+    // Default to 5 minutes if no timeout set — local models can be slow.
+    const effectiveTimeoutMs = typeof timeoutMs === 'number' ? timeoutMs : 300_000;
     const timeout = setTimeout(() => {
       controller.abort();
-    }, timeoutMs);
+    }, effectiveTimeoutMs);
     try {
       if (parsed.provider === 'openrouter') {
         const openaiConfig = resolveOpenAiConfig();
@@ -155,8 +159,7 @@ export async function generateTextWithModelId({
 
       if (parsed.provider === 'local') {
         // Sidecar chat — POST to /v1/chat/completions
-        const baseUrl = (globalThis as unknown as { __SIDECAR_BASE_URL?: string })
-          .__SIDECAR_BASE_URL;
+        const baseUrl = localBaseUrl;
         if (!baseUrl) {
           throw new Error('Local sidecar not configured. Set SUMMARIZE_LOCAL_BASE_URL env var.');
         }
@@ -178,7 +181,6 @@ export async function generateTextWithModelId({
           body: JSON.stringify(body),
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
-          signal: controller.signal,
         });
 
         if (!response.ok) {

@@ -21,7 +21,9 @@ const SRC = path.join(GIST_ROOT, 'src');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function log(msg: string) { /* empty */ }
+function log(msg: string) {
+  /* empty */
+}
 
 function fileExists(p: string): boolean {
   return fs.existsSync(p);
