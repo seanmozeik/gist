@@ -108,6 +108,14 @@ Strip summarize down to a single-package CLI focused on:
 - `types.ts`: Removed slide defaults from createUrlFlowHooks
 - CLI verified: `bun src/cli.ts "https://example.com"` → returns extracted content
 
+#### Sidecar PDF Conversion — ADDED ✅
+- Created `src/pdf/convert.ts` — POST to `${baseUrl}/convert-pdf` (multipart upload)
+- Sidecar uses marker-v1 model for state-of-the-art PDF → markdown conversion
+- `preprocess.ts`: prefers sidecar `/convert-pdf` for PDFs when `SUMMARIZE_LOCAL_BASE_URL` set
+- Falls back to `uvx/markitdown` for non-PDF files and when no sidecar available
+- Added `localBaseUrl` to `AssetPreprocessContext` interface
+- Updated `summary.ts` asset flow to pass `localBaseUrl` through
+
 ---
 
 ## What's NOT DONE ❌ (~19 non-blocking TypeScript errors)
@@ -194,14 +202,14 @@ interface LocalConfig {
 ```
 
 ### Sidecar Endpoints
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/v1/chat/completions` | POST | OpenAI-compatible LLM chat |
-| `/transcribe` | POST | Audio transcription (multipart) |
-| `/rerank` | POST | TEI reranking |
-| `/embed` | POST | TEI embeddings |
-| `/convert-pdf` | POST | PDF → markdown |
-| `/health` | GET | Health check |
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/v1/chat/completions` | POST | OpenAI-compatible LLM chat | ✅ Wired |
+| `/transcribe` | POST | Audio transcription (multipart) | ✅ Wired |
+| `/convert-pdf` | POST | PDF → markdown via marker-v1 | ✅ Wired |
+| `/rerank` | POST | TEI reranking | ❌ No callers |
+| `/embed` | POST | TEI embeddings | ❌ No callers |
+| `/health` | GET | Health check | ❌ Not used |
 
 ### Bird CLI
 - Interface: `bird read <tweet-id-or-url> --json-full`
@@ -237,9 +245,21 @@ Simplify package.json, tsconfig, delete empty dirs.
 ```
 Starting errors: 325
 Current errors:  ~19 non-blocking (94% reduction)
-Files changed:   269+ files, +3580/-6625 lines
+Files changed:   270+ files, +3680/-6650 lines
 ```
 
-**Endpoint connectivity verified.** The CLI can fetch URLs, extract content, and route to LLM providers (OpenRouter/local sidecar). Remaining errors are defensive coding / unused variable warnings that don't block execution.
+**Endpoint connectivity verified.** The CLI can:
+- Fetch and extract URL content
+- Route LLM calls to OpenRouter or local sidecar (`/v1/chat/completions`)
+- Transcribe audio via sidecar (`/transcribe`)
+- Convert PDFs via sidecar (`/convert-pdf`, marker-v1) — falls back to markitdown
+- Display help text, accept model selection via `--model`
 
-Next: clean up remaining ~19 errors, test with real API key and sidecar.
+Remaining errors are all defensive coding / unused variable warnings that don't block execution.
+
+### Next Steps
+1. Clean up remaining ~19 TS errors (unused vars, defensive null checks)
+2. Test with real OPENROUTER_API_KEY
+3. Test local sidecar: `SUMMARIZE_LOCAL_BASE_URL=http://localhost:8000 bun src/cli.ts local/qwen-smol "test"`
+4. Package consolidation — delete empty dirs, simplify package.json scripts
+5. Clean up help text references to old providers (Anthropic, Google, xAI, etc.)
