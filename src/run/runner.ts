@@ -3,7 +3,12 @@ import { execFile } from 'node:child_process';
 import { CommanderError, type Command } from 'commander';
 
 import type { ExecFileFn } from '../markitdown';
-import { handleAuthRequest, handleHelpRequest, handleRefreshFreeRequest } from './cli-preflight';
+import {
+  handleAuthRequest,
+  handleHelpRequest,
+  handleRefreshFreeRequest,
+  handleSkillRequest,
+} from './cli-preflight';
 import { attachRichHelp, buildProgram } from './help';
 import { createRunnerPlan } from './runner-plan';
 import {
@@ -93,6 +98,9 @@ async function handleImmediateCliRequests(options: {
   stderr: NodeJS.WritableStream;
 }) {
   const { normalizedArgv, inputEnv, envForRun, fetchImpl, stdout, stderr } = options;
+  if (handleSkillRequest({ normalizedArgv, stdout })) {
+    return true;
+  }
   if (handleHelpRequest({ envForRun, normalizedArgv, stderr, stdout })) {
     return true;
   }

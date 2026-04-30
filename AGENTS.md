@@ -1,6 +1,5 @@
 # Gist Guardrails
 
-- Hard rule: single source of truth = `~/Projects/gist`; never commit in `vendor/gist` (treat it as a read-only checkout).
 - Note: multiple agents often work in this folder. If you see files/changes you do not recognize, ignore them and list them at the end.
 
 ## Workspace layout
@@ -12,15 +11,12 @@
   - Agent-friendly CLI: paste a URL, local path, or stdin and get extracted text or a summary.
   - Keep broad source support: articles/web pages, YouTube, Twitter/X, podcasts/RSS/audio, remote assets, local files, and stdin.
   - Keep model backends simple: OpenRouter, local sidecar (`local/...`), and CLI providers (`claude`, `codex`, `gemini`, `agent`).
-  - Do not resurrect Chrome extension, daemon, slides, direct native model providers, local model downloads, or pricing/cost lookup.
 - Dev:
   - Build: `bun run build`
   - Gate: `bun run check`
   - Typecheck: `bun run typecheck`
   - CLI smoke: `bun src/cli.ts --help`
   - Tests exist but are currently stale/noisy; prefer build/typecheck and focused smoke checks unless the task is specifically test cleanup.
-- Commits: use `committer "type: message" <files...>` (Conventional Commits).
-- `packages/core` has been deleted. Keep this as a single-package CLI/library unless the product shape changes deliberately.
 
 ## Code exploration — prefer `ast-outline` over full reads
 

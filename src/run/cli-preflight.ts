@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 
+import skillMarkdown from '../../skills/gist/SKILL.md' with { type: 'text' };
 import { refreshFree } from '../refresh-free';
 import { authStatus, deleteSecret, saveSecret } from '../secrets';
 import { attachRichHelp, buildProgram } from './help';
@@ -40,6 +41,20 @@ export function handleHelpRequest({
   });
   attachRichHelp(program, envForRun, stdout);
   program.outputHelp();
+  return true;
+}
+
+export function handleSkillRequest({
+  normalizedArgv,
+  stdout,
+}: {
+  normalizedArgv: string[];
+  stdout: NodeJS.WritableStream;
+}): boolean {
+  if (!normalizedArgv.includes('--skill')) {
+    return false;
+  }
+  stdout.write(skillMarkdown.endsWith('\n') ? skillMarkdown : `${skillMarkdown}\n`);
   return true;
 }
 

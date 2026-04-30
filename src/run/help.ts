@@ -134,6 +134,7 @@ export function buildProgram() {
     )
     .option('--verbose', 'Print detailed progress info to stderr', false)
     .option('--debug', 'Alias for --verbose (and defaults --metrics to detailed)', false)
+    .option('--skill', 'Print the gist CLI skill markdown', false)
     .addOption(
       new Option('--metrics <mode>', 'Metrics output: off, on, detailed')
         .choices(['off', 'on', 'detailed'])
