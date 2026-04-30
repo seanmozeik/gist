@@ -59,7 +59,7 @@ function buildRuntime() {
     setPhase: vi.fn(),
     setSlidesBusy: vi.fn(),
     syncWithActiveTab: vi.fn(async () => {
-      /* empty */
+      /* Empty */
     }),
   };
 
@@ -112,9 +112,9 @@ describe('sidepanel summary stream runtime', () => {
   it('does not mark slides busy for non-slide status updates', () => {
     const { calls } = buildRuntime();
 
-    capturedOptions?.onStatus?.('Summarizing this page');
+    capturedOptions?.onStatus?.('Gisting this page');
 
-    expect(calls.headerSetStatus).toHaveBeenCalledWith('Summarizing this page');
+    expect(calls.headerSetStatus).toHaveBeenCalledWith('Gisting this page');
     expect(calls.setSlidesBusy).not.toHaveBeenCalled();
   });
 
@@ -209,7 +209,7 @@ describe('sidepanel summary stream runtime', () => {
       setSlidesBusy: vi.fn(),
       shouldRebuildSlideDescriptions: vi.fn(() => false),
       syncWithActiveTab: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     });
 

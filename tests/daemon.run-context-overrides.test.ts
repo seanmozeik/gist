@@ -8,11 +8,11 @@ import type { CacheState } from '../src/cache.js';
 import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
 
 function makeTempHome(): string {
-  return mkdtempSync(join(tmpdir(), 'summarize-daemon-home-'));
+  return mkdtempSync(join(tmpdir(), 'gist-daemon-home-'));
 }
 
 function writeConfig(home: string, config: Record<string, unknown>) {
-  const configDir = join(home, '.summarize');
+  const configDir = join(home, '.gist');
   mkdirSync(configDir, { recursive: true });
   writeFileSync(join(configDir, 'config.json'), JSON.stringify(config), 'utf8');
 }
@@ -40,7 +40,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -64,7 +64,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -91,7 +91,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -112,7 +112,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -138,7 +138,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -156,7 +156,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -179,7 +179,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -217,7 +217,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -247,7 +247,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -269,7 +269,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -285,7 +285,7 @@ describe('daemon/flow-context (overrides)', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });

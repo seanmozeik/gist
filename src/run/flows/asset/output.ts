@@ -47,9 +47,6 @@ export async function outputExtractedAsset({
   extracted: AssetExtractResult;
   apiStatus: {
     openrouterApiKey: string | null;
-    apifyToken: string | null;
-    firecrawlConfigured: boolean;
-    firecrawlApiKey: string | null;
     ytDlpPath: string | null;
     ytDlpCookiesFromBrowser: string | null;
     localBaseUrl: string | null;
@@ -66,11 +63,7 @@ export async function outputExtractedAsset({
   if (flags.json) {
     const finishReport = flags.shouldComputeReport ? await hooks.buildReport() : null;
     const payload = {
-      env: {
-        hasApifyToken: Boolean(apiStatus.apifyToken),
-        hasFirecrawlKey: apiStatus.firecrawlConfigured,
-        hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
-      },
+      env: { hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey) },
       extracted: {
         content: extracted.content,
         filename: attachment.filename,

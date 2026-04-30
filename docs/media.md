@@ -36,7 +36,7 @@ read_when:
 
 ## Chrome extension behavior
 
-- When media is detected on a page, the Summarize button gains a dropdown caret (Page/Video or Page/Audio).
+- When media is detected on a page, the Gist button gains a dropdown caret (Page/Video or Page/Audio).
 - Selecting Video/Audio forces URL mode + transcript-first extraction for that run only.
 - Selection is not stored.
 

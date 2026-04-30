@@ -4,7 +4,7 @@ import { generateTextWithModelId } from '../../src/llm/generate-text.js';
 import { buildDocumentPrompt } from '../helpers/document-prompt.js';
 import { buildMinimalPdf } from '../helpers/pdf.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 function shouldSoftSkipLiveError(message: string): boolean {
   return /(model.*not found|does not exist|permission|access|unauthorized|forbidden|404|not_found|model_not_found|unsupported|invalid_request)/i.test(
@@ -17,11 +17,11 @@ function shouldSoftSkipLiveError(message: string): boolean {
   const openaiApiKey = process.env.OPENAI_API_KEY ?? null;
 
   it(
-    'summarizes PDF attachments',
+    'gists PDF attachments',
     async () => {
       if (!openaiApiKey) {
         it.skip('requires OPENAI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -42,7 +42,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
           prompt: buildDocumentPrompt({
             bytes: pdfBytes,
             filename: 'hello.pdf',
-            text: 'Summarize the attached PDF in one sentence.',
+            text: 'Gist the attached PDF in one sentence.',
           }),
           timeoutMs,
         });

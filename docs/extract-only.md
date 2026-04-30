@@ -32,4 +32,4 @@ Deprecated alias: `--extract-only`.
 
 Daemon note:
 
-- `/v1/summarize` supports `format: "markdown"` + `markdownMode` for extract-only output (use `extractOnly: true`).
+- `/v1/gist` supports `format: "markdown"` + `markdownMode` for extract-only output (use `extractOnly: true`).

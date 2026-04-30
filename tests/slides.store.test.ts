@@ -17,7 +17,7 @@ import type { SlideExtractionResult } from '../src/slides/types.js';
 
 describe('slides store', () => {
   it('serializes relative paths and resolves cached slides', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-store-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-slides-store-'));
     const settings = resolveSlideSettings({ cwd: root, slides: true });
     expect(settings).not.toBeNull();
     if (!settings) {
@@ -69,7 +69,7 @@ describe('slides store', () => {
   });
 
   it('rejects cache outside expected output dir', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-store-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-slides-store-'));
     const settings = resolveSlideSettings({ cwd: root, slides: true });
     expect(settings).not.toBeNull();
     if (!settings) {
@@ -82,7 +82,7 @@ describe('slides store', () => {
       url: 'https://example.com/video.mp4',
     };
 
-    const otherDir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-other-'));
+    const otherDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-slides-other-'));
     const imagePath = path.join(otherDir, 'slide_0001.png');
     await fs.writeFile(imagePath, 'fake');
 
@@ -113,7 +113,7 @@ describe('slides store', () => {
   });
 
   it('rejects image paths outside slides dir', () => {
-    const slidesDir = '/tmp/summarize-slides';
+    const slidesDir = '/tmp/gist-slides';
     const resolved = resolveSlideImagePath(slidesDir, '../escape.png');
     expect(resolved).toBeNull();
   });

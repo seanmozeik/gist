@@ -3,7 +3,7 @@ import { render as renderMarkdownAnsi } from 'markdansi';
 
 import { buildLanguageKey, buildLengthKey } from '../../../cache-keys.js';
 import { buildSummaryCacheKey, type CacheState } from '../../../cache.js';
-import type { CliProvider, SummarizeConfig } from '../../../config.js';
+import type { CliProvider, GistConfig } from '../../../config.js';
 import type { MediaCache } from '../../../content/index.js';
 import type { LlmCall, RunMetricsReport } from '../../../costs.js';
 import type { OutputLanguage } from '../../../language.js';
@@ -80,7 +80,7 @@ async function outputBypassedAssetSummary({
   footerLabel,
 }: {
   ctx: AssetSummaryContext;
-  args: SummarizeAssetArgs;
+  args: GistAssetArgs;
   promptText: string;
   summaryText: string;
   assetFooterParts: string[];
@@ -124,11 +124,7 @@ async function outputBypassedAssetSummary({
             url: args.sourceLabel,
           };
     const payload = {
-      env: {
-        hasApifyToken: Boolean(ctx.apiStatus.apifyToken),
-        hasFirecrawlKey: ctx.apiStatus.firecrawlConfigured,
-        hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey),
-      },
+      env: { hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey) },
       extracted,
       input,
       llm: null,
@@ -224,12 +220,11 @@ export interface AssetSummaryContext {
   allowAutoCliFallback: boolean;
   desiredOutputTokens: number | null;
   envForAuto: Record<string, string | undefined>;
-  configForModelSelection: SummarizeConfig | null;
+  configForModelSelection: GistConfig | null;
   cliAvailability: Partial<Record<CliProvider, boolean>>;
   requestedModel: RequestedModel;
   requestedModelInput: string;
   requestedModelLabel: string;
-  wantsFreeNamedModel: boolean;
   isNamedModelSelection: boolean;
   maxOutputTokensArg: number | null;
   json: boolean;
@@ -253,9 +248,6 @@ export interface AssetSummaryContext {
   mediaCache: MediaCache | null;
   apiStatus: {
     openrouterApiKey: string | null;
-    apifyToken: string | null;
-    firecrawlConfigured: boolean;
-    firecrawlApiKey: string | null;
     ytDlpPath: string | null;
     ytDlpCookiesFromBrowser: string | null;
     localBaseUrl: string | null;
@@ -296,7 +288,6 @@ export interface AssetSummaryContextInput {
     | 'requestedModel'
     | 'requestedModelInput'
     | 'requestedModelLabel'
-    | 'wantsFreeNamedModel'
     | 'isNamedModelSelection'
     | 'summaryEngine'
     | 'llmCalls'
@@ -333,14 +324,14 @@ export function createAssetSummaryContext(input: AssetSummaryContextInput): Asse
   };
 }
 
-export interface SummarizeAssetArgs {
+export interface GistAssetArgs {
   sourceKind: 'file' | 'asset-url';
   sourceLabel: string;
   attachment: AssetAttachment;
   onModelChosen?: ((modelId: string) => void) | null;
 }
 
-export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAssetArgs) {
+export async function gistAsset(ctx: AssetSummaryContext, args: GistAssetArgs) {
   const lastSuccessfulCliProvider = ctx.isFallbackModel
     ? await readLastSuccessfulCliProvider(ctx.envForRun)
     : null;
@@ -439,9 +430,9 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
     ctx.cache.mode === 'default' && !ctx.summaryCacheBypass ? ctx.cache.store : null;
   // Simplified cache keys
   const contentHash = cacheStore
-    ? `c:${promptText.slice(0, 500).replace(/\s+/g, ' ').trim()}`
+    ? `c:${promptText.slice(0, 500).replaceAll(/\s+/g, ' ').trim()}`
     : null;
-  const promptHash = cacheStore ? `p:${promptText.replace(/\s+/g, ' ').trim()}` : null;
+  const promptHash = cacheStore ? `p:${promptText.replaceAll(/\s+/g, ' ').trim()}` : null;
   const lengthKey = buildLengthKey(ctx.lengthArg);
   const languageKey = buildLanguageKey(ctx.outputLanguage);
   const autoSelectionCacheModel = ctx.isFallbackModel
@@ -466,9 +457,8 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
       const cachedRaw = cacheStore.getJson('summary', key);
       const cached = cachedRaw as { summary?: unknown; model?: unknown } | null;
       const cachedSummary =
-        cached && typeof cached.summary === 'string' ? (cached.summary as string).trim() : null;
-      const cachedModelId =
-        cached && typeof cached.model === 'string' ? (cached.model as string).trim() : null;
+        cached && typeof cached.summary === 'string' ? cached.summary.trim() : null;
+      const cachedModelId = cached && typeof cached.model === 'string' ? cached.model.trim() : null;
       if (cachedSummary) {
         const cachedAttempt = cachedModelId
           ? (attempts.find((attempt) => attempt.userModelId === cachedModelId) ?? null)
@@ -592,15 +582,10 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
   }
 
   if (!summaryResult || !usedAttempt) {
-    const withFreeTip = (message: string) => {
-      if (!ctx.isNamedModelSelection || !ctx.wantsFreeNamedModel) {
-        return message;
-      }
-      return (
-        `${message}\n` +
-        `Tip: run "summarize refresh-free" to refresh the free model candidates (writes ~/.summarize/config.json).`
-      );
-    };
+    const withFreeTip = (message: string) =>
+      ctx.isNamedModelSelection && ctx.requestedModelInput.toLowerCase() === 'free'
+        ? `${message}\nTip: run "gist refresh-free" to refresh the free model candidates (writes ~/.gist/config.json).`
+        : message;
 
     if (ctx.isNamedModelSelection) {
       if (lastError === null && missingRequiredEnvs.size > 0) {
@@ -728,11 +713,7 @@ export async function summarizeAsset(ctx: AssetSummaryContext, args: SummarizeAs
             url: args.sourceLabel,
           };
     const payload = {
-      env: {
-        hasApifyToken: Boolean(ctx.apiStatus.apifyToken),
-        hasFirecrawlKey: ctx.apiStatus.firecrawlConfigured,
-        hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey),
-      },
+      env: { hasOpenRouterKey: Boolean(ctx.apiStatus.openrouterApiKey) },
       extracted,
       input,
       llm: {

@@ -47,8 +47,8 @@ describe('cli streamed markdown write semantics', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-stream-lines-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-stream-lines-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

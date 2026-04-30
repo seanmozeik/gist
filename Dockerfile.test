@@ -27,4 +27,4 @@ COPY tsconfig*.json .oxlintrc.json .oxfmtrc.json vitest.config.ts tests/ ./
 RUN bun run build
 
 # Default: run the CLI
-ENTRYPOINT ["bun", "run", "summarize"]
+ENTRYPOINT ["bun", "run", "gist"]

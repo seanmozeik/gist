@@ -27,8 +27,8 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('model presets: free', () => {
   it('errors for unknown preset names (no "/")', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preset-unknown-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-preset-unknown-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     await expect(
       runCli(['--model', 'foobar', '--timeout', '2s', 'https://example.com'], {
@@ -49,7 +49,7 @@ describe('model presets: free', () => {
       throw new Error('boom');
     });
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preset-free-tip-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preset-free-tip-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello world', 'utf8');
 
@@ -65,7 +65,7 @@ describe('model presets: free', () => {
         stderr: stderr.stream,
         stdout: stdout.stream,
       }),
-    ).rejects.toThrow(/boom[\s\S]*summarize refresh-free/i);
+    ).rejects.toThrow(/boom[\s\S]*gist refresh-free/i);
   });
 
   it('lets config override the built-in free preset', async () => {
@@ -73,12 +73,12 @@ describe('model presets: free', () => {
     const generateMock = generateTextWithModelId as unknown as ReturnType<typeof vi.fn>;
     generateMock.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preset-free-override-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preset-free-override-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello world', 'utf8');
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         models: { free: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'] }] } },
       }),

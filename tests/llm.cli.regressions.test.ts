@@ -16,7 +16,7 @@ describe('runCliModel regressions', () => {
       return {
         stdin: {
           end() {
-            /* empty */
+            /* Empty */
           },
           write(value: string) {
             stdinWrites.push(value);
@@ -50,10 +50,10 @@ describe('runCliModel regressions', () => {
       return {
         stdin: {
           end() {
-            /* empty */
+            /* Empty */
           },
           write() {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ChildProcess;
@@ -98,10 +98,10 @@ describe('runCliModel regressions', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -139,10 +139,10 @@ describe('runCliModel regressions', () => {
           return {
             stdin: {
               end() {
-                /* empty */
+                /* Empty */
               },
               write() {
-                /* empty */
+                /* Empty */
               },
             },
           } as unknown as ChildProcess;

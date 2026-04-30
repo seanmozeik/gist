@@ -95,7 +95,7 @@ describe('options support', () => {
     vi.stubGlobal('navigator', {
       clipboard: {
         writeText: vi.fn(async () => {
-          /* empty */
+          /* Empty */
         }),
       },
     });

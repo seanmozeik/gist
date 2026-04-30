@@ -18,7 +18,7 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('--model auto no-model-url-verbose-error', () => {
   it('prints extracted content and a verbose "auto failed all models" line', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-auto-no-model-url-verbose-error-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-auto-no-model-url-verbose-error-'));
     const html = `<!doctype html><html><head><title>Ok</title></head><body><article><p>${'A'.repeat(
       2000,
     )}</p></article></body></html>`;

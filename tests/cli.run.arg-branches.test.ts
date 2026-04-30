@@ -34,7 +34,7 @@ const mocks = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('../packages/core/src/content/transcript/index.js', () => ({
+vi.mock('../src/content/transcript/index.js', () => ({
   resolveTranscriptForLink: mocks.resolveTranscriptForLink,
 }));
 
@@ -98,7 +98,7 @@ describe('cli run.ts arg parsing branches', () => {
         stderr: stderr.stream,
         stdout: stdout.stream,
       }),
-    ).rejects.toThrow(/Usage: summarize <input>/);
+    ).rejects.toThrow(/Usage: gist <input>/);
   });
 
   it('--debug defaults --metrics to detailed', async () => {

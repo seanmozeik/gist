@@ -47,7 +47,7 @@ describe('daemon /v1/models', () => {
   });
 
   it('includes available CLI model options', async () => {
-    const binDir = mkdtempSync(path.join(tmpdir(), 'summarize-cli-bin-'));
+    const binDir = mkdtempSync(path.join(tmpdir(), 'gist-cli-bin-'));
     const claudePath = path.join(binDir, 'claude');
     const opencodePath = path.join(binDir, 'opencode');
     writeFileSync(claudePath, '#!/bin/sh\nexit 0\n', 'utf8');

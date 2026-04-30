@@ -47,8 +47,8 @@ describe('cli markdown reference links', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-md-links-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-md-links-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -114,8 +114,8 @@ describe('cli markdown reference links', () => {
       ),
     );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-md-links-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-md-links-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -184,8 +184,8 @@ describe('cli markdown reference links', () => {
       ),
     );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-md-links-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-md-links-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

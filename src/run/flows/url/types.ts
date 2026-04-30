@@ -1,5 +1,5 @@
 import type { CacheState } from '../../../cache.js';
-import type { CliProvider, SummarizeConfig } from '../../../config.js';
+import type { CliProvider, GistConfig } from '../../../config.js';
 import type {
   ExtractedLinkContent,
   LinkPreviewProgressEvent,
@@ -13,7 +13,7 @@ import type { ExecFileFn } from '../../../markitdown.js';
 import type { FixedModelSpec, RequestedModel } from '../../../model-spec.js';
 import type { SummaryLength } from '../../../shared/contracts.js';
 import type { createSummaryEngine } from '../../summary-engine.js';
-import type { SummarizeAssetArgs } from '../asset/summary.js';
+import type { GistAssetArgs } from '../asset/summary.js';
 
 export interface UrlFlowIo {
   env: Record<string, string | undefined>;
@@ -31,8 +31,7 @@ export interface UrlFlowFlags {
   format: 'text' | 'markdown';
   markdownMode: 'off' | 'auto' | 'llm' | 'readability';
   preprocessMode: 'off' | 'auto' | 'always';
-  youtubeMode: 'auto' | 'web' | 'yt-dlp' | 'apify' | 'no-auto';
-  firecrawlMode: 'off' | 'auto' | 'always';
+  youtubeMode: 'auto' | 'web' | 'yt-dlp' | 'no-auto';
   videoMode: 'auto' | 'transcript' | 'understand';
   transcriptTimestamps: boolean;
   outputLanguage: OutputLanguage;
@@ -68,9 +67,8 @@ export interface UrlFlowModel {
   isImplicitAutoSelection: boolean;
   allowAutoCliFallback: boolean;
   isNamedModelSelection: boolean;
-  wantsFreeNamedModel: boolean;
   desiredOutputTokens: number | null;
-  configForModelSelection: SummarizeConfig | null;
+  configForModelSelection: GistConfig | null;
   envForAuto: Record<string, string | undefined>;
   cliAvailability: Partial<Record<CliProvider, boolean>>;
   openaiUseChatCompletions: boolean;
@@ -79,9 +77,6 @@ export interface UrlFlowModel {
   openaiWhisperUsdPerMinute: number;
   apiStatus: {
     openrouterApiKey: string | null;
-    firecrawlConfigured: boolean;
-    firecrawlApiKey: string | null;
-    apifyToken: string | null;
     ytDlpPath: string | null;
     ytDlpCookiesFromBrowser: string | null;
     localBaseUrl: string | null;
@@ -98,7 +93,7 @@ export interface UrlFlowHooks {
   onLinkPreviewProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
   onSummaryCached?: ((cached: boolean) => void) | null;
   setTranscriptionCost: (costUsd: number | null, label: string | null) => void;
-  summarizeAsset: (args: SummarizeAssetArgs) => Promise<void>;
+  gistAsset: (args: GistAssetArgs) => Promise<void>;
   writeViaFooter: (parts: string[]) => void;
   clearProgressForStdout: () => void;
   restoreProgressAfterStdout?: (() => void) | null;
@@ -116,7 +111,7 @@ export type UrlFlowEventHooks = Pick<
 export type UrlFlowRuntimeHooks = Pick<
   UrlFlowHooks,
   | 'setTranscriptionCost'
-  | 'summarizeAsset'
+  | 'gistAsset'
   | 'writeViaFooter'
   | 'clearProgressForStdout'
   | 'restoreProgressAfterStdout'
@@ -169,8 +164,7 @@ export function createUrlFlowContext(options: {
 
 /**
  * Wiring struct for `runUrlFlow`.
- * CLI runner populates the full surface; daemon uses a smaller subset (no TTY/progress/footer),
- * but both share the same extraction/cache/model logic.
+ * CLI runner populates the full surface for extraction/cache/model logic.
  */
 export interface UrlFlowContext {
   io: UrlFlowIo;

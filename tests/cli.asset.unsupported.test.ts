@@ -38,7 +38,7 @@ describe('cli asset inputs (unsupported by provider)', () => {
     });
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-unsupported-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-unsupported-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 

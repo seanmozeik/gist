@@ -77,35 +77,35 @@ function createHarness() {
 }
 
 describe('sidepanel interaction runtime', () => {
-  it('tracks summarize and agent sends', async () => {
+  it('tracks gist and agent sends', async () => {
     const harness = createHarness();
 
-    await harness.runtime.send({ type: 'panel:summarize' });
+    await harness.runtime.send({ type: 'panel:gist' });
     await harness.runtime.send({ type: 'panel:agent' });
 
-    expect(harness.sent).toEqual([{ type: 'panel:summarize' }, { type: 'panel:agent' }]);
-    expect(harness.spies.setLastAction).toHaveBeenNthCalledWith(1, 'summarize');
+    expect(harness.sent).toEqual([{ type: 'panel:gist' }, { type: 'panel:agent' }]);
+    expect(harness.spies.setLastAction).toHaveBeenNthCalledWith(1, 'gist');
     expect(harness.spies.setLastAction).toHaveBeenNthCalledWith(2, 'chat');
   });
 
-  it('sends summarize with refresh and input override', async () => {
+  it('sends gist with refresh and input override', async () => {
     const harness = createHarness();
 
-    harness.runtime.sendSummarize({ refresh: true });
+    harness.runtime.sendGist({ refresh: true });
     await Promise.resolve();
 
-    expect(harness.sent).toEqual([{ inputMode: 'video', refresh: true, type: 'panel:summarize' }]);
+    expect(harness.sent).toEqual([{ inputMode: 'video', refresh: true, type: 'panel:gist' }]);
   });
 
-  it('retries chat or summarize based on last action', async () => {
+  it('retries chat or gist based on last action', async () => {
     const harness = createHarness();
 
     harness.runtime.retryLastAction('chat');
-    harness.runtime.retryLastAction('summarize');
+    harness.runtime.retryLastAction('gist');
     await Promise.resolve();
 
     expect(harness.spies.retryChat).toHaveBeenCalledTimes(1);
-    expect(harness.sent).toEqual([{ inputMode: 'video', refresh: true, type: 'panel:summarize' }]);
+    expect(harness.sent).toEqual([{ inputMode: 'video', refresh: true, type: 'panel:gist' }]);
   });
 
   it('starts chat immediately when idle', () => {
@@ -183,7 +183,7 @@ describe('sidepanel interaction runtime', () => {
       restoreChatInput: vi.fn(),
       retryChat: vi.fn(),
       sendRawMessage: async () => {
-        /* empty */
+        /* Empty */
       },
       setChatInputHeight: vi.fn(),
       setLastAction: vi.fn(),

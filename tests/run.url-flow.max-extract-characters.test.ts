@@ -11,7 +11,7 @@ import { runUrlFlow } from '../src/run/flows/url/flow.js';
 
 describe('runUrlFlow', () => {
   it('honors ctx.flags.maxExtractCharacters (for daemon/extension)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-url-flow-maxchars-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-url-flow-maxchars-'));
     const url = 'https://example.com/article';
     const content = `<!doctype html><html><head><title>Hello</title></head><body><article>${'word '.repeat(5000)}</article></body></html>`;
 
@@ -47,7 +47,7 @@ describe('runUrlFlow', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -62,7 +62,7 @@ describe('runUrlFlow', () => {
   }, 20_000);
 
   it('leaves extract-only uncapped when no max is provided', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-url-flow-maxchars-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-url-flow-maxchars-'));
     const url = 'https://example.com/long';
     const content = `<!doctype html><html><head><title>Long</title></head><body><article>${'lorem ipsum '.repeat(3000)}</article></body></html>`;
 
@@ -99,7 +99,7 @@ describe('runUrlFlow', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });

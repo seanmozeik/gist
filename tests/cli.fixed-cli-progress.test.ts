@@ -10,7 +10,7 @@ import { runCli } from '../src/run.js';
 
 describe('--model cli/... progress', () => {
   it('runs a fixed CLI model with TTY progress enabled', async () => {
-    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-bin-'));
+    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'gist-bin-'));
     await fs.writeFile(path.join(binDir, 'gemini'), '#!/bin/sh\necho ok\n', 'utf8');
     await fs.chmod(path.join(binDir, 'gemini'), 0o755);
 
@@ -24,10 +24,10 @@ describe('--model cli/... progress', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -64,7 +64,7 @@ describe('--model cli/... progress', () => {
   });
 
   it('runs a CLI provider via --cli', async () => {
-    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-bin-'));
+    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'gist-bin-'));
     await fs.writeFile(path.join(binDir, 'gemini'), '#!/bin/sh\necho ok\n', 'utf8');
     await fs.chmod(path.join(binDir, 'gemini'), 0o755);
 
@@ -78,10 +78,10 @@ describe('--model cli/... progress', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -115,7 +115,7 @@ describe('--model cli/... progress', () => {
   });
 
   it('accepts case-insensitive --cli provider names', async () => {
-    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-bin-'));
+    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'gist-bin-'));
     await fs.writeFile(path.join(binDir, 'claude'), '#!/bin/sh\necho ok\n', 'utf8');
     await fs.chmod(path.join(binDir, 'claude'), 0o755);
 
@@ -129,10 +129,10 @@ describe('--model cli/... progress', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -166,7 +166,7 @@ describe('--model cli/... progress', () => {
   });
 
   it('uses auto selection with CLI enabled when --cli is set without a provider', async () => {
-    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-bin-'));
+    const binDir = await fs.mkdtemp(path.join(tmpdir(), 'gist-bin-'));
     await fs.writeFile(path.join(binDir, 'gemini'), '#!/bin/sh\necho ok\n', 'utf8');
     await fs.chmod(path.join(binDir, 'gemini'), 0o755);
 
@@ -180,10 +180,10 @@ describe('--model cli/... progress', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;

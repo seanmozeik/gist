@@ -59,10 +59,10 @@ describe('cli config env', () => {
   it('uses API keys from config env when process env is missing', async () => {
     mocks.completeSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cli-config-env-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-cli-config-env-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         env: { OPENAI_API_KEY: 'test-config-key' },
         model: { id: 'openai/gpt-5-chat' },
@@ -96,10 +96,10 @@ describe('cli config env', () => {
   it('uses API keys from config env for auto model selection', async () => {
     mocks.completeSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cli-config-env-auto-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-cli-config-env-auto-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         env: { OPENAI_API_KEY: 'test-config-key' },
         model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-chat'] }] },

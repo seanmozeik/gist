@@ -98,8 +98,12 @@ export function createMarkdownConverters(
     if (!markdownModel) {
       return 'none' as const;
     }
-    if (markdownModel.forceOpenRouter) return 'openrouter' as const;
-    if (ctx.model.apiStatus.localBaseUrl) return 'local' as const;
+    if (markdownModel.forceOpenRouter) {
+      return 'openrouter' as const;
+    }
+    if (ctx.model.apiStatus.localBaseUrl) {
+      return 'local' as const;
+    }
     return 'openrouter' as const;
   })();
 
@@ -128,7 +132,7 @@ export function createMarkdownConverters(
       if (markdownModel?.requiredEnv === 'OPENROUTER_API_KEY') {
         return 'OPENROUTER_API_KEY';
       }
-      return 'SUMMARIZE_LOCAL_BASE_URL (local sidecar) or OPENROUTER_API_KEY';
+      return 'GIST_LOCAL_BASE_URL (local sidecar) or OPENROUTER_API_KEY';
     })();
     throw new Error(`--markdown-mode llm requires ${required}`);
   }
@@ -149,13 +153,13 @@ export function createMarkdownConverters(
             stderr: ctx.io.stderr,
             verbose: ctx.flags.verbose,
           }),
-          onUsage: ({ model: usedModel, provider, usage }) => {
+          onUsage: ({ model: usedModel, provider }) => {
             ctx.model.llmCalls.push({
-              model: usedModel,
-              provider,
-              promptTokens: 0,
               completionTokens: 0,
               costUsd: null,
+              model: usedModel,
+              promptTokens: 0,
+              provider,
             });
           },
           openaiBaseUrlOverride: markdownModel.openaiBaseUrlOverride ?? null,
@@ -179,20 +183,23 @@ export function createMarkdownConverters(
           title: string | null;
           siteName: string | null;
           timeoutMs: number;
-        }) => {
-          undefined;
-          undefined;
-          undefined;
-          return convertToMarkdownWithMarkitdown({
+        }) =>
+          convertToMarkdownWithMarkitdown({
             bytes: new TextEncoder().encode(args.html),
-            env: ctx.io.env,
+            env: ctx.io.envForRun,
             execFileImpl: ctx.io.execFileImpl,
-            filenameHint: 'page.html',
+            filenameHint: (() => {
+              try {
+                const pathname = new URL(args.url).pathname;
+                const name = pathname.split('/').filter(Boolean).at(-1);
+                return name && name.includes('.') ? name : 'page.html';
+              } catch {
+                return 'page.html';
+              }
+            })(),
             mediaTypeHint: 'text/html',
             timeoutMs: args.timeoutMs,
-            uvxCommand: ctx.io.envForRun.UVX_PATH,
-          });
-        }
+          })
       : null;
 
   const convertHtmlToMarkdown = markdownRequested
@@ -253,13 +260,13 @@ export function createMarkdownConverters(
             stderr: ctx.io.stderr,
             verbose: ctx.flags.verbose,
           }),
-          onUsage: ({ model: usedModel, provider, usage }) => {
+          onUsage: ({ model: usedModel, provider }) => {
             ctx.model.llmCalls.push({
-              model: usedModel,
-              provider,
-              promptTokens: 0,
               completionTokens: 0,
               costUsd: null,
+              model: usedModel,
+              promptTokens: 0,
+              provider,
             });
           },
           openaiBaseUrlOverride: markdownModel.openaiBaseUrlOverride ?? null,

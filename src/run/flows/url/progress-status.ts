@@ -1,21 +1,14 @@
 import type { OscProgressController } from '../../../tty/osc-progress.js';
-import {
-  applySlidesText,
-  applySummaryText,
-  clearSlidesText,
-  createUrlProgressStatusState,
-} from './progress-status-state.js';
+import { applySummaryText, createUrlProgressStatusState } from './progress-status-state.js';
 
 export function createUrlProgressStatus({
   enabled,
   spinner,
   oscProgress,
-  now = () => Date.now(),
 }: {
   enabled: boolean;
   spinner: { setText: (text: string) => void; refresh?: () => void };
   oscProgress: OscProgressController;
-  now?: () => number;
 }) {
   const state = createUrlProgressStatusState();
 
@@ -33,31 +26,8 @@ export function createUrlProgressStatus({
   };
 
   return {
-    clearSlides() {
-      const next = clearSlidesText(state);
-      if (next.summaryText) {
-        render(next.renderText);
-        oscProgress.setIndeterminate('Summarizing');
-        refresh();
-      }
-    },
-    getSlidesText() {
-      return state.slidesText;
-    },
     getSummaryText() {
       return state.summaryText;
-    },
-    isSlidesActive() {
-      return state.slidesActive;
-    },
-    setSlides(text: string, percent?: number | null) {
-      render(applySlidesText(state, text, now()).renderText);
-      if (typeof percent === 'number' && Number.isFinite(percent)) {
-        oscProgress.setPercent('Slides', Math.max(0, Math.min(100, percent)));
-      } else {
-        oscProgress.setIndeterminate('Slides');
-      }
-      refresh();
     },
     setSummary(text: string, oscLabel?: string | null) {
       render(applySummaryText(state, text).renderText);

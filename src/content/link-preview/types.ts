@@ -5,7 +5,6 @@ export type TranscriptSource =
   | 'yt-dlp'
   | 'podcastTranscript'
   | 'whisper'
-  | 'apify'
   | 'html'
   | 'unavailable'
   | 'unknown';
@@ -30,24 +29,15 @@ export interface TranscriptDiagnostics {
   notes?: string | null;
 }
 
-export interface FirecrawlDiagnostics {
-  attempted: boolean;
-  used: boolean;
-  cacheMode: CacheMode;
-  cacheStatus: CacheStatus;
-  notes?: string | null;
-}
-
 export interface MarkdownDiagnostics {
   requested: boolean;
   used: boolean;
-  provider: 'firecrawl' | 'llm' | null;
+  provider: 'llm' | null;
   notes?: string | null;
 }
 
 export interface ContentFetchDiagnostics {
-  strategy: 'bird' | 'xurl' | 'firecrawl' | 'html' | 'nitter';
-  firecrawl: FirecrawlDiagnostics;
+  strategy: 'bird' | 'html';
   markdown: MarkdownDiagnostics;
   transcript: TranscriptDiagnostics;
 }

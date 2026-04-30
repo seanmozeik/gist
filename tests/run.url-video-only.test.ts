@@ -75,7 +75,7 @@ function makeCtx(overrides?: {
   googleConfigured?: boolean;
   requestedModelKind?: 'auto' | 'fixed';
   fixedModelSpec?: UrlFlowContext['model']['fixedModelSpec'];
-  summarizeAsset?: UrlFlowContext['hooks']['summarizeAsset'];
+  gistAsset?: UrlFlowContext['hooks']['gistAsset'];
   onExtracted?: UrlFlowContext['hooks']['onExtracted'];
   onModelChosen?: UrlFlowContext['hooks']['onModelChosen'];
   writeViaFooter?: UrlFlowContext['hooks']['writeViaFooter'];
@@ -89,13 +89,13 @@ function makeCtx(overrides?: {
       videoMode: overrides?.videoMode ?? 'auto',
     },
     hooks: {
-      onExtracted: overrides?.onExtracted ?? null,
-      onModelChosen: overrides?.onModelChosen ?? null,
-      summarizeAsset:
-        overrides?.summarizeAsset ??
+      gistAsset:
+        overrides?.gistAsset ??
         vi.fn(async ({ onModelChosen }) => {
           onModelChosen?.('google/gemini-2.5-flash');
         }),
+      onExtracted: overrides?.onExtracted ?? null,
+      onModelChosen: overrides?.onModelChosen ?? null,
       writeViaFooter: overrides?.writeViaFooter ?? vi.fn(),
     },
     io: { envForRun: {}, fetch: vi.fn() as unknown as typeof fetch, stderr: createWritable() },
@@ -214,11 +214,11 @@ describe('handleVideoOnlyExtractedContent', () => {
     expect(result).toEqual({ extracted: baseExtracted, extractionUi: baseUi, handled: false });
   });
 
-  it('downloads and summarizes direct video when google video understanding is available', async () => {
+  it('downloads and gists direct video when google video understanding is available', async () => {
     const onExtracted = vi.fn();
     const onModelChosen = vi.fn();
     const writeViaFooter = vi.fn();
-    const summarizeAsset = vi.fn(async ({ onModelChosen: reportModel }) => {
+    const gistAsset = vi.fn(async ({ onModelChosen: reportModel }) => {
       reportModel?.('google/gemini-2.5-pro');
     });
     const updateSummaryProgress = vi.fn();
@@ -233,11 +233,11 @@ describe('handleVideoOnlyExtractedContent', () => {
     const result = await handleVideoOnlyExtractedContent({
       accent: (text) => text,
       ctx: makeCtx({
+        gistAsset,
         googleConfigured: true,
         onExtracted,
         onModelChosen,
         requestedModelKind: 'auto',
-        summarizeAsset,
         videoMode: 'auto',
         writeViaFooter,
       }),
@@ -281,7 +281,7 @@ describe('handleVideoOnlyExtractedContent', () => {
       attachment: asset.attachment,
       sizeLabel: null,
     });
-    expect(summarizeAsset).toHaveBeenCalledWith(
+    expect(gistAsset).toHaveBeenCalledWith(
       expect.objectContaining({
         attachment: asset.attachment,
         sourceKind: 'asset-url',
@@ -297,9 +297,7 @@ describe('handleVideoOnlyExtractedContent', () => {
     ]);
     expect(updateSummaryProgress).toHaveBeenCalledTimes(1);
     expect(spinner.setText).toHaveBeenCalledWith('Downloading video');
-    expect(spinner.setText).toHaveBeenCalledWith('Summarizing video');
-    expect(spinner.setText).toHaveBeenCalledWith(
-      'Summarizing video (model: google/gemini-2.5-pro)',
-    );
+    expect(spinner.setText).toHaveBeenCalledWith('Gisting video');
+    expect(spinner.setText).toHaveBeenCalledWith('Gisting video (model: google/gemini-2.5-pro)');
   });
 });

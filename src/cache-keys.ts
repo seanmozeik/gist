@@ -101,36 +101,6 @@ export function buildSummaryCacheKeyValue({
   return hashJson({ contentHash, formatVersion, languageKey, lengthKey, model, promptHash });
 }
 
-export function buildSlidesCacheKeyValue({
-  url,
-  settings,
-  formatVersion,
-}: {
-  url: string;
-  settings: {
-    ocr: boolean;
-    outputDir: string;
-    sceneThreshold: number;
-    autoTuneThreshold: boolean;
-    maxSlides: number;
-    minDurationSeconds: number;
-  };
-  formatVersion: number;
-}): string {
-  return hashJson({
-    formatVersion,
-    settings: {
-      autoTuneThreshold: settings.autoTuneThreshold,
-      maxSlides: settings.maxSlides,
-      minDurationSeconds: settings.minDurationSeconds,
-      ocr: settings.ocr,
-      outputDir: settings.outputDir,
-      sceneThreshold: settings.sceneThreshold,
-    },
-    url,
-  });
-}
-
 export function buildTranscriptCacheKeyValue({
   url,
   namespace,

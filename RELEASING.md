@@ -1,4 +1,4 @@
-# Releasing `@steipete/summarize` (npm + Homebrew/Bun)
+# Releasing `@seanmozeik/gist` (npm + Homebrew/Bun)
 
 Ship is **not done** until:
 
@@ -34,18 +34,18 @@ Ship is **not done** until:
 
 3. Build Bun artifact (prints sha256 + creates tarball)
    - `pnpm -s build:bun:test`
-   - Artifact: `dist-bun/summarize-macos-arm64-v<ver>.tar.gz`
+   - Artifact: `dist-bun/gist-macos-arm64-v<ver>.tar.gz`
 
 4. Build Chrome extension artifact
    - `pnpm -C apps/chrome-extension build`
    - `mkdir -p dist-chrome`
-   - `zip -r dist-chrome/summarize-chrome-extension-v<ver>.zip apps/chrome-extension/.output/chrome-mv3`
+   - `zip -r dist-chrome/gist-chrome-extension-v<ver>.zip apps/chrome-extension/.output/chrome-mv3`
 
 5. Build Firefox extension artifact
    - `pnpm -C apps/chrome-extension build:firefox`
    - `mkdir -p dist-firefox`
-   - `cd apps/chrome-extension/.output/firefox-mv3 && zip -r -FS ../../../../dist-firefox/summarize-firefox-extension-v<ver>.zip . && cd -`
-   - Verify: `unzip -l dist-firefox/summarize-firefox-extension-v<ver>.zip | head -20`
+   - `cd apps/chrome-extension/.output/firefox-mv3 && zip -r -FS ../../../../dist-firefox/gist-firefox-extension-v<ver>.zip . && cd -`
+   - Verify: `unzip -l dist-firefox/gist-firefox-extension-v<ver>.zip | head -20`
 
 6. Tag
 
@@ -70,31 +70,31 @@ Ship is **not done** until:
      $0 ~ ("^## " start " ") { p=1; next }
      $0 ~ ("^## " stop " ") { p=0 }
      p { print }
-   ' CHANGELOG.md >"/tmp/summarize-v${ver}-notes.md"
+   ' CHANGELOG.md >"/tmp/gist-v${ver}-notes.md"
 
    gh release create "v${ver}" \
-     "dist-bun/summarize-macos-arm64-v${ver}.tar.gz" \
-     "dist-chrome/summarize-chrome-extension-v${ver}.zip" \
-     "dist-firefox/summarize-firefox-extension-v${ver}.zip" \
+     "dist-bun/gist-macos-arm64-v${ver}.tar.gz" \
+     "dist-chrome/gist-chrome-extension-v${ver}.zip" \
+     "dist-firefox/gist-firefox-extension-v${ver}.zip" \
      --title "v${ver}" \
-     --notes-file "/tmp/summarize-v${ver}-notes.md"
+     --notes-file "/tmp/gist-v${ver}-notes.md"
    ```
 
    - Verify notes render (real newlines): `gh release view v<ver> --json body --jq .body`
 
 8. Homebrew tap bump + verify
    - Repo: `~/Projects/homebrew-tap`
-   - Update `Formula/summarize.rb`:
+   - Update `Formula/gist.rb`:
      - `url` → GitHub Release asset URL
      - `sha256` → from `pnpm build:bun:test`
      - `version` + test expectation
-   - `git commit -am "chore: bump summarize to <ver>" && git push`
+   - `git commit -am "chore: bump gist to <ver>" && git push`
    - Verify:
      ```bash
-     brew uninstall summarize || true
+     brew uninstall gist || true
      brew tap steipete/tap || true
-     brew install steipete/tap/summarize
-     summarize --version
+     brew install steipete/tap/gist
+     gist --version
      ```
 
 9. Publish to npm + smoke
@@ -109,10 +109,10 @@ Ship is **not done** until:
    - Smoke:
      ```bash
      ver="$(node -p 'require(\"./package.json\").version')"
-     npm view @steipete/summarize version
-     npm view @steipete/summarize-core version
-     pnpm -s dlx @steipete/summarize@"${ver}" --version
-     pnpm -s dlx @steipete/summarize@"${ver}" --help >/dev/null
+     npm view @seanmozeik/gist version
+     npm view @seanmozeik/gist-core version
+     pnpm -s dlx @seanmozeik/gist@"${ver}" --version
+     pnpm -s dlx @seanmozeik/gist@"${ver}" --help >/dev/null
      ```
 
 ## npm (npmjs)
@@ -128,42 +128,42 @@ Helper (npm-only): `scripts/release.sh` (phases: `gates|build|publish|smoke|tag|
 
 Goal:
 
-- Build a **macOS arm64** Bun binary named `summarize`
-- Package as `dist-bun/summarize-macos-arm64-v<ver>.tar.gz`
+- Build a **macOS arm64** Bun binary named `gist`
+- Package as `dist-bun/gist-macos-arm64-v<ver>.tar.gz`
 - Upload tarball as a GitHub Release asset
 - Point Homebrew formula at that asset + sha256
-- Formula should install the compiled `summarize` binary directly (no Bun wrapper script).
+- Formula should install the compiled `gist` binary directly (no Bun wrapper script).
 
 1. Build the Bun artifact
    - `pnpm build:bun`
    - This uses `bun build --compile --bytecode` and prints the tarball sha256.
 
 2. Smoke test locally (before uploading)
-   - `dist-bun/summarize --version`
-   - `dist-bun/summarize --help`
+   - `dist-bun/gist --version`
+   - `dist-bun/gist --help`
    - Optional: run one real file/link summary.
 
 3. GitHub Release (when approved)
    - Create a release for tag `v<ver>` with clean notes (no duplicated version header inside the notes body):
      - Prefer `--title "v<ver>"` and `--notes-file …` (avoid pasting text with escaped `\\n`)
      - Notes should start with sections like `### Changes`, not `## v<ver>` (the release already has a title)
-   - Upload `dist-bun/summarize-macos-arm64-v<ver>.tar.gz`
+   - Upload `dist-bun/gist-macos-arm64-v<ver>.tar.gz`
    - Verify notes render correctly:
      - `gh release view v<ver> --json body --jq .body` (should show real newlines, not literal `\\n`)
 
 4. Homebrew tap update (when approved + after asset is live)
    - Repo: `~/Projects/homebrew-tap`
-   - Add/update `Formula/summarize.rb`:
+   - Add/update `Formula/gist.rb`:
      - `url` = GitHub Release asset URL
      - `sha256` = from step (1)
      - `version` = `<ver>`
 
 5. Homebrew verification (after formula update)
    ```bash
-   brew uninstall summarize || true
+   brew uninstall gist || true
    brew tap steipete/tap || true
-   brew install steipete/tap/summarize
-   summarize --version
+   brew install steipete/tap/gist
+   gist --version
    ```
 
 ## Firefox Extension (Self-Hosted via AMO)
@@ -180,7 +180,7 @@ Goal:
 pnpm -C apps/chrome-extension build:firefox
 mkdir -p dist-firefox
 cd apps/chrome-extension/.output/firefox-mv3 && \
-  zip -r -FS ../../../../dist-firefox/summarize-firefox-extension-v<ver>.zip . && \
+  zip -r -FS ../../../../dist-firefox/gist-firefox-extension-v<ver>.zip . && \
   cd -
 ```
 
@@ -188,36 +188,36 @@ cd apps/chrome-extension/.output/firefox-mv3 && \
 
 ```bash
 # manifest.json must be at root level
-unzip -l dist-firefox/summarize-firefox-extension-v<ver>.zip | head -20
+unzip -l dist-firefox/gist-firefox-extension-v<ver>.zip | head -20
 
 # Verify UUID in manifest
-unzip -p dist-firefox/summarize-firefox-extension-v<ver>.zip manifest.json | \
+unzip -p dist-firefox/gist-firefox-extension-v<ver>.zip manifest.json | \
   python3 -m json.tool | grep -A 3 '"gecko"'
 
 # Test integrity
-unzip -t dist-firefox/summarize-firefox-extension-v<ver>.zip
+unzip -t dist-firefox/gist-firefox-extension-v<ver>.zip
 ```
 
 **Sign via AMO (Self Distribution)**:
 
 1. Login: https://addons.mozilla.org/developers/
 2. Submit Add-on → **"On your own"** (self-distribution, not "On this site")
-3. Upload: `dist-firefox/summarize-firefox-extension-v<ver>.zip`
+3. Upload: `dist-firefox/gist-firefox-extension-v<ver>.zip`
 4. Wait for automatic validation (~1-10 minutes, no manual review needed)
-5. Download signed XPI: `summarize-<ver>.xpi`
+5. Download signed XPI: `gist-<ver>.xpi`
 
 **Install signed XPI**:
 
 ```bash
 # Method 1: Drag & drop XPI into Firefox
 # Method 2: File → Open File (Cmd+O) → select XPI
-# Method 3: Open in Firefox: file:///path/to/summarize-<ver>.xpi
+# Method 3: Open in Firefox: file:///path/to/gist-<ver>.xpi
 ```
 
 **Verify installation**:
 
 - Extension appears in `about:addons`
-- Sidebar: View → Sidebar → Summarize
+- Sidebar: View → Sidebar → Gist
 - Keyboard shortcut: `Cmd+Shift+U` (macOS) / `Ctrl+Shift+U` (Linux/Windows)
 
 **Managing co-authors** (after first upload):

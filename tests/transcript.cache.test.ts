@@ -1,11 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { TranscriptCache } from '../packages/core/src/content/cache/types.js';
-import {
-  readTranscriptCache,
-  writeTranscriptCache,
-} from '../packages/core/src/content/transcript/cache.js';
-import { resolveTranscriptForLink } from '../packages/core/src/content/transcript/index.js';
+import type { TranscriptCache } from '../src/content/cache/types.js';
+import { readTranscriptCache, writeTranscriptCache } from '../src/content/transcript/cache.js';
+import { resolveTranscriptForLink } from '../src/content/transcript/index.js';
 
 describe('transcript cache helpers', () => {
   it('reads a cached transcript hit', async () => {
@@ -17,7 +14,7 @@ describe('transcript cache helpers', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -42,7 +39,7 @@ describe('transcript cache helpers', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -66,7 +63,7 @@ describe('transcript cache helpers', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -95,7 +92,7 @@ describe('transcript cache helpers', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -121,7 +118,7 @@ describe('transcript cache helpers', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -139,7 +136,7 @@ describe('transcript cache helpers', () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -169,7 +166,7 @@ describe('transcript cache integration', () => {
         source: 'captionTracks',
       })),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 

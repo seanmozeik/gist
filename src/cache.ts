@@ -3,20 +3,17 @@ import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 
 import {
   buildExtractCacheKeyValue,
-  buildSlidesCacheKeyValue,
   buildSummaryCacheKeyValue,
   buildTranscriptCacheKeyValue,
 } from './cache-keys.js';
 export {
   buildExtractCacheKeyValue,
-  buildSlidesCacheKeyValue,
   buildSummaryCacheKeyValue,
   buildTranscriptCacheKeyValue,
 } from './cache-keys.js';
-import { cleanupSlidesPayload } from './cache-slides-cleanup.js';
 import type { TranscriptCache, TranscriptSource } from './content/index.js';
 
-export type CacheKind = 'extract' | 'summary' | 'transcript' | 'chat' | 'slides';
+export type CacheKind = 'extract' | 'summary' | 'transcript' | 'chat';
 
 export interface CacheConfig {
   enabled?: boolean;
@@ -53,7 +50,6 @@ const TRANSCRIPT_SOURCES = new Set<TranscriptSource>([
   'yt-dlp',
   'podcastTranscript',
   'whisper',
-  'apify',
   'html',
   'unavailable',
   'unknown',
@@ -161,7 +157,7 @@ export function resolveCachePath({
   if (!home) {
     return null;
   }
-  return join(home, '.summarize', 'cache.sqlite');
+  return join(home, '.gist', 'cache.sqlite');
 }
 
 export async function createCacheStore({
@@ -263,9 +259,6 @@ export async function createCacheStore({
     }
     const expiresAt = row.expires_at;
     if (typeof expiresAt === 'number' && expiresAt <= now) {
-      if (kind === 'slides') {
-        cleanupSlidesPayload(row.value);
-      }
       stmtDelete.run(kind, key);
       return { ...row, expires_at: expiresAt };
     }
@@ -427,23 +420,6 @@ export function buildSummaryCacheKey({
   });
 }
 
-export function buildSlidesCacheKey({
-  url,
-  settings,
-}: {
-  url: string;
-  settings: {
-    ocr: boolean;
-    outputDir: string;
-    sceneThreshold: number;
-    autoTuneThreshold: boolean;
-    maxSlides: number;
-    minDurationSeconds: number;
-  };
-}): string {
-  return buildSlidesCacheKeyValue({ formatVersion: CACHE_FORMAT_VERSION, settings, url });
-}
-
 export function buildTranscriptCacheKey({
   url,
   namespace,
@@ -473,13 +449,7 @@ export async function readCacheStats(path: string): Promise<CacheStats | null> {
   } catch {
     // Ignore
   }
-  const counts: Record<CacheKind, number> = {
-    chat: 0,
-    extract: 0,
-    slides: 0,
-    summary: 0,
-    transcript: 0,
-  };
+  const counts: Record<CacheKind, number> = { chat: 0, extract: 0, summary: 0, transcript: 0 };
   const rows = db.prepare('SELECT kind, COUNT(*) AS count FROM cache_entries GROUP BY kind').all();
   for (const row of rows as { kind?: string; count?: number }[]) {
     if (row?.kind && typeof row.count === 'number' && row.kind in counts) {

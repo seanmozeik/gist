@@ -96,8 +96,8 @@ describe('OpenAI chat completions toggle', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-openai-chat-'));
-    const configDir = join(tempRoot, '.summarize');
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-openai-chat-'));
+    const configDir = join(tempRoot, '.gist');
     mkdirSync(configDir, { recursive: true });
     writeFileSync(
       join(configDir, 'config.json'),

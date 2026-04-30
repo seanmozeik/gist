@@ -91,7 +91,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -122,7 +122,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -135,7 +135,7 @@ describe('sidepanel slides stream controller', () => {
     const errors: string[] = [];
     const stalledStream = new ReadableStream<Uint8Array>({
       start() {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -150,7 +150,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -177,7 +177,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -196,7 +196,7 @@ describe('sidepanel slides stream controller', () => {
       },
       getToken: async () => '',
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -219,7 +219,7 @@ describe('sidepanel slides stream controller', () => {
       },
       getToken: async () => tokenPromise,
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -243,7 +243,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -263,7 +263,7 @@ describe('sidepanel slides stream controller', () => {
         return message;
       },
       onSlides: () => {
-        /* empty */
+        /* Empty */
       },
     });
 

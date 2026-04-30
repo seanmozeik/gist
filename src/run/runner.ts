@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process';
 import { CommanderError, type Command } from 'commander';
 
 import type { ExecFileFn } from '../markitdown.js';
-import { handleHelpRequest } from './cli-preflight.js';
+import { handleAuthRequest, handleHelpRequest, handleRefreshFreeRequest } from './cli-preflight.js';
 import { attachRichHelp, buildProgram } from './help.js';
 import { createRunnerPlan } from './runner-plan.js';
 import {
@@ -29,10 +29,19 @@ export async function runCli(
 ): Promise<void> {
   (globalThis as unknown as { AI_SDK_LOG_WARNINGS?: boolean }).AI_SDK_LOG_WARNINGS = false;
 
-  const { normalizedArgv, envForRun } = prepareRunEnvironment(argv, inputEnv);
+  const { normalizedArgv, envForRun } = await prepareRunEnvironment(argv, inputEnv);
   const env = envForRun;
 
-  if (await handleImmediateCliRequests({ envForRun, normalizedArgv, stderr, stdout })) {
+  if (
+    await handleImmediateCliRequests({
+      envForRun,
+      fetchImpl: fetch,
+      inputEnv,
+      normalizedArgv,
+      stderr,
+      stdout,
+    })
+  ) {
     return;
   }
   const execFileImpl = execFileOverride ?? execFile;
@@ -77,12 +86,20 @@ export async function runCli(
 
 async function handleImmediateCliRequests(options: {
   normalizedArgv: string[];
+  inputEnv: Record<string, string | undefined>;
   envForRun: Record<string, string | undefined>;
+  fetchImpl: typeof fetch;
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
 }) {
-  const { normalizedArgv, envForRun, stdout, stderr } = options;
+  const { normalizedArgv, inputEnv, envForRun, fetchImpl, stdout, stderr } = options;
   if (handleHelpRequest({ envForRun, normalizedArgv, stderr, stdout })) {
+    return true;
+  }
+  if (await handleAuthRequest({ env: inputEnv, normalizedArgv, stdout })) {
+    return true;
+  }
+  if (await handleRefreshFreeRequest({ envForRun, fetchImpl, normalizedArgv, stderr, stdout })) {
     return true;
   }
   return false;

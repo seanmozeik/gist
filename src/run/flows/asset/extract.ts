@@ -26,7 +26,6 @@ export interface AssetExtractResult {
 }
 
 const baseDiagnostics: ExtractDiagnosticsForFinishLine = {
-  firecrawl: { used: false },
   markdown: { provider: null, used: false },
   strategy: 'html',
   transcript: { provider: null, textProvided: false },

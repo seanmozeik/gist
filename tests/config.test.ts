@@ -4,11 +4,11 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { loadSummarizeConfig } from '../src/config.js';
+import { loadGistConfig } from '../src/config.js';
 
 const writeConfig = (raw: string) => {
-  const root = mkdtempSync(join(tmpdir(), 'summarize-config-'));
-  const configDir = join(root, '.summarize');
+  const root = mkdtempSync(join(tmpdir(), 'gist-config-'));
+  const configDir = join(root, '.gist');
   mkdirSync(configDir, { recursive: true });
   const configPath = join(configDir, 'config.json');
   writeFileSync(configPath, raw, 'utf8');
@@ -18,10 +18,10 @@ const writeConfig = (raw: string) => {
 const writeJsonConfig = (value: unknown) => writeConfig(JSON.stringify(value));
 
 describe('config loading', () => {
-  it('loads ~/.summarize/config.json by default', () => {
+  it('loads ~/.gist/config.json by default', () => {
     const { root, configPath } = writeJsonConfig({ model: { id: 'openai/gpt-5.2' } });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.path).toBe(configPath);
     expect(result.config).toEqual({ model: { id: 'openai/gpt-5.2' } });
   });
@@ -42,7 +42,7 @@ describe('config loading', () => {
       },
     });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.path).toBe(configPath);
     expect(result.config).toEqual({
       media: { videoMode: 'auto' },
@@ -66,7 +66,7 @@ describe('config loading', () => {
       output: { language: 'de', length: 'long' },
     });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toEqual({
       model: { id: 'openai/gpt-5-mini' },
       output: { language: 'de', length: 'long' },
@@ -76,88 +76,82 @@ describe('config loading', () => {
   it('supports ui.theme', () => {
     const { root } = writeJsonConfig({ model: { id: 'openai/gpt-5-mini' }, ui: { theme: 'moss' } });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toEqual({ model: { id: 'openai/gpt-5-mini' }, ui: { theme: 'moss' } });
   });
 
   it('accepts groq and assemblyai legacy apiKeys', () => {
     const { root } = writeJsonConfig({ apiKeys: { assemblyai: 'aai-test', groq: 'gsk-test' } });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config?.apiKeys).toEqual({ assemblyai: 'aai-test', groq: 'gsk-test' });
   });
 
   it('supports model shorthand strings ("auto", preset, provider/model)', () => {
     const { root, configPath } = writeJsonConfig({ model: 'auto' });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
-      model: { mode: 'auto' },
-    });
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({ model: { mode: 'auto' } });
 
     writeFileSync(configPath, JSON.stringify({ model: 'mybag' }), 'utf8');
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
-      model: { name: 'mybag' },
-    });
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({ model: { name: 'mybag' } });
 
     writeFileSync(configPath, JSON.stringify({ model: 'openai/gpt-5-mini' }), 'utf8');
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       model: { id: 'openai/gpt-5-mini' },
     });
   });
 
   it('returns null config when no config file exists', () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-config-'));
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const root = mkdtempSync(join(tmpdir(), 'gist-config-'));
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toBeNull();
-    expect(result.path).toBe(join(root, '.summarize', 'config.json'));
+    expect(result.path).toBe(join(root, '.gist', 'config.json'));
   });
 
   it('rejects JSON with line comments', () => {
     const { root } = writeConfig(`{\n// nope\n"model": "auto"\n}`);
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/comments are not allowed/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/comments are not allowed/);
   });
 
   it('rejects JSON with block comments', () => {
     const { root } = writeConfig(`/* nope */\n{"model": "auto"}`);
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/comments are not allowed/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/comments are not allowed/);
   });
 
   it('allows comment markers inside strings', () => {
     const { root } = writeConfig(`{"model": "openai/gpt-5.2", "url": "http://x"}`);
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       model: { id: 'openai/gpt-5.2' },
     });
   });
 
   it('rejects invalid JSON', () => {
     const { root } = writeConfig('{');
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/Invalid JSON/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/Invalid JSON/);
   });
 
   it('rejects non-object top-level JSON', () => {
     const { root } = writeConfig('[]');
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/expected an object/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/expected an object/);
   });
 
   it('rejects empty model string', () => {
     const { root } = writeJsonConfig({ model: '   ' });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/model.*must not be empty/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/model.*must not be empty/);
   });
 
   it('rejects non-object model config', () => {
     const { root } = writeJsonConfig({ model: 42 });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/model.*must be an object/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/model.*must be an object/);
   });
 
   it('rejects empty model id', () => {
     const { root } = writeJsonConfig({ model: { id: '  ' } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
-      /model\.id.*must not be empty/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/model\.id.*must not be empty/);
   });
 
   it('rejects model configs without id, name, or auto mode', () => {
     const { root } = writeJsonConfig({ model: {} });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/must include either "id"/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/must include either "id"/);
   });
 
   it('loads named models', () => {
@@ -166,7 +160,7 @@ describe('config loading', () => {
       models: { fast: { id: 'openai/gpt-5-mini' }, or: 'openrouter/openai/gpt-5-mini' },
     });
 
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       model: { mode: 'auto' },
       models: { fast: { id: 'openai/gpt-5-mini' }, or: { id: 'openrouter/openai/gpt-5-mini' } },
     });
@@ -174,40 +168,34 @@ describe('config loading', () => {
 
   it('rejects deprecated "bags" key', () => {
     const { root } = writeJsonConfig({ bags: { fast: { id: 'openai/gpt-5-mini' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
-      /bags.*no longer supported/i,
-    );
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/bags.*no longer supported/i);
   });
 
   it('rejects reserved model name "auto"', () => {
     const { root } = writeJsonConfig({ models: { auto: { id: 'openai/gpt-5-mini' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/auto.*reserved/i);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/auto.*reserved/i);
   });
 
   it('rejects non-array model.rules', () => {
     const { root } = writeJsonConfig({ model: { mode: 'auto', rules: {} } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
-      /model\.rules.*must be an array/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/model\.rules.*must be an array/);
   });
 
   it('rejects invalid "when" values', () => {
     const { root: rootNotArray } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'], when: 'video' }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootNotArray } })).toThrow(
-      /when.*must be an array/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: rootNotArray } })).toThrow(/when.*must be an array/);
 
     const { root: rootEmpty } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'], when: [] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootEmpty } })).toThrow(/must not be empty/);
+    expect(() => loadGistConfig({ env: { HOME: rootEmpty } })).toThrow(/must not be empty/);
 
     const { root: rootUnknown } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'], when: ['nope'] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootUnknown } })).toThrow(/unknown "when"/);
+    expect(() => loadGistConfig({ env: { HOME: rootUnknown } })).toThrow(/unknown "when"/);
   });
 
   it('rejects invalid candidates and bands definitions', () => {
@@ -217,28 +205,28 @@ describe('config loading', () => {
         rules: [{ bands: [{ candidates: ['openai/gpt-5.2'] }], candidates: ['openai/gpt-5.2'] }],
       },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootBoth } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootBoth } })).toThrow(
       /either "candidates" or "bands"/,
     );
 
     const { root: rootCandidatesNotArray } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ candidates: 'openai/gpt-5.2' }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootCandidatesNotArray } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootCandidatesNotArray } })).toThrow(
       /candidates.*array of strings/,
     );
 
     const { root: rootCandidatesEmpty } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ candidates: ['   '] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootCandidatesEmpty } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootCandidatesEmpty } })).toThrow(
       /candidates.*must not be empty/,
     );
 
     const { root: rootBandsEmpty } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ bands: [] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootBandsEmpty } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootBandsEmpty } })).toThrow(
       /bands.*non-empty array/,
     );
   });
@@ -247,14 +235,14 @@ describe('config loading', () => {
     const { root: rootBandNotObject } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ bands: [1] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootBandNotObject } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootBandNotObject } })).toThrow(
       /bands\[\].*must be an object/,
     );
 
     const { root: rootTokenNotObject } = writeJsonConfig({
       model: { mode: 'auto', rules: [{ bands: [{ candidates: ['openai/gpt-5.2'], token: 'x' }] }] },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootTokenNotObject } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: rootTokenNotObject } })).toThrow(
       /bands\[\]\.token.*must be an object/,
     );
 
@@ -264,9 +252,7 @@ describe('config loading', () => {
         rules: [{ bands: [{ candidates: ['openai/gpt-5.2'], token: { min: -1 } }] }],
       },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootMinInvalid } })).toThrow(
-      /token\.min.*>= 0/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: rootMinInvalid } })).toThrow(/token\.min.*>= 0/);
 
     const { root: rootMaxInvalid } = writeJsonConfig({
       model: {
@@ -274,9 +260,7 @@ describe('config loading', () => {
         rules: [{ bands: [{ candidates: ['openai/gpt-5.2'], token: { max: -1 } }] }],
       },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootMaxInvalid } })).toThrow(
-      /token\.max.*>= 0/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: rootMaxInvalid } })).toThrow(/token\.max.*>= 0/);
 
     const { root: rootMinMax } = writeJsonConfig({
       model: {
@@ -284,12 +268,12 @@ describe('config loading', () => {
         rules: [{ bands: [{ candidates: ['openai/gpt-5.2'], token: { max: 2, min: 10 } }] }],
       },
     });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootMinMax } })).toThrow(/min.*<=.*max/);
+    expect(() => loadGistConfig({ env: { HOME: rootMinMax } })).toThrow(/min.*<=.*max/);
   });
 
   it('rejects rules without candidates or bands', () => {
     const { root } = writeJsonConfig({ model: { mode: 'auto', rules: [{}] } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(
       /must include "candidates" or "bands"/,
     );
   });
@@ -310,7 +294,7 @@ describe('config loading', () => {
         ],
       },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       model: {
         mode: 'auto',
         rules: [
@@ -335,10 +319,10 @@ describe('config loading', () => {
         cwd: '/tmp',
         enabled: ['claude', 'gemini'],
         extraArgs: ['--bar'],
-        promptOverride: 'Summarize this.',
+        promptOverride: 'Gist this.',
       },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       cli: {
         allowTools: true,
         claude: { binary: '/opt/claude', extraArgs: ['--foo'], model: 'sonnet' },
@@ -346,60 +330,48 @@ describe('config loading', () => {
         cwd: '/tmp',
         enabled: ['claude', 'gemini'],
         extraArgs: ['--bar'],
-        promptOverride: 'Summarize this.',
+        promptOverride: 'Gist this.',
       },
     });
   });
 
   it('parses cache config', () => {
     const { root } = writeJsonConfig({
-      cache: { enabled: false, maxMb: 256, path: '/tmp/summarize-cache.sqlite', ttlDays: 14 },
+      cache: { enabled: false, maxMb: 256, path: '/tmp/gist-cache.sqlite', ttlDays: 14 },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
-      cache: { enabled: false, maxMb: 256, path: '/tmp/summarize-cache.sqlite', ttlDays: 14 },
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
+      cache: { enabled: false, maxMb: 256, path: '/tmp/gist-cache.sqlite', ttlDays: 14 },
     });
   });
 
   it('parses cache media config', () => {
     const { root } = writeJsonConfig({
       cache: {
-        media: {
-          enabled: true,
-          maxMb: 512,
-          path: '/tmp/summarize-media',
-          ttlDays: 3,
-          verify: 'hash',
-        },
+        media: { enabled: true, maxMb: 512, path: '/tmp/gist-media', ttlDays: 3, verify: 'hash' },
       },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       cache: {
-        media: {
-          enabled: true,
-          maxMb: 512,
-          path: '/tmp/summarize-media',
-          ttlDays: 3,
-          verify: 'hash',
-        },
+        media: { enabled: true, maxMb: 512, path: '/tmp/gist-media', ttlDays: 3, verify: 'hash' },
       },
     });
   });
 
   it('rejects invalid cache media settings', () => {
     const { root: badMedia } = writeJsonConfig({ cache: { media: 'nope' } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badMedia } })).toThrow(/cache\.media/);
+    expect(() => loadGistConfig({ env: { HOME: badMedia } })).toThrow(/cache\.media/);
 
     const { root: badMax } = writeJsonConfig({ cache: { media: { maxMb: 'nope' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badMax } })).toThrow(/cache\.media\.maxMb/);
+    expect(() => loadGistConfig({ env: { HOME: badMax } })).toThrow(/cache\.media\.maxMb/);
 
     const { root: badTtl } = writeJsonConfig({ cache: { media: { ttlDays: 'nope' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badTtl } })).toThrow(/cache\.media\.ttlDays/);
+    expect(() => loadGistConfig({ env: { HOME: badTtl } })).toThrow(/cache\.media\.ttlDays/);
 
     const { root: badPath } = writeJsonConfig({ cache: { media: { path: 123 } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badPath } })).toThrow(/cache\.media\.path/);
+    expect(() => loadGistConfig({ env: { HOME: badPath } })).toThrow(/cache\.media\.path/);
 
     const { root: badVerify } = writeJsonConfig({ cache: { media: { verify: 'nope' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badVerify } })).toThrow(/cache\.media\.verify/);
+    expect(() => loadGistConfig({ env: { HOME: badVerify } })).toThrow(/cache\.media\.verify/);
   });
 
   it('parses slides config', () => {
@@ -413,7 +385,7 @@ describe('config loading', () => {
         sceneThreshold: 0.5,
       },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       slides: {
         dir: '/tmp/slides',
         enabled: true,
@@ -427,28 +399,26 @@ describe('config loading', () => {
 
   it('rejects invalid slides config', () => {
     const { root: badSlides } = writeJsonConfig({ slides: 'nope' });
-    expect(() => loadSummarizeConfig({ env: { HOME: badSlides } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: badSlides } })).toThrow(
       /"slides" must be an object/,
     );
 
     const { root: badDir } = writeJsonConfig({ slides: { dir: 123 } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badDir } })).toThrow(/slides\.dir/);
+    expect(() => loadGistConfig({ env: { HOME: badDir } })).toThrow(/slides\.dir/);
 
     const { root: badScene } = writeJsonConfig({ slides: { sceneThreshold: 2 } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badScene } })).toThrow(
-      /slides\.sceneThreshold/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: badScene } })).toThrow(/slides\.sceneThreshold/);
 
     const { root: badMax } = writeJsonConfig({ slides: { max: 1.2 } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badMax } })).toThrow(/slides\.max/);
+    expect(() => loadGistConfig({ env: { HOME: badMax } })).toThrow(/slides\.max/);
 
     const { root: badMin } = writeJsonConfig({ slides: { minDuration: -1 } });
-    expect(() => loadSummarizeConfig({ env: { HOME: badMin } })).toThrow(/slides\.minDuration/);
+    expect(() => loadGistConfig({ env: { HOME: badMin } })).toThrow(/slides\.minDuration/);
   });
 
   it('rejects invalid cli enabled providers', () => {
     const { root } = writeJsonConfig({ cli: { enabled: ['nope'] } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/unknown CLI provider/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/unknown CLI provider/);
   });
 
   it('parses openclaw cli config', () => {
@@ -458,7 +428,7 @@ describe('config loading', () => {
         openclaw: { binary: '/usr/local/bin/openclaw', model: 'main' },
       },
     });
-    expect(loadSummarizeConfig({ env: { HOME: root } }).config).toEqual({
+    expect(loadGistConfig({ env: { HOME: root } }).config).toEqual({
       cli: {
         enabled: ['openclaw'],
         openclaw: { binary: '/usr/local/bin/openclaw', model: 'main' },
@@ -468,22 +438,18 @@ describe('config loading', () => {
 
   it('rejects cli disabled and provider enabled flags', () => {
     const { root } = writeJsonConfig({ cli: { disabled: ['claude'] } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/cli\.disabled/);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/cli\.disabled/);
 
     const { root: rootProvider } = writeJsonConfig({ cli: { claude: { enabled: true } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootProvider } })).toThrow(
-      /cli\.claude\.enabled/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: rootProvider } })).toThrow(/cli\.claude\.enabled/);
   });
 
   it('rejects invalid cli extraArgs', () => {
     const { root: rootTop } = writeJsonConfig({ cli: { extraArgs: 'nope' } });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootTop } })).toThrow(/cli\.extraArgs/);
+    expect(() => loadGistConfig({ env: { HOME: rootTop } })).toThrow(/cli\.extraArgs/);
 
     const { root: rootProvider } = writeJsonConfig({ cli: { gemini: { extraArgs: 'nope' } } });
-    expect(() => loadSummarizeConfig({ env: { HOME: rootProvider } })).toThrow(
-      /cli\.gemini\.extraArgs/,
-    );
+    expect(() => loadGistConfig({ env: { HOME: rootProvider } })).toThrow(/cli\.gemini\.extraArgs/);
   });
 
   it('parses openai.useChatCompletions', () => {
@@ -491,7 +457,7 @@ describe('config loading', () => {
       model: { id: 'openai/gpt-5.2' },
       openai: { useChatCompletions: true },
     });
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toEqual({
       model: { id: 'openai/gpt-5.2' },
       openai: { useChatCompletions: true },
@@ -504,7 +470,7 @@ describe('config loading', () => {
       models: { careful: { id: 'openai/gpt-5.4', reasoningEffort: 'high', textVerbosity: 'low' } },
       openai: { serviceTier: 'priority', textVerbosity: 'medium', thinking: 'low' },
     });
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config?.model).toEqual({
       id: 'openai/gpt-5.5',
       reasoningEffort: 'medium',
@@ -531,7 +497,7 @@ describe('config loading', () => {
       xai: { baseUrl: 'https://xai-proxy.example.com' },
       zai: { baseUrl: 'https://api.zhipuai.cn/paas/v4' },
     });
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toEqual({
       anthropic: { baseUrl: 'https://anthropic-proxy.example.com' },
       google: { baseUrl: 'https://google-proxy.example.com' },
@@ -544,20 +510,16 @@ describe('config loading', () => {
 
   it('rejects non-object provider baseUrl sections', () => {
     const { root } = writeJsonConfig({ anthropic: 'nope' });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
-      /"anthropic" must be an object/i,
-    );
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/"anthropic" must be an object/i);
 
     const { root: root2 } = writeJsonConfig({ google: 123 });
-    expect(() => loadSummarizeConfig({ env: { HOME: root2 } })).toThrow(
-      /"google" must be an object/i,
-    );
+    expect(() => loadGistConfig({ env: { HOME: root2 } })).toThrow(/"google" must be an object/i);
 
     const { root: root3 } = writeJsonConfig({ xai: [] });
-    expect(() => loadSummarizeConfig({ env: { HOME: root3 } })).toThrow(/"xai" must be an object/i);
+    expect(() => loadGistConfig({ env: { HOME: root3 } })).toThrow(/"xai" must be an object/i);
 
     const { root: root4 } = writeJsonConfig({ zai: 123 });
-    expect(() => loadSummarizeConfig({ env: { HOME: root4 } })).toThrow(/"zai" must be an object/i);
+    expect(() => loadGistConfig({ env: { HOME: root4 } })).toThrow(/"zai" must be an object/i);
   });
 
   it('trims provider baseUrl strings and ignores empty strings', () => {
@@ -566,7 +528,7 @@ describe('config loading', () => {
       openai: { baseUrl: '  https://example.com/v1  ' },
       zai: { baseUrl: '  https://api.zhipuai.cn/paas/v4  ' },
     });
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config).toEqual({
       openai: { baseUrl: 'https://example.com/v1' },
       zai: { baseUrl: 'https://api.zhipuai.cn/paas/v4' },

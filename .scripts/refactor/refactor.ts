@@ -22,7 +22,7 @@ const SRC = path.join(GIST_ROOT, 'src');
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function log(msg: string) {
-  /* empty */
+  /* Empty */
 }
 
 function fileExists(p: string): boolean {

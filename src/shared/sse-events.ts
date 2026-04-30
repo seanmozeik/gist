@@ -7,20 +7,6 @@ export interface SseMetaData {
   summaryFromCache?: boolean | null;
 }
 
-export interface SseSlidesData {
-  sourceUrl: string;
-  sourceId: string;
-  sourceKind: string;
-  ocrAvailable: boolean;
-  slides: {
-    index: number;
-    timestamp: number;
-    imageUrl: string;
-    ocrText?: string | null;
-    ocrConfidence?: number | null;
-  }[];
-}
-
 export interface SseMetricsData {
   elapsedMs: number;
   summary: string;
@@ -31,7 +17,6 @@ export interface SseMetricsData {
 
 export type SseEvent =
   | { event: 'meta'; data: SseMetaData }
-  | { event: 'slides'; data: SseSlidesData }
   | { event: 'status'; data: { text: string } }
   | { event: 'chunk'; data: { text: string } }
   | { event: 'assistant'; data: AssistantMessage }
@@ -52,9 +37,6 @@ export function parseSseEvent(message: RawSseMessage): SseEvent | null {
   switch (message.event) {
     case 'meta': {
       return { data: JSON.parse(message.data) as SseMetaData, event: 'meta' };
-    }
-    case 'slides': {
-      return { data: JSON.parse(message.data) as SseSlidesData, event: 'slides' };
     }
     case 'status': {
       return { data: JSON.parse(message.data) as { text: string }, event: 'status' };

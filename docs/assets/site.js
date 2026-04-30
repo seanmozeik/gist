@@ -1,5 +1,5 @@
-const canonicalHost = 'summarize.sh';
-const redirectHostnames = new Set(['summarize.is', 'www.summarize.is']);
+const canonicalHost = 'gist.sh';
+const redirectHostnames = new Set(['gist.is', 'www.gist.is']);
 
 const maybeRedirect = () => {
   try {
@@ -62,9 +62,7 @@ const wireCopyButtons = () => {
     }
   };
   for (const button of buttons) {
-    button.addEventListener('click', () => {
-      undefined;
-    });
+    button.addEventListener('click', () => {});
   }
 };
 

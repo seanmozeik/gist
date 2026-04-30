@@ -13,12 +13,12 @@ describe('url progress status', () => {
       spinner: { refresh, setText },
     });
 
-    status.setSummary('Summarizing…', 'Summarizing');
+    status.setSummary('Gisting…', 'Gisting');
     status.setSlides('Slides: detecting scenes 35%', 35);
-    status.setSummary('Summarizing (model: openai/gpt-5.4)…', 'Summarizing');
+    status.setSummary('Gisting (model: openai/gpt-5.4)…', 'Gisting');
 
     expect(setText.mock.calls.map((call) => call[0])).toEqual([
-      'Summarizing…',
+      'Gisting…',
       'Slides: detecting scenes 35%',
     ]);
     expect(oscProgress.setPercent).toHaveBeenLastCalledWith('Slides', 35);
@@ -30,13 +30,13 @@ describe('url progress status', () => {
     const oscProgress = { clear: vi.fn(), setIndeterminate: vi.fn(), setPercent: vi.fn() };
     const status = createUrlProgressStatus({ enabled: true, oscProgress, spinner: { setText } });
 
-    status.setSummary('Summarizing…', 'Summarizing');
+    status.setSummary('Gisting…', 'Gisting');
     status.setSlides('Slides: detecting scenes 35%', 35);
-    status.setSummary('Summarizing (model: openai/gpt-5.4)…', 'Summarizing');
+    status.setSummary('Gisting (model: openai/gpt-5.4)…', 'Gisting');
     status.clearSlides();
 
-    expect(setText.mock.calls.at(-1)?.[0]).toBe('Summarizing (model: openai/gpt-5.4)…');
-    expect(oscProgress.setIndeterminate).toHaveBeenLastCalledWith('Summarizing');
+    expect(setText.mock.calls.at(-1)?.[0]).toBe('Gisting (model: openai/gpt-5.4)…');
+    expect(oscProgress.setIndeterminate).toHaveBeenLastCalledWith('Gisting');
   });
 
   it('throttles rapid slide text repaint while still updating OSC progress', () => {

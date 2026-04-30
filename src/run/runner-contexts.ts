@@ -1,13 +1,13 @@
 import type { CacheState } from '../cache.js';
 import type { MediaCache } from '../content/index.js';
-import { createAssetSummaryContext, type SummarizeAssetArgs } from './flows/asset/summary.js';
-import { summarizeAsset as summarizeAssetFlow } from './flows/asset/summary.js';
+import { createAssetSummaryContext, type GistAssetArgs } from './flows/asset/summary.js';
+import { gistAsset as gistAssetFlow } from './flows/asset/summary.js';
 import { createUrlFlowContext, type UrlFlowContext } from './flows/url/types.js';
 
-type SummarizeMediaFile = typeof import('./flows/asset/media.js').summarizeMediaFile;
+type GistMediaFile = typeof import('./flows/asset/media.js').gistMediaFile;
 
 export function createRunnerFlowContexts(options: {
-  summarizeMediaFileImpl: SummarizeMediaFile;
+  gistMediaFileImpl: GistMediaFile;
   cacheState: CacheState;
   mediaCache: MediaCache | null;
   io: UrlFlowContext['io'];
@@ -23,7 +23,7 @@ export function createRunnerFlowContexts(options: {
   estimateCostUsd: UrlFlowContext['hooks']['estimateCostUsd'];
 }) {
   const {
-    summarizeMediaFileImpl,
+    gistMediaFileImpl,
     cacheState,
     mediaCache,
     io,
@@ -41,13 +41,10 @@ export function createRunnerFlowContexts(options: {
 
   const assetSummaryContext = createAssetSummaryContext({
     apiStatus: {
-      apifyToken: model.apiStatus.apifyToken,
-      firecrawlApiKey: model.apiStatus.firecrawlApiKey,
-      firecrawlConfigured: model.apiStatus.firecrawlConfigured,
-      openrouterApiKey: model.apiStatus.openrouterApiKey,
-      ytDlpPath: model.apiStatus.ytDlpPath,
-      ytDlpCookiesFromBrowser: model.apiStatus.ytDlpCookiesFromBrowser,
       localBaseUrl: model.apiStatus.localBaseUrl,
+      openrouterApiKey: model.apiStatus.openrouterApiKey,
+      ytDlpCookiesFromBrowser: model.apiStatus.ytDlpCookiesFromBrowser,
+      ytDlpPath: model.apiStatus.ytDlpPath,
     },
     cache: { cache: cacheState, mediaCache },
     hooks: { buildReport, clearProgressForStdout, restoreProgressAfterStdout, writeViaFooter },
@@ -74,7 +71,6 @@ export function createRunnerFlowContexts(options: {
       requestedModelInput: model.requestedModelInput,
       requestedModelLabel: model.requestedModelLabel,
       summaryEngine: model.summaryEngine,
-      wantsFreeNamedModel: model.wantsFreeNamedModel,
     },
     output: {
       json: flags.json,
@@ -104,25 +100,24 @@ export function createRunnerFlowContexts(options: {
     },
   });
 
-  const summarizeAsset = (args: SummarizeAssetArgs) =>
-    summarizeAssetFlow(assetSummaryContext, args);
-  const summarizeMediaFile = (args: Parameters<SummarizeMediaFile>[1]) =>
-    summarizeMediaFileImpl(assetSummaryContext, args);
+  const gistAsset = (args: GistAssetArgs) => gistAssetFlow(assetSummaryContext, args);
+  const gistMediaFile = (args: Parameters<GistMediaFile>[1]) =>
+    gistMediaFileImpl(assetSummaryContext, args);
 
   return {
     assetInputContext: {
       clearProgressIfCurrent,
       env: assetSummaryContext.env,
       envForRun: assetSummaryContext.envForRun,
+      gistAsset,
+      gistMediaFile,
       progressEnabled: flags.progressEnabled,
       setClearProgressBeforeStdout,
       stderr: assetSummaryContext.stderr,
-      summarizeAsset,
-      summarizeMediaFile,
       timeoutMs: flags.timeoutMs,
       trackedFetch: io.fetch,
     },
-    summarizeAsset,
+    gistAsset,
     urlFlowContext: createUrlFlowContext({
       cache: cacheState,
       flags,
@@ -134,10 +129,10 @@ export function createRunnerFlowContexts(options: {
         clearProgressForStdout,
         clearProgressIfCurrent,
         estimateCostUsd,
+        gistAsset,
         restoreProgressAfterStdout,
         setClearProgressBeforeStdout,
         setTranscriptionCost,
-        summarizeAsset,
         writeViaFooter,
       },
     }),

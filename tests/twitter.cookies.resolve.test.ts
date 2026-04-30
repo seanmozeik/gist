@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveTwitterCookies } from '../src/run/cookies/twitter.js';
 
 function makeTempHome(): string {
-  return mkdtempSync(path.join(tmpdir(), 'summarize-twitter-cookies-'));
+  return mkdtempSync(path.join(tmpdir(), 'gist-twitter-cookies-'));
 }
 
 function touch(filePath: string): void {

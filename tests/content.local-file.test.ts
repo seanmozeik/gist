@@ -10,11 +10,11 @@ import {
   resolveLocalDirectMediaSource,
   resolveLocalFileMtime,
   resolveLocalFileReference,
-} from '../packages/core/src/content/local-file.js';
+} from '../src/content/local-file.js';
 
 describe('content/local-file', () => {
   it('resolves local file references from paths and file urls', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-local-file-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-local-file-'));
     const filePath = join(root, 'deck.webm');
     await writeFile(filePath, new Uint8Array([1, 2, 3]));
 
@@ -33,7 +33,7 @@ describe('content/local-file', () => {
   });
 
   it('resolves local direct media with media kind/type hints', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-local-media-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-local-media-'));
     const filePath = join(root, 'audio-only.webm');
     await writeFile(filePath, new Uint8Array([1, 2, 3]));
 
@@ -52,7 +52,7 @@ describe('content/local-file', () => {
   });
 
   it('returns null for non-media files', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-local-text-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-local-text-'));
     const filePath = join(root, 'notes.txt');
     await writeFile(filePath, 'hello');
 

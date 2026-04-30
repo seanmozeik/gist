@@ -8,7 +8,7 @@ import { resolveExecutableInPath } from '../src/run/env.js';
 
 const ENV = process.env as Record<string, string | undefined>;
 const XURL_PATH = resolveExecutableInPath('xurl', ENV);
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(XURL_PATH);
+const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(XURL_PATH);
 let cachedIdentity: { userId: string; username: string } | null | undefined;
 let cachedTimelineAvailable: boolean | undefined;
 

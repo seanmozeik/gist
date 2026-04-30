@@ -29,7 +29,7 @@ YouTube URLs use transcript-first extraction.
 
 ## Fallbacks
 
-- If no transcript is available, we still extract `ytInitialPlayerResponse.videoDetails.shortDescription` so YouTube links can still summarize meaningfully.
+- If no transcript is available, we still extract `ytInitialPlayerResponse.videoDetails.shortDescription` so YouTube links can still gist meaningfully.
 - Apify is an optional fallback (needs `APIFY_API_TOKEN`).
   - By default, we use the actor id `faVsWy9VTSNVIhWpR` (Pinto Studio’s “Youtube Transcript Scraper”).
 - `yt-dlp` requires the `yt-dlp` binary (either set `YT_DLP_PATH` or have it on `PATH`) and either local `whisper.cpp` or one of `GROQ_API_KEY`, `ASSEMBLYAI_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, or `FAL_KEY`.
@@ -40,7 +40,7 @@ YouTube URLs use transcript-first extraction.
 ## Example
 
 ```bash
-pnpm summarize -- --extract "https://www.youtube.com/watch?v=I845O57ZSy4&t=11s"
+pnpm gist -- --extract "https://www.youtube.com/watch?v=I845O57ZSy4&t=11s"
 ```
 
 ## Slides
@@ -49,14 +49,14 @@ Use `--slides` to extract slide screenshots for YouTube videos (requires `ffmpeg
 Scene detection auto-tunes the threshold using sampled frame hashes:
 
 ```bash
-summarize "https://www.youtube.com/watch?v=..." --slides
-summarize "https://www.youtube.com/watch?v=..." --slides --slides-ocr
+gist "https://www.youtube.com/watch?v=..." --slides
+gist "https://www.youtube.com/watch?v=..." --slides --slides-ocr
 ```
 
 Slides are written to `./slides/<videoId>/` by default (override with `--slides-dir`). OCR results
 are stored in `slides.json` and included in JSON output (`--json`).
 
-If yt-dlp gets a 403 from YouTube, set `SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER=chrome` (or
+If yt-dlp gets a 403 from YouTube, set `GIST_YT_DLP_COOKIES_FROM_BROWSER=chrome` (or
 `chrome:Profile 1`) to pass cookies through to yt-dlp.
 
 Relevant flags:

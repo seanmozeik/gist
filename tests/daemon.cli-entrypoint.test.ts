@@ -8,22 +8,22 @@ import { resolveCliEntrypointCandidatesFromWindowsShim } from '../src/daemon/cli
 
 describe('resolveCliEntrypointCandidatesFromWindowsShim', () => {
   it('parses shim paths outside the bin dir', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-shim-'));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-shim-'));
     const binDir = path.join(tmpDir, 'bin');
     await fs.mkdir(binDir, { recursive: true });
-    const shimPath = path.join(binDir, 'summarize.ps1');
+    const shimPath = path.join(binDir, 'gist.ps1');
     const expected = path.resolve(
       binDir,
       '..',
       'lib',
       'node_modules',
       '@steipete',
-      'summarize',
+      'gist',
       'dist',
       'cli.js',
     );
 
-    const contents = '& "$basedir/../lib/node_modules/@steipete/summarize/dist/cli.js" @args\n';
+    const contents = '& "$basedir/../lib/node_modules/@seanmozeik/gist/dist/cli.js" @args\n';
     await fs.writeFile(shimPath, contents, 'utf8');
 
     const candidates = await resolveCliEntrypointCandidatesFromWindowsShim(shimPath);

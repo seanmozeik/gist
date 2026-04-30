@@ -6,9 +6,9 @@
     <meta name="color-scheme" content="dark light" />
     {% assign page_title = page.title | default: page.name | default: "Docs" | replace: ".md", "" |
     replace: "-", " " %}
-    <title>{{ page_title }} — summarize</title>
+    <title>{{ page_title }} — gist</title>
     <meta name="description" content="{{ page.summary | default: site.description | escape }}" />
-    <link rel="canonical" href="https://summarize.sh{{ page.url | replace: 'index.html', '' }}" />
+    <link rel="canonical" href="https://gist.sh{{ page.url | replace: 'index.html', '' }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,14 +20,14 @@
   <body>
     <main class="shell">
       <header class="top">
-        <a class="brand" href="/" aria-label="summarize home">
+        <a class="brand" href="/" aria-label="gist home">
           <span class="brand__mark" aria-hidden="true">s</span>
-          <span class="brand__word">summarize</span>
+          <span class="brand__word">gist</span>
         </a>
         <nav class="nav" aria-label="Primary">
           <a data-nav="home" href="/">Home</a>
           <a data-nav="docs" href="/docs/index.html">Docs</a>
-          <a href="https://github.com/steipete/summarize">GitHub</a>
+          <a href="https://github.com/seanmozeik/gist">GitHub</a>
         </nav>
       </header>
 
@@ -49,10 +49,10 @@
       </section>
 
       <footer class="footer">
-        <span>summarize — Link → clean text → summary.</span>
+        <span>gist — Link → clean text → summary.</span>
         <span
           ><a href="/docs/index.html">Docs</a> ·
-          <a href="https://github.com/steipete/summarize">Repo</a></span
+          <a href="https://github.com/seanmozeik/gist">Repo</a></span
         >
       </footer>
     </main>

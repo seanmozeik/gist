@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { generateTextWithModelId } from '../../src/llm/generate-text.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 (LIVE ? describe : describe.skip)('live Google preview compatibility', () => {
   const timeoutMs = 120_000;
@@ -17,7 +17,7 @@ const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
         null;
       if (!googleApiKey) {
         it.skip('requires GEMINI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }

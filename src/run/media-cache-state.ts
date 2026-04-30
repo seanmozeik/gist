@@ -1,4 +1,4 @@
-import type { SummarizeConfig } from '../config.js';
+import type { GistConfig } from '../config.js';
 import type { MediaCache } from '../content/index.js';
 import {
   createMediaCache,
@@ -15,7 +15,7 @@ export async function createMediaCacheFromConfig({
   noMediaCacheFlag = false,
 }: {
   envForRun: Record<string, string | undefined>;
-  config: SummarizeConfig | null;
+  config: GistConfig | null;
   noMediaCacheFlag?: boolean;
 }): Promise<MediaCache | null> {
   const mediaConfig = config?.cache?.media;

@@ -16,8 +16,6 @@ export function createRunMetrics({
   maxOutputTokensArg: number | null;
 }): RunMetrics {
   const llmCalls: LlmCall[] = [];
-  let firecrawlRequests = 0;
-  let apifyRequests = 0;
   const transcriptionCost = { label: null as string | null, value: null as number | null };
 
   const setTranscriptionCost = (costUsd: number | null, label: string | null) => {
@@ -25,7 +23,7 @@ export function createRunMetrics({
     transcriptionCost.label = label;
   };
 
-  const resolveMaxOutputTokensForCall = async (modelId: string): Promise<number | null> => {
+  const resolveMaxOutputTokensForCall = async (_modelId: string): Promise<number | null> => {
     if (typeof maxOutputTokensArg !== 'number') {
       return null;
     }
@@ -71,22 +69,8 @@ export function createRunMetrics({
     };
   };
 
-  const trackedFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url =
-      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-    let hostname: string | null = null;
-    try {
-      hostname = new URL(url).hostname.toLowerCase();
-    } catch {
-      hostname = null;
-    }
-    if (hostname === 'api.firecrawl.dev') {
-      firecrawlRequests += 1;
-    } else if (hostname === 'api.apify.com') {
-      apifyRequests += 1;
-    }
-    return fetch(input as RequestInfo, init);
-  };
+  const trackedFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) =>
+    fetch(input as RequestInfo, init);
 
   return {
     buildReport,

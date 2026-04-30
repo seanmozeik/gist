@@ -20,7 +20,7 @@ describe('cache keys and tags', () => {
   });
 
   it('changes prompt hashes when context changes', () => {
-    const instructions = 'Summarize it.';
+    const instructions = 'Gist it.';
     const contextA = 'URL: https://a.com';
     const contextB = 'URL: https://b.com';
     const prompt1 = `<instructions>${instructions}</instructions>\n<context>${contextA}</context>\n<content></content>`;
@@ -34,9 +34,8 @@ describe('cache keys and tags', () => {
 
   it('hashes instructions-only prompt consistently', () => {
     const promptWithEmptyContext =
-      '<instructions>Summarize.</instructions>\n<context></context>\n<content>Body</content>';
-    const promptWithNoContextTag =
-      '<instructions>Summarize.</instructions>\n<content>Body</content>';
+      '<instructions>Gist.</instructions>\n<context></context>\n<content>Body</content>';
+    const promptWithNoContextTag = '<instructions>Gist.</instructions>\n<content>Body</content>';
 
     const hash1 = buildPromptHash(promptWithEmptyContext);
     const hash2 = buildPromptHash(promptWithNoContextTag);

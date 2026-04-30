@@ -65,7 +65,7 @@ export async function convertToMarkdownWithMarkitdown({
   env: Record<string, string | undefined>;
   execFileImpl: ExecFileFn;
 }): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-markitdown-'));
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'gist-markitdown-'));
   const ext = guessExtension({ filenameHint, mediaType: mediaTypeHint });
   const base = (filenameHint ? path.basename(filenameHint, path.extname(filenameHint)) : 'input')
     .replaceAll(/[^\w.-]+/g, '-')

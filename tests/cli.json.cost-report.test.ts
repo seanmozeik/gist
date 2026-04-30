@@ -44,8 +44,8 @@ vi.mock('@mariozechner/pi-ai', () => ({
 
 describe('cli json + metrics report', () => {
   it('prints a finish line when --json --metrics detailed', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-json-cost-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-json-cost-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

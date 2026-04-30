@@ -1,7 +1,4 @@
-import { pathToFileURL } from 'node:url';
-
 import { loadLocalAsset, type InputTarget } from '../content/asset.js';
-import { isDirectVideoInput } from '../content/index.js';
 import type { RunMetricsReport } from '../costs.js';
 import type { ExecFileFn } from '../markitdown.js';
 import { startSpinner } from '../tty/spinner.js';
@@ -11,7 +8,7 @@ import { extractAssetContent } from './flows/asset/extract.js';
 import type { AssetExtractContext } from './flows/asset/extract.js';
 import { handleFileInput, isPdfExtension, withUrlAsset } from './flows/asset/input.js';
 import { outputExtractedAsset } from './flows/asset/output.js';
-import type { SummarizeAssetArgs } from './flows/asset/summary.js';
+import type { GistAssetArgs } from './flows/asset/summary.js';
 import { runUrlFlow } from './flows/url/flow.js';
 import { createTempFileFromStdin } from './stdin-temp-file.js';
 
@@ -22,7 +19,6 @@ export async function executeRunnerInput(options: {
   url: string | null;
   isYoutubeUrl: boolean;
   withUrlAssetContext: unknown;
-  slidesEnabled: boolean;
   extractMode: boolean;
   progressEnabled: boolean;
   renderSpinnerStatus: (label: string, detail?: string) => string;
@@ -55,15 +51,12 @@ export async function executeRunnerInput(options: {
     };
     apiStatus: {
       openrouterApiKey: string | null;
-      apifyToken: string | null;
-      firecrawlConfigured: boolean;
-      firecrawlApiKey: string | null;
       ytDlpPath: string | null;
       ytDlpCookiesFromBrowser: string | null;
       localBaseUrl: string | null;
     };
   };
-  summarizeAsset: (args: SummarizeAssetArgs) => Promise<void>;
+  gistAsset: (args: GistAssetArgs) => Promise<void>;
   runUrlFlowContext: unknown;
 }) {
   const {
@@ -73,22 +66,15 @@ export async function executeRunnerInput(options: {
     url,
     isYoutubeUrl,
     withUrlAssetContext,
-    slidesEnabled,
     extractMode,
     progressEnabled,
     renderSpinnerStatus,
     renderSpinnerStatusWithModel,
     extractAssetContext,
     outputExtractedAssetContext,
-    summarizeAsset,
+    gistAsset,
     runUrlFlowContext,
   } = options;
-  const slidesDirectInputUrl =
-    slidesEnabled && inputTarget.kind === 'file' && isDirectVideoInput(inputTarget.filePath)
-      ? pathToFileURL(inputTarget.filePath).href
-      : slidesEnabled && url && isDirectVideoInput(url)
-        ? url
-        : null;
 
   if (inputTarget.kind === 'stdin') {
     const stdinTempFile = await createTempFileFromStdin({ stream: stdin });
@@ -138,21 +124,11 @@ export async function executeRunnerInput(options: {
     return;
   }
 
-  if (slidesDirectInputUrl && inputTarget.kind === 'file') {
-    await runUrlFlow({
-      ctx: runUrlFlowContext as never,
-      isYoutubeUrl: false,
-      url: slidesDirectInputUrl,
-    });
-    return;
-  }
-
   if (await handleFileInput(handleFileInputContext as never, inputTarget)) {
     return;
   }
 
   if (
-    !slidesDirectInputUrl &&
     url &&
     (await withUrlAsset(
       withUrlAssetContext as never,
@@ -184,15 +160,15 @@ export async function executeRunnerInput(options: {
         }
 
         if (progressEnabled) {
-          spinner.setText(renderSpinnerStatus('Summarizing'));
+          spinner.setText(renderSpinnerStatus('Gisting'));
         }
-        await summarizeAsset({
+        await gistAsset({
           attachment: loaded.attachment,
           onModelChosen: (modelId) => {
             if (!progressEnabled) {
               return;
             }
-            spinner.setText(renderSpinnerStatusWithModel('Summarizing', modelId));
+            spinner.setText(renderSpinnerStatusWithModel('Gisting', modelId));
           },
           sourceKind: 'asset-url',
           sourceLabel: loaded.sourceLabel,
@@ -203,13 +179,8 @@ export async function executeRunnerInput(options: {
     return;
   }
 
-  if (slidesDirectInputUrl && inputTarget.kind === 'url') {
-    await runUrlFlow({ ctx: runUrlFlowContext as never, isYoutubeUrl, url: slidesDirectInputUrl });
-    return;
-  }
-
   if (!url) {
-    throw new Error('Only HTTP and HTTPS URLs can be summarized');
+    throw new Error('Only HTTP and HTTPS URLs can be gisted');
   }
 
   await runUrlFlow({ ctx: runUrlFlowContext as never, isYoutubeUrl, url });

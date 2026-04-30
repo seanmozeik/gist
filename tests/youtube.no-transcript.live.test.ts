@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { createLinkPreviewClient } from '../src/content/index.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1';
+const LIVE = process.env.GIST_LIVE_TESTS === '1';
 const NO_TRANSCRIPT_URL =
-  process.env.SUMMARIZE_LIVE_NO_TRANSCRIPT_URL ?? 'https://www.youtube.com/watch?v=XJ1SaNX4s8I';
+  process.env.GIST_LIVE_NO_TRANSCRIPT_URL ?? 'https://www.youtube.com/watch?v=XJ1SaNX4s8I';
 
 describe('live YouTube transcript (web, no captions)', () => {
   const run = LIVE ? it : it.skip;

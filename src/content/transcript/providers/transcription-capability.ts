@@ -5,7 +5,8 @@ import {
   type TranscriptionAvailability,
 } from './transcription-start.js';
 
-const MISSING_PROVIDER_NOTE = 'No transcription provider available. Set SUMMARIZE_LOCAL_BASE_URL.';
+const MISSING_PROVIDER_NOTE =
+  'No transcription provider available. Set GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.';
 
 export interface TranscriptProviderCapabilities {
   availability: TranscriptionAvailability;

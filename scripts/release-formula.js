@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const LINUX_HOMEBREW_MESSAGE =
-  'summarize Homebrew formula is macOS-only; use npm install -g @steipete/summarize on Linux';
+  'gist Homebrew formula is macOS-only; use npm install -g @seanmozeik/gist on Linux';
 
 function skipDoBlock(lines, start) {
   let depth = 0;

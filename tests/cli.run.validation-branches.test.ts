@@ -35,7 +35,7 @@ describe('cli run.ts validation branches', () => {
   });
 
   it('rejects --extract for local files', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-file-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-file-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello', 'utf8');
 

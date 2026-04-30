@@ -45,10 +45,9 @@ describe('transcription/whisper assemblyai', () => {
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
     vi.stubGlobal('fetch', fetchMock);
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
 
     const result = await transcribeMediaWithWhisper({
       assemblyaiApiKey: 'AAI',
@@ -67,7 +66,7 @@ describe('transcription/whisper assemblyai', () => {
   });
 
   it('transcribes files via AssemblyAI file upload flow', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-assemblyai-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-assemblyai-'));
     const audioPath = join(root, 'clip.mp3');
     await writeFile(audioPath, new Uint8Array([1, 2, 3]));
 
@@ -89,10 +88,9 @@ describe('transcription/whisper assemblyai', () => {
     });
 
     try {
-      vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+      vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaFileWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
 
       const result = await transcribeMediaFileWithWhisper({
         assemblyaiApiKey: 'AAI',
@@ -109,7 +107,7 @@ describe('transcription/whisper assemblyai', () => {
       expect(result.error).toBeNull();
     } finally {
       await rm(root, { force: true, recursive: true }).catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   });
@@ -130,10 +128,9 @@ describe('transcription/whisper assemblyai', () => {
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
     vi.stubGlobal('fetch', fetchMock);
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
 
     const result = await transcribeMediaWithWhisper({
       assemblyaiApiKey: 'AAI',

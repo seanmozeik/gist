@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# summarize release helper (npm)
-# Phases: gates | build | publish | smoke | tag | tap | chrome | firefox | all
+# gist release helper (npm)
+# Phases: gates | build | verify | publish | smoke | tag | tap | all
 
 # npm@11 warns on unknown env configs; keep CI/logs clean.
 unset npm_config_manage_package_manager_versions || true
@@ -25,109 +25,47 @@ require_clean_git() {
   fi
 }
 
-require_lockstep_versions() {
-  local root_version core_version
-  root_version="$(node -p 'require("./package.json").version')"
-  core_version="$(node -p 'require("./packages/core/package.json").version')"
-  if [ "$root_version" != "$core_version" ]; then
-    echo "Version mismatch: root=$root_version core=$core_version"
-    exit 1
-  fi
-}
-
 phase_gates() {
   banner "Gates"
   require_clean_git
-  require_lockstep_versions
   run bun run check
 }
 
 phase_build() {
   banner "Build"
-  require_lockstep_versions
   run bun run build
-  phase_chrome
-  phase_firefox
 }
 
 phase_verify_pack() {
   banner "Verify pack"
-  require_lockstep_versions
-  local version tmp_dir tarball core_tarball install_dir
+  local version tmp_dir tarball install_dir
   version="$(node -p 'require("./package.json").version')"
   tmp_dir="$(mktemp -d)"
-  core_tarball="${tmp_dir}/steipete-summarize-core-${version}.tgz"
-  tarball="${tmp_dir}/steipete-summarize-${version}.tgz"
-  run npm pack --prefix packages/core --pack-destination "${tmp_dir}"
+  tarball="${tmp_dir}/steipete-gist-${version}.tgz"
   run npm pack --pack-destination "${tmp_dir}"
-  if [ ! -f "${core_tarball}" ]; then
-    echo "Missing ${core_tarball}"
-    exit 1
-  fi
   if [ ! -f "${tarball}" ]; then
     echo "Missing ${tarball}"
     exit 1
   fi
   install_dir="${tmp_dir}/install"
   run mkdir -p "${install_dir}"
-  run npm install --prefix "${install_dir}" "${core_tarball}" "${tarball}"
-  run node "${install_dir}/node_modules/@steipete/summarize/dist/cli.js" --help >/dev/null
+  run npm install --prefix "${install_dir}" "${tarball}"
+  run node "${install_dir}/node_modules/@seanmozeik/gist/dist/cli.js" --help >/dev/null
   echo "ok"
-}
-
-phase_chrome() {
-  banner "Chrome extension"
-  local version root_dir output_dir zip_path
-  version="$(node -p 'require("./package.json").version')"
-  root_dir="$(pwd)"
-  output_dir="${root_dir}/apps/chrome-extension/.output"
-  zip_path="${root_dir}/dist-chrome/summarize-chrome-extension-v${version}.zip"
-  (cd apps/chrome-extension && bun run build)
-  run mkdir -p "${root_dir}/dist-chrome"
-  if [ ! -d "${output_dir}/chrome-mv3" ]; then
-    echo "Missing ${output_dir}/chrome-mv3 (wxt build failed?)"
-    exit 1
-  fi
-  # Zip the *contents* of `chrome-mv3/` (no top-level folder) so users can unzip into any folder and load it via:
-  # chrome://extensions → Developer mode → "Load unpacked" (manifest.json at the folder root).
-  run bash -c "cd \"${output_dir}/chrome-mv3\" && zip -r -FS \"${zip_path}\" ."
-  echo "Chrome extension: ${zip_path}"
-}
-
-phase_firefox() {
-  banner "Firefox extension"
-  local version root_dir output_dir zip_path
-  version="$(node -p 'require("./package.json").version')"
-  root_dir="$(pwd)"
-  output_dir="${root_dir}/apps/chrome-extension/.output"
-  zip_path="${root_dir}/dist-firefox/summarize-firefox-extension-v${version}.zip"
-  (cd apps/chrome-extension && bun run build:firefox)
-  run mkdir -p "${root_dir}/dist-firefox"
-  if [ ! -d "${output_dir}/firefox-mv3" ]; then
-    echo "Missing ${output_dir}/firefox-mv3 (wxt build failed?)"
-    exit 1
-  fi
-  # Zip the *contents* of `firefox-mv3/` (no top-level folder) so users can unzip into any folder and load it.
-  # AMO requires manifest.json at the root of the zip.
-  run bash -c "cd \"${output_dir}/firefox-mv3\" && zip -r -FS \"${zip_path}\" ."
-  echo "Firefox extension: ${zip_path}"
 }
 
 phase_publish() {
   banner "Publish to npm"
   require_clean_git
-  require_lockstep_versions
-  run bash -c 'cd packages/core && npm publish --tag latest --access public'
   run npm publish --tag latest --access public
 }
 
 phase_smoke() {
   banner "Smoke"
-  run npm view @steipete/summarize version
-  run npm view @steipete/summarize-core version
+  run npm view @seanmozeik/gist version
   local version
   version="$(node -p 'require("./package.json").version')"
-  run npx --yes @steipete/summarize@${version} --help >/dev/null
+  run npx --yes @seanmozeik/gist@${version} --help >/dev/null
   echo "ok"
 }
 
@@ -147,7 +85,7 @@ phase_tap() {
   version="$(node -p 'require("./package.json").version')"
   root_dir="$(pwd)"
   tap_dir="${root_dir}/../homebrew-tap"
-  formula_path="${tap_dir}/Formula/summarize.rb"
+  formula_path="${tap_dir}/Formula/gist.rb"
   if [ ! -d "${tap_dir}/.git" ]; then
     echo "Missing tap repo at ${tap_dir}"
     exit 1
@@ -157,12 +95,12 @@ phase_tap() {
     exit 1
   fi
 
-  url_arm="https://github.com/steipete/summarize/releases/download/v${version}/summarize-macos-arm64-v${version}.tar.gz"
-  url_x64="https://github.com/steipete/summarize/releases/download/v${version}/summarize-macos-x64-v${version}.tar.gz"
+  url_arm="https://github.com/seanmozeik/gist/releases/download/v${version}/gist-macos-arm64-v${version}.tar.gz"
+  url_x64="https://github.com/seanmozeik/gist/releases/download/v${version}/gist-macos-x64-v${version}.tar.gz"
 
   tmp_dir="$(mktemp -d)"
-  tarball_arm="${tmp_dir}/summarize-macos-arm64-v${version}.tar.gz"
-  tarball_x64="${tmp_dir}/summarize-macos-x64-v${version}.tar.gz"
+  tarball_arm="${tmp_dir}/gist-macos-arm64-v${version}.tar.gz"
+  tarball_x64="${tmp_dir}/gist-macos-x64-v${version}.tar.gz"
   run curl -fsSL "${url_arm}" -o "${tarball_arm}"
   run curl -fsSL "${url_x64}" -o "${tarball_x64}"
 
@@ -174,7 +112,7 @@ phase_tap() {
   echo "Tap updated: ${formula_path}"
   echo "arm64 sha: ${sha_arm}"
   echo "x64   sha: ${sha_x64}"
-  echo "Next: git -C ${tap_dir} add ${formula_path} && git -C ${tap_dir} commit -m \"chore: bump summarize to v${version}\" && git -C ${tap_dir} push"
+  echo "Next: git -C ${tap_dir} add ${formula_path} && git -C ${tap_dir} commit -m \"chore: bump gist to v${version}\" && git -C ${tap_dir} push"
 }
 
 case "$PHASE" in
@@ -185,8 +123,6 @@ case "$PHASE" in
   smoke) phase_smoke ;;
   tag) phase_tag ;;
   tap) phase_tap ;;
-  chrome) phase_chrome ;;
-  firefox) phase_firefox ;;
   all)
     phase_gates
     phase_build
@@ -204,11 +140,9 @@ case "$PHASE" in
     echo "  build     bun run build"
     echo "  verify    pack + install tarball + --help"
     echo "  publish   npm publish --tag latest --access public"
-    echo "  smoke     npm view + npx @steipete/summarize --help"
+    echo "  smoke     npm view + npx @seanmozeik/gist --help"
     echo "  tag       git tag vX.Y.Z + push tags"
     echo "  tap       update homebrew-tap formula + sha"
-    echo "  chrome    build + zip Chrome extension"
-    echo "  firefox   build + zip Firefox extension"
     echo "  all       gates + build + verify + publish + smoke + tag + tap"
     exit 2
     ;;

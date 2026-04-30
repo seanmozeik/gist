@@ -6,7 +6,6 @@ import {
   loadYoutubeHtml,
   resolveDurationMetadata,
   resolveEffectiveVideoId,
-  tryApifyTranscript,
   tryManualCaptionTranscript,
   tryWebTranscript,
   tryYtDlpTranscript,
@@ -43,18 +42,16 @@ export const fetchTranscript = async (
   }
   if (mode === 'yt-dlp' && !transcriptionCapabilities.canTranscribe) {
     throw new Error(
-      'Missing transcription provider for --youtube yt-dlp (install whisper-cpp or set GROQ_API_KEY/ASSEMBLYAI_API_KEY/GEMINI_API_KEY/OPENAI_API_KEY/FAL_KEY)',
+      'Missing transcription provider for --youtube yt-dlp (set GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY)',
     );
   }
 
-  // In explicit apify mode we can continue without HTML.
-  if (!html && mode !== 'apify') {
+  if (!html) {
     return { attemptedProviders, source: null, text: null };
   }
   const effectiveVideoId = resolveEffectiveVideoId(context);
   const htmlText = html ?? '';
-  // In explicit apify mode we can continue without a parsed video id.
-  if (!effectiveVideoId && mode !== 'apify') {
+  if (!effectiveVideoId) {
     return { attemptedProviders, source: null, text: null };
   }
   const durationMetadata = await resolveDurationMetadata({
@@ -93,44 +90,11 @@ export const fetchTranscript = async (
     }
   }
 
-  // Try yt-dlp (audio download + Groq/AssemblyAI/Gemini/OpenAI/FAL transcription) if mode is 'auto', 'no-auto', or 'yt-dlp'
+  // Try yt-dlp audio transcription if mode is 'auto', 'no-auto', or 'yt-dlp'.
   if (mode === 'yt-dlp' || mode === 'no-auto' || (mode === 'auto' && canRunYtDlp)) {
     const transcript = await tryYtDlpTranscript({ flow, mode });
     if (transcript) {
       return transcript;
-    }
-
-    // Auto mode: only try Apify after yt-dlp fails (last resort).
-    if (mode === 'auto') {
-      const apifyResult = await tryApifyTranscript(
-        flow,
-        'YouTube: yt-dlp transcription failed; trying Apify',
-      );
-      if (apifyResult) {
-        return apifyResult;
-      }
-    }
-  }
-
-  // Explicit apify mode: allow forcing it, but require a token.
-  if (mode === 'apify') {
-    if (!options.apifyApiToken) {
-      throw new Error('Missing APIFY_API_TOKEN for --youtube apify');
-    }
-    const apifyResult = await tryApifyTranscript(flow, 'YouTube: fetching transcript (Apify)');
-    if (apifyResult) {
-      return apifyResult;
-    }
-  }
-
-  // Auto mode: if yt-dlp cannot run (no binary/credentials), fall back to Apify last-last.
-  if (mode === 'auto' && !canRunYtDlp) {
-    const apifyResult = await tryApifyTranscript(
-      flow,
-      'YouTube: captions unavailable; trying Apify',
-    );
-    if (apifyResult) {
-      return apifyResult;
     }
   }
 

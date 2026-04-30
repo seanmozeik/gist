@@ -26,7 +26,7 @@ describe('sidepanel summary renderer', () => {
     const hostEl = document.createElement('div');
     renderSummaryEmptyState({
       hostEl,
-      state: { detail: '', label: 'Ready', message: 'Click Summarize to start.' },
+      state: { detail: '', label: 'Ready', message: 'Click Gist to start.' },
     });
     expect(hostEl.querySelector('.renderEmpty__detail')).toBeNull();
   });
@@ -36,7 +36,7 @@ describe('sidepanel summary renderer', () => {
     const renderInlineSlides = vi.fn();
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -70,13 +70,13 @@ describe('sidepanel summary renderer', () => {
     const hostEl = document.createElement('div');
     const setStatus = vi.fn();
     const writeText = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     Object.assign(navigator, { clipboard: { writeText } });
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -104,13 +104,13 @@ describe('sidepanel summary renderer', () => {
     const hostEl = document.createElement('div');
     const setStatus = vi.fn();
     const writeText = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     Object.assign(navigator, { clipboard: { writeText } });
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -127,7 +127,7 @@ describe('sidepanel summary renderer', () => {
       tabUrl: 'https://example.com/watch',
     });
 
-    expect(hostEl.textContent).toContain('Summarize');
+    expect(hostEl.textContent).toContain('Gist');
     expect(writeText).not.toHaveBeenCalled();
     expect(setStatus).not.toHaveBeenCalledWith('Copied');
   });
@@ -144,7 +144,7 @@ describe('sidepanel summary renderer', () => {
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -180,7 +180,7 @@ describe('sidepanel summary renderer', () => {
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -210,7 +210,7 @@ describe('sidepanel summary renderer', () => {
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: true,
+      autoGist: true,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -230,7 +230,7 @@ describe('sidepanel summary renderer', () => {
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,
@@ -254,7 +254,7 @@ describe('sidepanel summary renderer', () => {
 
     renderSummaryMarkdownDisplay({
       activeTabUrl: 'https://example.com/watch',
-      autoSummarize: false,
+      autoGist: false,
       currentSourceTitle: 'Video',
       currentSourceUrl: 'https://example.com/watch',
       hasSlides: false,

@@ -128,7 +128,6 @@ export function buildUrlPrompt({
     lengthInstruction,
     outputLanguage,
     promptOverride,
-    slides: null,
   });
 }
 
@@ -216,7 +215,7 @@ export async function outputExtractedUrl({
   const finishLabel = buildExtractFinishLabel({
     extracted: { diagnostics: extracted.diagnostics },
     format: flags.format,
-    hasMarkdownLlmCall: model.llmCalls.some((call) => true),
+    hasMarkdownLlmCall: model.llmCalls.length > 0,
     markdownMode: effectiveMarkdownMode,
   });
   const finishModel = pickModelForFinishLine(model.llmCalls, null);
@@ -282,7 +281,7 @@ export async function outputExtractedUrl({
   });
 }
 
-export async function summarizeExtractedUrl({
+export async function gistExtractedUrl({
   ctx,
   url,
   extracted,
@@ -301,7 +300,7 @@ export async function summarizeExtractedUrl({
   transcriptionCostLabel: string | null;
   onModelChosen?: ((modelId: string) => void) | null;
 }) {
-  const { io, flags, model, cache: cacheState, hooks } = ctx;
+  const { io, flags, hooks } = ctx;
   const resolution = await resolveUrlSummaryExecution({
     ctx,
     extracted,

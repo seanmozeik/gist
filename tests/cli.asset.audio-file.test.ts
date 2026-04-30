@@ -47,7 +47,7 @@ describe('cli asset inputs (media files)', () => {
   it('detects missing transcription provider and provides setup guidance', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-no-provider-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-no-provider-'));
     const mp3Path = join(root, 'test-audio.mp3');
     writeFileSync(mp3Path, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -57,7 +57,7 @@ describe('cli asset inputs (media files)', () => {
     // Don't set any transcription provider
     const run = () =>
       runCli(['--model', 'openai/gpt-4o-mini', '--timeout', '2s', mp3Path], {
-        env: { HOME: root }, // No OPENAI_API_KEY, FAL_KEY, or SUMMARIZE_WHISPER_CPP_BINARY
+        env: { HOME: root }, // No OPENAI_API_KEY, FAL_KEY, or GIST_WHISPER_CPP_BINARY
         fetch: vi.fn(async () => {
           throw new Error('unexpected fetch');
         }) as unknown as typeof fetch,
@@ -75,7 +75,7 @@ describe('cli asset inputs (media files)', () => {
   it('rejects audio files with helpful error when provider setup is incomplete', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-provider-error-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-provider-error-'));
     const mp3Path = join(root, 'test-audio.mp3');
     writeFileSync(mp3Path, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -98,7 +98,7 @@ describe('cli asset inputs (media files)', () => {
       await run();
     } catch (error) {
       const errMsg = String(error);
-      expect(errMsg).toMatch(/OPENAI_API_KEY|FAL_KEY|SUMMARIZE_WHISPER_CPP_BINARY/);
+      expect(errMsg).toMatch(/OPENAI_API_KEY|FAL_KEY|GIST_WHISPER_CPP_BINARY/);
       expect(errMsg).toMatch(/github\.com\/openai\/whisper/);
     }
     expect(mocks.streamSimple).toHaveBeenCalledTimes(0);
@@ -107,7 +107,7 @@ describe('cli asset inputs (media files)', () => {
   it('handles non-existent audio files gracefully', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-missing-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-missing-'));
     const nonExistentPath = join(root, 'missing-audio.mp3');
 
     const stdout = collectStream();
@@ -148,7 +148,7 @@ describe('cli asset inputs (media files)', () => {
     const audioExtensions = ['mp3', 'wav', 'm4a', 'ogg', 'flac'];
 
     for (const ext of audioExtensions) {
-      const root = mkdtempSync(join(tmpdir(), `summarize-audio-${ext}-ext-`));
+      const root = mkdtempSync(join(tmpdir(), `gist-audio-${ext}-ext-`));
       const audioPath = join(root, `test.${ext}`);
       writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -177,7 +177,7 @@ describe('cli asset inputs (media files)', () => {
     // By checking that the media handler is invoked (which would fail at provider check)
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-file-url-conversion-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-file-url-conversion-'));
     const audioPath = join(root, 'relative-path-test.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -205,7 +205,7 @@ describe('cli asset inputs (media files)', () => {
     // By checking that files with the same mtime would use cached transcripts
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-cache-mtime-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-cache-mtime-'));
     const audioPath = join(root, 'audio-with-mtime.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 

@@ -142,9 +142,9 @@ export async function resolveUrlSummaryExecution({
     cacheState.mode === 'default' && !flags.summaryCacheBypass ? cacheState.store : null;
   // Simplified cache keys
   const contentHash = cacheStore
-    ? `c:${extracted.content.slice(0, 500).replace(/\s+/g, ' ').trim()}`
+    ? `c:${extracted.content.slice(0, 500).replaceAll(/\s+/g, ' ').trim()}`
     : null;
-  const promptHash = cacheStore ? `p:${prompt.replace(/\s+/g, ' ').trim()}` : null;
+  const promptHash = cacheStore ? `p:${prompt.replaceAll(/\s+/g, ' ').trim()}` : null;
   const lengthKey = buildLengthKey(flags.lengthArg);
   const languageKey = buildLanguageKey(flags.outputLanguage);
   const autoSelectionCacheModel = model.isFallbackModel
@@ -200,9 +200,8 @@ export async function resolveUrlSummaryExecution({
       const cachedRaw = cacheStore.getJson('summary', key);
       const cached = cachedRaw as { summary?: unknown; model?: unknown } | null;
       const cachedSummary =
-        cached && typeof cached.summary === 'string' ? (cached.summary as string).trim() : null;
-      const cachedModelId =
-        cached && typeof cached.model === 'string' ? (cached.model as string).trim() : null;
+        cached && typeof cached.summary === 'string' ? cached.summary.trim() : null;
+      const cachedModelId = cached && typeof cached.model === 'string' ? cached.model.trim() : null;
       if (cachedSummary) {
         const cachedAttempt = cachedModelId
           ? (attempts.find((attempt) => attempt.userModelId === cachedModelId) ?? null)
@@ -327,15 +326,10 @@ export async function resolveUrlSummaryExecution({
   }
 
   if (!summaryResult || !usedAttempt) {
-    const withFreeTip = (message: string) => {
-      if (!model.isNamedModelSelection || !model.wantsFreeNamedModel) {
-        return message;
-      }
-      return (
-        `${message}\n` +
-        `Tip: run "summarize refresh-free" to refresh the free model candidates (writes ~/.summarize/config.json).`
-      );
-    };
+    const withFreeTip = (message: string) =>
+      model.isNamedModelSelection && model.requestedModelInput.toLowerCase() === 'free'
+        ? `${message}\nTip: run "gist refresh-free" to refresh the free model candidates (writes ~/.gist/config.json).`
+        : message;
 
     if (model.isNamedModelSelection) {
       if (lastError === null && missingRequiredEnvs.size > 0) {

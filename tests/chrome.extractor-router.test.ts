@@ -73,7 +73,7 @@ describe('chrome/extractor-router', () => {
                 num_comments: 2,
                 score: 42,
                 selftext: 'Original post body',
-                subreddit: 'summarize',
+                subreddit: 'gist',
                 title: 'Useful thread',
               },
               kind: 't3',
@@ -120,14 +120,14 @@ describe('chrome/extractor-router', () => {
     const { ctx, extractFromTab, logs } = createContext({
       fetchImpl,
       title: 'Fallback title',
-      url: 'https://www.reddit.com/r/summarize/comments/abc123/useful_thread/',
+      url: 'https://www.reddit.com/r/gist/comments/abc123/useful_thread/',
     });
 
     const result = await routeExtract(ctx);
 
     expect(result?.source).toBe('page');
     expect(result?.extracted.title).toBe('Useful thread');
-    expect(result?.extracted.text).toContain('op posted in r/summarize');
+    expect(result?.extracted.text).toContain('op posted in r/gist');
     expect(result?.extracted.text).toContain('Title: Useful thread');
     expect(result?.extracted.text).toContain(
       '[2023-11-14T22:15:00.000Z] alice (score:5): Top level comment',
@@ -136,7 +136,7 @@ describe('chrome/extractor-router', () => {
       '  [2023-11-14T22:16:40.000Z] bob (score:3): Nested reply',
     );
     expect(fetchImpl).toHaveBeenCalledWith(
-      'https://www.reddit.com/r/summarize/comments/abc123.json',
+      'https://www.reddit.com/r/gist/comments/abc123.json',
       expect.objectContaining({ credentials: 'include' }),
     );
     expect(extractFromTab).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('chrome/extractor-router', () => {
     ) as unknown as typeof fetch;
     const { ctx, extractFromTab, logs } = createContext({
       fetchImpl,
-      url: 'https://old.reddit.com/r/summarize/comments/abc123/useful_thread/',
+      url: 'https://old.reddit.com/r/gist/comments/abc123/useful_thread/',
     });
 
     const result = await routeExtract(ctx);

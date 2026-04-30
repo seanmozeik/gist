@@ -59,8 +59,8 @@ export function buildFileSummaryPrompt({
   const baseInstructions = [
     'Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.',
     'Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.',
-    'You summarize files for curious users.',
-    'Summarize the attached file.',
+    'You gist files for curious users.',
+    'Gist the attached file.',
     'Be factual and do not invent details.',
     shouldIgnoreSponsors
       ? 'Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code.'
@@ -144,8 +144,8 @@ export function buildFileTextSummaryPrompt({
   const baseInstructions = [
     'Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.',
     'Never include quotation marks in the output. Apostrophes in contractions are OK. If a title or excerpt would normally use quotes, remove them and optionally italicize the text instead.',
-    'You summarize files for curious users.',
-    'Summarize the file content below.',
+    'You gist files for curious users.',
+    'Gist the file content below.',
     'Be factual and do not invent details.',
     shouldIgnoreSponsors
       ? 'Omit sponsor messages, ads, promos, and calls-to-action (including podcast ad reads), even if they appear in the transcript. Do not mention or acknowledge them, and do not say you skipped or ignored anything. Avoid sponsor/ad/promo language, brand names like Squarespace, or CTA phrases like discount code.'

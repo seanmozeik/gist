@@ -10,7 +10,7 @@ function resolveStatePath(env: Record<string, string | undefined>): string | nul
   if (!home) {
     return null;
   }
-  return path.join(home, '.summarize', STATE_FILE_NAME);
+  return path.join(home, '.gist', STATE_FILE_NAME);
 }
 
 function parseCliProvider(value: unknown): CliProvider | null {

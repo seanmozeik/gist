@@ -11,19 +11,19 @@ describe('media URL routing', () => {
         callback();
       },
     });
-    const summarizeMediaFile = vi.fn(async () => {
-      /* empty */
+    const gistMediaFile = vi.fn(async () => {
+      /* Empty */
     });
     const ctx = {
       clearProgressIfCurrent: vi.fn(),
       env: {},
+      gistAsset: vi.fn(async () => {
+        throw new Error('gistAsset should not be called');
+      }),
+      gistMediaFile,
       progressEnabled: false,
       setClearProgressBeforeStdout: vi.fn(),
       stderr,
-      summarizeAsset: vi.fn(async () => {
-        throw new Error('summarizeAsset should not be called');
-      }),
-      summarizeMediaFile,
       timeoutMs: 1000,
       trackedFetch: vi.fn(async () => {
         throw new Error('fetch should not be called');
@@ -40,6 +40,6 @@ describe('media URL routing', () => {
     );
 
     expect(handled).toBe(true);
-    expect(summarizeMediaFile).toHaveBeenCalledTimes(1);
+    expect(gistMediaFile).toHaveBeenCalledTimes(1);
   });
 });

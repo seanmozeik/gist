@@ -56,13 +56,13 @@ describe('cli --no-cache bug reproduction', () => {
   it('refetches URL content when --no-cache is provided', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-no-cache-repro-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-no-cache-repro-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, 'config.json'),
+      join(gistDir, 'config.json'),
       JSON.stringify({ cache: { enabled: true, maxMb: 32, ttlDays: 30 } }),
       'utf8',
     );

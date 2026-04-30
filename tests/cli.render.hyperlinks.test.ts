@@ -50,8 +50,8 @@ function collectStream() {
 
 describe('cli markdown hyperlinks', () => {
   it('uses OSC-8 hyperlinks for markdown links on a TTY', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-hyperlinks-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-hyperlinks-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

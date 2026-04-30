@@ -52,8 +52,8 @@ function collectStream() {
 
 describe('metrics model label', () => {
   it('keeps openrouter/… prefix in the finish line', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-openrouter-label-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-openrouter-label-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

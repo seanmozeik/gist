@@ -66,7 +66,7 @@ function resolveFetchUrl(input: RequestInfo | URL): string {
 }
 
 describe('cli config precedence', () => {
-  it('uses config file model when --model and SUMMARIZE_MODEL are absent', async () => {
+  it('uses config file model when --model and GIST_MODEL are absent', async () => {
     mocks.completeSimple.mockClear();
 
     const html =
@@ -81,9 +81,9 @@ describe('cli config precedence', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-cli-config-'));
-    const configPath = join(tempRoot, '.summarize', 'config.json');
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-cli-config-'));
+    const configPath = join(tempRoot, '.gist', 'config.json');
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(configPath, JSON.stringify({ model: { id: 'openai/gpt-5-chat' } }), 'utf8');
 
     await runCli(['--timeout', '2s', 'https://example.com'], {
@@ -96,7 +96,7 @@ describe('cli config precedence', () => {
     expect(mocks.completeSimple).toHaveBeenCalledTimes(1);
   });
 
-  it('uses config file model preset when --model and SUMMARIZE_MODEL are absent', async () => {
+  it('uses config file model preset when --model and GIST_MODEL are absent', async () => {
     mocks.completeSimple.mockClear();
 
     const html =
@@ -111,9 +111,9 @@ describe('cli config precedence', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-cli-config-'));
-    const configPath = join(tempRoot, '.summarize', 'config.json');
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-cli-config-'));
+    const configPath = join(tempRoot, '.gist', 'config.json');
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -142,7 +142,7 @@ describe('cli config precedence', () => {
     expect(mocks.completeSimple).toHaveBeenCalledTimes(0);
   });
 
-  it('prefers SUMMARIZE_MODEL over config file', async () => {
+  it('prefers GIST_MODEL over config file', async () => {
     mocks.completeSimple.mockClear();
 
     const html =
@@ -157,9 +157,9 @@ describe('cli config precedence', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-cli-config-'));
-    const configPath = join(tempRoot, '.summarize', 'config.json');
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-cli-config-'));
+    const configPath = join(tempRoot, '.gist', 'config.json');
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
       configPath,
       JSON.stringify({ model: { id: 'xai/grok-4-fast-non-reasoning' } }),
@@ -171,7 +171,7 @@ describe('cli config precedence', () => {
     await runCli(
       ['--timeout', '2s', '--extract', '--format', 'text', '--json', 'https://example.com'],
       {
-        env: { HOME: tempRoot, SUMMARIZE_MODEL: 'openai/gpt-5-chat' },
+        env: { GIST_MODEL: 'openai/gpt-5-chat', HOME: tempRoot },
         fetch: fetchMock as unknown as typeof fetch,
         stderr: noopStream(),
         stdout: stdout.stream,
@@ -200,9 +200,9 @@ describe('cli config precedence', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-cli-config-'));
-    const configPath = join(tempRoot, '.summarize', 'config.json');
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-cli-config-'));
+    const configPath = join(tempRoot, '.gist', 'config.json');
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
       configPath,
       JSON.stringify({ model: { id: 'openai/gpt-5-chat' }, output: { length: 'short' } }),
@@ -237,9 +237,9 @@ describe('cli config precedence', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-cli-config-'));
-    const configPath = join(tempRoot, '.summarize', 'config.json');
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-cli-config-'));
+    const configPath = join(tempRoot, '.gist', 'config.json');
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
       configPath,
       JSON.stringify({ model: { id: 'openai/gpt-5-chat' }, output: { length: 'short' } }),

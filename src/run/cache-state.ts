@@ -7,7 +7,7 @@ import {
   DEFAULT_CACHE_TTL_DAYS,
   resolveCachePath,
 } from '../cache.js';
-import type { SummarizeConfig } from '../config.js';
+import type { GistConfig } from '../config.js';
 
 export async function createCacheStateFromConfig({
   envForRun,
@@ -16,7 +16,7 @@ export async function createCacheStateFromConfig({
   transcriptNamespace = null,
 }: {
   envForRun: Record<string, string | undefined>;
-  config: SummarizeConfig | null;
+  config: GistConfig | null;
   noCacheFlag?: boolean;
   transcriptNamespace?: string | null;
 }): Promise<CacheState> {

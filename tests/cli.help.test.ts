@@ -29,7 +29,7 @@ describe('--help output', () => {
 
     const out = stdout.getText();
     expect(out).toContain('Examples');
-    expect(out).toContain('summarize "https://example.com"');
+    expect(out).toContain('gist "https://example.com"');
     expect(out).not.toContain('\u001B[');
   });
 
@@ -47,7 +47,7 @@ describe('--help output', () => {
 
     const out = stdout.getText();
     expect(out).toContain('Examples');
-    expect(out).toContain('summarize "https://example.com"');
+    expect(out).toContain('gist "https://example.com"');
     expect(out).toContain('Env Vars');
   });
 });

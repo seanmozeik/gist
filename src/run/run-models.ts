@@ -1,4 +1,4 @@
-import type { CliProvider, ModelConfig, SummarizeConfig } from '../config.js';
+import type { CliProvider, ModelConfig, GistConfig } from '../config.js';
 import { mergeModelRequestOptions } from '../llm/model-options.js';
 import type { RequestedModel } from '../model-spec.js';
 import { parseRequestedModelId } from '../model-spec.js';
@@ -6,7 +6,7 @@ import { BUILTIN_MODELS } from './constants.js';
 
 function resolveConfiguredCliModel(
   provider: CliProvider,
-  config: SummarizeConfig | null,
+  config: GistConfig | null,
 ): string | null {
   const cli = config?.cli;
   const raw =
@@ -24,7 +24,7 @@ function resolveConfiguredCliModel(
 
 function resolveRequestedCliModelFromConfig(
   requestedModel: RequestedModel,
-  config: SummarizeConfig | null,
+  config: GistConfig | null,
 ): RequestedModel {
   if (requestedModel.kind !== 'fixed' || requestedModel.transport !== 'cli') {
     return requestedModel;
@@ -71,8 +71,7 @@ export interface ModelSelection {
   requestedModelLabel: string;
   isNamedModelSelection: boolean;
   isImplicitAutoSelection: boolean;
-  wantsFreeNamedModel: boolean;
-  configForModelSelection: SummarizeConfig | null;
+  configForModelSelection: GistConfig | null;
   isFallbackModel: boolean;
 }
 
@@ -83,8 +82,8 @@ export function resolveModelSelection({
   envForRun,
   explicitModelArg,
 }: {
-  config: SummarizeConfig | null;
-  configForCli: SummarizeConfig | null;
+  config: GistConfig | null;
+  configForCli: GistConfig | null;
   configPath: string | null;
   envForRun: Record<string, string | undefined>;
   explicitModelArg: string | null;
@@ -107,11 +106,8 @@ export function resolveModelSelection({
   })();
 
   const defaultModelResolution = (() => {
-    if (
-      typeof envForRun.SUMMARIZE_MODEL === 'string' &&
-      envForRun.SUMMARIZE_MODEL.trim().length > 0
-    ) {
-      return { source: 'env' as const, value: envForRun.SUMMARIZE_MODEL.trim() };
+    if (typeof envForRun.GIST_MODEL === 'string' && envForRun.GIST_MODEL.trim().length > 0) {
+      return { source: 'env' as const, value: envForRun.GIST_MODEL.trim() };
     }
     const modelFromConfig = config?.model;
     if (modelFromConfig) {
@@ -139,7 +135,6 @@ export function resolveModelSelection({
   const requestedModelSource =
     explicitModelInput.length > 0 ? ('explicit' as const) : defaultModelResolution.source;
   const requestedModelInputLower = requestedModelInput.toLowerCase();
-  const wantsFreeNamedModel = requestedModelInputLower === 'free';
 
   const namedModelMatch =
     requestedModelInputLower !== 'auto' ? (modelMap.get(requestedModelInputLower) ?? null) : null;
@@ -175,7 +170,7 @@ export function resolveModelSelection({
 
     if (requestedModelInputLower !== 'auto' && !requestedModelInput.includes('/')) {
       throw new Error(
-        `Unknown model "${requestedModelInput}". Define it in ${configPath ?? '~/.summarize/config.json'} under "models", or use a provider-prefixed id like openai/...`,
+        `Unknown model "${requestedModelInput}". Define it in ${configPath ?? '~/.gist/config.json'} under "models", or use a provider-prefixed id like openai/...`,
       );
     }
 
@@ -205,6 +200,5 @@ export function resolveModelSelection({
     requestedModel: requestedModelResolved,
     requestedModelInput,
     requestedModelLabel,
-    wantsFreeNamedModel,
   };
 }

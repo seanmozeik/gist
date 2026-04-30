@@ -60,7 +60,7 @@ export function resolveMediaCachePath({
   if (!home) {
     return null;
   }
-  return join(home, '.summarize', 'cache', 'media');
+  return join(home, '.gist', 'cache', 'media');
 }
 
 const hashKey = (value: string): string => {
@@ -82,8 +82,9 @@ const hashFile = async (filePath: string): Promise<string> => {
 const resolveExtension = (filename: string | null, mediaType: string | null): string => {
   const safeName = filename?.trim() ?? '';
   const match = /\.([a-z0-9]{2,5})$/i.exec(safeName);
-  if (match) {
-    return `.${match[1].toLowerCase()}`;
+  const extension = match?.[1];
+  if (extension) {
+    return `.${extension.toLowerCase()}`;
   }
   if (!mediaType) {
     return '.bin';

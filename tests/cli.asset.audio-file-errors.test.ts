@@ -53,7 +53,7 @@ describe('Media file error handling', () => {
   it('handles non-existent audio files gracefully', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-missing-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-missing-'));
     const nonExistentPath = join(root, 'missing-audio.mp3');
 
     const stdout = collectStream();
@@ -89,7 +89,7 @@ describe('Media file error handling', () => {
   it('provides helpful error when FAL_KEY is missing', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-no-fal-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-no-fal-'));
     const audioPath = join(root, 'test.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -123,7 +123,7 @@ describe('Media file error handling', () => {
   it('handles relative file paths correctly', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-relative-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-relative-'));
     const audioPath = join(root, 'relative.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -149,7 +149,7 @@ describe('Media file error handling', () => {
   it('handles audio files with various path scenarios', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-symlink-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-symlink-'));
     const audioPath = join(root, 'audio.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -176,7 +176,7 @@ describe('Media file error handling', () => {
     mocks.streamSimple.mockClear();
 
     // Test with a non-audio media file extension
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-video-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-video-'));
     const videoPath = join(root, 'video.mp4');
     writeFileSync(videoPath, Buffer.from([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70])); // MP4 header
 
@@ -202,7 +202,7 @@ describe('Media file error handling', () => {
   it('handles file modification time edge cases (very old files)', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-old-file-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-old-file-'));
     const audioPath = join(root, 'old.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -232,7 +232,7 @@ describe('Media file error handling', () => {
   it('properly formats error messages for unsupported audio codecs', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-unsupported-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-unsupported-'));
     const audioPath = join(root, 'unsupported.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -257,7 +257,7 @@ describe('Media file error handling', () => {
   it('handles concurrent file access gracefully', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-audio-concurrent-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-audio-concurrent-'));
     const audioPath = join(root, 'test.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 

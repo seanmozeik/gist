@@ -6,7 +6,7 @@ describe('options persistence', () => {
   it('debounces autosave and flushes one queued rerun', async () => {
     vi.useFakeTimers();
     const persist = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const setStatus = vi.fn();
     const flashStatus = vi.fn();

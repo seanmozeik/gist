@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { installChromeStorage } from './helpers/chrome-storage.js';
 
-const LOG_KEY = 'summarize:extension-logs';
+const LOG_KEY = 'gist:extension-logs';
 
 describe('chrome/extension-logs', () => {
   beforeEach(() => {

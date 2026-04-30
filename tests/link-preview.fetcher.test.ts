@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   fetchHtmlDocument,
   fetchWithFirecrawl,
-} from '../packages/core/src/content/link-preview/content/fetcher.js';
+} from '../src/content/link-preview/content/fetcher.js';
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -33,7 +33,7 @@ describe('link preview fetcher', () => {
 
   it('returns the final URL when fetch follows redirects', async () => {
     const response = htmlResponse('<html>ok</html>');
-    Object.defineProperty(response, 'url', { configurable: true, value: 'https://summarize.sh/' });
+    Object.defineProperty(response, 'url', { configurable: true, value: 'https://gist.sh/' });
     const fetchMock = vi.fn(async () => response);
 
     const result = await fetchHtmlDocument(
@@ -41,7 +41,7 @@ describe('link preview fetcher', () => {
       'https://t.co/abc',
     );
 
-    expect(result.finalUrl).toBe('https://summarize.sh/');
+    expect(result.finalUrl).toBe('https://gist.sh/');
     expect(result.html).toContain('ok');
   });
 

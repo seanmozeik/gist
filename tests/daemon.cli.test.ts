@@ -48,9 +48,9 @@ vi.mock('../src/daemon/launchd.js', () => ({
   isLaunchAgentLoaded: mocks.isLaunchAgentLoaded,
   readLaunchAgentProgramArguments: mocks.readLaunchAgentProgramArguments,
   resolveDaemonLogPaths: () => ({
-    logDir: '/tmp/.summarize/logs',
-    stderrPath: '/tmp/.summarize/logs/daemon.err.log',
-    stdoutPath: '/tmp/.summarize/logs/daemon.log',
+    logDir: '/tmp/.gist/logs',
+    stderrPath: '/tmp/.gist/logs/daemon.err.log',
+    stdoutPath: '/tmp/.gist/logs/daemon.log',
   }),
   restartLaunchAgent: mocks.restartLaunchAgent,
   uninstallLaunchAgent: mocks.uninstallLaunchAgent,
@@ -89,7 +89,7 @@ describe('daemon cli', () => {
     process.env.PATH = '/usr/bin:/bin';
     process.env.OPENAI_API_KEY = 'from-process';
     process.env.HOME = '/tmp/original-home';
-    mocks.resolveCliEntrypointPathForService.mockResolvedValue('/usr/local/bin/summarize-cli.js');
+    mocks.resolveCliEntrypointPathForService.mockResolvedValue('/usr/local/bin/gist-cli.js');
     mocks.readLaunchAgentProgramArguments.mockResolvedValue(null);
     mocks.readSystemdServiceExecStart.mockResolvedValue(null);
     mocks.readScheduledTaskCommand.mockResolvedValue(null);
@@ -167,7 +167,7 @@ describe('daemon cli', () => {
       tokens: ['existing-token-1234'],
       version: 2,
     });
-    mocks.writeDaemonConfig.mockResolvedValueOnce('/tmp/.summarize/daemon.json');
+    mocks.writeDaemonConfig.mockResolvedValueOnce('/tmp/.gist/daemon.json');
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
@@ -203,7 +203,7 @@ describe('daemon cli', () => {
     mocks.isWindowsContainerEnvironment.mockReturnValue(true);
     mocks.readDaemonConfig.mockResolvedValueOnce(null);
     mocks.writeDaemonConfig.mockResolvedValueOnce(
-      String.raw`C:\Users\ContainerAdministrator\.summarize\daemon.json`,
+      String.raw`C:\Users\ContainerAdministrator\.gist\daemon.json`,
     );
 
     const stdout = new PassThrough();
@@ -245,7 +245,7 @@ describe('daemon cli', () => {
     expect(text).toContain('Windows container detected: skipped Scheduled Task registration.');
     expect(text).toContain('Daemon autostart is not available in Windows container mode.');
     expect(text).toContain(
-      'Run `summarize daemon install --token <TOKEN>` each time the container starts',
+      'Run `gist daemon install --token <TOKEN>` each time the container starts',
     );
     expect(text).toContain('Publish port 8787:8787 so the host browser can reach the daemon.');
     expect(text).toContain('OK: daemon is running in this container session and authenticated.');

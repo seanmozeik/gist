@@ -46,8 +46,8 @@ export function buildPathSummaryPrompt({
 
   const maxCharactersLine = formatTargetLength(summaryLength);
   const baseInstructions = [
-    `You summarize ${kindLabel === 'image' ? 'images' : 'files'} for curious users.`,
-    `Summarize the ${kindLabel} at the path below.`,
+    `You gist ${kindLabel === 'image' ? 'images' : 'files'} for curious users.`,
+    `Gist the ${kindLabel} at the path below.`,
     'Be factual and do not invent details.',
     directive.guidance,
     directive.formatting,

@@ -20,8 +20,7 @@ const resolveYtDlpPath = (): string | null => {
 };
 
 const YT_DLP_PATH = resolveYtDlpPath();
-const LIVE =
-  process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(GEMINI_API_KEY) && Boolean(YT_DLP_PATH);
+const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(GEMINI_API_KEY) && Boolean(YT_DLP_PATH);
 
 describe('live YouTube transcript (yt-dlp + Gemini)', () => {
   const run = LIVE ? it : it.skip;
@@ -33,7 +32,7 @@ describe('live YouTube transcript (yt-dlp + Gemini)', () => {
       const env = {
         ...process.env,
         GEMINI_API_KEY: GEMINI_API_KEY ?? '',
-        SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
+        GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
       };
 
       const client = createLinkPreviewClient({ env, ytDlpPath: YT_DLP_PATH });

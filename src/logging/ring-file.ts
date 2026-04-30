@@ -63,7 +63,7 @@ export function createRingFileWriter(options: RingFileOptions): RingFileWriter {
 
   const enqueue = (task: () => Promise<void>) => {
     chain = chain.then(task).catch(() => {
-      /* empty */
+      /* Empty */
     });
   };
 

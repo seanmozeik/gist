@@ -47,11 +47,11 @@ vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator', ()
       handlePayload: vi.fn(),
       handleSummaryFromCache: vi.fn(),
       hydrateSnapshot: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
       isStreaming: vi.fn(() => false),
       start: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
       stop: vi.fn(),
       syncFromCache: vi.fn(),
@@ -100,7 +100,7 @@ describe('sidepanel slides runtime', () => {
       hideSlideNotice: vi.fn(),
       isStreaming: vi.fn(() => false),
       panelUrlsMatch: vi.fn((left, right) => left === right),
-      refreshSummarizeControl: vi.fn(),
+      refreshGistControl: vi.fn(),
       renderInlineSlidesFallback: vi.fn(),
       renderMarkdown: vi.fn(),
       schedulePanelCacheSync: vi.fn(),
@@ -143,7 +143,7 @@ describe('sidepanel slides runtime', () => {
       hideSlideNotice: vi.fn(),
       isStreaming: vi.fn(() => false),
       panelUrlsMatch: vi.fn((left, right) => left === right),
-      refreshSummarizeControl: vi.fn(),
+      refreshGistControl: vi.fn(),
       renderInlineSlidesFallback: vi.fn(),
       renderMarkdown: vi.fn(),
       schedulePanelCacheSync: vi.fn(),
@@ -189,7 +189,7 @@ describe('sidepanel slides runtime', () => {
       hideSlideNotice: vi.fn(),
       isStreaming: vi.fn(() => true),
       panelUrlsMatch: vi.fn((left, right) => left === right),
-      refreshSummarizeControl: vi.fn(),
+      refreshGistControl: vi.fn(),
       renderInlineSlidesFallback: vi.fn(),
       renderMarkdown: vi.fn(),
       schedulePanelCacheSync: vi.fn(),
@@ -233,7 +233,7 @@ describe('sidepanel slides runtime', () => {
       hideSlideNotice: vi.fn(),
       isStreaming: vi.fn(() => false),
       panelUrlsMatch: vi.fn((left, right) => left === right),
-      refreshSummarizeControl: vi.fn(),
+      refreshGistControl: vi.fn(),
       renderInlineSlidesFallback: vi.fn(),
       renderMarkdown: vi.fn(),
       schedulePanelCacheSync: vi.fn(),
@@ -272,7 +272,7 @@ describe('sidepanel slides runtime', () => {
       hideSlideNotice: vi.fn(),
       isStreaming: vi.fn(() => false),
       panelUrlsMatch: vi.fn((left, right) => left === right),
-      refreshSummarizeControl: vi.fn(),
+      refreshGistControl: vi.fn(),
       renderInlineSlidesFallback: vi.fn(),
       renderMarkdown: vi.fn(),
       schedulePanelCacheSync: vi.fn(),

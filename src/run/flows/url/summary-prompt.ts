@@ -57,7 +57,6 @@ export function buildUrlPrompt({
   promptOverride?: string | null;
   lengthInstruction?: string | null;
   languageInstruction?: string | null;
-  slides: unknown;
   buildSummaryTimestampLimitInstruction: (extracted: ExtractedLinkContent) => string | null;
 }): string {
   const isYouTube = extracted.siteName === 'YouTube';
@@ -74,7 +73,6 @@ export function buildUrlPrompt({
     promptOverride: promptOverride ?? null,
     shares: [],
     siteName: extracted.siteName,
-    slides: null,
     summaryLength:
       lengthArg.kind === 'preset' ? lengthArg.preset : { maxCharacters: lengthArg.maxCharacters },
     timestampLimitInstruction: buildSummaryTimestampLimitInstruction(extracted),

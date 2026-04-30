@@ -15,7 +15,7 @@ import { BIRD_TIP } from '../src/run/constants.js';
 const TEST_CLI_TIMEOUT_MS = 10_000;
 
 const makeCliScript = (binary: 'bird' | 'xurl', script: string) => {
-  const root = mkdtempSync(join(tmpdir(), `summarize-${binary}-`));
+  const root = mkdtempSync(join(tmpdir(), `gist-${binary}-`));
   const binDir = join(root, 'bin');
   mkdirSync(binDir, { recursive: true });
   const cliPath = join(binDir, binary);
@@ -159,7 +159,7 @@ describe('tweet CLI helpers', () => {
   });
 
   it('prefers xurl when both CLIs are installed and falls back to bird on xurl failure', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-tweet-cli-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-tweet-cli-'));
     const binDir = join(root, 'bin');
     mkdirSync(binDir, { recursive: true });
 

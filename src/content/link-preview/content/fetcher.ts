@@ -3,14 +3,7 @@ import {
   withBunCompressionHeaders,
   withBunIdentityEncoding,
 } from '../../bun.js';
-import { isYouTubeUrl } from '../../url.js';
-import type {
-  FirecrawlScrapeResult,
-  LinkPreviewProgressEvent,
-  ScrapeWithFirecrawl,
-} from '../deps.js';
-import type { CacheMode, FirecrawlDiagnostics } from '../types.js';
-import { appendNote } from './utils.js';
+import type { LinkPreviewProgressEvent } from '../deps.js';
 
 const REQUEST_HEADERS: Record<string, string> = {
   Accept:
@@ -23,11 +16,6 @@ const REQUEST_HEADERS: Record<string, string> = {
 };
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
-
-export interface FirecrawlFetchResult {
-  payload: FirecrawlScrapeResult | null;
-  diagnostics: FirecrawlDiagnostics;
-}
 
 export interface HtmlDocumentFetchResult {
   html: string;
@@ -151,72 +139,5 @@ export async function fetchHtmlDocument(
       return fetchHtmlOnce(fetchImpl, url, uncompressedHeaders, options);
     }
     throw error;
-  }
-}
-
-export async function fetchWithFirecrawl(
-  url: string,
-  scrapeWithFirecrawl: ScrapeWithFirecrawl | null,
-  options: {
-    timeoutMs?: number;
-    cacheMode?: CacheMode;
-    onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
-    reason?: string | null;
-  } = {},
-): Promise<FirecrawlFetchResult> {
-  const { timeoutMs } = options;
-  const cacheMode: CacheMode = options.cacheMode ?? 'default';
-  const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
-  const reason = typeof options.reason === 'string' ? options.reason : null;
-  const diagnostics: FirecrawlDiagnostics = {
-    attempted: false,
-    cacheMode,
-    cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-    notes: null,
-    used: false,
-  };
-
-  if (isYouTubeUrl(url)) {
-    diagnostics.notes = appendNote(diagnostics.notes, 'Skipped Firecrawl for YouTube URL');
-    return { diagnostics, payload: null };
-  }
-
-  if (!scrapeWithFirecrawl) {
-    diagnostics.notes = appendNote(diagnostics.notes, 'Firecrawl is not configured');
-    return { diagnostics, payload: null };
-  }
-
-  diagnostics.attempted = true;
-  onProgress?.({ kind: 'firecrawl-start', reason: reason ?? 'firecrawl', url });
-
-  try {
-    const payload = await scrapeWithFirecrawl(url, { cacheMode, timeoutMs });
-    if (!payload) {
-      diagnostics.notes = appendNote(diagnostics.notes, 'Firecrawl returned no content payload');
-      onProgress?.({
-        htmlBytes: null,
-        kind: 'firecrawl-done',
-        markdownBytes: null,
-        ok: false,
-        url,
-      });
-      return { diagnostics, payload: null };
-    }
-
-    const encoder = new TextEncoder();
-    const markdownBytes =
-      typeof payload.markdown === 'string' ? encoder.encode(payload.markdown).byteLength : null;
-    const htmlBytes =
-      typeof payload.html === 'string' ? encoder.encode(payload.html).byteLength : null;
-    onProgress?.({ htmlBytes, kind: 'firecrawl-done', markdownBytes, ok: true, url });
-
-    return { diagnostics, payload };
-  } catch (error) {
-    diagnostics.notes = appendNote(
-      diagnostics.notes,
-      `Firecrawl error: ${error instanceof Error ? error.message : 'unknown error'}`,
-    );
-    onProgress?.({ htmlBytes: null, kind: 'firecrawl-done', markdownBytes: null, ok: false, url });
-    return { diagnostics, payload: null };
   }
 }

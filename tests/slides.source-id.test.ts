@@ -30,7 +30,7 @@ describe('resolveSlideSourceFromUrl', () => {
   });
 
   it('normalizes local video files to file URLs and versions the source id by mtime', async () => {
-    const filePath = path.join(tmpdir(), `summarize-slides-source-${Date.now().toString()}.webm`);
+    const filePath = path.join(tmpdir(), `gist-slides-source-${Date.now().toString()}.webm`);
     await fs.writeFile(filePath, 'video');
 
     try {

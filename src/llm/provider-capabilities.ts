@@ -54,10 +54,7 @@ function resolveOpenAiClientConfig({
     return {
       apiKey: apiKeys.openrouterApiKey ?? '',
       baseURL: 'https://openrouter.ai/api/v1',
-      extraHeaders: {
-        'HTTP-Referer': 'https://github.com/steipete/summarize',
-        'X-Title': 'summarize',
-      },
+      extraHeaders: { 'HTTP-Referer': 'https://github.com/seanmozeik/gist', 'X-Title': 'gist' },
       isOpenRouter: true,
       useChatCompletions: forceChatCompletions ?? false,
       ...(requestOptions ? { requestOptions } : {}),

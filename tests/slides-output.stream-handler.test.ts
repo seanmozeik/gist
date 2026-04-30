@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ExtractedLinkContent } from '../packages/core/src/content/link-preview/content/types.js';
+import type { ExtractedLinkContent } from '../src/content/link-preview/content/types.js';
 import {
   createSlidesSummaryStreamHandler,
   createSlidesTerminalOutput,
@@ -24,7 +24,7 @@ describe('slides summary stream handler', () => {
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       env: { TERM: 'xterm' },
       envForRun: { TERM: 'xterm' },
@@ -55,7 +55,7 @@ describe('slides summary stream handler', () => {
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       env: {},
       envForRun: {},
@@ -86,7 +86,7 @@ describe('slides summary stream handler', () => {
     const titles: (string | null)[] = [];
     const handler = createSlidesSummaryStreamHandler({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       env: {},
       envForRun: {},
@@ -115,7 +115,7 @@ describe('slides summary stream handler', () => {
     const renderedSlides: number[] = [];
     const handler = createSlidesSummaryStreamHandler({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       env: {},
       envForRun: {},
@@ -145,7 +145,7 @@ describe('slides summary stream handler', () => {
     const { stream, chunks } = makeStdout(false);
     const handler = createSlidesSummaryStreamHandler({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       env: {},
       envForRun: {},
@@ -153,7 +153,7 @@ describe('slides summary stream handler', () => {
       outputMode: 'delta',
       plain: true,
       renderSlide: async () => {
-        /* empty */
+        /* Empty */
       },
       stdout: stream,
     });
@@ -195,7 +195,7 @@ describe('slides summary stream handler', () => {
 
     const output = createSlidesTerminalOutput({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       enabled: false,
       extracted,
@@ -254,7 +254,7 @@ describe('slides summary stream handler', () => {
 
     const output = createSlidesTerminalOutput({
       clearProgressForStdout: () => {
-        /* empty */
+        /* Empty */
       },
       enabled: true,
       extracted,

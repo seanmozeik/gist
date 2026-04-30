@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Link → clean text → summary.",
   "bin": {
-    "summarize": "./dist/cli.js",
-    "summarizer": "./dist/cli.js"
+    "gist": "./dist/cli.js"
   },
   "files": [
     "dist",
@@ -14,29 +13,13 @@
     "LICENSE"
   ],
   "type": "module",
-  "main": "./dist/esm/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/esm/index.js"
-    },
-    "./content": {
-      "types": "./dist/types/content/index.d.ts",
-      "import": "./dist/esm/content/index.js"
-    },
-    "./prompts": {
-      "types": "./dist/types/prompts/index.d.ts",
-      "import": "./dist/esm/prompts/index.js"
-    }
-  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "check": "bun run typecheck",
     "clean": "rimraf dist",
     "dev:cli": "bun src/cli.ts",
     "s": "bun src/cli.ts",
-    "summarize": "bun src/cli.ts",
+    "gist": "bun src/cli.ts",
     "test": "bun run vitest run",
     "test:coverage": "bun run vitest run --coverage",
     "typecheck": "tsc -p tsconfig.build.json --noEmit"

@@ -32,11 +32,10 @@ export async function fetchSpotifyTranscript(
     // - first try the embed-provided audio URL (works for many episodes),
     // - then fall back to resolving the publisher RSS feed via Apple’s iTunes directory.
     const embedUrl = `https://open.spotify.com/embed/episode/${spotifyEpisodeId}`;
-    const { html: embedHtml, via } = await fetchSpotifyEmbedHtml({
+    const { html: embedHtml } = await fetchSpotifyEmbedHtml({
       embedUrl,
       episodeId: spotifyEpisodeId,
       fetchImpl: flow.options.fetch,
-      scrapeWithFirecrawl: flow.options.scrapeWithFirecrawl ?? null,
     });
 
     const embedData = extractSpotifyEmbedData(embedHtml);
@@ -79,11 +78,7 @@ export async function fetchSpotifyTranscript(
               (typeof embedDurationSeconds === 'number' && embedDurationSeconds >= 600))));
 
       if (result.text && !shouldTreatAsPreview) {
-        flow.notes.push(
-          via === 'firecrawl'
-            ? 'Resolved Spotify embed audio via Firecrawl'
-            : 'Resolved Spotify embed audio',
-        );
+        flow.notes.push('Resolved Spotify embed audio');
         return buildWhisperResult({
           attemptedProviders: flow.attemptedProviders,
           metadata: {
@@ -230,11 +225,7 @@ export async function fetchSpotifyTranscript(
     const enclosureUrl = decodeXmlEntities(match.enclosureUrl);
     const { durationSeconds } = match;
 
-    flow.notes.push(
-      via === 'firecrawl'
-        ? 'Resolved Spotify episode via Firecrawl embed + iTunes RSS'
-        : 'Resolved Spotify episode via iTunes RSS',
-    );
+    flow.notes.push('Resolved Spotify episode via iTunes RSS');
     const missing = flow.ensureTranscriptionProvider();
     if (missing) {
       return missing;

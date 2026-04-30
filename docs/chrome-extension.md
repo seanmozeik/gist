@@ -6,20 +6,20 @@ read_when:
 
 # Browser Side Panel (Chrome + Firefox Extension + Daemon)
 
-Goal: Chrome **Side Panel** (“real sidebar”) summarizes **what you see** on the current tab. Panel open → navigation → auto summarize (optional) → **streaming** Markdown rendered in-panel.
+Goal: Chrome **Side Panel** (“real sidebar”) gists **what you see** on the current tab. Panel open → navigation → auto gist (optional) → **streaming** Markdown rendered in-panel.
 
 Quickstart:
 
-- Install summarize (choose one):
-  - `npm i -g @steipete/summarize`
-  - `brew install summarize` (macOS, Linux)
+- Install gist (choose one):
+  - `npm i -g @seanmozeik/gist`
+  - `brew install gist` (macOS, Linux)
 - Build/load extension: `apps/chrome-extension/README.md`
 - Firefox sidebar build: `pnpm -C apps/chrome-extension build:firefox` (load via `about:debugging` → temporary add-on)
 - Open side panel → copy token install command → run:
-  - `summarize daemon install --token <TOKEN>` (macOS: LaunchAgent, Linux: systemd user, Windows: Scheduled Task)
+  - `gist daemon install --token <TOKEN>` (macOS: LaunchAgent, Linux: systemd user, Windows: Scheduled Task)
 - Verify:
-  - `summarize daemon status`
-  - Restart (if needed): `summarize daemon restart`
+  - `gist daemon status`
+  - Restart (if needed): `gist daemon restart`
 
 Firefox notes:
 
@@ -29,7 +29,7 @@ Firefox notes:
 
 Dev (repo checkout):
 
-- Use: `pnpm summarize daemon install --token <TOKEN> --dev` (autostart service runs `src/cli.ts` via `tsx`, no `dist/` build required).
+- Use: `pnpm gist daemon install --token <TOKEN> --dev` (autostart service runs `src/cli.ts` via `tsx`, no `dist/` build required).
 - E2E (Playwright): `pnpm -C apps/chrome-extension test:e2e`
   - First run: `pnpm -C apps/chrome-extension exec playwright install chromium`
   - Chromium runs headless by default.
@@ -38,60 +38,60 @@ Dev (repo checkout):
 ## Troubleshooting
 
 - “Daemon not reachable”:
-  - `summarize daemon status`
-  - Logs: `~/.summarize/logs/daemon.err.log`
+  - `gist daemon status`
+  - Logs: `~/.gist/logs/daemon.err.log`
 - Windows install:
-  - `summarize daemon install` registers a Scheduled Task via `schtasks /Create /XML`, which requires an **elevated** shell. Run it from an Administrator PowerShell/cmd; otherwise you'll see `schtasks create failed: ERROR: Access is denied.`
-  - The task launches `wscript.exe //B //Nologo %USERPROFILE%\.summarize\daemon-launch.vbs`. If install completes but `/health` is unreachable, run `cscript //nologo %USERPROFILE%\.summarize\daemon-launch.vbs` to surface launcher errors, then `schtasks /Query /TN "Summarize Daemon" /V /FO LIST` to inspect the task state.
+  - `gist daemon install` registers a Scheduled Task via `schtasks /Create /XML`, which requires an **elevated** shell. Run it from an Administrator PowerShell/cmd; otherwise you'll see `schtasks create failed: ERROR: Access is denied.`
+  - The task launches `wscript.exe //B //Nologo %USERPROFILE%\.gist\daemon-launch.vbs`. If install completes but `/health` is unreachable, run `cscript //nologo %USERPROFILE%\.gist\daemon-launch.vbs` to surface launcher errors, then `schtasks /Query /TN "Gist Daemon" /V /FO LIST` to inspect the task state.
 - macOS `launchctl bootstrap` errors (`Input/output error`, `Domain does not support specified action`):
-  - `summarize daemon install` now tries both launchd domains (`gui/<uid>` then `user/<uid>`).
+  - `gist daemon install` now tries both launchd domains (`gui/<uid>` then `user/<uid>`).
   - Install as your normal user (not root) so HOME + launchd domain match.
-  - Re-run: `summarize daemon install --token <TOKEN>`.
+  - Re-run: `gist daemon install --token <TOKEN>`.
 - Windows containers:
-  - `summarize daemon install --token <TOKEN>` starts the daemon for the current container session but does not create a Scheduled Task.
+  - `gist daemon install --token <TOKEN>` starts the daemon for the current container session but does not create a Scheduled Task.
   - Run that command manually each time the container starts, or add it to your container startup. Also publish the daemon port in `docker-compose.yml`:
     `ports: ['8787:8787']`
-    `command: ['cmd', '/c', 'summarize daemon install --token <TOKEN>']`
+    `command: ['cmd', '/c', 'gist daemon install --token <TOKEN>']`
   - Then restart the container and verify `http://127.0.0.1:8787/health`.
 - “Need extension-side traces”:
   - Options → Logs → `extension.log` (panel/background events).
   - Enable “Extended logging” in Advanced settings for full pipeline traces.
 - “Stream ended unexpectedly” / empty chat response:
   - The daemon likely stopped mid-stream. Restart it, then click “Try again”.
-  - `summarize daemon restart`
+  - `gist daemon restart`
 - Slide strip/gallery missing after a parallel slide run failure:
-  - Click the slide notice “Try again” button. If the dedicated slide run never started, the extension now requests a fresh summarize+slides run instead of reusing the summary-only run.
+  - Click the slide notice “Try again” button. If the dedicated slide run never started, the extension now requests a fresh gist+slides run instead of reusing the summary-only run.
 - Tweet video not transcribing / no progress:
   - Ensure `yt-dlp` is available on your PATH (or set `YT_DLP_PATH`) and you have a transcription provider (`whisper.cpp` installed or `GROQ_API_KEY` / `ASSEMBLYAI_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` / `FAL_KEY`).
-  - Re-run `summarize daemon install --token <TOKEN>` to refresh the daemon env snapshot (launchd won’t inherit your shell PATH).
+  - Re-run `gist daemon install --token <TOKEN>` to refresh the daemon env snapshot (launchd won’t inherit your shell PATH).
 - “Could not establish connection / Receiving end does not exist”:
   - The content script wasn’t injected (yet), or Chrome blocked site access.
   - Chrome → extension details → “Site access” → “On all sites” (or allow the domain), then reload the tab.
 - “<site> wants to look for and connect to any device on your local network”:
   - Trigger: content scripts (page context) hitting the daemon on `http://127.0.0.1:8787` (hover summaries) can cause Chrome to attribute the request to the current origin and prompt per-site.
   - Fix: hover summaries must proxy daemon calls via the extension background service worker (reload the extension after updating).
-  - Verify daemon: `summarize daemon status` (or `curl http://127.0.0.1:8787/health`).
+  - Verify daemon: `gist daemon status` (or `curl http://127.0.0.1:8787/health`).
   - Repro/dev: `pnpm -C apps/chrome-extension dev` then enable “Hover summaries” and hover a link.
 
 ## Architecture
 
 - **Extension (MV3, WXT)**
   - Side Panel UI: length + typography controls (font family + size), auto/manual toggle.
-  - Background service worker: tab + navigation tracking, content extraction, starts summarize runs.
+  - Background service worker: tab + navigation tracking, content extraction, starts gist runs.
   - Content script: extract readable article text from the **rendered DOM** via Readability; also detect SPA URL changes.
   - Panel page streams SSE directly (MV3 service workers can be flaky for long-lived streams).
 - **Daemon (local, autostart service)**
   - HTTP server on `127.0.0.1:8787` only.
   - Token-authenticated API.
-  - Runs the existing summarize pipeline (env/config-based) and streams tokens to client via SSE.
+  - Runs the existing gist pipeline (env/config-based) and streams tokens to client via SSE.
 
 ## Data Flow
 
 1. User opens side panel (click extension icon).
 2. Panel sends a “ready” message to the background (plus periodic “ping” heartbeats while open).
 3. On nav/tab change (and auto enabled): background asks the content script to extract `{ url, title, text }` (best-effort).
-4. Background `POST`s payload to daemon `/v1/summarize` with `Authorization: Bearer <token>`.
-5. Panel opens `/v1/summarize/<id>/events` (SSE) and renders streamed Markdown.
+4. Background `POST`s payload to daemon `/v1/gist` with `Authorization: Bearer <token>`.
+5. Panel opens `/v1/gist/<id>/events` (SSE) and renders streamed Markdown.
 
 ## Auto Mode (URL + Page Text)
 
@@ -109,7 +109,7 @@ The daemon decides the best pipeline:
 
 ## Video Selection (Page vs Video)
 
-When the page contains embedded audio/video, the Summarize button gains a dropdown caret. Click the caret to pick Page vs Video/Audio. Selecting Video/Audio forces URL mode with transcript-first extraction (captions → yt-dlp/Whisper fallback). Selection is per-run (not persisted).
+When the page contains embedded audio/video, the Gist button gains a dropdown caret. Click the caret to pick Page vs Video/Audio. Selecting Video/Audio forces URL mode with transcript-first extraction (captions → yt-dlp/Whisper fallback). Selection is per-run (not persisted).
 
 See `docs/media.md` for detection and transcript rules.
 
@@ -127,7 +127,7 @@ See `docs/media.md` for detection and transcript rules.
 ## SPA Navigation
 
 - Background listens to `chrome.webNavigation.onHistoryStateUpdated` (SPA route changes) and `tabs.onUpdated` (page loads).
-- Only triggers summarize when the side panel is open (and auto is enabled).
+- Only triggers gist when the side panel is open (and auto is enabled).
 
 ## Markdown Rendering
 
@@ -148,7 +148,7 @@ See `docs/media.md` for detection and transcript rules.
   - Length: `short|medium|long|xl|xxl` (or a character target like `20k`). Tooltips show target ranges + paragraph guidance (from `packages/core/src/prompts/summary-lengths.ts`).
   - Language: `auto` (match source) or a tag like `en`, `de`, `pt-BR` (or free-form like “German”).
   - Prompt override (advanced): custom instruction prefix (context + content still appended).
-  - Auto summarize: on/off.
+  - Auto gist: on/off.
   - Hover summaries: on/off (side panel drawer, default off).
   - Typography: font family (dropdown + custom), font size (slider).
 - Advanced overrides (Options → Advanced tab).
@@ -175,10 +175,10 @@ Problem: daemon must be secured; extension must discover and pair with it.
 - Side panel “Setup” state:
   - Generates token (random, 32+ bytes).
   - Shows:
-    - `summarize daemon install --token <TOKEN>` (macOS: LaunchAgent, Linux: systemd user, Windows: Scheduled Task)
-    - `summarize daemon status`
+    - `gist daemon install --token <TOKEN>` (macOS: LaunchAgent, Linux: systemd user, Windows: Scheduled Task)
+    - `gist daemon status`
   - “Copy command” button.
-- Daemon stores paired tokens in `~/.summarize/daemon.json`.
+- Daemon stores paired tokens in `~/.gist/daemon.json`.
 - Extension stores token in `chrome.storage.local`.
 - If daemon unreachable or 401: show Setup state + troubleshooting.
 
@@ -188,7 +188,7 @@ Problem: daemon must be secured; extension must discover and pair with it.
   - 200 JSON: `{ ok: true, pid }`
 - `GET /v1/ping`
   - Requires auth; returns `{ ok: true }`
-- `POST /v1/summarize`
+- `POST /v1/gist`
   - Headers: `Authorization: Bearer <token>`
   - Body:
     - `url: string` (required)
@@ -202,11 +202,11 @@ Problem: daemon must be secured; extension must discover and pair with it.
     - `format?: "text" | "markdown"` (default: `"text"`)
     - `markdownMode?: "readability" | "auto" | "llm" | "off"` (only when `format: "markdown"`)
     - `preprocess?: "off" | "auto" | "always"` (markitdown/HTML preprocess)
-    - `extractOnly?: boolean` (when `true`, returns extracted content without summarizing; requires `mode: "url"`)
+    - `extractOnly?: boolean` (when `true`, returns extracted content without gisting; requires `mode: "url"`)
     - `text?: string` (required for `mode: "page"`; optional for `auto`)
     - `truncated?: boolean` (optional; indicates extracted `text` was shortened)
   - 200 JSON: `{ ok: true, id }`
-- `GET /v1/summarize/<id>/slides/events`
+- `GET /v1/gist/<id>/slides/events`
   - Headers: `Authorization: Bearer <token>`
   - SSE stream of slide updates (`slides`, `status`, `done`, `error`) independent of summary stream.
 - `POST /v1/agent` (SSE by default; JSON via `Accept: application/json` or `?format=json`)
@@ -238,7 +238,7 @@ Problem: daemon must be secured; extension must discover and pair with it.
     - `language?: string`
     - `automationEnabled?: boolean`
   - 200 JSON: `{ ok: true, messages }`
-- `GET /v1/summarize/:id/events` (SSE)
+- `GET /v1/gist/:id/events` (SSE)
   - `event: chunk` `data: { text }`
   - `event: meta` `data: { model }`
   - `event: status` `data: { text }` (progress messages before output starts)
@@ -254,12 +254,12 @@ Notes:
 ## Daemon Autostart
 
 - CLI commands:
-  - `summarize daemon install --token <token> [--port 8787]`
-    - Writes `~/.summarize/daemon.json`
+  - `gist daemon install --token <token> [--port 8787]`
+    - Writes `~/.gist/daemon.json`
     - Installs platform autostart service; verifies `/health`
-  - `summarize daemon uninstall`
-  - `summarize daemon status`
-  - `summarize daemon run` (foreground; used by autostart service)
+  - `gist daemon uninstall`
+  - `gist daemon status`
+  - `gist daemon run` (foreground; used by autostart service)
 - Ensure “single daemon”:
   - Stable service name + predictable unit/task path
   - `install` reuses the same daemon service and appends new tokens instead of invalidating older paired browsers
@@ -267,8 +267,8 @@ Notes:
 Platform details:
 
 - macOS: LaunchAgent plist in `~/Library/LaunchAgents/<label>.plist`
-- Linux: systemd user unit in `~/.config/systemd/user/summarize-daemon.service`
-- Windows: Scheduled Task “Summarize Daemon” + `~/.summarize/daemon.cmd`
+- Linux: systemd user unit in `~/.config/systemd/user/gist-daemon.service`
+- Windows: Scheduled Task “Gist Daemon” + `~/.gist/daemon.cmd`
 
 ## Docs
 

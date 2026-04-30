@@ -123,7 +123,6 @@ export const mapCachedSource = (source: string | null): TranscriptSource | null 
     source === 'yt-dlp' ||
     source === 'podcastTranscript' ||
     source === 'whisper' ||
-    source === 'apify' ||
     source === 'html' ||
     source === 'unavailable'
   ) {

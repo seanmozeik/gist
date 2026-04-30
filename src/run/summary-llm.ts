@@ -11,7 +11,7 @@ export async function resolveModelIdForLlmCall({
   return { forceStreamOff: false, modelId: parsedModel.canonical, note: null };
 }
 
-export async function summarizeWithModelId({
+export async function gistWithModelId({
   modelId,
   apiKeys,
   prompt,

@@ -12,11 +12,20 @@ function parseTimestampSeconds(value: string): number | null {
     return null;
   }
   if (parts.length === 2) {
-    const [minutes, seconds] = parts;
+    const minutes = parts[0];
+    const seconds = parts[1];
+    if (minutes === undefined || seconds === undefined) {
+      return null;
+    }
     return minutes * 60 + seconds;
   }
   if (parts.length === 3) {
-    const [hours, minutes, seconds] = parts;
+    const hours = parts[0];
+    const minutes = parts[1];
+    const seconds = parts[2];
+    if (hours === undefined || minutes === undefined || seconds === undefined) {
+      return null;
+    }
     return hours * 3600 + minutes * 60 + seconds;
   }
   return null;

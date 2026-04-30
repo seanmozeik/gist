@@ -77,7 +77,7 @@ beforeEach(() => {
 
 describe('tweet summary behavior', () => {
   it('skips LLM for short tweets by default', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-tests-run-tweet-summary-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-tests-run-tweet-summary-'));
     mocks.fetchLinkContent.mockResolvedValue(baseExtracted);
     mocks.generateTextWithModelId.mockResolvedValue({
       canonicalModelId: 'openai/gpt-4o-mini',

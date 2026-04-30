@@ -6,7 +6,7 @@ read_when:
 
 # Automation Agent (Side Panel + Daemon)
 
-Summarize can run as a **website automation agent** inside the Chrome side panel. This is **optional** and **gated by a checkbox** in Options.
+Gist can run as a **website automation agent** inside the Chrome side panel. This is **optional** and **gated by a checkbox** in Options.
 
 Scope:
 
@@ -290,9 +290,9 @@ Result:
 { "text": "...", "details": { ... } }
 ```
 
-### 6) `summarize`
+### 6) `gist`
 
-Run the Summarize pipeline against a URL (summary or extract-only).
+Run the Gist pipeline against a URL (summary or extract-only).
 
 Params:
 
@@ -352,7 +352,7 @@ If permission is missing, the call fails and the tool reports the error.
 ## UX Notes
 
 - Automation is opt-in via Options checkbox.
-- Regular summarize flows remain unchanged.
+- Regular gist flows remain unchanged.
 - Tool results are treated as **data**, not instructions. The system prompt still asks the assistant to repeat important tool-derived info in plain text.
 - Tool results are currently rendered in the chat UI for debugging; they may be hidden in the future.
 - When the active tab URL changes during a conversation, the panel appends a **navigation tool result** with the new URL, title, and matching skills. This keeps the agent aware of user-driven navigation.

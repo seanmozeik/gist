@@ -6,7 +6,6 @@ import {
   type LinkPreviewProgressEvent,
 } from '../../../content/index.js';
 import * as urlUtils from '../../../content/url.js';
-import { createFirecrawlScraper } from '../../../firecrawl.js';
 import { readTweetWithPreferredClient } from '../../bird.js';
 import { resolveTwitterCookies } from '../../cookies/twitter.js';
 import { hasBirdCli } from '../../env.js';
@@ -44,11 +43,6 @@ export function createUrlExtractionSession({
   const { io, flags, model, cache: cacheState } = ctx;
   const cacheStore = cacheState.mode === 'default' ? cacheState.store : null;
   const transcriptCache = cacheStore ? cacheStore.transcriptCache : null;
-  const { firecrawlApiKey } = model.apiStatus;
-  const scrapeWithFirecrawl =
-    model.apiStatus.firecrawlConfigured && flags.firecrawlMode !== 'off' && firecrawlApiKey
-      ? createFirecrawlScraper({ apiKey: firecrawlApiKey, fetchImpl: io.fetch })
-      : null;
 
   const readTweetWithBirdClient = hasBirdCli(io.env)
     ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
@@ -56,7 +50,6 @@ export function createUrlExtractionSession({
     : null;
 
   const client = createLinkPreviewClient({
-    apifyApiToken: model.apiStatus.apifyToken,
     convertHtmlToMarkdown: markdown.convertHtmlToMarkdown,
     env: io.envForRun,
     fetch: io.fetch,
@@ -71,7 +64,6 @@ export function createUrlExtractionSession({
         warnings: res.warnings,
       };
     },
-    scrapeWithFirecrawl,
     transcriptCache,
     transcription: null,
     ytDlpPath: model.apiStatus.ytDlpPath,
@@ -91,7 +83,6 @@ export function createUrlExtractionSession({
       !localFile && cacheStore && cacheState.mode === 'default'
         ? buildExtractCacheKey({
             options: {
-              firecrawl: options.firecrawl,
               format: options.format,
               markdownMode: options.markdownMode ?? null,
               mediaTranscript: options.mediaTranscript,
@@ -125,12 +116,7 @@ export function createUrlExtractionSession({
       );
     }
     try {
-      const extracted = await fetchLinkContentWithBirdTip({
-        client,
-        env: io.env,
-        options,
-        url: targetUrl,
-      });
+      const extracted = await fetchLinkContentWithBirdTip({ client, options, url: targetUrl });
       if (cacheKey && cacheStore) {
         const extractTtlMs =
           extracted.transcriptSource === 'unavailable' ? NEGATIVE_TTL_MS : cacheState.ttlMs;
@@ -165,13 +151,6 @@ export function createUrlExtractionSession({
         content: '',
         description: null,
         diagnostics: {
-          firecrawl: {
-            attempted: false,
-            cacheMode: cacheState.mode,
-            cacheStatus: 'bypassed',
-            notes: 'skipped (url-only fallback)',
-            used: false,
-          },
           markdown: {
             notes: 'skipped (url fallback)',
             provider: null,

@@ -139,7 +139,7 @@ export function resolveThemeNameFromSources({
   if (cliName) {
     return cliName;
   }
-  const envName = parseCliThemeName(env, 'SUMMARIZE_THEME');
+  const envName = parseCliThemeName(env, 'GIST_THEME');
   if (envName) {
     return envName;
   }
@@ -151,11 +151,11 @@ export function resolveThemeNameFromSources({
 }
 
 export function resolveTrueColor(env: Record<string, string | undefined>): boolean {
-  const force = env.SUMMARIZE_TRUECOLOR?.trim().toLowerCase();
+  const force = env.GIST_TRUECOLOR?.trim().toLowerCase();
   if (force === '1' || force === 'true' || force === 'yes') {
     return true;
   }
-  const disabled = env.SUMMARIZE_NO_TRUECOLOR?.trim().toLowerCase();
+  const disabled = env.GIST_NO_TRUECOLOR?.trim().toLowerCase();
   if (disabled === '1' || disabled === 'true' || disabled === 'yes') {
     return false;
   }

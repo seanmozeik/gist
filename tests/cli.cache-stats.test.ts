@@ -29,8 +29,8 @@ function noopStream(): Writable {
 
 describe('--cache-stats', () => {
   it('prints cache entry counts', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-stats-'));
-    const path = join(root, '.summarize', 'cache.sqlite');
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-stats-'));
+    const path = join(root, '.gist', 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path });
 
     store.setText('extract', 'e1', 'value', null);

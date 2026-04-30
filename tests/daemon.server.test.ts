@@ -21,7 +21,7 @@ describe('daemon/server CORS allowlist', () => {
   it.each([
     'chrome-extension://abcdefghijklmnopabcdefghijklmnop',
     'moz-extension://12345678-1234-1234-1234-123456789abc',
-    'safari-web-extension://com.example.summarize',
+    'safari-web-extension://com.example.gist',
     'http://localhost:8787',
     'http://127.0.0.1:8787',
     'http://[::1]:8787',
@@ -63,7 +63,7 @@ describe('daemon/server CORS allowlist', () => {
     'CHROME-EXTENSION://abcdef',
     'Chrome-Extension://abcdef',
     'MOZ-EXTENSION://abcdef',
-    'Safari-Web-Extension://com.example.summarize',
+    'Safari-Web-Extension://com.example.gist',
   ])('allows case-insensitive extension protocol %s', (origin) => {
     expect(isTrustedOrigin(origin)).toBe(true);
   });

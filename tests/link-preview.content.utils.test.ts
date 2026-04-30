@@ -4,7 +4,7 @@ import {
   DEFAULT_CACHE_MODE,
   DEFAULT_MAX_CONTENT_CHARACTERS,
   DEFAULT_TIMEOUT_MS,
-} from '../packages/core/src/content/link-preview/content/types.js';
+} from '../src/content/link-preview/content/types.js';
 import {
   appendNote,
   ensureTranscriptDiagnostics,
@@ -16,12 +16,12 @@ import {
   resolveTimeoutMs,
   safeHostname,
   selectBaseContent,
-  summarizeTranscript,
-} from '../packages/core/src/content/link-preview/content/utils.js';
+  gistTranscript,
+} from '../src/content/link-preview/content/utils.js';
 import type {
   ContentFetchDiagnostics,
   TranscriptDiagnostics,
-} from '../packages/core/src/content/link-preview/types.js';
+} from '../src/content/link-preview/types.js';
 
 function makeDiagnostics(overrides?: Partial<ContentFetchDiagnostics>): ContentFetchDiagnostics {
   return {
@@ -104,18 +104,18 @@ describe('link-preview content utils', () => {
     expect(content).toContain('[0:01] Hello');
   });
 
-  it('summarizes transcript basics', () => {
-    expect(summarizeTranscript(null)).toEqual({
+  it('gists transcript basics', () => {
+    expect(gistTranscript(null)).toEqual({
       transcriptCharacters: null,
       transcriptLines: null,
       transcriptWordCount: null,
     });
-    expect(summarizeTranscript('')).toEqual({
+    expect(gistTranscript('')).toEqual({
       transcriptCharacters: null,
       transcriptLines: null,
       transcriptWordCount: null,
     });
-    expect(summarizeTranscript('a\n\nb')).toEqual({
+    expect(gistTranscript('a\n\nb')).toEqual({
       transcriptCharacters: 4,
       transcriptLines: 2,
       transcriptWordCount: 2,

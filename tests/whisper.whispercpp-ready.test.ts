@@ -13,7 +13,7 @@ vi.mock('node:child_process', () => {
       const proc: MockProc = Object.assign(new EventEmitter(), {
         stderr: Object.assign(new EventEmitter(), {
           setEncoding: () => {
-            /* empty */
+            /* Empty */
           },
         }),
       });
@@ -38,9 +38,9 @@ vi.mock('node:child_process', () => {
 });
 
 const ENV_KEYS = [
-  'SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP',
-  'SUMMARIZE_WHISPER_CPP_BINARY',
-  'SUMMARIZE_WHISPER_CPP_MODEL_PATH',
+  'GIST_DISABLE_LOCAL_WHISPER_CPP',
+  'GIST_WHISPER_CPP_BINARY',
+  'GIST_WHISPER_CPP_MODEL_PATH',
   'VITEST_WHISPER_SPAWN_MODE',
   'HOME',
   'USERPROFILE',
@@ -69,77 +69,74 @@ describe('whisper.cpp readiness', () => {
   });
 
   it('returns false when local whisper.cpp is disabled', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '1';
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '1';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'ok';
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady()).toBe(false);
   });
 
   it('returns false when whisper-cli is not available (spawn error)', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '0';
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '0';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'error';
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady()).toBe(false);
   });
 
   it('returns false when whisper-cli exists but model is missing', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '0';
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '0';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'ok';
-    process.env.SUMMARIZE_WHISPER_CPP_MODEL_PATH = join(tmpdir(), `missing-${Date.now()}.bin`);
+    process.env.GIST_WHISPER_CPP_MODEL_PATH = join(tmpdir(), `missing-${Date.now()}.bin`);
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady()).toBe(false);
   });
 
   it('returns true when whisper-cli exists and model path is valid', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '0';
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '0';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'ok';
 
-    const dir = mkdtempSync(join(tmpdir(), 'summarize-whisper-test-'));
+    const dir = mkdtempSync(join(tmpdir(), 'gist-whisper-test-'));
     const modelPath = join(dir, 'ggml-base.en.bin');
     writeFileSync(modelPath, 'x');
-    process.env.SUMMARIZE_WHISPER_CPP_MODEL_PATH = modelPath;
+    process.env.GIST_WHISPER_CPP_MODEL_PATH = modelPath;
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady()).toBe(true);
     expect(await mod.resolveWhisperCppModelNameForDisplay()).toBe('base');
   });
 
-  it('supports fallback model discovery under ~/.summarize/cache/whisper-cpp/models', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '0';
+  it('supports fallback model discovery under ~/.gist/cache/whisper-cpp/models', async () => {
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '0';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'ok';
-    delete process.env.SUMMARIZE_WHISPER_CPP_MODEL_PATH;
+    delete process.env.GIST_WHISPER_CPP_MODEL_PATH;
 
-    const home = mkdtempSync(join(tmpdir(), 'summarize-home-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-home-'));
     process.env.HOME = home;
     delete process.env.USERPROFILE;
 
-    const modelPath = join(home, '.summarize', 'cache', 'whisper-cpp', 'models', 'ggml-base.bin');
-    mkdirSync(join(home, '.summarize', 'cache', 'whisper-cpp', 'models'), { recursive: true });
+    const modelPath = join(home, '.gist', 'cache', 'whisper-cpp', 'models', 'ggml-base.bin');
+    mkdirSync(join(home, '.gist', 'cache', 'whisper-cpp', 'models'), { recursive: true });
     writeFileSync(modelPath, 'x');
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady()).toBe(true);
     expect(await mod.resolveWhisperCppModelNameForDisplay()).toBe('base');
   });
 
   it('accepts explicit env overrides without reading process.env model settings', async () => {
-    process.env.SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP = '0';
+    process.env.GIST_DISABLE_LOCAL_WHISPER_CPP = '0';
     process.env.VITEST_WHISPER_SPAWN_MODE = 'ok';
-    delete process.env.SUMMARIZE_WHISPER_CPP_MODEL_PATH;
+    delete process.env.GIST_WHISPER_CPP_MODEL_PATH;
 
-    const dir = mkdtempSync(join(tmpdir(), 'summarize-whisper-env-'));
+    const dir = mkdtempSync(join(tmpdir(), 'gist-whisper-env-'));
     const modelPath = join(dir, 'ggml-base.en.bin');
     writeFileSync(modelPath, 'x');
 
-    const env = {
-      SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '0',
-      SUMMARIZE_WHISPER_CPP_MODEL_PATH: modelPath,
-    };
+    const env = { GIST_DISABLE_LOCAL_WHISPER_CPP: '0', GIST_WHISPER_CPP_MODEL_PATH: modelPath };
 
-    const mod = await import('../packages/core/src/transcription/whisper');
+    const mod = await import('../src/transcription/whisper');
     expect(await mod.isWhisperCppReady(env)).toBe(true);
     expect(await mod.resolveWhisperCppModelNameForDisplay(env)).toBe('base');
   });

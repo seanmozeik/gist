@@ -11,7 +11,7 @@ const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 describe('cli --json', () => {
-  const home = mkdtempSync(join(tmpdir(), 'summarize-tests-json-'));
+  const home = mkdtempSync(join(tmpdir(), 'gist-tests-json-'));
 
   it('disables AI SDK warning logs (stdout must stay JSON)', async () => {
     const globalObject = globalThis as unknown as { AI_SDK_LOG_WARNINGS?: boolean };

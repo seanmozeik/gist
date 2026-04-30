@@ -2,13 +2,13 @@ import { once } from 'node:events';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { ProcessRegistration } from '../packages/core/src/processes.js';
+import type { ProcessRegistration } from '../src/processes.js';
 import {
   execFileTracked,
   runWithProcessContext,
   setProcessObserver,
   spawnTracked,
-} from '../packages/core/src/processes.js';
+} from '../src/processes.js';
 
 const createObserver = (capture: {
   registrations: ProcessRegistration[];
@@ -19,17 +19,17 @@ const createObserver = (capture: {
     return {
       appendOutput: (stream, line) => capture.outputs.push({ line, stream }),
       finish: () => {
-        /* empty */
+        /* Empty */
       },
       id: info.command,
       setPid: () => {
-        /* empty */
+        /* Empty */
       },
       setProgress: () => {
-        /* empty */
+        /* Empty */
       },
       setStatus: () => {
-        /* empty */
+        /* Empty */
       },
     };
   },

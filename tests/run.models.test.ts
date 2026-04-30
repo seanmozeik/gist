@@ -62,7 +62,7 @@ describe('run model selection', () => {
     }
   });
 
-  it('resolves provider-default OpenCode ids through summarize config', () => {
+  it('resolves provider-default OpenCode ids through gist config', () => {
     const config = { cli: { opencode: { model: 'openai/gpt-5.4' } } };
 
     const result = resolveModelSelection({
@@ -129,7 +129,7 @@ describe('run model selection', () => {
     const result = resolveModelSelection({
       config,
       configForCli: config,
-      configPath: '/tmp/summarize.json',
+      configPath: '/tmp/gist.json',
       envForRun: {},
       explicitModelArg: 'localCli',
     });
@@ -144,12 +144,12 @@ describe('run model selection', () => {
     }
   });
 
-  it('uses SUMMARIZE_MODEL when no explicit model is passed', () => {
+  it('uses GIST_MODEL when no explicit model is passed', () => {
     const result = resolveModelSelection({
       config: null,
       configForCli: null,
       configPath: null,
-      envForRun: { SUMMARIZE_MODEL: 'cli/opencode/openai/gpt-5.4' },
+      envForRun: { GIST_MODEL: 'cli/opencode/openai/gpt-5.4' },
       explicitModelArg: null,
     });
 
@@ -169,7 +169,7 @@ describe('run model selection', () => {
     const result = resolveModelSelection({
       config,
       configForCli: config,
-      configPath: '/tmp/summarize.json',
+      configPath: '/tmp/gist.json',
       envForRun: {},
       explicitModelArg: null,
     });
@@ -187,11 +187,11 @@ describe('run model selection', () => {
       resolveModelSelection({
         config: null,
         configForCli: null,
-        configPath: '/tmp/summarize.json',
+        configPath: '/tmp/gist.json',
         envForRun: {},
         explicitModelArg: 'unknown',
       }),
-    ).toThrow(/Define it in \/tmp\/summarize\.json under "models"/);
+    ).toThrow(/Define it in \/tmp\/gist\.json under "models"/);
   });
 
   it('rejects named models that only alias another preset', () => {
@@ -199,7 +199,7 @@ describe('run model selection', () => {
       resolveModelSelection({
         config: { models: { nestedAlias: { name: 'otherPreset' } } },
         configForCli: null,
-        configPath: '/tmp/summarize.json',
+        configPath: '/tmp/gist.json',
         envForRun: {},
         explicitModelArg: 'nestedAlias',
       }),

@@ -1,10 +1,6 @@
 import type { MediaCache } from '../cache/types.js';
 import type { MediaTranscriptMode, YoutubeTranscriptMode } from '../link-preview/content/types.js';
-import type {
-  LinkPreviewProgressEvent,
-  ResolveTwitterCookies,
-  ScrapeWithFirecrawl,
-} from '../link-preview/deps.js';
+import type { LinkPreviewProgressEvent, ResolveTwitterCookies } from '../link-preview/deps.js';
 import type { TranscriptResolution, TranscriptSource } from '../link-preview/types.js';
 import type { TranscriptionConfig } from './transcription-config.js';
 
@@ -19,19 +15,12 @@ export interface ProviderContext {
 export interface ProviderFetchOptions {
   fetch: typeof fetch;
   env?: Record<string, string | undefined>;
-  scrapeWithFirecrawl?: ScrapeWithFirecrawl | null;
-  apifyApiToken: string | null;
   youtubeTranscriptMode: YoutubeTranscriptMode;
   mediaTranscriptMode: MediaTranscriptMode;
   mediaKindHint?: 'video' | 'audio' | null;
   transcriptTimestamps?: boolean;
   ytDlpPath: string | null;
   transcription?: TranscriptionConfig;
-  falApiKey?: string | null;
-  groqApiKey?: string | null;
-  geminiApiKey?: string | null;
-  openaiApiKey?: string | null;
-  assemblyaiApiKey?: string | null;
   mediaCache?: MediaCache | null;
   resolveTwitterCookies?: ResolveTwitterCookies | null;
   onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;

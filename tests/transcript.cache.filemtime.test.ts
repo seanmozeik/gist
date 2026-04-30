@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { TranscriptCache } from '../packages/core/src/content/cache/types.js';
-import {
-  readTranscriptCache,
-  writeTranscriptCache,
-} from '../packages/core/src/content/transcript/cache.js';
+import type { TranscriptCache } from '../src/content/cache/types.js';
+import { readTranscriptCache, writeTranscriptCache } from '../src/content/transcript/cache.js';
 
 describe('transcript cache with file modification time', () => {
   it('includes fileMtime when reading transcript cache', async () => {
@@ -20,7 +17,7 @@ describe('transcript cache with file modification time', () => {
         };
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -55,7 +52,7 @@ describe('transcript cache with file modification time', () => {
         return null;
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -95,7 +92,7 @@ describe('transcript cache with file modification time', () => {
         };
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -117,7 +114,7 @@ describe('transcript cache with file modification time', () => {
         return { content: 'transcript', expired: false, metadata: null, source: 'openai' };
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -138,7 +135,7 @@ describe('transcript cache with file modification time', () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null), // No cached transcript
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -163,7 +160,7 @@ describe('transcript cache with file modification time', () => {
         return null;
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -186,7 +183,7 @@ describe('transcript cache with file modification time', () => {
     const transcriptCache: TranscriptCache = {
       get: vi.fn(async () => null),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 
@@ -244,7 +241,7 @@ describe('transcript cache with file modification time', () => {
         return null;
       }),
       set: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
     };
 

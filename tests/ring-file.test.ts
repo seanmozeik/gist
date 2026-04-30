@@ -8,7 +8,7 @@ import { createRingFileWriter } from '../src/logging/ring-file.js';
 
 describe('ring file writer', () => {
   it('rotates when size exceeds max bytes', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'summarize-ring-'));
+    const dir = mkdtempSync(join(tmpdir(), 'gist-ring-'));
     const filePath = join(dir, 'daemon.jsonl');
     const writer = createRingFileWriter({ filePath, maxBytes: 40, maxFiles: 2 });
 

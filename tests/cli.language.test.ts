@@ -44,12 +44,12 @@ describe('--language / config.language', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-lang-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-lang-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
-    writeFileSync(join(summarizeDir, 'config.json'), JSON.stringify({ language: 'de' }), 'utf8');
+    writeFileSync(join(gistDir, 'config.json'), JSON.stringify({ language: 'de' }), 'utf8');
 
     // LiteLLM cache: used for model limits; avoid network fetch in tests
     writeFileSync(
@@ -114,12 +114,12 @@ describe('--language / config.language', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-lang-override-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-lang-override-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
-    writeFileSync(join(summarizeDir, 'config.json'), JSON.stringify({ language: 'de' }), 'utf8');
+    writeFileSync(join(gistDir, 'config.json'), JSON.stringify({ language: 'de' }), 'utf8');
     writeFileSync(
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({ 'gpt-5.2': { max_input_tokens: 999_999 } }),

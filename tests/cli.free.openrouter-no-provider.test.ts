@@ -29,10 +29,10 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('model presets: OpenRouter provider routing errors', () => {
   it('fails loudly instead of returning extracted text', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preset-openrouter-no-provider-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-preset-openrouter-no-provider-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         models: {
           free: { mode: 'auto', rules: [{ candidates: ['openrouter/openai/gpt-5-nano'] }] },

@@ -17,7 +17,7 @@ import {
   resolveTrueColor,
 } from '../../../tty/theme.js';
 import { assertAssetMediaTypeSupported } from '../../attachments.js';
-import type { SummarizeAssetArgs } from './summary.js';
+import type { GistAssetArgs } from './summary.js';
 
 /**
  * Check if a media type should route through transcription.
@@ -34,7 +34,7 @@ const createProgressTheme = (
   const env = envForRun ?? {};
   return createThemeRenderer({
     enabled,
-    themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
+    themeName: resolveThemeNameFromSources({ env: env.GIST_THEME }),
     trueColor: resolveTrueColor(env),
   });
 };
@@ -56,7 +56,7 @@ function normalizePathForExtension(value: string): string {
   try {
     return new URL(value).pathname;
   } catch {
-    return value.split(/[?#]/, 1)[0];
+    return value.split(/[?#]/, 1)[0] ?? value;
   }
 }
 
@@ -128,12 +128,12 @@ async function runMediaTranscription({
     setTranscribingSpinnerText({ meta, spinner, theme });
   }
 
-  await ctx.summarizeMediaFile?.({
+  await ctx.gistMediaFile?.({
     attachment: {
       kind: 'file',
       filename,
-      mediaType: 'audio/mpeg', // Will be detected properly by summarizeMediaFile
-      bytes: new Uint8Array(0), // Placeholder - summarizeMediaFile reads from path directly
+      mediaType: 'audio/mpeg', // Will be detected properly by gistMediaFile
+      bytes: new Uint8Array(0), // Placeholder - gistMediaFile reads from path directly
     },
     onModelChosen: (modelId) => {
       if (!ctx.progressEnabled) {
@@ -153,8 +153,8 @@ export interface AssetInputContext {
   progressEnabled: boolean;
   timeoutMs: number;
   trackedFetch: typeof fetch;
-  summarizeAsset: (args: SummarizeAssetArgs) => Promise<void>;
-  summarizeMediaFile?: (args: SummarizeAssetArgs) => Promise<void>;
+  gistAsset: (args: GistAssetArgs) => Promise<void>;
+  gistMediaFile?: (args: GistAssetArgs) => Promise<void>;
   setClearProgressBeforeStdout: (fn: (() => undefined | (() => void)) | null) => void;
   clearProgressIfCurrent: (fn: () => void) => void;
 }
@@ -215,9 +215,9 @@ export async function handleFileInput(
   ctx.setClearProgressBeforeStdout(pauseProgressLine);
   try {
     // Check if file looks like transcribable media by extension.
-    // If so, route directly to summarizeMediaFile which has a higher size limit (2GB).
+    // If so, route directly to gistMediaFile which has a higher size limit (2GB).
     // This avoids the 50MB limit in loadLocalAsset for audio/video files.
-    if (isTranscribableExtension(inputTarget.filePath) && ctx.summarizeMediaFile) {
+    if (isTranscribableExtension(inputTarget.filePath) && ctx.gistMediaFile) {
       const filename = path.basename(inputTarget.filePath);
       await runMediaTranscription({
         ctx,
@@ -234,8 +234,7 @@ export async function handleFileInput(
     assertAssetMediaTypeSupported({ attachment: loaded.attachment, sizeLabel });
 
     const isTranscribable = isTranscribableMediaType(loaded.attachment.mediaType);
-    const handler =
-      isTranscribable && ctx.summarizeMediaFile ? ctx.summarizeMediaFile : ctx.summarizeAsset;
+    const handler = isTranscribable && ctx.gistMediaFile ? ctx.gistMediaFile : ctx.gistAsset;
 
     const dim = (value: string) => theme.dim(value);
 
@@ -243,7 +242,7 @@ export async function handleFileInput(
       const mt = loaded.attachment.mediaType;
       const name = loaded.attachment.filename;
       const details = sizeLabel ? `${mt}, ${sizeLabel}` : mt;
-      const action = isTranscribable ? 'Transcribing' : 'Summarizing';
+      const action = isTranscribable ? 'Transcribing' : 'Gisting';
       const meta = name ? `${name} ${dim('(')}${details}${dim(')')}` : details;
       spinner.setText(renderStatusWithMeta(theme, action, meta));
     }
@@ -259,7 +258,7 @@ export async function handleFileInput(
         const details = sizeLabel ? `${mt}, ${sizeLabel}` : mt;
         const meta = name ? `${name} ${dim('(')}${details}${dim(')')}` : details;
         const modelLabel = renderModelSuffix(theme, modelId);
-        spinner.setText(renderStatusWithMeta(theme, 'Summarizing', `${meta}${modelLabel}`));
+        spinner.setText(renderStatusWithMeta(theme, 'Gisting', `${meta}${modelLabel}`));
       },
       sourceKind: 'file',
       sourceLabel: loaded.sourceLabel,
@@ -281,9 +280,9 @@ export async function withUrlAsset(
     return false;
   }
 
-  // For remote media URLs (by extension), route directly to summarizeMediaFile.
+  // For remote media URLs (by extension), route directly to gistMediaFile.
   // This avoids the 50MB limit in loadRemoteAsset - yt-dlp handles streaming download.
-  if (isTranscribableExtension(url) && ctx.summarizeMediaFile) {
+  if (isTranscribableExtension(url) && ctx.gistMediaFile) {
     const theme = createProgressTheme(ctx.envForRun, ctx.progressEnabled);
     const filename = (() => {
       try {
@@ -410,16 +409,16 @@ export async function handleUrlAsset(
     const theme = createProgressTheme(ctx.envForRun, ctx.progressEnabled);
     const dim = (value: string) => theme.dim(value);
     if (ctx.progressEnabled) {
-      spinner.setText(renderStatusWithMeta(theme, 'Summarizing', dim('file')));
+      spinner.setText(renderStatusWithMeta(theme, 'Gisting', dim('file')));
     }
-    await ctx.summarizeAsset({
+    await ctx.gistAsset({
       attachment: loaded.attachment,
       onModelChosen: (modelId) => {
         if (!ctx.progressEnabled) {
           return;
         }
         const modelLabel = renderModelSuffix(theme, modelId);
-        spinner.setText(renderStatusWithMeta(theme, 'Summarizing', `${dim('file')}${modelLabel}`));
+        spinner.setText(renderStatusWithMeta(theme, 'Gisting', `${dim('file')}${modelLabel}`));
       },
       sourceKind: 'asset-url',
       sourceLabel: loaded.sourceLabel,

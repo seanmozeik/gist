@@ -110,7 +110,6 @@ export const resolveTranscriptForLink = async (
   });
 
   const providerResult = await executeProvider(provider, baseContext, {
-    apifyApiToken: deps.apifyApiToken,
     env: deps.env,
     fetch: deps.fetch,
     mediaCache: deps.mediaCache ?? null,
@@ -118,7 +117,6 @@ export const resolveTranscriptForLink = async (
     mediaTranscriptMode: mediaTranscriptMode ?? 'auto',
     onProgress: deps.onProgress ?? null,
     resolveTwitterCookies: deps.resolveTwitterCookies ?? null,
-    scrapeWithFirecrawl: deps.scrapeWithFirecrawl,
     transcriptTimestamps: transcriptTimestamps ?? false,
     transcription,
     youtubeTranscriptMode: youtubeTranscriptMode ?? 'auto',

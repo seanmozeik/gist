@@ -10,7 +10,6 @@ import type {
   LinkPreviewDeps,
   LinkPreviewProgressEvent,
   ResolveTwitterCookies,
-  ScrapeWithFirecrawl,
 } from './deps.js';
 
 /** Public client used by external consumers to fetch link content. */
@@ -22,13 +21,8 @@ export interface LinkPreviewClient {
 export interface LinkPreviewClientOptions {
   fetch?: typeof fetch;
   env?: Record<string, string | undefined>;
-  scrapeWithFirecrawl?: ScrapeWithFirecrawl | null;
-  apifyApiToken?: string | null;
   ytDlpPath?: string | null;
   transcription?: Partial<TranscriptionConfig> | null;
-  groqApiKey?: string | null;
-  geminiApiKey?: string | null;
-  openaiApiKey?: string | null;
   convertHtmlToMarkdown?: ConvertHtmlToMarkdown | null;
   transcriptCache?: TranscriptCache | null;
   mediaCache?: MediaCache | null;
@@ -42,8 +36,6 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
   const fetchImpl: typeof fetch =
     options.fetch ?? ((...args: Parameters<typeof fetch>) => globalThis.fetch(...args));
   const env = typeof options.env === 'object' && options.env ? options.env : undefined;
-  const scrape: ScrapeWithFirecrawl | null = options.scrapeWithFirecrawl ?? null;
-  const apifyApiToken = typeof options.apifyApiToken === 'string' ? options.apifyApiToken : null;
   const ytDlpPath = typeof options.ytDlpPath === 'string' ? options.ytDlpPath : null;
   const transcription = resolveTranscriptionConfig({
     env,
@@ -61,7 +53,6 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
   return {
     fetchLinkContent: (url: string, contentOptions?: FetchLinkContentOptions) =>
       fetchLinkContent(url, contentOptions, {
-        apifyApiToken,
         convertHtmlToMarkdown,
         env,
         fetch: fetchImpl,
@@ -69,7 +60,6 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
         onProgress,
         readTweetWithBird,
         resolveTwitterCookies,
-        scrapeWithFirecrawl: scrape,
         transcriptCache,
         transcription,
         ytDlpPath,

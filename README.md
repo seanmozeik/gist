@@ -1,4 +1,4 @@
-# Summarize 📝 — Chrome Side Panel + CLI
+# Gist 📝 — Chrome Side Panel + CLI
 
 Fast summaries from URLs, files, and media. Works in the terminal, a Chrome Side Panel and Firefox Sidebar.
 
@@ -24,24 +24,24 @@ Fast summaries from URLs, files, and media. Works in the terminal, a Chrome Side
 
 ## Get the extension (recommended)
 
-![Summarize extension screenshot](docs/assets/summarize-extension.png)
+![Gist extension screenshot](docs/assets/gist-extension.png)
 
-One‑click summarizer for the current tab. Chrome Side Panel + Firefox Sidebar + local daemon for streaming Markdown.
+One‑click gist for the current tab. Chrome Side Panel + Firefox Sidebar + local daemon for streaming Markdown.
 
-**Chrome Web Store:** [Summarize Side Panel](https://chromewebstore.google.com/detail/summarize/cejgnmmhbbpdmjnfppjdfkocebngehfg)
+**Chrome Web Store:** [Gist Side Panel](https://chromewebstore.google.com/detail/gist/cejgnmmhbbpdmjnfppjdfkocebngehfg)
 
 YouTube slide screenshots (from the browser):
 
-![Summarize YouTube slide screenshots](docs/assets/youtube-slides.png)
+![Gist YouTube slide screenshots](docs/assets/youtube-slides.png)
 
 ### Beginner quickstart (extension)
 
 1. Install the CLI (choose one):
-   - **npm** (cross‑platform): `npm i -g @steipete/summarize`
-   - **Homebrew** (Homebrew/core): `brew install summarize`
+   - **npm** (cross‑platform): `npm i -g @seanmozeik/gist`
+   - **Homebrew** (Homebrew/core): `brew install gist`
 2. Install the extension (Chrome Web Store link above) and open the Side Panel.
 3. The panel shows a token + install command. Run it in Terminal:
-   - `summarize daemon install --token <TOKEN>`
+   - `gist daemon install --token <TOKEN>`
 
 Why a daemon/service?
 
@@ -53,11 +53,11 @@ If you only want the **CLI**, you can skip the daemon install entirely.
 Notes:
 
 - Summarization only runs when the Side Panel is open.
-- Auto mode summarizes on navigation (incl. SPAs); otherwise use the button.
-- Daemon is localhost-only and requires a shared token; rerunning `summarize daemon install --token <TOKEN>` adds another paired browser token instead of invalidating the old one.
+- Auto mode gists on navigation (incl. SPAs); otherwise use the button.
+- Daemon is localhost-only and requires a shared token; rerunning `gist daemon install --token <TOKEN>` adds another paired browser token instead of invalidating the old one.
 - Autostart: macOS (launchd), Linux (systemd user), Windows (Scheduled Task).
-- Windows containers: `summarize daemon install` starts the daemon for the current container session but does not register a Scheduled Task. Run it each time the container starts or add that command to your container startup, and publish port `8787` so the host browser can reach the daemon.
-- Tip: configure `free` via `summarize refresh-free` (needs `OPENROUTER_API_KEY`). Add `--set-default` to set model=`free`.
+- Windows containers: `gist daemon install` starts the daemon for the current container session but does not register a Scheduled Task. Run it each time the container starts or add that command to your container startup, and publish port `8787` so the host browser can reach the daemon.
+- Tip: configure `free` via `gist refresh-free` (needs `OPENROUTER_API_KEY`). Add `--set-default` to set model=`free`.
 
 More:
 
@@ -67,7 +67,7 @@ More:
 
 ### Slides (extension)
 
-- Select **Video + Slides** in the Summarize picker.
+- Select **Video + Slides** in the Gist picker.
 - Slides render at the top; expand to full‑width cards with timestamps.
 - Click a slide to seek the video; toggle **Transcript/OCR** when OCR is significant.
 - Requirements: `yt-dlp` + `ffmpeg` for extraction; `tesseract` for OCR. Missing tools show an in‑panel notice.
@@ -83,11 +83,11 @@ More:
      - Pick: `apps/chrome-extension/.output/firefox-mv3/manifest.json`
 2. Open Side Panel/Sidebar → copy token.
 3. Install daemon in dev mode:
-   - `bun run summarize daemon install --token <TOKEN> --dev`
+   - `bun run gist daemon install --token <TOKEN> --dev`
 
 ## CLI
 
-![Summarize CLI screenshot](docs/assets/summarize-cli.png)
+![Gist CLI screenshot](docs/assets/gist-cli.png)
 
 ### Install
 
@@ -96,32 +96,32 @@ Requires Node 24+.
 - npx (no install):
 
 ```bash
-npx -y @steipete/summarize "https://example.com"
+npx -y @seanmozeik/gist "https://example.com"
 ```
 
 - npm (global):
 
 ```bash
-npm i -g @steipete/summarize
+npm i -g @seanmozeik/gist
 ```
 
 - npm (library / minimal deps):
 
 ```bash
-npm i @steipete/summarize-core
+npm i @seanmozeik/gist-core
 ```
 
 ```ts
-import { createLinkPreviewClient } from '@steipete/summarize-core/content';
+import { createLinkPreviewClient } from '@seanmozeik/gist-core/content';
 ```
 
 - Homebrew:
 
 ```bash
-brew install summarize
+brew install gist
 ```
 
-Homebrew ships from `homebrew/core` via `brew install summarize`.
+Homebrew ships from `homebrew/core` via `brew install gist`.
 If Homebrew is unavailable in your environment, use the npm global install above.
 
 ### Optional local dependencies
@@ -145,17 +145,17 @@ brew install ffmpeg yt-dlp
 brew install tesseract # optional, for --slides-ocr
 ```
 
-If `--slides` is enabled and these tools are missing, Summarize warns and continues without slides.
+If `--slides` is enabled and these tools are missing, Gist warns and continues without slides.
 
 ### CLI vs extension
 
-- **CLI only:** just install via npm/Homebrew and run `summarize ...` (no daemon needed).
-- **Chrome/Firefox extension:** install the CLI **and** run `summarize daemon install --token <TOKEN>` so the Side Panel can stream results and use local tools.
+- **CLI only:** just install via npm/Homebrew and run `gist ...` (no daemon needed).
+- **Chrome/Firefox extension:** install the CLI **and** run `gist daemon install --token <TOKEN>` so the Side Panel can stream results and use local tools.
 
 ### Quickstart
 
 ```bash
-summarize "https://example.com"
+gist "https://example.com"
 ```
 
 ### Inputs
@@ -163,25 +163,25 @@ summarize "https://example.com"
 URLs or local paths:
 
 ```bash
-summarize "/path/to/file.pdf" --model google/gemini-3-flash
-summarize "https://example.com/report.pdf" --model google/gemini-3-flash
-summarize "/path/to/audio.mp3"
-summarize "/path/to/video.mp4"
+gist "/path/to/file.pdf" --model google/gemini-3-flash
+gist "https://example.com/report.pdf" --model google/gemini-3-flash
+gist "/path/to/audio.mp3"
+gist "/path/to/video.mp4"
 ```
 
 Stdin (pipe content using `-`):
 
 ```bash
-echo "content" | summarize -
-pbpaste | summarize -
+echo "content" | gist -
+pbpaste | gist -
 # binary stdin also works (PDF/image/audio/video bytes)
-cat /path/to/file.pdf | summarize -
+cat /path/to/file.pdf | gist -
 ```
 
 **Notes:**
 
 - Stdin has a 50MB size limit
-- The `-` argument tells summarize to read from standard input
+- The `-` argument tells gist to read from standard input
 - Text stdin is treated as UTF-8 text (whitespace-only input is rejected as empty)
 - Binary stdin is preserved as raw bytes and file type is auto-detected when possible
 - Useful for piping clipboard content or command output
@@ -189,42 +189,42 @@ cat /path/to/file.pdf | summarize -
 YouTube (supports `youtube.com` and `youtu.be`):
 
 ```bash
-summarize "https://youtu.be/dQw4w9WgXcQ" --youtube auto
+gist "https://youtu.be/dQw4w9WgXcQ" --youtube auto
 ```
 
 Podcast RSS (transcribes latest enclosure):
 
 ```bash
-summarize "https://feeds.npr.org/500005/podcast.xml"
+gist "https://feeds.npr.org/500005/podcast.xml"
 ```
 
 Apple Podcasts episode page:
 
 ```bash
-summarize "https://podcasts.apple.com/us/podcast/2424-jelly-roll/id360084272?i=1000740717432"
+gist "https://podcasts.apple.com/us/podcast/2424-jelly-roll/id360084272?i=1000740717432"
 ```
 
 Spotify episode page (best-effort; may fail for exclusives):
 
 ```bash
-summarize "https://open.spotify.com/episode/5auotqWAXhhKyb9ymCuBJY"
+gist "https://open.spotify.com/episode/5auotqWAXhhKyb9ymCuBJY"
 ```
 
 HLS playlist:
 
 ```bash
-summarize "https://example.com/master.m3u8"
+gist "https://example.com/master.m3u8"
 ```
 
 ### Output length
 
 `--length` controls how much output we ask for (guideline), not a hard cap.
 
-Set a default in `~/.summarize/config.json` with `output.length`.
+Set a default in `~/.gist/config.json` with `output.length`.
 
 ```bash
-summarize "https://example.com" --length long
-summarize "https://example.com" --length 20k
+gist "https://example.com" --length long
+gist "https://example.com" --length 20k
 ```
 
 - Presets: `short|medium|long|xl|xxl`
@@ -284,12 +284,12 @@ Note: some models/providers do not support streaming or certain file media types
 Fast mode is a request option, not a model id:
 
 ```bash
-summarize "https://example.com" --model openai/gpt-5.5 --fast --thinking medium
-summarize "https://example.com" --model openai/gpt-5.4 --service-tier fast --thinking low
+gist "https://example.com" --model openai/gpt-5.5 --fast --thinking medium
+gist "https://example.com" --model openai/gpt-5.4 --service-tier fast --thinking low
 ```
 
 - `--fast` is shorthand for `--service-tier fast`.
-- `--service-tier default|fast|priority|flex` controls OpenAI service tier. `fast` is the summarize/Codex-facing spelling and is sent to OpenAI as `service_tier="priority"`.
+- `--service-tier default|fast|priority|flex` controls OpenAI service tier. `fast` is the gist/Codex-facing spelling and is sent to OpenAI as `service_tier="priority"`.
 - `--thinking none|low|medium|high|xhigh` controls OpenAI reasoning effort. Aliases: `off` → `none`, `min` → `low`, `mid` / `med` → `medium`, `x-high` / `extra-high` → `xhigh`.
 - `--service-tier default` clears a configured tier for one run.
 
@@ -312,10 +312,10 @@ Compatibility aliases still work, but prefer the explicit flags above:
 ### Common flags
 
 ```bash
-summarize <input> [flags]
+gist <input> [flags]
 ```
 
-Use `summarize --help` or `summarize help` for the full help text.
+Use `gist --help` or `gist help` for the full help text.
 
 - `--model <provider/model>`: which model to use (defaults to `auto`)
 - `--model auto`: automatic model selection + fallback (default)
@@ -348,7 +348,7 @@ Use `summarize --help` or `summarize help` for the full help text.
 
 ### Coding CLIs (Codex, Claude, Gemini, Agent, OpenClaw, OpenCode)
 
-Summarize can use common coding CLIs as local model backends:
+Gist can use common coding CLIs as local model backends:
 
 - `codex` -> `--cli codex` / `--model cli/codex/<model>`
 - `claude` -> `--cli claude` / `--model cli/claude/<model>`
@@ -369,14 +369,14 @@ Requirements:
 Quick smoke test:
 
 ```bash
-printf "Summarize CLI smoke input.\nOne short paragraph. Reply can be brief.\n" >/tmp/summarize-cli-smoke.txt
+printf "Gist CLI smoke input.\nOne short paragraph. Reply can be brief.\n" >/tmp/gist-cli-smoke.txt
 
-summarize --cli codex --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli claude --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli gemini --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli agent --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli openclaw --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli opencode --plain --timeout 2m /tmp/summarize-cli-smoke.txt
+gist --cli codex --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli claude --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli gemini --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli agent --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli openclaw --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli opencode --plain --timeout 2m /tmp/gist-cli-smoke.txt
 ```
 
 Set explicit CLI allowlist/order:
@@ -409,7 +409,7 @@ CLI attempts are prepended when:
 - `cli.enabled` is set (explicit allowlist/order), or
 - implicit auto selection is active and `cli.autoFallback` is enabled.
 
-Default fallback behavior: only when no API keys are configured, order `claude, gemini, codex, agent, openclaw, opencode`, and remember/prioritize last successful provider (`~/.summarize/cli-state.json`).
+Default fallback behavior: only when no API keys are configured, order `claude, gemini, codex, agent, openclaw, opencode`, and remember/prioritize last successful provider (`~/.gist/cli-state.json`).
 
 Set explicit CLI attempts:
 
@@ -450,9 +450,9 @@ Non-YouTube URLs go through a fetch -> extract pipeline. When direct fetch/extra
 Environment variables for yt-dlp mode:
 
 - `YT_DLP_PATH` - optional path to yt-dlp binary (otherwise `yt-dlp` is resolved via `PATH`)
-- `SUMMARIZE_WHISPER_CPP_MODEL_PATH` - optional override for the local `whisper.cpp` model file
-- `SUMMARIZE_WHISPER_CPP_BINARY` - optional override for the local binary (default: `whisper-cli`)
-- `SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP=1` - disable local whisper.cpp (force remote)
+- `GIST_WHISPER_CPP_MODEL_PATH` - optional override for the local `whisper.cpp` model file
+- `GIST_WHISPER_CPP_BINARY` - optional override for the local binary (default: `whisper-cli`)
+- `GIST_DISABLE_LOCAL_WHISPER_CPP=1` - disable local whisper.cpp (force remote)
 - `GROQ_API_KEY` - Groq Whisper transcription
 - `ASSEMBLYAI_API_KEY` - AssemblyAI transcription
 - `GEMINI_API_KEY` - Gemini transcription (`GOOGLE_GENERATIVE_AI_API_KEY` / `GOOGLE_API_KEY` also work)
@@ -473,9 +473,9 @@ Requirements:
 - `tesseract` only when using `--slides-ocr`
 
 ```bash
-summarize "https://www.youtube.com/watch?v=..." --slides
-summarize "https://www.youtube.com/watch?v=..." --slides --slides-ocr
-summarize "/path/to/video.webm" --slides
+gist "https://www.youtube.com/watch?v=..." --slides
+gist "https://www.youtube.com/watch?v=..." --slides --slides-ocr
+gist "/path/to/video.webm" --slides
 ```
 
 Outputs are written under `./slides/<sourceId>/` (or `--slides-dir`). OCR results are included in JSON output
@@ -483,7 +483,7 @@ Outputs are written under `./slides/<sourceId>/` (or `--slides-dir`). OCR result
 extractor also samples at a fixed interval to improve coverage.
 When using `--slides`, supported terminals (kitty/iTerm/Konsole) render inline thumbnails automatically inside the
 summary narrative (the model inserts `[slide:N]` markers). Timestamp links are clickable when the terminal supports
-OSC-8 (YouTube/Vimeo/Loom/Dropbox). If inline images are unsupported, Summarize prints a note with the on-disk
+OSC-8 (YouTube/Vimeo/Loom/Dropbox). If inline images are unsupported, Gist prints a note with the on-disk
 slide directory. Local video files stay on the slide-aware path, transcribe in place, and avoid fake download labels.
 
 Use `--slides --extract` to print the full timed transcript and insert slide images inline at matching timestamps.
@@ -491,28 +491,28 @@ Use `--slides --extract` to print the full timed transcript and insert slide ima
 Format the extracted transcript as Markdown (headings + paragraphs) via an LLM:
 
 ```bash
-summarize "https://www.youtube.com/watch?v=..." --extract --format md --markdown-mode llm
+gist "https://www.youtube.com/watch?v=..." --extract --format md --markdown-mode llm
 ```
 
 ### Media transcription (Whisper)
 
-Local audio/video files are transcribed first, then summarized. `--video-mode transcript` forces
+Local audio/video files are transcribed first, then gisted. `--video-mode transcript` forces
 direct media URLs (and embedded media) through Whisper first. Prefers local `whisper.cpp` when available; otherwise requires
 one of `GROQ_API_KEY`, `ASSEMBLYAI_API_KEY`, `GEMINI_API_KEY` (or Google aliases), `OPENAI_API_KEY`, or `FAL_KEY`.
 
 ### Local ONNX transcription (Parakeet/Canary)
 
-Summarize can use NVIDIA Parakeet/Canary ONNX models via a local CLI you provide. Auto selection (default) prefers ONNX when configured.
+Gist can use NVIDIA Parakeet/Canary ONNX models via a local CLI you provide. Auto selection (default) prefers ONNX when configured.
 
-- Setup helper: `summarize transcriber setup`
+- Setup helper: `gist transcriber setup`
 - Install `sherpa-onnx` from upstream binaries/build (Homebrew may not have a formula)
-- Auto selection: set `SUMMARIZE_ONNX_PARAKEET_CMD` or `SUMMARIZE_ONNX_CANARY_CMD` (no flag needed)
+- Auto selection: set `GIST_ONNX_PARAKEET_CMD` or `GIST_ONNX_CANARY_CMD` (no flag needed)
 - Force a model: `--transcriber parakeet|canary|whisper|auto`
 - Docs: `docs/nvidia-onnx-transcription.md`
 
 ### Verified podcast services (2025-12-25)
 
-Run: `summarize <url>`
+Run: `gist <url>`
 
 - Apple Podcasts
 - Spotify
@@ -538,17 +538,17 @@ When the input is audio/video, the CLI needs a transcript first. The transcript 
    - Prefers local `whisper.cpp` when installed + model available.
    - Otherwise uses cloud transcription in this order: Groq (`GROQ_API_KEY`) → AssemblyAI (`ASSEMBLYAI_API_KEY`) → Gemini (`GEMINI_API_KEY` / Google aliases) → OpenAI (`OPENAI_API_KEY`) → FAL (`FAL_KEY`).
 
-For direct media URLs, use `--video-mode transcript` to force transcribe -> summarize:
+For direct media URLs, use `--video-mode transcript` to force transcribe -> gist:
 
 ```bash
-summarize https://example.com/file.mp4 --video-mode transcript --lang en
+gist https://example.com/file.mp4 --video-mode transcript --lang en
 ```
 
 ### Configuration
 
 Single config location:
 
-- `~/.summarize/config.json`
+- `~/.gist/config.json`
 
 Supported keys today:
 
@@ -597,29 +597,29 @@ Note: `--no-cache` bypasses summary caching only (LLM output). Extract/transcrip
 Precedence:
 
 1. `--model`
-2. `SUMMARIZE_MODEL`
-3. `~/.summarize/config.json`
+2. `GIST_MODEL`
+3. `~/.gist/config.json`
 4. default (`auto`)
 
 Theme precedence:
 
 1. `--theme`
-2. `SUMMARIZE_THEME`
-3. `~/.summarize/config.json` (`ui.theme`)
+2. `GIST_THEME`
+3. `~/.gist/config.json` (`ui.theme`)
 4. default (`aurora`)
 
 Environment variable precedence:
 
 1. process env
-2. `~/.summarize/config.json` (`env`)
-3. `~/.summarize/config.json` (`apiKeys`, legacy)
+2. `~/.gist/config.json` (`env`)
+3. `~/.gist/config.json` (`apiKeys`, legacy)
 
 ### Environment variables
 
 Set the key matching your chosen `--model`:
 
 - Optional fallback defaults can be stored in config:
-  - `~/.summarize/config.json` -> `"env": { "OPENAI_API_KEY": "sk-..." }`
+  - `~/.gist/config.json` -> `"env": { "OPENAI_API_KEY": "sk-..." }`
   - process env always takes precedence
   - legacy `"apiKeys"` still works (mapped to env names)
 
@@ -637,9 +637,9 @@ OpenAI-compatible chat completions toggle:
 
 UI theme:
 
-- `SUMMARIZE_THEME=aurora|ember|moss|mono`
-- `SUMMARIZE_TRUECOLOR=1` (force 24-bit ANSI)
-- `SUMMARIZE_NO_TRUECOLOR=1` (disable 24-bit ANSI)
+- `GIST_THEME=aurora|ember|moss|mono`
+- `GIST_TRUECOLOR=1` (force 24-bit ANSI)
+- `GIST_NO_TRUECOLOR=1` (disable 24-bit ANSI)
 
 OpenRouter (OpenAI-compatible):
 
@@ -647,17 +647,17 @@ OpenRouter (OpenAI-compatible):
 - Prefer forcing OpenRouter per model id: `--model openrouter/<author>/<slug>`
 - Built-in preset: `--model free` (uses a default set of OpenRouter `:free` models)
 
-### `summarize refresh-free`
+### `gist refresh-free`
 
 Quick start: make free the default (keep `auto` available)
 
 ```bash
-summarize refresh-free --set-default
-summarize "https://example.com"
-summarize "https://example.com" --model auto
+gist refresh-free --set-default
+gist "https://example.com"
+gist "https://example.com" --model auto
 ```
 
-Regenerates the `free` preset (`models.free` in `~/.summarize/config.json`) by:
+Regenerates the `free` preset (`models.free` in `~/.gist/config.json`) by:
 
 - Fetching OpenRouter `/models`, filtering `:free`
 - Skipping models that look very small (<27B by default) based on the model id/name
@@ -668,7 +668,7 @@ Regenerates the `free` preset (`models.free` in `~/.summarize/config.json`) by:
 If `--model free` stops working, run:
 
 ```bash
-summarize refresh-free
+gist refresh-free
 ```
 
 Flags:
@@ -677,17 +677,17 @@ Flags:
 - `--smart 3` (default): how many smart-first picks (rest filled by fastest)
 - `--min-params 27b` (default): ignore models with inferred size smaller than N billion parameters
 - `--max-age-days 180` (default): ignore models older than N days (set 0 to disable)
-- `--set-default`: also sets `"model": "free"` in `~/.summarize/config.json`
+- `--set-default`: also sets `"model": "free"` in `~/.gist/config.json`
 
 Example:
 
 ```bash
-OPENROUTER_API_KEY=sk-or-... summarize "https://example.com" --model openrouter/meta-llama/llama-3.1-8b-instruct:free
-OPENROUTER_API_KEY=sk-or-... summarize "https://example.com" --model openrouter/minimax/minimax-m2.5
+OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model openrouter/meta-llama/llama-3.1-8b-instruct:free
+OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model openrouter/minimax/minimax-m2.5
 ```
 
 If your OpenRouter account enforces an allowed-provider list, make sure at least one provider
-is allowed for the selected model. When routing fails, `summarize` prints the exact providers to allow.
+is allowed for the selected model. When routing fails, `gist` prints the exact providers to allow.
 
 Legacy: `OPENAI_BASE_URL=https://openrouter.ai/api/v1` (and either `OPENAI_API_KEY` or `OPENROUTER_API_KEY`) also works.
 
@@ -700,7 +700,7 @@ NVIDIA API Catalog (OpenAI-compatible; free credits):
 
 ```bash
 export NVIDIA_API_KEY="nvapi-..."
-summarize "https://example.com" --model nvidia/stepfun-ai/step-3.5-flash
+gist "https://example.com" --model nvidia/stepfun-ai/step-3.5-flash
 ```
 
 Z.AI (OpenAI-compatible):
@@ -724,19 +724,19 @@ Optional services:
 The CLI uses the LiteLLM model catalog for model limits (like max output tokens):
 
 - Downloaded from: `https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json`
-- Cached at: `~/.summarize/cache/`
+- Cached at: `~/.gist/cache/`
 
 ### Library usage (optional)
 
 Recommended (minimal deps):
 
-- `@steipete/summarize-core/content`
-- `@steipete/summarize-core/prompts`
+- `@seanmozeik/gist-core/content`
+- `@seanmozeik/gist-core/prompts`
 
 Compatibility (pulls in CLI deps):
 
-- `@steipete/summarize/content`
-- `@steipete/summarize/prompts`
+- `@seanmozeik/gist/content`
+- `@seanmozeik/gist/prompts`
 
 ### Development
 
@@ -761,7 +761,7 @@ bun run check
   - Extension details -> Site access -> On all sites (or allow this domain)
   - Reload the tab once.
 - "Failed to fetch" / daemon unreachable:
-  - `summarize daemon status`
-  - Logs: `~/.summarize/logs/daemon.err.log`
+  - `gist daemon status`
+  - Logs: `~/.gist/logs/daemon.err.log`
 
 License: MIT

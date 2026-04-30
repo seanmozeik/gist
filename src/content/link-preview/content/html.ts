@@ -1,7 +1,7 @@
 import { resolveTranscriptForLink } from '../../transcript/index.js';
 import { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from '../../url.js';
 import type { LinkPreviewDeps } from '../deps.js';
-import type { FirecrawlDiagnostics, MarkdownDiagnostics } from '../types.js';
+import type { MarkdownDiagnostics } from '../types.js';
 import { extractArticleContent, sanitizeHtmlForMarkdownConversion } from './article.js';
 import { normalizeForPrompt } from './cleaner.js';
 import {
@@ -54,7 +54,6 @@ export async function buildResultFromHtmlDocument({
   youtubeTranscriptMode,
   mediaTranscriptMode,
   transcriptTimestamps,
-  firecrawlDiagnostics,
   markdownRequested,
   markdownMode,
   timeoutMs,
@@ -68,7 +67,6 @@ export async function buildResultFromHtmlDocument({
   youtubeTranscriptMode: FetchLinkContentOptions['youtubeTranscript'];
   mediaTranscriptMode: FetchLinkContentOptions['mediaTranscript'];
   transcriptTimestamps?: FetchLinkContentOptions['transcriptTimestamps'];
-  firecrawlDiagnostics: FirecrawlDiagnostics;
   markdownRequested: boolean;
   markdownMode: MarkdownMode;
   timeoutMs: number;
@@ -218,7 +216,6 @@ export async function buildResultFromHtmlDocument({
     baseContent,
     description: mergedDescription ?? description,
     diagnostics: {
-      firecrawl: firecrawlDiagnostics,
       markdown: markdownDiagnostics,
       strategy: 'html',
       transcript: transcriptDiagnostics,

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { parseOutputLanguage } from '../src/language.js';
 import {
   buildFileTextSummaryPrompt,
   buildLinkSummaryPrompt,
   buildPathSummaryPrompt,
-} from '../packages/core/src/prompts/index.js';
-import { parseOutputLanguage } from '../src/language.js';
+} from '../src/prompts/index.js';
 
 describe('prompt overrides', () => {
   it('replaces link instructions but keeps context/content tags', () => {
@@ -33,7 +33,7 @@ describe('prompt overrides', () => {
     expect(prompt).toContain('Source URL: https://example.com');
     expect(prompt).toContain('<content>');
     expect(prompt).toContain('Body');
-    expect(prompt).not.toContain('You summarize online articles');
+    expect(prompt).not.toContain('You gist online articles');
   });
 
   it('replaces file-text instructions and keeps inline content', () => {
@@ -46,16 +46,16 @@ describe('prompt overrides', () => {
       lengthInstruction: null,
       originalMediaType: 'text/plain',
       outputLanguage: parseOutputLanguage('en'),
-      promptOverride: 'Summarize in two bullets.',
+      promptOverride: 'Gist in two bullets.',
       summaryLength: 'short',
     });
 
     expect(prompt).toContain('<instructions>');
-    expect(prompt).toContain('Summarize in two bullets.');
+    expect(prompt).toContain('Gist in two bullets.');
     expect(prompt).toContain('Output should be English.');
     expect(prompt).toContain('<content>');
     expect(prompt).toContain('Hello world!');
-    expect(prompt).not.toContain('You summarize files');
+    expect(prompt).not.toContain('You gist files');
   });
 
   it('replaces path prompt instructions for CLI attachments', () => {
@@ -76,7 +76,7 @@ describe('prompt overrides', () => {
     expect(prompt).toContain('Output is 500 characters.');
     expect(prompt).toContain('<context>');
     expect(prompt).toContain('Path: /tmp/sample.pdf');
-    expect(prompt).not.toContain('You summarize files');
+    expect(prompt).not.toContain('You gist files');
   });
 
   it('does not add length/language lines when instructions are null', () => {
@@ -110,7 +110,7 @@ describe('prompt overrides', () => {
       lengthInstruction: null,
       mediaType: 'text/markdown',
       outputLanguage: parseOutputLanguage('en'),
-      promptOverride: 'Summarize in one sentence.',
+      promptOverride: 'Gist in one sentence.',
       summaryLength: 'short',
     });
 
@@ -147,6 +147,6 @@ describe('prompt overrides', () => {
     expect(prompt).toContain(
       'Final check for slides: every [slide:N] must be immediately followed by a line that starts with "## ".',
     );
-    expect(prompt).not.toContain('You summarize online videos');
+    expect(prompt).not.toContain('You gist online videos');
   });
 });

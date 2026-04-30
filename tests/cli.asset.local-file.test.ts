@@ -42,19 +42,14 @@ vi.mock('@mariozechner/pi-ai', () => ({
   streamSimple: mocks.streamSimple,
 }));
 
-const execFileMock: ExecFileFn = ((file, args, _options, callback) => {
-  undefined;
-  undefined;
-  callback(null, '# converted\n\nhello\n', '');
-  return { pid: 123 } as unknown as ChildProcess;
-}) as ExecFileFn;
+const execFileMock: ExecFileFn = ((file, args, _options, callback) => {}) as ExecFileFn;
 
 describe('cli asset inputs (local file)', () => {
   it('attaches a local PDF when the provider supports file attachments', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -118,8 +113,8 @@ describe('cli asset inputs (local file)', () => {
   it('inlines text files into the prompt instead of attaching a file part', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-txt-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-txt-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -167,11 +162,11 @@ describe('cli asset inputs (local file)', () => {
     globalFetchSpy.mockRestore();
   });
 
-  it('allows xAI models to summarize local text files (inlined prompt)', async () => {
+  it('allows xAI models to gist local text files (inlined prompt)', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-txt-xai-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-txt-xai-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -234,8 +229,8 @@ describe('cli asset inputs (local file)', () => {
   it('rejects local text files that exceed the input token limit', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-token-limit-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-token-limit-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -286,8 +281,8 @@ describe('cli asset inputs (local file)', () => {
   it('rejects local text files above the 10 MB limit before tokenizing', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-size-limit-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-size-limit-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -333,7 +328,7 @@ describe('cli asset inputs (local file)', () => {
   it('errors early for zip archives with a helpful message', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-zip-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-zip-'));
     const zipPath = join(root, 'JetBrainsMono-2.304.zip');
     // ZIP local file header: PK\x03\x04
     writeFileSync(zipPath, Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]));
@@ -357,7 +352,7 @@ describe('cli asset inputs (local file)', () => {
   it('errors when a text file exceeds the size limit', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-large-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-large-'));
     const txtPath = join(root, 'large.txt');
     const oversizeBytes = 10 * 1024 * 1024 + 1;
     writeFileSync(txtPath, Buffer.alloc(oversizeBytes, 'a'));
@@ -380,8 +375,8 @@ describe('cli asset inputs (local file)', () => {
   it('errors when a text file exceeds the model input token limit', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-local-tokens-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-local-tokens-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

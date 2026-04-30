@@ -1,19 +1,21 @@
 import fs from 'node:fs/promises';
 
 import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from '../cache.js';
-import { loadSummarizeConfig, mergeConfigEnv } from '../config.js';
+import { loadGistConfig, mergeConfigEnv } from '../config.js';
+import { mergeSecretEnv, readSecretsEnv } from '../secrets.js';
 import { formatVersionLine } from '../version.js';
 
-export function prepareRunEnvironment(
+export async function prepareRunEnvironment(
   argv: string[],
   inputEnv: Record<string, string | undefined>,
-) {
+): Promise<{ envForRun: Record<string, string | undefined>; normalizedArgv: string[] }> {
   const normalizedArgv = argv.filter((arg) => arg !== '--');
   const noColorFlag = normalizedArgv.includes('--no-color');
   let envForRun: Record<string, string | undefined> = noColorFlag
     ? { ...inputEnv, FORCE_COLOR: '0', NO_COLOR: '1' }
     : { ...inputEnv };
-  const { config: bootstrapConfig } = loadSummarizeConfig({ env: envForRun });
+  const { config: bootstrapConfig } = loadGistConfig({ env: envForRun });
+  envForRun = mergeSecretEnv({ env: envForRun, secrets: await readSecretsEnv() });
   envForRun = mergeConfigEnv({ config: bootstrapConfig, env: envForRun });
   return { envForRun, normalizedArgv };
 }
@@ -104,7 +106,7 @@ export async function handleCacheUtilityFlags({
     if (extraArgs.length > 0) {
       throw new Error('--clear-cache must be used alone.');
     }
-    const { config } = loadSummarizeConfig({ env: envForRun });
+    const { config } = loadGistConfig({ env: envForRun });
     const cachePath = resolveCachePath({ cachePath: config?.cache?.path ?? null, env: envForRun });
     if (!cachePath) {
       throw new Error('Unable to resolve cache path (missing HOME).');
@@ -123,7 +125,7 @@ export async function handleCacheUtilityFlags({
   if (extraArgs.length > 0) {
     throw new Error('--cache-stats must be used alone.');
   }
-  const { config } = loadSummarizeConfig({ env: envForRun });
+  const { config } = loadGistConfig({ env: envForRun });
   const cachePath = resolveCachePath({ cachePath: config?.cache?.path ?? null, env: envForRun });
   if (!cachePath) {
     throw new Error('Unable to resolve cache path (missing HOME).');

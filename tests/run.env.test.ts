@@ -15,7 +15,7 @@ import {
 } from '../src/run/env.js';
 
 const makeBin = (name: string) => {
-  const dir = mkdtempSync(join(tmpdir(), 'summarize-run-env-'));
+  const dir = mkdtempSync(join(tmpdir(), 'gist-run-env-'));
   const file = join(dir, name);
   writeFileSync(file, '#!/bin/sh\nexit 0\n');
   chmodSync(file, 0o755);
@@ -50,7 +50,7 @@ describe('run/env', () => {
     await expect(
       canSpawnCommand({
         args: ['--help'],
-        command: 'definitely-missing-summarize-binary',
+        command: 'definitely-missing-gist-binary',
         env: process.env as Record<string, string | undefined>,
       }),
     ).resolves.toBe(false);

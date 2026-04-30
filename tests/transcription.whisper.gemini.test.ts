@@ -12,7 +12,7 @@ describe('transcription/whisper gemini', () => {
   });
 
   it('uses Gemini inline transcription before OpenAI', async () => {
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
       expect(url).toContain('/models/gemini-2.5-flash:generateContent');
@@ -28,11 +28,10 @@ describe('transcription/whisper gemini', () => {
     });
 
     vi.stubGlobal('fetch', fetchMock);
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
-      env: { SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1' },
+      env: { GIST_DISABLE_LOCAL_WHISPER_CPP: '1' },
       falApiKey: null,
       filename: 'clip.mp3',
       geminiApiKey: 'GEMINI',
@@ -47,7 +46,7 @@ describe('transcription/whisper gemini', () => {
   });
 
   it('falls back from Gemini to OpenAI when Gemini fails', async () => {
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
       if (url.includes('generativelanguage.googleapis.com')) {
@@ -63,11 +62,10 @@ describe('transcription/whisper gemini', () => {
     });
 
     vi.stubGlobal('fetch', fetchMock);
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
-      env: { SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1' },
+      env: { GIST_DISABLE_LOCAL_WHISPER_CPP: '1' },
       falApiKey: null,
       filename: 'clip.mp3',
       geminiApiKey: 'GEMINI',
@@ -82,8 +80,8 @@ describe('transcription/whisper gemini', () => {
   });
 
   it('uses the Gemini Files API for oversized local files', async () => {
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
-    const root = await mkdtemp(join(tmpdir(), 'summarize-gemini-file-'));
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
+    const root = await mkdtemp(join(tmpdir(), 'gist-gemini-file-'));
     const audioPath = join(root, 'audio.mp3');
     await writeFile(audioPath, new Uint8Array([1, 2, 3]));
     await truncate(audioPath, 21 * 1024 * 1024);
@@ -129,10 +127,9 @@ describe('transcription/whisper gemini', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaFileWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaFileWithWhisper({
-        env: { SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1' },
+        env: { GIST_DISABLE_LOCAL_WHISPER_CPP: '1' },
         falApiKey: null,
         filePath: audioPath,
         filename: 'audio.mp3',
@@ -149,7 +146,7 @@ describe('transcription/whisper gemini', () => {
       ).toBe(true);
     } finally {
       await rm(root, { force: true, recursive: true }).catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   });

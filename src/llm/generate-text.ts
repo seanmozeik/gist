@@ -161,7 +161,7 @@ export async function generateTextWithModelId({
         // Sidecar chat — POST to /v1/chat/completions
         const baseUrl = localBaseUrl;
         if (!baseUrl) {
-          throw new Error('Local sidecar not configured. Set SUMMARIZE_LOCAL_BASE_URL env var.');
+          throw new Error('Local sidecar not configured. Set GIST_LOCAL_BASE_URL env var.');
         }
         const url = `${baseUrl}/v1/chat/completions`;
         const messages: { role: string; content: string }[] = [];

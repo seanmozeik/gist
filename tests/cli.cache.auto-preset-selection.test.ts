@@ -49,13 +49,13 @@ describe('auto preset summary cache', () => {
       throw new Error(`unexpected model id: ${modelId}`);
     });
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-auto-preset-cache-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-auto-preset-cache-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, 'config.json'),
+      join(gistDir, 'config.json'),
       JSON.stringify({
         cache: { enabled: true, maxMb: 32, ttlDays: 30 },
         models: {

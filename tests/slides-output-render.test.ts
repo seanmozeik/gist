@@ -43,7 +43,7 @@ describe('slides output render', () => {
       'Slides saved to /tmp/slides. Inline images unavailable (stdout is not a TTY).',
     );
     expect(stderr.read()).toContain(
-      'Use summarize slides "https://example.com" --output "/tmp/slides" to export only.',
+      'Use gist slides "https://example.com" --output "/tmp/slides" to export only.',
     );
     expect(clearProgressForStdout).toHaveBeenCalledTimes(1);
     expect(restoreProgressAfterStdout).toHaveBeenCalledTimes(1);

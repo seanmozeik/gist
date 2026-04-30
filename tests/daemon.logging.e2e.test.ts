@@ -49,12 +49,12 @@ console.log(JSON.stringify({ usage: { input_tokens: 1, output_tokens: 1 } }));
 
 describe('daemon logging', () => {
   it('logs extended content only when requested', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-logging-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-logging-'));
     const port = await findFreePort();
     const token = 'test-token-logging-123';
     const codexPath = createFakeCodex(home);
 
-    const configDir = join(home, '.summarize');
+    const configDir = join(home, '.gist');
     const logPath = join(configDir, 'logs', 'daemon.jsonl');
     mkdirSync(configDir, { recursive: true });
     writeFileSync(
@@ -107,7 +107,7 @@ describe('daemon logging', () => {
     });
     const serverPromise = runDaemonServer({
       config: { installedAt: new Date().toISOString(), port, token, version: 1 },
-      env: { HOME: home, SUMMARIZE_CLI_CODEX: codexPath, SUMMARIZE_MODEL: 'cli/codex' },
+      env: { GIST_CLI_CODEX: codexPath, GIST_MODEL: 'cli/codex', HOME: home },
       fetchImpl: fetchImpl as typeof fetch,
       onListening: () => resolveReady?.(),
       onSessionEvent: (event, sessionId) => {
@@ -133,7 +133,7 @@ describe('daemon logging', () => {
 
     try {
       const run = async (includeContent: boolean) => {
-        const res = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
+        const res = await fetch(`http://127.0.0.1:${port}/v1/gist`, {
           body: JSON.stringify({
             diagnostics: includeContent ? { includeContent: true } : undefined,
             language: 'auto',
@@ -175,7 +175,7 @@ describe('daemon logging', () => {
         while (Date.now() < deadline) {
           const lines = readLogEntries();
           const entry = lines.find(
-            (line) => line.event === 'summarize.done' && line.requestId === requestId,
+            (line) => line.event === 'gist.done' && line.requestId === requestId,
           );
           if (entry) {
             return entry;

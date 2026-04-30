@@ -36,7 +36,7 @@ describe('transcription/whisper', () => {
         return proc;
       },
     }));
-    return import('../packages/core/src/transcription/whisper.js');
+    return import('../src/transcription/whisper.js');
   };
 
   const importWhisperWithMockFfmpeg = async ({
@@ -51,7 +51,7 @@ describe('transcription/whisper', () => {
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {
-          /* empty */
+          /* Empty */
         };
 
         const handlers = new Map<string, (value?: unknown) => void>();
@@ -111,7 +111,7 @@ describe('transcription/whisper', () => {
         return proc;
       },
     }));
-    return import('../packages/core/src/transcription/whisper.js');
+    return import('../src/transcription/whisper.js');
   };
 
   const importWhisperWithGroqCurlFallback = async ({
@@ -128,16 +128,12 @@ describe('transcription/whisper', () => {
         args: string[],
         _options: unknown,
         callback: (error: Error | null, stdout: string, stderr: string) => void,
-      ) => {
-        const outputPath = args[args.indexOf('-o') + 1];
-        undefined;
-        return {} as ChildProcess;
-      },
+      ) => {},
       spawn: () => {
         throw new Error('spawn should not be used');
       },
     }));
-    return import('../packages/core/src/transcription/whisper.js');
+    return import('../src/transcription/whisper.js');
   };
 
   it('maps media types to filename extensions for Whisper format detection', async () => {
@@ -156,8 +152,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -196,8 +191,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -215,8 +209,7 @@ describe('transcription/whisper', () => {
   });
 
   it('returns an error when no transcription keys are provided', async () => {
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: null,
@@ -234,12 +227,12 @@ describe('transcription/whisper', () => {
   });
 
   it('transcribes small files via transcribeMediaFileWithWhisper (no chunking)', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-file-small-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-file-small-'));
     const audioPath = join(root, 'audio.mp3');
     await writeFile(audioPath, new Uint8Array([1, 2, 3]));
 
     resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
 
     const openaiFetch = vi.fn(async () => {
       return Response.json(
@@ -250,8 +243,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', openaiFetch);
-      const { transcribeMediaFileWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
       const progress = vi.fn();
       const result = await transcribeMediaFileWithWhisper({
         falApiKey: null,
@@ -270,14 +262,14 @@ describe('transcription/whisper', () => {
     } finally {
       vi.unstubAllGlobals();
       await rm(root, { force: true, recursive: true }).catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   });
 
   it('uses FAL chunk transcripts when the result has `chunks`', async () => {
     resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
 
     falMocks.createFalClient
       .mockReset()
@@ -288,8 +280,7 @@ describe('transcription/whisper', () => {
         })),
       });
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: 'FAL',
@@ -320,8 +311,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', openaiFetch);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
 
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
@@ -387,8 +377,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', openaiFetch);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -407,7 +396,7 @@ describe('transcription/whisper', () => {
 
   it('chunks oversized files via ffmpeg and concatenates transcripts', async () => {
     const whisper = await importWhisperWithMockFfmpeg({ segmentPlan: 'two-parts' });
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-test-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-test-'));
     const path = join(dir, 'input.bin');
 
     // Sparse file: huge stat size, tiny actual data.
@@ -471,7 +460,7 @@ describe('transcription/whisper', () => {
 
   it('reports an error when ffmpeg produces no segments', async () => {
     const whisper = await importWhisperWithMockFfmpeg({ segmentPlan: 'no-parts' });
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-test-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-test-'));
     const path = join(dir, 'input.bin');
     await writeFile(path, new Uint8Array([1, 2, 3]));
     await truncate(path, whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
@@ -496,9 +485,8 @@ describe('transcription/whisper', () => {
   });
 
   it('transcribeMediaFileWithWhisper returns an error when no transcription keys are provided', async () => {
-    const { transcribeMediaFileWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-test-'));
+    const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-test-'));
     const path = join(dir, 'input.bin');
     await writeFile(path, new Uint8Array([1, 2, 3]));
     try {
@@ -521,7 +509,7 @@ describe('transcription/whisper', () => {
 
   it('falls back to partial reads when ffmpeg is missing for oversized files', async () => {
     const whisper = await importWhisperWithNoFfmpeg();
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-test-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-test-'));
     const path = join(dir, 'input.bin');
     await writeFile(path, new Uint8Array([1, 2, 3]));
     await truncate(path, whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
@@ -590,8 +578,7 @@ describe('transcription/whisper', () => {
   });
 
   it('skips FAL for non-audio media types', async () => {
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: 'FAL',
@@ -608,14 +595,14 @@ describe('transcription/whisper', () => {
   });
 
   it('surfaces ffmpeg segment failures with stderr detail', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-ffmpeg-seg-fail-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-ffmpeg-seg-fail-'));
     const audioPath = join(root, 'audio.bin');
     await writeFile(audioPath, new Uint8Array([1, 2, 3]));
     // Force the "oversized upload" branch so we hit the ffmpeg segmenter.
     await truncate(audioPath, 30 * 1024 * 1024);
 
     resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
@@ -625,7 +612,7 @@ describe('transcription/whisper', () => {
 
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {
-          /* empty */
+          /* Empty */
         };
 
         const handlers = new Map<string, (value?: unknown) => void>();
@@ -654,8 +641,7 @@ describe('transcription/whisper', () => {
     }));
 
     try {
-      const { transcribeMediaFileWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
       await expect(
         transcribeMediaFileWithWhisper({
           falApiKey: null,
@@ -670,14 +656,14 @@ describe('transcription/whisper', () => {
       ).rejects.toThrow(/ffmpeg failed/i);
     } finally {
       await rm(root, { force: true, recursive: true }).catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   });
 
   it('notes ffmpeg transcode failures when retrying OpenAI decode errors', async () => {
     resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
 
     const originalFetch = globalThis.fetch;
     try {
@@ -699,7 +685,7 @@ describe('transcription/whisper', () => {
           }
           const stderr = new EventEmitter();
           stderr.setEncoding = () => {
-            /* empty */
+            /* Empty */
           };
 
           const handlers = new Map<string, (value?: unknown) => void>();
@@ -727,8 +713,7 @@ describe('transcription/whisper', () => {
         },
       }));
 
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -791,8 +776,7 @@ describe('transcription/whisper', () => {
         subscribe: vi.fn(async () => ({ data: { text: '' } })),
       });
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: 'FAL',
@@ -815,8 +799,7 @@ describe('transcription/whisper', () => {
         subscribe: vi.fn(async () => ({ data: { text: '  hello fal  ' } })),
       });
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: 'FAL',
@@ -838,13 +821,12 @@ describe('transcription/whisper', () => {
       subscribe: vi.fn(
         async () =>
           new Promise(() => {
-            /* empty */
+            /* Empty */
           }),
       ),
     });
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const promise = transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: 'FAL',
@@ -877,8 +859,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -915,8 +896,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -980,8 +960,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1010,8 +989,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1077,8 +1055,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1109,8 +1086,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1142,8 +1118,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1162,8 +1137,7 @@ describe('transcription/whisper', () => {
   });
 
   it('shouldRetryGroqViaFfmpeg detects retryable errors', async () => {
-    const { shouldRetryGroqViaFfmpeg } =
-      await import('../packages/core/src/transcription/whisper/groq.js');
+    const { shouldRetryGroqViaFfmpeg } = await import('../src/transcription/whisper/groq.js');
     expect(shouldRetryGroqViaFfmpeg(new Error('Unrecognized file format'))).toBe(true);
     expect(shouldRetryGroqViaFfmpeg(new Error('could not be decoded'))).toBe(true);
     expect(shouldRetryGroqViaFfmpeg(new Error('format is not supported'))).toBe(true);
@@ -1184,8 +1158,7 @@ describe('transcription/whisper', () => {
 
     try {
       vi.stubGlobal('fetch', fetchMock);
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -1203,7 +1176,7 @@ describe('transcription/whisper', () => {
   });
 
   it('does not retry Groq in file flow after initial Groq failure', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-groq-file-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-groq-file-'));
     const inputPath = join(dir, 'input.mp3');
     await writeFile(inputPath, new Uint8Array([1, 2, 3]));
 
@@ -1253,7 +1226,7 @@ describe('transcription/whisper', () => {
 
   it('returns a Groq-specific error for oversized files with only Groq configured', async () => {
     const whisper = await importWhisperWithNoFfmpeg();
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-groq-large-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-groq-large-'));
     const path = join(dir, 'input.bin');
     await writeFile(path, new Uint8Array([1, 2, 3]));
     await truncate(path, whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
@@ -1286,7 +1259,7 @@ describe('transcription/whisper', () => {
 
   it('chunks oversized files for Groq-only transcription when ffmpeg is available', async () => {
     const whisper = await importWhisperWithMockFfmpeg({ segmentPlan: 'two-parts' });
-    const dir = await mkdtemp(join(tmpdir(), 'summarize-whisper-groq-chunked-'));
+    const dir = await mkdtemp(join(tmpdir(), 'gist-whisper-groq-chunked-'));
     const path = join(dir, 'input.bin');
     await writeFile(path, new Uint8Array([1, 2, 3]));
     await truncate(path, whisper.MAX_OPENAI_UPLOAD_BYTES + 1);
@@ -1360,8 +1333,7 @@ describe('transcription/whisper', () => {
 
       try {
         vi.stubGlobal('fetch', fetchMock);
-        const { transcribeMediaWithWhisper } =
-          await import('../packages/core/src/transcription/whisper.js');
+        const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
         const result = await transcribeMediaWithWhisper({
           bytes: new Uint8Array([1, 2, 3]),
           falApiKey: null,

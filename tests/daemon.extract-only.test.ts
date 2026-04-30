@@ -26,9 +26,9 @@ const findFreePort = async (): Promise<number> =>
     });
   });
 
-describe('daemon /v1/summarize extractOnly', () => {
+describe('daemon /v1/gist extractOnly', () => {
   it('rejects extractOnly for page mode', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-extract-only-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-extract-only-'));
     const port = await findFreePort();
     const token = 'test-token-123';
 
@@ -49,7 +49,7 @@ describe('daemon /v1/summarize extractOnly', () => {
 
     await ready;
 
-    const res = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
+    const res = await fetch(`http://127.0.0.1:${port}/v1/gist`, {
       body: JSON.stringify({ extractOnly: true, mode: 'page', url: 'https://example.com' }),
       headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       method: 'POST',

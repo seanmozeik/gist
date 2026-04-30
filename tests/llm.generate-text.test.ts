@@ -261,7 +261,7 @@ describe('llm generate/stream', () => {
       prompt: buildDocumentPrompt({
         bytes: pdfBytes,
         filename: 'test.pdf',
-        text: 'Summarize the attached PDF.',
+        text: 'Gist the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -303,7 +303,7 @@ describe('llm generate/stream', () => {
       prompt: buildDocumentPrompt({
         bytes: pdfBytes,
         filename: 'test.pdf',
-        text: 'Summarize the attached PDF.',
+        text: 'Gist the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -346,7 +346,7 @@ describe('llm generate/stream', () => {
       prompt: buildDocumentPrompt({
         bytes: pdfBytes,
         filename: 'test.pdf',
-        text: 'Summarize the attached PDF.',
+        text: 'Gist the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -671,7 +671,7 @@ describe('llm generate/stream', () => {
       prompt: buildDocumentPrompt({
         bytes: pdfBytes,
         filename: 'test.pdf',
-        text: 'Summarize the attached PDF.',
+        text: 'Gist the attached PDF.',
       }),
       timeoutMs: 2000,
     });
@@ -841,8 +841,8 @@ describe('llm generate/stream', () => {
     };
     expect(model.baseUrl).toBe('https://openrouter.ai/api/v1');
     expect(model.api).toBe('openai-completions');
-    expect(model.headers?.['HTTP-Referer']).toBe('https://github.com/steipete/summarize');
-    expect(model.headers?.['X-Title']).toBe('summarize');
+    expect(model.headers?.['HTTP-Referer']).toBe('https://github.com/seanmozeik/gist');
+    expect(model.headers?.['X-Title']).toBe('gist');
   });
 
   it('uses the GitHub Models chat-completions endpoint for github-copilot ids', async () => {
@@ -1087,7 +1087,7 @@ describe('llm generate/stream', () => {
     mocks.streamSimple.mockImplementationOnce(() => ({
       async *[Symbol.asyncIterator]() {
         await new Promise(() => {
-          /* empty */
+          /* Empty */
         });
       },
       result: async () => makeAssistantMessage({ text: 'ok' }),
@@ -1120,7 +1120,7 @@ describe('llm generate/stream', () => {
       },
       async result() {
         await new Promise(() => {
-          /* empty */
+          /* Empty */
         });
       },
     }));

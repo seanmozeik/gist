@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   accumulateChatChunk,
-  accumulateSummarizeChunk,
+  accumulateGistChunk,
   getTerminalStreamError,
   shouldSurfaceStreamingStatus,
 } from '../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller-policy';
@@ -23,9 +23,9 @@ describe('sidepanel stream controller policy', () => {
     ).toBe(false);
   });
 
-  it('accumulates summarize and chat chunks via pure helpers', () => {
+  it('accumulates gist and chat chunks via pure helpers', () => {
     expect(accumulateChatChunk('Hello', ' world')).toBe('Hello world');
-    expect(accumulateSummarizeChunk('Hello', ' world')).toContain('Hello world');
+    expect(accumulateGistChunk('Hello', ' world')).toContain('Hello world');
   });
 
   it('normalizes terminal stream completion errors', () => {

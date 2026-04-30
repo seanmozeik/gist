@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { runCli } from '../../src/run.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 (LIVE ? describe : describe.skip)('live wikipedia parentheses url', () => {
   it('preserves parentheses in URL paths', async () => {

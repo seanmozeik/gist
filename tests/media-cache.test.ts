@@ -12,7 +12,7 @@ const makeTempDir = async (prefix: string) => {
 
 describe('media cache', () => {
   it('stores and reuses cached media', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 10 * 1024 * 1024,
@@ -45,7 +45,7 @@ describe('media cache', () => {
   });
 
   it('uses .m3u8 for HLS playlist media types without filenames', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 10 * 1024 * 1024,
@@ -69,7 +69,7 @@ describe('media cache', () => {
   });
 
   it('ignores non-http urls and keeps source intact', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 10 * 1024 * 1024,
@@ -96,7 +96,7 @@ describe('media cache', () => {
   });
 
   it('evicts least-recently-used entries when max size is exceeded', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 10,
@@ -132,7 +132,7 @@ describe('media cache', () => {
   });
 
   it('expires entries when ttl has elapsed', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 1024 * 1024,
@@ -174,7 +174,7 @@ describe('media cache', () => {
   });
 
   it('skips caching when file exceeds max size', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 4,
@@ -199,7 +199,7 @@ describe('media cache', () => {
   });
 
   it('drops cached files with size mismatches', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 1024 * 1024,
@@ -231,7 +231,7 @@ describe('media cache', () => {
   });
 
   it('drops cached files with hash mismatches', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 1024 * 1024,
@@ -262,7 +262,7 @@ describe('media cache', () => {
   });
 
   it('updates metadata when verify is none', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       const cache = await createMediaCache({
         maxBytes: 1024 * 1024,
@@ -297,7 +297,7 @@ describe('media cache', () => {
   });
 
   it('recovers from a corrupted index', async () => {
-    const cacheDir = await makeTempDir('summarize-media-cache-');
+    const cacheDir = await makeTempDir('gist-media-cache-');
     try {
       await writeFile(join(cacheDir, 'index.json'), '{nope');
       const cache = await createMediaCache({

@@ -73,7 +73,7 @@ describe('daemon/launchd install', () => {
         },
       );
 
-      const home = mkdtempSync(path.join(tmpdir(), 'summarize-launchd-'));
+      const home = mkdtempSync(path.join(tmpdir(), 'gist-launchd-'));
       const out = collectStream();
 
       const { plistPath } = await installLaunchAgent({

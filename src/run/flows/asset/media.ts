@@ -9,14 +9,13 @@ import { isAbsolute, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { createLinkPreviewClient, type ExtractedLinkContent } from '../../../content/index.js';
-import { createFirecrawlScraper } from '../../../firecrawl.js';
 import type { AssetAttachment } from '../../attachments.js';
 import { readTweetWithPreferredClient } from '../../bird.js';
 import { resolveTwitterCookies } from '../../cookies/twitter.js';
 import { hasBirdCli } from '../../env.js';
 import { writeVerbose } from '../../logging.js';
 import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from './media-policy.js';
-import type { AssetSummaryContext, SummarizeAssetArgs } from './summary.js';
+import type { AssetSummaryContext, GistAssetArgs } from './summary.js';
 
 /**
  * Get file modification time for cache invalidation support.
@@ -44,24 +43,13 @@ function getFileModificationTime(filePath: string): number | null {
  * 2. Creates LinkPreviewClient with necessary dependencies
  * 3. Calls client.fetchLinkContent to trigger transcription
  * 4. Converts transcript text to AssetAttachment
- * 5. Calls summarizeAsset with the transcript
+ * 5. Calls gistAsset with the transcript
  *
  * Phase 2.2 Enhancement:
  * - Captures file modification time for cache invalidation
  * - Passes fileMtime to transcript cache for local file support
  */
-export async function summarizeMediaFile(
-  ctx: AssetSummaryContext,
-  args: SummarizeAssetArgs,
-): Promise<void> {
-  // Check if basic transcription setup is available
-  const groqKey = ctx.env.GROQ_API_KEY;
-  const geminiKey =
-    ctx.env.GEMINI_API_KEY ?? ctx.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ctx.env.GOOGLE_API_KEY;
-  const openaiKey = ctx.env.OPENAI_API_KEY;
-  const falKey = ctx.env.FAL_KEY;
-  const assemblyaiKey = ctx.env.ASSEMBLYAI_API_KEY;
-
+export async function gistMediaFile(ctx: AssetSummaryContext, args: GistAssetArgs): Promise<void> {
   // Helper to check if a binary is available on PATH
   const isBinaryAvailable = async (binary: string): Promise<boolean> => {
     const { spawn } = await import('node:child_process');
@@ -82,37 +70,12 @@ export async function summarizeMediaFile(
   // Check for yt-dlp: either via env var or on PATH
   const ytDlpPath = ctx.env.YT_DLP_PATH ?? ((await isBinaryAvailable('yt-dlp')) ? 'yt-dlp' : null);
 
-  // Check for whisper.cpp: either via env var or by checking if whisper-cli is on PATH
-  const hasLocalWhisper = ctx.env.SUMMARIZE_WHISPER_CPP_BINARY
-    ? true
-    : await isBinaryAvailable('whisper-cli');
-
   const hasAnyTranscriptionProvider =
-    groqKey ?? assemblyaiKey ?? geminiKey ?? openaiKey ?? falKey ?? hasLocalWhisper;
+    Boolean(ctx.envForRun.GIST_LOCAL_BASE_URL?.trim()) ||
+    Boolean(ctx.envForRun.OPENROUTER_API_KEY?.trim());
 
   if (!hasAnyTranscriptionProvider) {
-    throw new Error(`Media file transcription requires one of the following:
-
-1. Groq Whisper (fast, free tier):
-   Set GROQ_API_KEY=gsk_...
-
-2. Gemini audio transcription:
-   Set GEMINI_API_KEY=...
-
-3. AssemblyAI transcription:
-   Set ASSEMBLYAI_API_KEY=...
-
-4. OpenAI Whisper:
-   Set OPENAI_API_KEY=sk-...
-
-5. FAL Whisper:
-   Set FAL_KEY=...
-
-6. Local whisper.cpp (recommended, free):
-   brew install whisper-cpp
-   Ensure whisper-cli is on your PATH (or set SUMMARIZE_WHISPER_CPP_BINARY)
-
-See: https://github.com/openai/whisper for setup details`);
+    throw new Error('Media transcription requires GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.');
   }
 
   const isHttpUrl = (value: string): boolean => {
@@ -172,12 +135,6 @@ See: https://github.com/openai/whisper for setup details`);
 
   const cacheMode = ctx.cache.mode;
 
-  // Create Firecrawl scraper if configured
-  const firecrawlScraper =
-    ctx.apiStatus.firecrawlConfigured && ctx.env.FIRECRAWL_API_KEY
-      ? createFirecrawlScraper({ apiKey: ctx.env.FIRECRAWL_API_KEY, fetchImpl: ctx.trackedFetch })
-      : null;
-
   // Create reader for X tweets (for completeness, not used for media)
   const readTweetWithBirdClient = hasBirdCli(ctx.env)
     ? ({ url, timeoutMs }: { url: string; timeoutMs: number }) =>
@@ -190,10 +147,8 @@ See: https://github.com/openai/whisper for setup details`);
 
   const client = createLinkPreviewClient({
     env: ctx.envForRun,
-    apifyApiToken: ctx.apiStatus.apifyToken,
     ytDlpPath,
     transcription: { env: ctx.envForRun },
-    scrapeWithFirecrawl: firecrawlScraper,
     convertHtmlToMarkdown: null, // Not needed for media
     readTweetWithBird: readTweetWithBirdClient,
     resolveTwitterCookies: async (_args) => {
@@ -266,8 +221,8 @@ See: https://github.com/openai/whisper for setup details`);
     }
 
     // Call the standard asset summarization with the transcript
-    const { summarizeAsset } = await import('./summary.js');
-    await summarizeAsset(ctx, {
+    const { gistAsset } = await import('./summary.js');
+    await gistAsset(ctx, {
       attachment: transcriptAttachment,
       onModelChosen: args.onModelChosen,
       sourceKind: 'file',

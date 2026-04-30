@@ -50,13 +50,13 @@ describe('cli cache summary', () => {
   it('reuses cached summaries and extracted content', async () => {
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-cli-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-cli-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, 'config.json'),
+      join(gistDir, 'config.json'),
       JSON.stringify({ cache: { enabled: true, maxMb: 32, ttlDays: 30 } }),
       'utf8',
     );

@@ -89,11 +89,11 @@ export async function createTempFileFromStdin({
     throw new Error('Stdin is empty');
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-stdin-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-stdin-'));
   const filePath = path.join(tempDir, `input${extension}`);
   const cleanup = async () => {
     await fs.rm(tempDir, { force: true, recursive: true }).catch(() => {
-      /* empty */
+      /* Empty */
     });
   };
 

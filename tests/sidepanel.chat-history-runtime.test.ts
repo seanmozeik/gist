@@ -10,7 +10,7 @@ describe('sidepanel chat history runtime', () => {
     };
     const chatHistoryStore = {
       clear: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
       load: vi.fn(async () => null),
       persist: vi.fn(async (_tabId, messages) => messages),
@@ -40,7 +40,7 @@ describe('sidepanel chat history runtime', () => {
     const chatController = { getMessages: vi.fn(() => []), setMessages: vi.fn() };
     const chatHistoryStore = {
       clear: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
       load: vi.fn(async () => history as never),
       persist: vi.fn(async (_tabId, messages) => messages),
@@ -65,7 +65,7 @@ describe('sidepanel chat history runtime', () => {
     const chatController = { getMessages: vi.fn(() => []), setMessages: vi.fn() };
     const chatHistoryStore = {
       clear: vi.fn(async () => {
-        /* empty */
+        /* Empty */
       }),
       load: vi.fn(async () => null),
       persist: vi.fn(async (_tabId, messages) => messages),

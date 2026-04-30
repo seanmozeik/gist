@@ -6,7 +6,7 @@ import { buildPathSummaryPrompt } from '../../../prompts/index.js';
 import { ensureCliAttachmentPath } from '../../attachments.js';
 import { parseCliUserModelId } from '../../env.js';
 import type { ModelAttempt } from '../../types.js';
-import type { AssetSummaryContext, SummarizeAssetArgs } from './summary.js';
+import type { AssetSummaryContext, GistAssetArgs } from './summary.js';
 
 export async function buildAssetModelAttempts({
   ctx,
@@ -85,7 +85,7 @@ export async function buildAssetCliContext({
   summaryLengthTarget,
 }: {
   ctx: AssetSummaryContext;
-  args: SummarizeAssetArgs;
+  args: GistAssetArgs;
   attempts: ModelAttempt[];
   attachmentsCount: number;
   summaryLengthTarget:

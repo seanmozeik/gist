@@ -540,7 +540,20 @@ export function parseApiKeysConfig(
     throw new Error(`Invalid config file ${path}: "apiKeys" must be an object.`);
   }
   const keys: Record<string, string> = {};
-  const allowed = new Set(['openrouter', 'apify', 'firecrawl']);
+  const allowed = new Set([
+    'anthropic',
+    'apify',
+    'assemblyai',
+    'fal',
+    'gemini',
+    'google',
+    'groq',
+    'nvidia',
+    'openai',
+    'openrouter',
+    'xai',
+    'zai',
+  ]);
   for (const [key, val] of Object.entries(value)) {
     const normalizedKey = key.trim().toLowerCase();
     if (!allowed.has(normalizedKey)) {

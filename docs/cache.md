@@ -17,7 +17,7 @@ Lightweight, CLI-only SQLite cache. Single DB file.
 
 ## Storage
 
-- Default path: `~/.summarize/cache.sqlite`
+- Default path: `~/.gist/cache.sqlite`
 - Override: `cache.path` in config.
 - SQLite pragmas: WAL, NORMAL sync, busy timeout, incremental vacuum.
 
@@ -25,7 +25,7 @@ Lightweight, CLI-only SQLite cache. Single DB file.
 
 Separate file cache for downloaded media (yt-dlp, direct media URLs). This is **not** the SQLite DB.
 
-- Default path: `~/.summarize/cache/media`
+- Default path: `~/.gist/cache/media`
 - TTL: 7 days
 - Size cap: 2048 MB
 - Config: `cache.media` (see below)
@@ -60,12 +60,12 @@ Separate file cache for downloaded media (yt-dlp, direct media URLs). This is **
     "enabled": true,
     "maxMb": 512,
     "ttlDays": 30,
-    "path": "~/.summarize/cache.sqlite",
+    "path": "~/.gist/cache.sqlite",
     "media": {
       "enabled": true,
       "maxMb": 2048,
       "ttlDays": 7,
-      "path": "~/.summarize/cache/media",
+      "path": "~/.gist/cache/media",
       "verify": "size"
     }
   }

@@ -46,25 +46,25 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('cli streaming with auto model selection', () => {
   it('streams when using an auto preset and --stream on', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-stream-auto-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
-    mkdirSync(join(root, '.summarize', 'cache'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-stream-auto-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
+    mkdirSync(join(root, '.gist', 'cache'), { recursive: true });
 
     writeFileSync(
-      join(root, '.summarize', 'cache', 'litellm-model_prices_and_context_window.json'),
+      join(root, '.gist', 'cache', 'litellm-model_prices_and_context_window.json'),
       JSON.stringify({
         'gpt-5.2': { input_cost_per_token: 0.000_001_75, output_cost_per_token: 0.000_014 },
       }),
       'utf8',
     );
     writeFileSync(
-      join(root, '.summarize', 'cache', 'litellm-model_prices_and_context_window.meta.json'),
+      join(root, '.gist', 'cache', 'litellm-model_prices_and_context_window.meta.json'),
       JSON.stringify({ fetchedAtMs: Date.now() }),
       'utf8',
     );
 
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         models: { free: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5.2'] }] } },
       }),

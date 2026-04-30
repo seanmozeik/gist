@@ -16,11 +16,11 @@ const mocks = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('../packages/core/src/content/transcript/index.js', () => ({
+vi.mock('../src/content/transcript/index.js', () => ({
   resolveTranscriptForLink: mocks.resolveTranscriptForLink,
 }));
 
-import { fetchLinkContent } from '../packages/core/src/content/link-preview/content/index.js';
+import { fetchLinkContent } from '../src/content/link-preview/content/index.js';
 
 const buildDeps = (fetchImpl: typeof fetch) => ({
   apifyApiToken: null,
@@ -41,9 +41,9 @@ describe('link preview redirects', () => {
   it('uses the final URL for extraction and transcript resolution', async () => {
     mocks.resolveTranscriptForLink.mockClear();
 
-    const html = '<html><head><title>Summarize</title></head><body>Hello</body></html>';
+    const html = '<html><head><title>Gist</title></head><body>Hello</body></html>';
     const response = new Response(html, { headers: { 'content-type': 'text/html' }, status: 200 });
-    Object.defineProperty(response, 'url', { configurable: true, value: 'https://summarize.sh/' });
+    Object.defineProperty(response, 'url', { configurable: true, value: 'https://gist.sh/' });
 
     const fetchMock = vi.fn(async () => response);
 
@@ -53,9 +53,9 @@ describe('link preview redirects', () => {
       buildDeps(fetchMock as unknown as typeof fetch),
     );
 
-    expect(result.url).toBe('https://summarize.sh/');
+    expect(result.url).toBe('https://gist.sh/');
     expect(mocks.resolveTranscriptForLink).toHaveBeenCalledWith(
-      'https://summarize.sh/',
+      'https://gist.sh/',
       expect.any(String),
       expect.any(Object),
       expect.any(Object),

@@ -8,7 +8,6 @@ import type {
 } from '../../types.js';
 import { extractYouTubeVideoId } from '../../utils.js';
 import { extractYoutubeiTranscriptConfig, fetchTranscriptFromTranscriptEndpoint } from './api.js';
-import { fetchTranscriptWithApify } from './apify.js';
 import {
   extractYoutubeDurationSeconds,
   fetchTranscriptFromCaptionTracks,
@@ -110,34 +109,6 @@ export async function resolveDurationMetadata(args: {
     : null;
 }
 
-export async function tryApifyTranscript(
-  flow: YouTubeProviderFlow,
-  hint: string,
-): Promise<ProviderResult | null> {
-  if (!flow.options.apifyApiToken) {
-    return null;
-  }
-
-  flow.pushHint(hint);
-  flow.attemptedProviders.push('apify');
-
-  const transcript = await fetchTranscriptWithApify(
-    flow.options.fetch,
-    flow.options.apifyApiToken,
-    flow.context.url,
-  );
-  if (!transcript) {
-    return null;
-  }
-
-  return {
-    attemptedProviders: flow.attemptedProviders,
-    metadata: { provider: 'apify', ...flow.durationMetadata },
-    source: 'apify',
-    text: normalizeTranscriptText(transcript),
-  };
-}
-
 export async function tryManualCaptionTranscript(
   flow: YouTubeProviderFlow,
 ): Promise<ProviderResult | null> {
@@ -235,7 +206,7 @@ export async function tryYtDlpTranscript(args: {
 
   if (mode === 'no-auto' && !flow.canRunYtDlp) {
     throw new Error(
-      '--youtube no-auto requires yt-dlp and a transcription provider (whisper-cpp, GROQ_API_KEY, ASSEMBLYAI_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, or FAL_KEY) for fallback',
+      '--youtube no-auto requires yt-dlp plus GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY for transcription',
     );
   }
 
@@ -249,14 +220,9 @@ export async function tryYtDlpTranscript(args: {
 
   flow.attemptedProviders.push('yt-dlp');
   const ytdlpResult = await fetchTranscriptWithYtDlp({
-    assemblyaiApiKey: flow.options.assemblyaiApiKey,
-    falApiKey: flow.options.falApiKey,
-    geminiApiKey: flow.options.geminiApiKey,
-    groqApiKey: flow.options.groqApiKey,
     mediaCache: flow.options.mediaCache ?? null,
     mediaKind: 'video',
     onProgress: flow.options.onProgress ?? null,
-    openaiApiKey: flow.options.openaiApiKey,
     transcription: flow.transcription,
     url: flow.context.url,
     ytDlpPath: flow.options.ytDlpPath,

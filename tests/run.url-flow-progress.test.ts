@@ -127,7 +127,7 @@ describe('url flow progress', () => {
     const progress = createUrlFlowProgress({ ctx: ctx as never, theme: createTheme() as never });
 
     expect(ctx.hooks.onSlidesProgress).toBe(existing);
-    progress.progressStatus.setSummary('Summary ready', 'Summarizing');
+    progress.progressStatus.setSummary('Summary ready', 'Gisting');
     expect(spinner.setText).not.toHaveBeenCalled();
     progress.stopProgress();
     expect(websiteProgress.stop).not.toHaveBeenCalled();

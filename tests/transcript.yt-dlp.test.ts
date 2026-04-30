@@ -23,7 +23,7 @@ vi.mock('node:fs', async () => {
 });
 vi.mock('@fal-ai/client', () => falMock);
 
-import { fetchTranscriptWithYtDlp } from '../packages/core/src/content/transcript/providers/youtube/yt-dlp.js';
+import { fetchTranscriptWithYtDlp } from '../src/content/transcript/providers/youtube/yt-dlp.js';
 
 const mockSpawnSuccess = () => {
   spawnMock.mockImplementation(() => {
@@ -49,9 +49,9 @@ describe('yt-dlp transcript helper', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
-    vi.stubEnv('SUMMARIZE_ONNX_PARAKEET_CMD', '');
-    vi.stubEnv('SUMMARIZE_ONNX_CANARY_CMD', '');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_ONNX_PARAKEET_CMD', '');
+    vi.stubEnv('GIST_ONNX_CANARY_CMD', '');
     vi.stubEnv('GROQ_API_KEY', '');
     vi.stubEnv('ASSEMBLYAI_API_KEY', '');
     vi.stubEnv('OPENAI_API_KEY', '');
@@ -75,7 +75,7 @@ describe('yt-dlp transcript helper', () => {
   });
 
   it('skips yt-dlp download for local file URLs', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-ytdlp-local-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-ytdlp-local-'));
     const filePath = join(root, 'local-video.webm');
     await writeFile(filePath, new Uint8Array([1, 2, 3]));
     (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(

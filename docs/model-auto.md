@@ -46,7 +46,7 @@ Notes:
 
 ## Config
 
-Default config file: `~/.summarize/config.json`
+Default config file: `~/.gist/config.json`
 
 This file is parsed leniently (JSON5), but **comments are not allowed**.
 

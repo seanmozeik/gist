@@ -38,7 +38,7 @@ vi.mock('@mariozechner/pi-ai', () => ({
 
 describe('--model auto no-model-needed', () => {
   it('skips the model when extracted text fits in desired output tokens', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-auto-no-model-needed-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-auto-no-model-needed-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello world', 'utf8');
 

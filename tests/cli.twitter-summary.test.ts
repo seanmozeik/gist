@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { toNitterUrls } from '../packages/core/src/content/link-preview/content/twitter-utils.js';
+import { toNitterUrls } from '../src/content/link-preview/content/twitter-utils.js';
 import { runCli } from '../src/run.js';
 
 const noopStream = () =>
@@ -31,7 +31,7 @@ const buildFetchMock = (html: string) =>
 
 describe('cli tweet summarization bypass', () => {
   it('skips LLM summary for short tweets', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-tests-twitter-summary-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-tests-twitter-summary-'));
     const tweet = 'Short tweet content.';
     const html = `<!doctype html><html><head><title>Tweet</title></head><body><article><p>${tweet}</p></article></body></html>`;
     const fetchMock = buildFetchMock(html);
@@ -54,8 +54,8 @@ describe('cli tweet summarization bypass', () => {
     expect(stdoutText).toContain(tweet);
   });
 
-  it('still summarizes when tweet exceeds target length', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-tests-twitter-summary-'));
+  it('still gists when tweet exceeds target length', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'gist-tests-twitter-summary-'));
     const tweet = 'A'.repeat(600);
     const html = `<!doctype html><html><head><title>Tweet</title></head><body><article><p>${tweet}</p></article></body></html>`;
     const fetchMock = buildFetchMock(html);

@@ -12,7 +12,7 @@ const GIST_ROOT = '/home/yolo/gist';
 const SRC = path.join(GIST_ROOT, 'src');
 
 function log(msg: string) {
-  /* empty */
+  /* Empty */
 }
 
 // ─── Step 1: Fix cache.ts missing re-exports ────────────────────────────────

@@ -35,7 +35,7 @@ const collectStream = () => {
 };
 
 describe('cli stdin support', () => {
-  const home = mkdtempSync(join(tmpdir(), 'summarize-tests-stdin-'));
+  const home = mkdtempSync(join(tmpdir(), 'gist-tests-stdin-'));
 
   afterAll(() => {
     rmSync(home, { force: true, recursive: true });

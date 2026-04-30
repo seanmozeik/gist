@@ -8,16 +8,14 @@ describe('daemon/windows-container', () => {
   });
 
   it('supports explicit container mode override', () => {
-    expect(isWindowsContainerEnvironment({ SUMMARIZE_WINDOWS_CONTAINER_MODE: 'container' })).toBe(
-      true,
-    );
+    expect(isWindowsContainerEnvironment({ GIST_WINDOWS_CONTAINER_MODE: 'container' })).toBe(true);
   });
 
   it('supports explicit desktop mode override', () => {
     expect(
       isWindowsContainerEnvironment({
         CONTAINER_SANDBOX_MOUNT_POINT: 'C:\\ContainerMappedDirectories',
-        SUMMARIZE_WINDOWS_CONTAINER_MODE: 'desktop',
+        GIST_WINDOWS_CONTAINER_MODE: 'desktop',
       }),
     ).toBe(false);
   });

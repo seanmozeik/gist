@@ -36,7 +36,7 @@ vi.mock('@mariozechner/pi-ai', () => ({
 
 describe('cli --extract with local PDF files', () => {
   it('extracts text from a local PDF using markitdown without LLM', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-pdf-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-pdf-'));
     try {
       const pdfPath = join(root, 'test.pdf');
       writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
@@ -44,12 +44,7 @@ describe('cli --extract with local PDF files', () => {
       const stdout = collectStream();
       const stderr = collectStream();
 
-      const execFileMock = vi.fn(((file, args, _options, callback) => {
-        undefined;
-        undefined;
-        callback(null, '# Extracted Heading\n\nExtracted PDF content.\n', '');
-        return { pid: 123 } as unknown as ChildProcess;
-      }) as ExecFileFn);
+      const execFileMock = vi.fn(((file, args, _options, callback) => {}) as ExecFileFn);
 
       await runCli(['--extract', '--plain', pdfPath], {
         env: { HOME: root, UVX_PATH: 'uvx' },
@@ -70,7 +65,7 @@ describe('cli --extract with local PDF files', () => {
   });
 
   it('rejects --extract on a non-PDF local file with a helpful error', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-txt-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-txt-'));
     try {
       const txtPath = join(root, 'notes.txt');
       writeFileSync(txtPath, 'Hello world', 'utf8');
@@ -91,7 +86,7 @@ describe('cli --extract with local PDF files', () => {
   });
 
   it('errors with a helpful message when uvx is not available', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-pdf-no-uvx-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-pdf-no-uvx-'));
     try {
       const pdfPath = join(root, 'test.pdf');
       writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));

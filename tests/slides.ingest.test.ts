@@ -71,7 +71,7 @@ describe('slides ingest', () => {
 
   it('downloads direct remote video and preserves cleanup', async () => {
     const cleanup = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const downloadRemoteVideo = vi.fn(async () => ({ cleanup, filePath: '/tmp/direct.mp4' }));
     const put = vi.fn(async ({ filePath }: { filePath: string }) => ({
@@ -103,7 +103,7 @@ describe('slides ingest', () => {
   });
 
   it('uses local file URLs directly without downloading', async () => {
-    const filePath = path.join(tmpdir(), `summarize-slides-local-${Date.now().toString()}.webm`);
+    const filePath = path.join(tmpdir(), `gist-slides-local-${Date.now().toString()}.webm`);
     await fs.writeFile(filePath, 'video');
 
     try {

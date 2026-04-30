@@ -1,5 +1,5 @@
 ---
-summary: 'Docs index for summarize behaviors and modes.'
+summary: 'Docs index for gist behaviors and modes.'
 ---
 
 # Docs

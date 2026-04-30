@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 //
 // build-bun.js
-// summarize
+// gist
 //
 
 // Don't use Bun shell ($) as it breaks bytecode compilation.
@@ -15,8 +15,8 @@ const projectRoot = join(import.meta.dir, '..');
 const distDir = join(projectRoot, 'dist-bun');
 const require = createRequire(import.meta.url);
 const MAC_TARGETS = [
-  { arch: 'arm64', target: 'bun-darwin-arm64', outName: 'summarize' },
-  { arch: 'x64', target: 'bun-darwin-x64', outName: 'summarize-x64' },
+  { arch: 'arm64', target: 'bun-darwin-arm64', outName: 'gist' },
+  { arch: 'x64', target: 'bun-darwin-x64', outName: 'gist-x64' },
 ];
 
 function run(cmd, args, opts = {}) {
@@ -76,8 +76,8 @@ function chmodX(path) {
 function buildOne({ target, outName, version, gitSha }) {
   const outPath = join(distDir, outName);
   console.log(`\n🔨 Building ${outName} (target=${target}, bytecode)…`);
-  if (version) process.env.SUMMARIZE_VERSION = version;
-  if (gitSha) process.env.SUMMARIZE_GIT_SHA = gitSha;
+  if (version) process.env.GIST_VERSION = version;
+  if (gitSha) process.env.GIST_GIT_SHA = gitSha;
   run('bun', [
     'build',
     join(projectRoot, 'src/cli.ts'),
@@ -86,7 +86,7 @@ function buildOne({ target, outName, version, gitSha }) {
     '--minify',
     '--target',
     target,
-    '--env=SUMMARIZE_*',
+    '--env=GIST_*',
     '--outfile',
     outPath,
   ]);
@@ -104,15 +104,15 @@ function buildOne({ target, outName, version, gitSha }) {
 }
 
 function packageTarball({ binaryPath, version, arch }) {
-  const stageDir = mkdtempSync(join(tmpdir(), `summarize-bun-${arch}-`));
-  const stagedBinary = join(stageDir, 'summarize');
+  const stageDir = mkdtempSync(join(tmpdir(), `gist-bun-${arch}-`));
+  const stagedBinary = join(stageDir, 'gist');
   copyFileSync(binaryPath, stagedBinary);
   chmodX(stagedBinary);
 
-  const tarName = `summarize-macos-${arch}-v${version}.tar.gz`;
+  const tarName = `gist-macos-${arch}-v${version}.tar.gz`;
   const tarPath = join(distDir, tarName);
   console.log(`\n📦 Packaging tarball (${arch})…`);
-  run('tar', ['-czf', tarPath, '-C', stageDir, 'summarize']);
+  run('tar', ['-czf', tarPath, '-C', stageDir, 'gist']);
   return tarPath;
 }
 
@@ -149,7 +149,7 @@ async function runE2E(binary) {
     },
   });
   const url = `http://127.0.0.1:${server.port}/`;
-  const cacheHome = mkdtempSync(join(tmpdir(), 'summarize-bun-e2e-'));
+  const cacheHome = mkdtempSync(join(tmpdir(), 'gist-bun-e2e-'));
 
   try {
     const result = await runCaptureAsync(
@@ -171,7 +171,7 @@ async function runE2E(binary) {
     if (!content.includes('Hello Bun')) {
       throw new Error('bun e2e missing extracted content');
     }
-    if (!existsSync(join(cacheHome, '.summarize', 'cache.sqlite'))) {
+    if (!existsSync(join(cacheHome, '.gist', 'cache.sqlite'))) {
       throw new Error('bun e2e missing cache sqlite');
     }
     console.log('✅ Bun E2E ok');
@@ -187,7 +187,7 @@ function pickHostBinary(builds) {
 }
 
 async function main() {
-  console.log('🚀 summarize Bun builder');
+  console.log('🚀 gist Bun builder');
   console.log('========================');
 
   const version = readPackageVersion();

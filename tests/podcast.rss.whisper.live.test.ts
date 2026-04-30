@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createLinkPreviewClient } from '../src/content/index.js';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? null;
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(OPENAI_API_KEY);
+const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(OPENAI_API_KEY);
 
 describe('live podcast RSS transcript (whisper)', () => {
   const run = LIVE ? it : it.skip;

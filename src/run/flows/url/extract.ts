@@ -16,7 +16,6 @@ export async function fetchLinkContentWithBirdTip({
   client,
   url,
   options,
-  env,
 }: {
   client: {
     fetchLinkContent: (
@@ -26,7 +25,6 @@ export async function fetchLinkContentWithBirdTip({
   };
   url: string;
   options: FetchLinkContentOptions;
-  env: Record<string, string | undefined>;
 }): Promise<ExtractedLinkContent> {
   try {
     return await client.fetchLinkContent(url, options);
@@ -38,20 +36,11 @@ export async function fetchLinkContentWithBirdTip({
 export function deriveExtractionUi(extracted: ExtractedLinkContent): UrlExtractionUi {
   const extractedContentBytes = Buffer.byteLength(extracted.content, 'utf8');
   const contentSizeLabel = formatBytes(extractedContentBytes);
-  const twitterStrategy =
-    extracted.diagnostics.strategy === 'xurl' || extracted.diagnostics.strategy === 'bird'
-      ? extracted.diagnostics.strategy
-      : null;
+  const twitterStrategy = extracted.diagnostics.strategy === 'bird' ? 'bird' : null;
 
   const viaSources: string[] = [];
   if (twitterStrategy) {
     viaSources.push(twitterStrategy);
-  }
-  if (extracted.diagnostics.strategy === 'nitter') {
-    viaSources.push('Nitter');
-  }
-  if (extracted.diagnostics.firecrawl.used) {
-    viaSources.push('Firecrawl');
   }
   const viaSourceLabel = viaSources.length > 0 ? `, ${viaSources.join('+')}` : '';
 
@@ -61,12 +50,6 @@ export function deriveExtractionUi(extracted: ExtractedLinkContent): UrlExtracti
   }
   if (twitterStrategy) {
     footerParts.push(twitterStrategy);
-  }
-  if (extracted.diagnostics.strategy === 'nitter') {
-    footerParts.push('nitter');
-  }
-  if (extracted.diagnostics.firecrawl.used) {
-    footerParts.push('firecrawl');
   }
   if (extracted.diagnostics.markdown.used) {
     if (extracted.diagnostics.markdown.provider === 'llm') {
@@ -121,15 +104,6 @@ export function logExtractionDiagnostics({
     `extract stats characters=${extracted.totalCharacters} words=${extracted.wordCount} transcriptCharacters=${formatOptionalNumber(
       extracted.transcriptCharacters,
     )} transcriptLines=${formatOptionalNumber(extracted.transcriptLines)}`,
-    verboseColor,
-    env,
-  );
-  writeVerbose(
-    stderr,
-    verbose,
-    `extract firecrawl attempted=${extracted.diagnostics.firecrawl.attempted} used=${extracted.diagnostics.firecrawl.used} notes=${formatOptionalString(
-      extracted.diagnostics.firecrawl.notes ?? null,
-    )}`,
     verboseColor,
     env,
   );

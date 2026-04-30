@@ -79,18 +79,11 @@ export async function fetchSpotifyEmbedHtml({
   embedUrl,
   episodeId,
   fetchImpl,
-  scrapeWithFirecrawl,
 }: {
   embedUrl: string;
   episodeId: string;
   fetchImpl: typeof fetch;
-  scrapeWithFirecrawl:
-    | ((
-        url: string,
-        options?: { cacheMode?: 'default' | 'bypass'; timeoutMs?: number },
-      ) => Promise<{ html?: string | null; markdown: string } | null>)
-    | null;
-}): Promise<{ html: string; via: 'fetch' | 'firecrawl' }> {
+}): Promise<{ html: string; via: 'fetch' }> {
   try {
     // Try plain fetch first: fast, cheap, and often works with a realistic UA + referer.
     const embedResponse = await fetchImpl(embedUrl, {
@@ -112,26 +105,7 @@ export async function fetchSpotifyEmbedHtml({
     }
     throw new Error('Spotify embed HTML looked blocked (captcha)');
   } catch (error) {
-    if (!scrapeWithFirecrawl) {
-      throw error;
-    }
-
-    // Firecrawl is optional and only used as a fallback when Spotify blocks direct fetches.
-    const payload = await scrapeWithFirecrawl(embedUrl, {
-      cacheMode: 'bypass',
-      timeoutMs: TRANSCRIPTION_TIMEOUT_MS,
-    });
-    const text = (payload?.html ?? payload?.markdown ?? '').trim();
-    if (!text) {
-      throw new Error(
-        `Spotify embed fetch failed and Firecrawl returned empty content (${error instanceof Error ? error.message : String(error)})`,
-        { cause: error },
-      );
-    }
-    if (looksLikeBlockedHtml(text)) {
-      throw new Error('Spotify embed blocked even via Firecrawl (captcha)', { cause: error });
-    }
-    return { html: text, via: 'firecrawl' };
+    throw error;
   }
 }
 

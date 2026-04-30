@@ -11,7 +11,7 @@ describe('model request options', () => {
     expect(mergeModelRequestOptions({ thinking: 'medium' })).toEqual({ reasoningEffort: 'medium' });
   });
 
-  it('maps summarize fast/default tiers to OpenAI request params', () => {
+  it('maps gist fast/default tiers to OpenAI request params', () => {
     expect(toOpenAiServiceTierParam('fast')).toBe('priority');
     expect(toOpenAiServiceTierParam('default')).toBeUndefined();
     expect(toOpenAiServiceTierParam('flex')).toBe('flex');

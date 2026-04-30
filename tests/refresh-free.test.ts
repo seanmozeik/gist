@@ -50,7 +50,7 @@ describe('refresh-free', () => {
   it('throws when OpenRouter /models returns non-OK', async () => {
     llmMocks.generateTextWithModelId.mockReset();
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -72,7 +72,7 @@ describe('refresh-free', () => {
   it('writes models.free and optionally sets model=free', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout, read: readStdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -98,7 +98,7 @@ describe('refresh-free', () => {
     });
 
     expect(readStdout()).toContain('Wrote');
-    const configPath = join(home, '.summarize', 'config.json');
+    const configPath = join(home, '.gist', 'config.json');
     const raw = await readFile(configPath, 'utf8');
     const parsed = JSON.parse(raw) as unknown as {
       model?: string;
@@ -110,7 +110,7 @@ describe('refresh-free', () => {
 
   it('fails when /models returns no :free models (with and without age filter)', async () => {
     llmMocks.generateTextWithModelId.mockReset();
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -146,9 +146,9 @@ describe('refresh-free', () => {
   it('surfaces invalid config comments and models shape errors', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
-    const configPath = join(home, '.summarize', 'config.json');
-    await mkdir(join(home, '.summarize'), { recursive: true });
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
+    const configPath = join(home, '.gist', 'config.json');
+    await mkdir(join(home, '.gist'), { recursive: true });
     await writeFile(configPath, '{\n// nope\n}\n', 'utf8');
 
     const { refreshFree } = await import('../src/refresh-free.js');
@@ -187,7 +187,7 @@ describe('refresh-free', () => {
   it('filters old + small models and prints verbose skip lines', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr, read: readStderr } = createCaptureStream();
@@ -224,7 +224,7 @@ describe('refresh-free', () => {
   });
 
   it('classifies common failure types and prints per-day quota note', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr, read: readStderr } = createCaptureStream();
@@ -267,7 +267,7 @@ describe('refresh-free', () => {
   it('handles TTY progress rendering without throwing', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -290,7 +290,7 @@ describe('refresh-free', () => {
   });
 
   it('refines candidates over extra runs', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -326,9 +326,9 @@ describe('refresh-free', () => {
   it('rejects a config file that is not a top-level object', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
-    const configPath = join(home, '.summarize', 'config.json');
-    await mkdir(join(home, '.summarize'), { recursive: true });
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
+    const configPath = join(home, '.gist', 'config.json');
+    await mkdir(join(home, '.gist'), { recursive: true });
     await writeFile(configPath, '[]', 'utf8');
 
     const { refreshFree } = await import('../src/refresh-free.js');
@@ -357,7 +357,7 @@ describe('refresh-free', () => {
     try {
       llmMocks.generateTextWithModelId.mockReset();
 
-      const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+      const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
       const { refreshFree } = await import('../src/refresh-free.js');
       const { stream: stdout } = createCaptureStream();
       const { stream: stderr, read: readStderr } = createCaptureStream();
@@ -399,9 +399,9 @@ describe('refresh-free', () => {
   it('rejects /* */ comments in the config file', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
-    const configPath = join(home, '.summarize', 'config.json');
-    await mkdir(join(home, '.summarize'), { recursive: true });
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
+    const configPath = join(home, '.gist', 'config.json');
+    await mkdir(join(home, '.gist'), { recursive: true });
     await writeFile(configPath, '{\n/* nope */\n}\n', 'utf8');
 
     const { refreshFree } = await import('../src/refresh-free.js');
@@ -430,7 +430,7 @@ describe('refresh-free', () => {
       throw new Error('provider error');
     });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -457,7 +457,7 @@ describe('refresh-free', () => {
     try {
       llmMocks.generateTextWithModelId.mockReset();
 
-      const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+      const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
       const { refreshFree } = await import('../src/refresh-free.js');
       const { stream: stdout } = createCaptureStream();
       const { stream: stderr, read: readStderr } = createCaptureStream();
@@ -498,7 +498,7 @@ describe('refresh-free', () => {
   it('infers param size from model IDs (e2b, decimals) and filters by minParamB', async () => {
     llmMocks.generateTextWithModelId.mockReset().mockResolvedValue({ text: 'OK' });
 
-    const home = await mkdtemp(join(tmpdir(), 'summarize-refresh-free-'));
+    const home = await mkdtemp(join(tmpdir(), 'gist-refresh-free-'));
     const { refreshFree } = await import('../src/refresh-free.js');
     const { stream: stdout } = createCaptureStream();
     const { stream: stderr } = createCaptureStream();
@@ -525,7 +525,7 @@ describe('refresh-free', () => {
       stdout,
     });
 
-    const configPath = join(home, '.summarize', 'config.json');
+    const configPath = join(home, '.gist', 'config.json');
     const raw = await readFile(configPath, 'utf8');
     const parsed = JSON.parse(raw) as unknown as {
       models?: { free?: { rules?: { candidates?: string[] }[] } };

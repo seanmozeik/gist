@@ -30,7 +30,7 @@ afterEach(() => {
 
 describe('runUrlFlow transcription wiring', () => {
   it('forwards googleApiKey into link preview transcription config', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-gemini-url-flow-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-gemini-url-flow-'));
     const url = 'https://www.youtube.com/watch?v=hhAbp3iQA44';
     const cache: CacheState = { maxBytes: 0, mode: 'bypass', path: null, store: null, ttlMs: 0 };
 
@@ -88,7 +88,7 @@ describe('runUrlFlow transcription wiring', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });

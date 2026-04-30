@@ -3,7 +3,7 @@ import { startSpinner } from '../../../tty/spinner.js';
 import type { createThemeRenderer } from '../../../tty/theme.js';
 import { createWebsiteProgress } from '../../../tty/website-progress.js';
 import { createUrlProgressStatus } from './progress-status.js';
-import { type UrlFlowContext } from './types.js';
+import type { UrlFlowContext } from './types.js';
 
 export function createUrlFlowProgress({
   ctx,

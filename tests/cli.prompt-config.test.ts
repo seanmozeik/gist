@@ -44,13 +44,13 @@ describe('config prompt', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-prompt-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-prompt-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, 'config.json'),
+      join(gistDir, 'config.json'),
       JSON.stringify({ prompt: 'Explain for a kid.' }),
       'utf8',
     );
@@ -107,7 +107,7 @@ describe('config prompt', () => {
     const promptText = String(context.messages?.[0]?.content ?? '');
     expect(promptText).toContain('<instructions>');
     expect(promptText).toContain('Explain for a kid.');
-    expect(promptText).not.toContain('You summarize online articles');
+    expect(promptText).not.toContain('You gist online articles');
 
     globalFetchSpy.mockRestore();
   });
@@ -121,13 +121,13 @@ describe('config prompt', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-prompt-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-prompt-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
-      join(summarizeDir, 'config.json'),
+      join(gistDir, 'config.json'),
       JSON.stringify({ output: { language: 'de', length: 'short' }, prompt: 'Explain for a kid.' }),
       'utf8',
     );

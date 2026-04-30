@@ -9,7 +9,7 @@ vi.mock('../src/run/flows/asset/preprocess.js', () => ({
 }));
 vi.mock('../src/run/model-attempts.js', () => ({ runModelAttempts: mocks.runModelAttempts }));
 
-import { summarizeAsset } from '../src/run/flows/asset/summary.js';
+import { gistAsset } from '../src/run/flows/asset/summary.js';
 
 const collectStream = () => {
   let text = '';
@@ -22,7 +22,7 @@ const collectStream = () => {
   return { getText: () => text, stream };
 };
 
-const createContext = (overrides: Partial<Parameters<typeof summarizeAsset>[0]> = {}) => {
+const createContext = (overrides: Partial<Parameters<typeof gistAsset>[0]> = {}) => {
   const stdout = collectStream();
   const stderr = collectStream();
   const writeViaFooter = vi.fn();
@@ -83,7 +83,7 @@ const createContext = (overrides: Partial<Parameters<typeof summarizeAsset>[0]> 
     stdout: stdout.stream,
     streamingEnabled: false,
     summaryEngine: { applyOpenAiGatewayOverrides: (attempt) => attempt } as Parameters<
-      typeof summarizeAsset
+      typeof gistAsset
     >[0]['summaryEngine'],
     timeoutMs: 1000,
     trackedFetch: globalThis.fetch.bind(globalThis),
@@ -112,7 +112,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout, writeViaFooter } = createContext();
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -137,7 +137,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout } = createContext({ videoMode: 'auto' });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'clip.mp4',
@@ -161,7 +161,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout } = createContext();
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'image.png',
@@ -188,7 +188,7 @@ describe('asset summary early branches', () => {
       maxOutputTokensArg: 500,
     });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -232,7 +232,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout } = createContext({ json: true });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'video.mp4',
@@ -263,7 +263,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout } = createContext({ json: true });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -289,7 +289,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout, writeViaFooter } = createContext();
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -317,7 +317,7 @@ describe('asset summary early branches', () => {
     (out.stream as unknown as { isTTY?: boolean }).isTTY = true;
     ctx.stdout = out.stream;
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -349,7 +349,7 @@ describe('asset summary early branches', () => {
       shouldComputeReport: true,
     });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',
@@ -380,7 +380,7 @@ describe('asset summary early branches', () => {
 
     const { ctx, stdout } = createContext({ forceSummary: true });
 
-    await summarizeAsset(ctx, {
+    await gistAsset(ctx, {
       attachment: {
         bytes: new Uint8Array([1]),
         filename: 'note.txt',

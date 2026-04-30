@@ -1,20 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type {
-  ProviderContext,
-  ProviderFetchOptions,
-} from '../packages/core/src/content/transcript/types.js';
+import type { ProviderContext, ProviderFetchOptions } from '../src/content/transcript/types.js';
 import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
 
 const mocks = vi.hoisted(() => ({ fetchTranscriptWithYtDlp: vi.fn(), isWhisperCppReady: vi.fn() }));
 
-vi.mock('../packages/core/src/content/transcript/providers/youtube/yt-dlp.js', () => ({
+vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ({
   fetchTranscriptWithYtDlp: mocks.fetchTranscriptWithYtDlp,
 }));
 
-vi.mock('../packages/core/src/transcription/whisper.js', () => ({
-  isWhisperCppReady: mocks.isWhisperCppReady,
-}));
+vi.mock('../src/transcription/whisper.js', () => ({ isWhisperCppReady: mocks.isWhisperCppReady }));
 
 const noopFetch = vi.fn(async () => new Response('nope', { status: 500 }));
 
@@ -28,20 +23,20 @@ describe('placeholder transcript providers', () => {
   });
 
   it('matches podcast URLs', async () => {
-    const podcast = await import('../packages/core/src/content/transcript/providers/podcast.js');
+    const podcast = await import('../src/content/transcript/providers/podcast.js');
     expect(podcast.canHandle(contextFor('https://example.com/podcast/123'))).toBe(true);
     expect(podcast.canHandle(contextFor('https://open.spotify.com/show/abc'))).toBe(true);
     expect(podcast.canHandle(contextFor('https://example.com/article'))).toBe(false);
   });
 
   it('matches generic URLs', async () => {
-    const generic = await import('../packages/core/src/content/transcript/providers/generic.js');
+    const generic = await import('../src/content/transcript/providers/generic.js');
     expect(generic.canHandle(contextFor('https://example.com/article'))).toBe(true);
   });
 
   it('returns not_implemented provider metadata', async () => {
-    const podcast = await import('../packages/core/src/content/transcript/providers/podcast.js');
-    const generic = await import('../packages/core/src/content/transcript/providers/generic.js');
+    const podcast = await import('../src/content/transcript/providers/podcast.js');
+    const generic = await import('../src/content/transcript/providers/generic.js');
     const options: ProviderFetchOptions = {
       apifyApiToken: null,
       falApiKey: null,
@@ -69,7 +64,7 @@ describe('placeholder transcript providers', () => {
   });
 
   it('returns missing yt-dlp metadata for tweet URLs', async () => {
-    const generic = await import('../packages/core/src/content/transcript/providers/generic.js');
+    const generic = await import('../src/content/transcript/providers/generic.js');
     const options: ProviderFetchOptions = {
       apifyApiToken: null,
       falApiKey: null,
@@ -95,7 +90,7 @@ describe('placeholder transcript providers', () => {
   });
 
   it('passes X cookies to yt-dlp when available', async () => {
-    const generic = await import('../packages/core/src/content/transcript/providers/generic.js');
+    const generic = await import('../src/content/transcript/providers/generic.js');
 
     mocks.isWhisperCppReady.mockResolvedValue(false);
     mocks.fetchTranscriptWithYtDlp.mockResolvedValue({

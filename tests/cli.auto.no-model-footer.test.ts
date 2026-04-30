@@ -20,7 +20,7 @@ function collectStream() {
 
 describe('--model auto no-model footer', () => {
   it('does not print a via footer when no extractor ran', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-auto-no-model-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-auto-no-model-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello world', 'utf8');
 

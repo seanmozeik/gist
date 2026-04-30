@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { runCli } from '../../src/run.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 (LIVE ? describe : describe.skip)('live prompt length cap', () => {
   it('caps prompt guidance to extracted content length', async () => {

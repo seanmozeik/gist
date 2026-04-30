@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { runCli } from '../src/run.js';
 
-vi.mock('../packages/core/src/content/transcript/providers/youtube/yt-dlp.js', () => ({
+vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ({
   fetchDurationSecondsWithYtDlp: vi.fn(async () => null),
   fetchTranscriptWithYtDlp: vi.fn(async () => {
     return { error: null, notes: [], provider: 'cpp', text: 'hello from ytdlp' };
@@ -27,7 +27,7 @@ function collectStream() {
 
 describe('cli YouTube auto transcript yt-dlp fallback', () => {
   it('falls back to yt-dlp when captions are unavailable', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-ytdlp-fallback-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-ytdlp-fallback-'));
     const binDir = join(root, 'bin');
     mkdirSync(binDir, { recursive: true });
 

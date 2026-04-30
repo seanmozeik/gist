@@ -24,7 +24,7 @@ export function pickModelForFinishLine(
   llmCalls: UrlFlowContext['model']['llmCalls'],
   fallback: string | null,
 ) {
-  const lastCall = llmCalls[llmCalls.length - 1];
+  const lastCall = llmCalls.at(-1);
   if (lastCall?.model) {
     return lastCall.model;
   }

@@ -17,11 +17,11 @@ describe('llm/cli more branches', () => {
       resolveCliBinary(
         'codex',
         { codex: { binary: '  /usr/local/bin/codex  ' } },
-        { SUMMARIZE_CLI_CODEX: 'codex-env' },
+        { GIST_CLI_CODEX: 'codex-env' },
       ),
     ).toBe('/usr/local/bin/codex');
 
-    expect(resolveCliBinary('gemini', null, { SUMMARIZE_CLI_GEMINI: ' gemini-env ' })).toBe(
+    expect(resolveCliBinary('gemini', null, { GIST_CLI_GEMINI: ' gemini-env ' })).toBe(
       'gemini-env',
     );
     expect(resolveCliBinary('agent', null, { AGENT_PATH: ' /tmp/agent-bin ' })).toBe(
@@ -48,10 +48,10 @@ describe('llm/cli more branches', () => {
           return {
             stdin: {
               end() {
-                /* empty */
+                /* Empty */
               },
               write() {
-                /* empty */
+                /* Empty */
               },
             },
           } as unknown as ChildProcess;
@@ -78,10 +78,10 @@ describe('llm/cli more branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -113,10 +113,10 @@ describe('llm/cli more branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -156,10 +156,10 @@ describe('llm/cli more branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -189,10 +189,10 @@ describe('llm/cli more branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -215,10 +215,10 @@ describe('llm/cli more branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;

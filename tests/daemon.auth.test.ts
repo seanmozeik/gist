@@ -28,7 +28,7 @@ const findFreePort = async (): Promise<number> =>
 
 describe('daemon auth', () => {
   it('accepts any configured token in v2 config', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-auth-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-auth-'));
     const port = await findFreePort();
     const primaryToken = 'test-token-primary-1234';
     const secondaryToken = 'test-token-secondary-5678';

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchTranscript } from '../packages/core/src/content/transcript/providers/generic.js';
+import { fetchTranscript } from '../src/content/transcript/providers/generic.js';
 
 const buildOptions = (overrides?: Partial<Parameters<typeof fetchTranscript>[1]>) => ({
   apifyApiToken: null,

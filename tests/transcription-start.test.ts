@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../packages/core/src/transcription/whisper/assemblyai.js';
+import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../src/transcription/whisper/assemblyai.js';
 
 const whisperMock = vi.hoisted(() => ({
   isWhisperCppReady: vi.fn(),
   resolveWhisperCppModelNameForDisplay: vi.fn(),
 }));
 
-vi.mock('../packages/core/src/transcription/whisper.js', () => whisperMock);
+vi.mock('../src/transcription/whisper.js', () => whisperMock);
 
-import { resolveTranscriptionStartInfo } from '../packages/core/src/content/transcript/providers/transcription-start.js';
+import { resolveTranscriptionStartInfo } from '../src/content/transcript/providers/transcription-start.js';
 
 describe('transcription start helper', () => {
   it('reports unknown when nothing is available', async () => {
@@ -33,7 +33,7 @@ describe('transcription start helper', () => {
     whisperMock.resolveWhisperCppModelNameForDisplay.mockResolvedValue(null);
 
     const startInfo = await resolveTranscriptionStartInfo({
-      env: { SUMMARIZE_ONNX_PARAKEET_CMD: "printf 'ok'", SUMMARIZE_TRANSCRIBER: 'parakeet' },
+      env: { GIST_ONNX_PARAKEET_CMD: "printf 'ok'", GIST_TRANSCRIBER: 'parakeet' },
       falApiKey: null,
       groqApiKey: null,
       openaiApiKey: null,
@@ -136,12 +136,12 @@ describe('transcription start helper', () => {
     whisperMock.resolveWhisperCppModelNameForDisplay.mockResolvedValue('base');
 
     const effectiveEnv = {
-      SUMMARIZE_WHISPER_CPP_BINARY: '/tmp/custom-whisper-cli',
-      SUMMARIZE_WHISPER_CPP_MODEL_PATH: '/tmp/ggml-base.bin',
+      GIST_WHISPER_CPP_BINARY: '/tmp/custom-whisper-cli',
+      GIST_WHISPER_CPP_MODEL_PATH: '/tmp/ggml-base.bin',
     };
 
     const startInfo = await resolveTranscriptionStartInfo({
-      env: { SUMMARIZE_WHISPER_CPP_MODEL_PATH: '/tmp/ignored.bin' },
+      env: { GIST_WHISPER_CPP_MODEL_PATH: '/tmp/ignored.bin' },
       falApiKey: null,
       groqApiKey: null,
       openaiApiKey: null,

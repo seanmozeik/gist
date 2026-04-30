@@ -69,7 +69,7 @@ export function writeFinishLine({
     env && color
       ? createThemeRenderer({
           enabled: color,
-          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
+          themeName: resolveThemeNameFromSources({ env: env.GIST_THEME }),
           trueColor: resolveTrueColor(env),
         })
       : null;
@@ -194,10 +194,16 @@ export function buildFinishLineModel({
     typeof elapsedLabel === 'string' && elapsedLabel.trim().length > 0
       ? elapsedLabel
       : formatElapsedMs(elapsedMs);
-  const promptTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.promptTokens));
-  const completionTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.completionTokens));
+  const promptTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.promptTokens ?? null));
+  const completionTokens = sumNumbersOrNull(report.llmCalls.map((c) => c.completionTokens ?? null));
   const totalTokens = sumNumbersOrNull(
-    report.llmCalls.map((c) => c.promptTokens + c.completionTokens),
+    report.llmCalls.map((c) => {
+      const prompt = c.promptTokens;
+      const completion = c.completionTokens;
+      return typeof prompt === 'number' && typeof completion === 'number'
+        ? prompt + completion
+        : null;
+    }),
   );
 
   const hasAnyTokens = promptTokens !== null || completionTokens !== null || totalTokens !== null;
@@ -217,7 +223,6 @@ export function buildFinishLineModel({
   const stripWordPrefix = (input: string): string | null => {
     // Examples:
     // - "2.9k words" => null
-    // - "2.9k words via firecrawl" => "via firecrawl"
     const match = /^~?\d[\d.]*[kmb]?\s+words(?:\s+via\s+(.+))?$/i.exec(input.trim());
     if (!match) {
       return input;

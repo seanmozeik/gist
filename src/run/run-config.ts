@@ -1,5 +1,5 @@
-import type { CliProvider, SummarizeConfig } from '../config.js';
-import { loadSummarizeConfig } from '../config.js';
+import type { CliProvider, GistConfig } from '../config.js';
+import { loadGistConfig } from '../config.js';
 import { parseVideoMode } from '../flags.js';
 import { type OutputLanguage, parseOutputLanguage } from '../language.js';
 import { parseOpenAiReasoningEffort, parseOpenAiServiceTier } from '../llm/model-options.js';
@@ -7,13 +7,13 @@ import type { ModelRequestOptions } from '../llm/model-options.js';
 import { parseBooleanEnv } from './env.js';
 
 export interface ConfigState {
-  config: SummarizeConfig | null;
+  config: GistConfig | null;
   configPath: string | null;
   outputLanguage: OutputLanguage;
   openaiWhisperUsdPerMinute: number;
   videoMode: ReturnType<typeof parseVideoMode>;
-  cliConfigForRun: SummarizeConfig['cli'] | undefined;
-  configForCli: SummarizeConfig | null;
+  cliConfigForRun: GistConfig['cli'] | undefined;
+  configForCli: GistConfig | null;
   openaiUseChatCompletions: boolean;
   openaiRequestOptions: ModelRequestOptions | undefined;
   openaiRequestOptionsOverride: ModelRequestOptions | undefined;
@@ -35,7 +35,7 @@ export function resolveConfigState({
   cliFlagPresent: boolean;
   cliProviderArg: CliProvider | null;
 }): ConfigState {
-  const { config, path: configPath } = loadSummarizeConfig({ env: envForRun });
+  const { config, path: configPath } = loadGistConfig({ env: envForRun });
   const cliLanguageRaw =
     typeof programOpts.language === 'string'
       ? programOpts.language
@@ -70,7 +70,7 @@ export function resolveConfigState({
   const cliConfigForRun = cliEnabledOverride
     ? { ...config?.cli, enabled: cliEnabledOverride }
     : config?.cli;
-  const configForCli: SummarizeConfig | null =
+  const configForCli: GistConfig | null =
     cliEnabledOverride !== null
       ? { ...config, ...(cliConfigForRun ? { cli: cliConfigForRun } : {}) }
       : config;

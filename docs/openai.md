@@ -13,8 +13,8 @@ For the full model/provider matrix, see `docs/llm.md`.
 Fast mode is a service tier, not a model id. Prefer flags:
 
 ```sh
-summarize URL --model openai/gpt-5.5 --fast --thinking medium
-summarize URL --model openai/gpt-5.4 --service-tier fast --thinking low
+gist URL --model openai/gpt-5.5 --fast --thinking medium
+gist URL --model openai/gpt-5.4 --service-tier fast --thinking low
 ```
 
 Compatibility aliases:
@@ -48,9 +48,9 @@ Compatibility aliases:
 
 `openai.reasoningEffort` is the long-form alias for `openai.thinking`. Model presets can also set `serviceTier`, `thinking` / `reasoningEffort`, and `textVerbosity`.
 
-Use `"serviceTier": "fast"` in summarize config and model presets. OpenAI API requests map that to `service_tier="priority"`; `"flex"` and explicit `"priority"` pass through as-is. Use `--service-tier default` to clear a configured tier for one run.
+Use `"serviceTier": "fast"` in gist config and model presets. OpenAI API requests map that to `service_tier="priority"`; `"flex"` and explicit `"priority"` pass through as-is. Use `--service-tier default` to clear a configured tier for one run.
 
 ## PDF inputs
 
-- When a PDF is provided and `--preprocess auto` is used, summarize sends the PDF as a file input via the OpenAI Responses API.
+- When a PDF is provided and `--preprocess auto` is used, gist sends the PDF as a file input via the OpenAI Responses API.
 - Document streaming is disabled for file inputs; non-streaming calls are used instead.

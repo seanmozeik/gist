@@ -16,7 +16,7 @@ import { deriveExtractionUi, logExtractionDiagnostics } from './extract.js';
 import { createUrlExtractionSession } from './extraction-session.js';
 import { createUrlFlowProgress } from './flow-progress.js';
 import { createMarkdownConverters } from './markdown.js';
-import { buildUrlPrompt, outputExtractedUrl, summarizeExtractedUrl } from './summary.js';
+import { buildUrlPrompt, outputExtractedUrl, gistExtractedUrl } from './summary.js';
 import type { UrlFlowContext } from './types.js';
 import { handleVideoOnlyExtractedContent } from './video-only.js';
 
@@ -30,30 +30,22 @@ export async function runUrlFlow({
   isYoutubeUrl: boolean;
 }): Promise<void> {
   if (!url) {
-    throw new Error('Only HTTP and HTTPS URLs can be summarized');
+    throw new Error('Only HTTP and HTTPS URLs can be gisted');
   }
 
-  const { io, flags, model, cache: cacheState, hooks } = ctx;
+  const { io, flags, model, hooks } = ctx;
   const theme = createThemeRenderer({
     enabled: flags.verboseColor,
-    themeName: resolveThemeNameFromSources({ env: io.envForRun.SUMMARIZE_THEME }),
+    themeName: resolveThemeNameFromSources({ env: io.envForRun.GIST_THEME }),
     trueColor: resolveTrueColor(io.envForRun),
   });
 
   const markdown = createMarkdownConverters(ctx, { isYoutubeUrl });
-  if (flags.firecrawlMode === 'always' && isYoutubeUrl) {
-    throw new Error(
-      '--firecrawl always is not supported for YouTube URLs; use --youtube auto|web|yt-dlp|apify instead',
-    );
-  }
-  if (flags.firecrawlMode === 'always' && !model.apiStatus.firecrawlConfigured) {
-    throw new Error('--firecrawl always requires FIRECRAWL_API_KEY');
-  }
 
   writeVerbose(
     io.stderr,
     flags.verbose,
-    `config url=${url} timeoutMs=${flags.timeoutMs} youtube=${flags.youtubeMode} firecrawl=${flags.firecrawlMode} length=${
+    `config url=${url} timeoutMs=${flags.timeoutMs} youtube=${flags.youtubeMode} length=${
       flags.lengthArg.kind === 'preset'
         ? flags.lengthArg.preset
         : `${flags.lengthArg.maxCharacters} chars`
@@ -73,7 +65,7 @@ export async function runUrlFlow({
   writeVerbose(
     io.stderr,
     flags.verbose,
-    `env openrouterKey=${model.apiStatus.openrouterApiKey ? 'configured' : 'missing'} apifyToken=${Boolean(model.apiStatus.apifyToken)} firecrawlKey=${model.apiStatus.firecrawlConfigured}`,
+    `env openrouterKey=${model.apiStatus.openrouterApiKey ? 'configured' : 'missing'}`,
     flags.verboseColor,
     io.envForRun,
   );
@@ -131,7 +123,7 @@ export async function runUrlFlow({
       const sentLabel = `${dim('sent ')}${extractionUi.contentSizeLabel}${extractionUi.viaSourceLabel}`;
       const modelLabel = modelId ? `${dim('model: ')}${accent(modelId)}` : '';
       const meta = modelLabel ? `${sentLabel}${dim(', ')}${modelLabel}` : sentLabel;
-      return `${styleLabel('Summarizing')} ${dim('(')}${meta}${dim(')')}${dim('…')}`;
+      return `${styleLabel('Gisting')} ${dim('(')}${meta}${dim(')')}${dim('…')}`;
     };
 
     const updateSummaryProgress = () => {
@@ -145,7 +137,7 @@ export async function runUrlFlow({
               ` (${extractionUi.contentSizeLabel}${extractionUi.viaSourceLabel})`,
             )}`
           : formatSummaryProgress(),
-        flags.extractMode ? null : 'Summarizing',
+        flags.extractMode ? null : 'Gisting',
       );
     };
 
@@ -268,10 +260,10 @@ export async function runUrlFlow({
       if (!flags.progressEnabled) {
         return;
       }
-      progressStatus.setSummary(formatSummaryProgress(modelId), 'Summarizing');
+      progressStatus.setSummary(formatSummaryProgress(modelId), 'Gisting');
     };
 
-    await summarizeExtractedUrl({
+    await gistExtractedUrl({
       ctx: flowCtx,
       effectiveMarkdownMode: markdown.effectiveMarkdownMode,
       extracted,

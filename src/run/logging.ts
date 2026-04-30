@@ -20,7 +20,7 @@ export function writeVerbose(
     env && color
       ? createThemeRenderer({
           enabled: color,
-          themeName: resolveThemeNameFromSources({ env: env.SUMMARIZE_THEME }),
+          themeName: resolveThemeNameFromSources({ env: env.GIST_THEME }),
           trueColor: resolveTrueColor(env),
         })
       : null;

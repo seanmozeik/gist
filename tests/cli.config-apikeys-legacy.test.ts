@@ -59,10 +59,10 @@ describe('cli config legacy apiKeys', () => {
   it('maps config apiKeys to env fallback when process env is missing', async () => {
     mocks.completeSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cli-config-apikeys-legacy-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-cli-config-apikeys-legacy-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         apiKeys: { openai: 'test-legacy-openai-key' },
         model: { id: 'openai/gpt-5-chat' },

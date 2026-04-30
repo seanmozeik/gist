@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
-    <title>Chrome extension — summarize</title>
-    <link rel="canonical" href="https://summarize.sh/docs/chrome-extension" />
+    <title>Chrome extension — gist</title>
+    <link rel="canonical" href="https://gist.sh/docs/chrome-extension" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,14 +17,14 @@
   <body>
     <main class="shell">
       <header class="top">
-        <a class="brand" href="../index.html" aria-label="summarize home">
+        <a class="brand" href="../index.html" aria-label="gist home">
           <span class="brand__mark" aria-hidden="true">s</span>
-          <span class="brand__word">summarize</span>
+          <span class="brand__word">gist</span>
         </a>
         <nav class="nav" aria-label="Primary">
           <a data-nav="home" href="../index.html">Home</a>
           <a data-nav="docs" href="./index.html">Docs</a>
-          <a href="https://github.com/steipete/summarize">GitHub</a>
+          <a href="https://github.com/seanmozeik/gist">GitHub</a>
         </nav>
       </header>
 
@@ -46,38 +46,38 @@
           <p class="kicker">product</p>
           <h1>Chrome extension</h1>
           <p>
-            Summarize ships a Chrome Side Panel extension backed by a tiny local daemon. It streams
-            Markdown summaries for the active tab and supports auto-summarize on navigation.
+            Gist ships a Chrome Side Panel extension backed by a tiny local daemon. It streams
+            Markdown summaries for the active tab and supports auto-gist on navigation.
           </p>
 
           <h2>Setup</h2>
           <ul>
             <li>
-              <code>npm i -g @steipete/summarize</code> or
-              <code>brew install summarize</code>
+              <code>npm i -g @seanmozeik/gist</code> or
+              <code>brew install gist</code>
             </li>
             <li>Build extension: <code>pnpm -C apps/chrome-extension build</code></li>
             <li>Load unpacked: <code>apps/chrome-extension/.output/chrome-mv3</code></li>
             <li>
               Open side panel → copy token command → run
-              <code>summarize daemon install --token &lt;TOKEN&gt;</code>
+              <code>gist daemon install --token &lt;TOKEN&gt;</code>
             </li>
-            <li>Verify: <code>summarize daemon status</code></li>
+            <li>Verify: <code>gist daemon status</code></li>
           </ul>
 
           <h2>Dev</h2>
           <ul>
             <li>
               Install daemon for dev:
-              <code>pnpm summarize daemon install --token &lt;TOKEN&gt; --dev</code>
+              <code>pnpm gist daemon install --token &lt;TOKEN&gt; --dev</code>
             </li>
             <li>Dev server: <code>pnpm -C apps/chrome-extension dev</code></li>
           </ul>
 
           <h2>Troubleshooting</h2>
           <ul>
-            <li>Daemon unreachable: <code>summarize daemon status</code></li>
-            <li>Logs: <code>~/.summarize/logs/daemon.err.log</code></li>
+            <li>Daemon unreachable: <code>gist daemon status</code></li>
+            <li>Logs: <code>~/.gist/logs/daemon.err.log</code></li>
             <li>Token mismatch: update token in side panel and Save</li>
           </ul>
 
@@ -88,10 +88,10 @@
       </section>
 
       <footer class="footer">
-        <span>summarize — Link → clean text → summary.</span>
+        <span>gist — Link → clean text → summary.</span>
         <span
           ><a href="./index.html">Docs</a> ·
-          <a href="https://github.com/steipete/summarize">Repo</a></span
+          <a href="https://github.com/seanmozeik/gist">Repo</a></span
         >
       </footer>
     </main>

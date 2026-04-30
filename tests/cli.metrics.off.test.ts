@@ -12,8 +12,8 @@ const htmlResponse = (html: string, status = 200) =>
 
 describe('cli --metrics off', () => {
   it('does not print the final finish line', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-no-metrics-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-no-metrics-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
     writeFileSync(
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),

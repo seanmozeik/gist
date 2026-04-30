@@ -80,7 +80,7 @@ export function assertAssetMediaTypeSupported({
   throw new Error(
     `Unsupported file type: ${name} (${details})\n` +
       `Archive formats (zip/tar/7z/rar) can’t be sent to the model.\n` +
-      `Unzip and summarize a specific file instead (e.g. README.md).`,
+      `Unzip and gist a specific file instead (e.g. README.md).`,
   );
 }
 
@@ -130,7 +130,7 @@ export async function ensureCliAttachmentPath({
         ? `.${mime.getExtension(attachment.mediaType) ?? 'bin'}`
         : '.bin';
   const filename = attachment.filename?.trim() ?? `asset${ext}`;
-  const dir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-cli-asset-'));
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'gist-cli-asset-'));
   const filePath = path.join(dir, filename);
   await fs.writeFile(filePath, bytes);
   return filePath;
@@ -179,15 +179,11 @@ export function supportsNativeFileAttachment({
 }
 
 export function assertProviderSupportsAttachment({
-  provider,
-  modelId,
-  attachment,
+  provider: _provider,
+  modelId: _modelId,
+  attachment: _attachment,
 }: {
   provider: LlmProvider;
   modelId: string;
   attachment: { kind: 'image' | 'file'; mediaType: string };
-}) {
-  undefined;
-  undefined;
-  undefined;
-}
+}) {}

@@ -1,15 +1,7 @@
 import type { CliProvider } from '../config.js';
-import type {
-  FirecrawlMode,
-  LengthArg,
-  MarkdownMode,
-  PreprocessMode,
-  VideoMode,
-  YoutubeMode,
-} from '../flags.js';
+import type { LengthArg, MarkdownMode, PreprocessMode, VideoMode, YoutubeMode } from '../flags.js';
 import {
   parseDurationMs,
-  parseFirecrawlMode,
   parseLengthArg,
   parseMarkdownMode,
   parseMaxOutputTokensArg,
@@ -29,7 +21,6 @@ import {
 
 export interface ResolvedRunSettings {
   lengthArg: LengthArg;
-  firecrawlMode: FirecrawlMode;
   markdownMode: MarkdownMode;
   preprocessMode: PreprocessMode;
   youtubeMode: YoutubeMode;
@@ -39,7 +30,6 @@ export interface ResolvedRunSettings {
 }
 
 export interface RunOverrides {
-  firecrawlMode: FirecrawlMode | null;
   markdownMode: MarkdownMode | null;
   preprocessMode: PreprocessMode | null;
   youtubeMode: YoutubeMode | null;
@@ -49,13 +39,11 @@ export interface RunOverrides {
   timeoutMs: number | null;
   retries: number | null;
   maxOutputTokensArg: number | null;
-  transcriber: 'auto' | 'whisper' | 'parakeet' | 'canary' | null;
   autoCliFallbackEnabled: boolean | null;
   autoCliOrder: CliProvider[] | null;
 }
 
 export interface RunOverridesInput {
-  firecrawl?: unknown;
   markdownMode?: unknown;
   preprocess?: unknown;
   youtube?: unknown;
@@ -65,11 +53,10 @@ export interface RunOverridesInput {
   timeout?: unknown;
   retries?: unknown;
   maxOutputTokens?: unknown;
-  transcriber?: unknown;
   autoCliFallback?: unknown;
   autoCliOrder?: unknown;
   autoCliRememberLastSuccess?: unknown;
-  // Legacy aliases (kept for compatibility with older extensions).
+  // Legacy aliases (kept for compatibility with older configs).
   magicCliAuto?: unknown;
   magicCliOrder?: unknown;
   magicCliRememberLastSuccess?: unknown;
@@ -108,7 +95,6 @@ export function resolveOutputLanguageSetting({
 
 export function resolveCliRunSettings({
   length,
-  firecrawl,
   markdownMode,
   markdown,
   format,
@@ -119,7 +105,6 @@ export function resolveCliRunSettings({
   maxOutputTokens,
 }: {
   length: string;
-  firecrawl: string;
   markdownMode?: string | undefined;
   markdown?: string | undefined;
   format: 'text' | 'markdown';
@@ -131,7 +116,6 @@ export function resolveCliRunSettings({
 }): ResolvedRunSettings {
   const strictOverrides = resolveRunOverrides(
     {
-      firecrawl,
       markdownMode: format === 'markdown' ? (markdownMode ?? markdown ?? 'readability') : 'off',
       maxOutputTokens,
       preprocess,
@@ -149,7 +133,6 @@ export function resolveCliRunSettings({
   };
 
   return {
-    firecrawlMode: requireOverride(strictOverrides.firecrawlMode, '--firecrawl'),
     lengthArg: parseLengthArg(length),
     markdownMode: requireOverride(strictOverrides.markdownMode, '--markdown-mode'),
     maxOutputTokensArg: strictOverrides.maxOutputTokensArg,
@@ -162,7 +145,6 @@ export function resolveCliRunSettings({
 
 export function resolveRunOverrides(
   {
-    firecrawl,
     markdownMode,
     preprocess,
     youtube,
@@ -172,13 +154,10 @@ export function resolveRunOverrides(
     timeout,
     retries,
     maxOutputTokens,
-    transcriber,
     autoCliFallback,
     autoCliOrder,
-    autoCliRememberLastSuccess,
     magicCliAuto,
     magicCliOrder,
-    magicCliRememberLastSuccess,
   }: RunOverridesInput,
   options: { strict?: boolean } = {},
 ): RunOverrides {
@@ -266,35 +245,12 @@ export function resolveRunOverrides(
     }
   })();
 
-  const transcriberOverride = (() => {
-    if (typeof transcriber !== 'string') {
-      return null;
-    }
-    const normalized = transcriber.trim().toLowerCase();
-    if (
-      normalized === 'auto' ||
-      normalized === 'whisper' ||
-      normalized === 'parakeet' ||
-      normalized === 'canary'
-    ) {
-      return normalized;
-    }
-    if (strict) {
-      throw new Error(`Unsupported transcriber: ${transcriber}`);
-    }
-    return null;
-  })();
-
   const forceSummaryResolved = parseOptionalBoolean(forceSummary, strict, '--force-summary');
   const autoCliFallbackEnabled = parseOptionalBoolean(
     autoCliFallback !== undefined ? autoCliFallback : magicCliAuto,
     strict,
     '--auto-cli-fallback',
   );
-  // Kept for backward compatibility with older extension payloads. Ignored now.
-  undefined;
-  // Kept for backward compatibility with older extension payloads. Ignored now.
-  undefined;
   const autoCliOrderResolved = parseOptionalCliProviderOrder(
     autoCliOrder !== undefined ? autoCliOrder : magicCliOrder,
     strict,
@@ -303,14 +259,12 @@ export function resolveRunOverrides(
   return {
     autoCliFallbackEnabled,
     autoCliOrder: autoCliOrderResolved,
-    firecrawlMode: parseOptionalSetting(firecrawl, parseFirecrawlMode, strict),
     forceSummary: forceSummaryResolved,
     markdownMode: parseOptionalSetting(markdownMode, parseMarkdownMode, strict),
     maxOutputTokensArg,
     preprocessMode: parseOptionalSetting(preprocess, parsePreprocessMode, strict),
     retries: retriesResolved,
     timeoutMs,
-    transcriber: transcriberOverride,
     transcriptTimestamps: parseOptionalBoolean(timestamps, strict, '--timestamps'),
     videoMode: parseOptionalSetting(videoMode, parseVideoMode, strict),
     youtubeMode: parseOptionalSetting(youtube, parseYoutubeMode, strict),

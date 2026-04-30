@@ -121,7 +121,7 @@ describe('LiteLLM pricing catalog', () => {
   });
 
   it('honors TOKENTALLY_CACHE_DIR when set', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-litellm-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-litellm-'));
     const cacheDir = join(root, 'tokentally-cache');
     mkdirSync(cacheDir, { recursive: true });
 
@@ -149,8 +149,8 @@ describe('LiteLLM pricing catalog', () => {
   });
 
   it('ignores empty TOKENTALLY_CACHE_DIR values', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-litellm-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-litellm-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     const catalogPath = join(cacheDir, 'litellm-model_prices_and_context_window.json');
@@ -177,8 +177,8 @@ describe('LiteLLM pricing catalog', () => {
   });
 
   it('loads from cache when fresh', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-litellm-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-litellm-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     const catalogPath = join(cacheDir, 'litellm-model_prices_and_context_window.json');
@@ -206,8 +206,8 @@ describe('LiteLLM pricing catalog', () => {
   });
 
   it('revalidates stale cache with 304', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-litellm-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-litellm-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     const catalogPath = join(cacheDir, 'litellm-model_prices_and_context_window.json');
@@ -239,7 +239,7 @@ describe('LiteLLM pricing catalog', () => {
   });
 
   it('downloads and caches when missing', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-litellm-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-litellm-'));
     const fetchMock = vi.fn(async () =>
       Response.json(
         { 'gpt-5.2': { input_cost_per_token: 0.1, output_cost_per_token: 0.2 } },

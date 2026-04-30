@@ -6,20 +6,20 @@ read_when:
 
 # Config
 
-`summarize` supports an optional JSON config file for defaults.
+`gist` supports an optional JSON config file for defaults.
 
 ## Location
 
 Default path:
 
-- `~/.summarize/config.json`
+- `~/.gist/config.json`
 
 ## Precedence
 
 For `model`:
 
 1. CLI flag `--model`
-2. Env `SUMMARIZE_MODEL`
+2. Env `GIST_MODEL`
 3. Config file `model`
 4. Built-in default (`auto`)
 
@@ -52,13 +52,13 @@ For environment variables:
 For UI theme:
 
 1. CLI flag `--theme`
-2. Env `SUMMARIZE_THEME`
+2. Env `GIST_THEME`
 3. Config file `ui.theme`
 4. Built-in default (`aurora`)
 
 ## Format
 
-`~/.summarize/config.json`:
+`~/.gist/config.json`:
 
 ```json
 {
@@ -150,12 +150,12 @@ Configure the on-disk SQLite cache (extracted content, transcripts, summaries).
     "enabled": true,
     "maxMb": 512,
     "ttlDays": 30,
-    "path": "~/.summarize/cache.sqlite",
+    "path": "~/.gist/cache.sqlite",
     "media": {
       "enabled": true,
       "maxMb": 2048,
       "ttlDays": 7,
-      "path": "~/.summarize/cache/media",
+      "path": "~/.gist/cache/media",
       "verify": "size"
     }
   }
@@ -203,7 +203,7 @@ Enable JSON log files for the daemon:
     "enabled": true,
     "level": "info",
     "format": "json",
-    "file": "~/.summarize/logs/daemon.jsonl",
+    "file": "~/.gist/logs/daemon.jsonl",
     "maxMb": 10,
     "maxFiles": 3
   }
@@ -242,7 +242,7 @@ Define presets you can select via `--model <preset>`:
 Notes:
 
 - `auto` is reserved and can’t be defined as a preset.
-- `free` is built-in (OpenRouter `:free` candidates). Override it by defining `models.free` in your config, or regenerate it via `summarize refresh-free`.
+- `free` is built-in (OpenRouter `:free` candidates). Override it by defining `models.free` in your config, or regenerate it via `gist refresh-free`.
 - `gpt-fast` and `fast` remain compatibility aliases for OpenAI GPT-5.5 Fast mode. Prefer `model: "openai/gpt-5.5"` plus `openai.serviceTier` / `openai.thinking`. `codex-fast` is the explicit Codex CLI fast preset.
 
 OpenAI request options can be set globally:
@@ -263,7 +263,7 @@ Or per preset:
 
 `thinking` is an alias for `reasoningEffort`. Supported values: `none`, `low`, `medium`, `high`, `xhigh`; shorthand aliases include `off`, `min` (low), `mid`, `med`, `x-high`, and `extra-high`.
 
-`serviceTier: "fast"` is the summarize/Codex-facing spelling. Direct OpenAI requests map it to `service_tier="priority"`. CLI `--service-tier default` clears a configured tier for one run.
+`serviceTier: "fast"` is the gist/Codex-facing spelling. Direct OpenAI requests map it to `service_tier="priority"`. CLI `--service-tier default` clears a configured tier for one run.
 
 Use a preset as your default `model`:
 
@@ -345,7 +345,7 @@ Notes:
 - `cli.enabled` is an allowlist (and order) for auto + explicit CLI model ids.
 - `cli.autoFallback` controls implicit-auto CLI fallback when `cli.enabled` is not set.
 - Default auto fallback order: `claude, gemini, codex, agent, openclaw, opencode`.
-- Auto fallback stores the last successful provider in `~/.summarize/cli-state.json` and prioritizes it on the next run.
+- Auto fallback stores the last successful provider in `~/.gist/cli-state.json` and prioritizes it on the next run.
 - `cli.<provider>.binary` overrides CLI binary discovery.
 - `cli.<provider>.extraArgs` appends extra CLI args.
 

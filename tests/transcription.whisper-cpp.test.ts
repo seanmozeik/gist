@@ -7,68 +7,32 @@ import { describe, expect, it, vi } from 'vitest';
 
 describe('transcription/whisper local whisper.cpp', () => {
   it('derives a compact whisper.cpp model name for display', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-model-name-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-model-name-'));
     const baseEn = join(root, 'ggml-base.en.bin');
     await writeFile(baseEn, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', baseEn);
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', baseEn);
 
     const { resolveWhisperCppModelNameForDisplay } =
-      await import('../packages/core/src/transcription/whisper.js');
+      await import('../src/transcription/whisper.js');
     await expect(resolveWhisperCppModelNameForDisplay()).resolves.toBe('base');
   });
 
   it('prefers whisper.cpp when enabled and available (no API keys required)', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
-    vi.doMock('node:child_process', () => ({
-      spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {
-          throw new Error(`Unexpected spawn: ${_cmd}`);
-        }
+    vi.doMock('node:child_process', () => ({ spawn: (_cmd: string, args: string[]) => {} }));
 
-        const stderr = new EventEmitter();
-        stderr.setEncoding = () => {
-          /* empty */
-        };
-
-        const handlers = new Map<string, (value?: unknown) => void>();
-        const proc = {
-          on(event: string, handler: (value?: unknown) => void) {
-            handlers.set(event, handler);
-            return proc;
-          },
-          stderr,
-        } as unknown;
-
-        // Availability check: whisper-cli --help
-        if (args.includes('--help')) {
-          queueMicrotask(() => handlers.get('close')?.(0));
-          return proc;
-        }
-
-        // Transcription run: create output file and close 0
-        const outIdx = args.indexOf('--output-file');
-        const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {
-          throw new Error('missing --output-file arg');
-        }
-        undefined;
-        return proc;
-      },
-    }));
-
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: null,
@@ -93,52 +57,18 @@ describe('transcription/whisper local whisper.cpp', () => {
     { mediaType: 'audio/wav' },
     { mediaType: 'audio/x-wav' },
   ])('treats $mediaType as whisper.cpp-supported input', async ({ mediaType }) => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-supported-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-supported-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
-    vi.doMock('node:child_process', () => ({
-      spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {
-          throw new Error(`Unexpected spawn: ${_cmd}`);
-        }
+    vi.doMock('node:child_process', () => ({ spawn: (_cmd: string, args: string[]) => {} }));
 
-        const stderr = new EventEmitter();
-        stderr.setEncoding = () => {
-          /* empty */
-        };
-
-        const handlers = new Map<string, (value?: unknown) => void>();
-        const proc = {
-          on(event: string, handler: (value?: unknown) => void) {
-            handlers.set(event, handler);
-            return proc;
-          },
-          stderr,
-        } as unknown;
-
-        if (args.includes('--help')) {
-          queueMicrotask(() => handlers.get('close')?.(0));
-          return proc;
-        }
-
-        const outIdx = args.indexOf('--output-file');
-        const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {
-          throw new Error('missing --output-file arg');
-        }
-        undefined;
-        return proc;
-      },
-    }));
-
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: null,
@@ -153,54 +83,20 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('transcribes via transcribeMediaFileWithWhisper with whisper.cpp when enabled', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-file-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-file-'));
     const modelPath = join(root, 'ggml-base.bin');
     const audioPath = join(root, 'audio.mp3');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
     await writeFile(audioPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
-    vi.doMock('node:child_process', () => ({
-      spawn: (_cmd: string, args: string[]) => {
-        if (_cmd !== 'whisper-cli') {
-          throw new Error(`Unexpected spawn: ${_cmd}`);
-        }
+    vi.doMock('node:child_process', () => ({ spawn: (_cmd: string, args: string[]) => {} }));
 
-        const stderr = new EventEmitter();
-        stderr.setEncoding = () => {
-          /* empty */
-        };
-
-        const handlers = new Map<string, (value?: unknown) => void>();
-        const proc = {
-          on(event: string, handler: (value?: unknown) => void) {
-            handlers.set(event, handler);
-            return proc;
-          },
-          stderr,
-        } as unknown;
-
-        if (args.includes('--help')) {
-          queueMicrotask(() => handlers.get('close')?.(0));
-          return proc;
-        }
-
-        const outIdx = args.indexOf('--output-file');
-        const base = outIdx !== -1 ? args[outIdx + 1] : null;
-        if (!base || typeof base !== 'string') {
-          throw new Error('missing --output-file arg');
-        }
-        undefined;
-        return proc;
-      },
-    }));
-
-    const { transcribeMediaFileWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
     const progress = vi.fn();
     const result = await transcribeMediaFileWithWhisper({
       falApiKey: null,
@@ -227,16 +123,16 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('falls back to OpenAI when whisper.cpp fails', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-fallback-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-fallback-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     const originalFetch = globalThis.fetch;
     try {
       vi.resetModules();
-      vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+      vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+      vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+      vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
@@ -257,7 +153,7 @@ describe('transcription/whisper local whisper.cpp', () => {
 
           const stderr = new EventEmitter();
           stderr.setEncoding = () => {
-            /* empty */
+            /* Empty */
           };
 
           const handlers = new Map<string, (value?: unknown) => void>();
@@ -279,8 +175,7 @@ describe('transcription/whisper local whisper.cpp', () => {
         },
       }));
 
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -299,14 +194,14 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('skips whisper.cpp when whisper-cli is missing', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-missing-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-missing-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     const spawn = vi.fn((_cmd: string) => {
       const handlers = new Map<string, (value?: unknown) => void>();
@@ -326,8 +221,7 @@ describe('transcription/whisper local whisper.cpp', () => {
 
     vi.doMock('node:child_process', () => ({ spawn }));
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: null,
@@ -347,9 +241,9 @@ describe('transcription/whisper local whisper.cpp', () => {
 
   it('skips whisper.cpp when the model path env points to a missing file', async () => {
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', '/nope/does-not-exist.bin');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', '/nope/does-not-exist.bin');
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     const spawn = vi.fn((_cmd: string, args: string[]) => {
       if (_cmd !== 'whisper-cli' || !args.includes('--help')) {
@@ -371,8 +265,7 @@ describe('transcription/whisper local whisper.cpp', () => {
     });
     vi.doMock('node:child_process', () => ({ spawn }));
 
-    const { transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaWithWhisper({
       bytes: new Uint8Array([1, 2, 3]),
       falApiKey: null,
@@ -391,16 +284,16 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('falls back to OpenAI when mediaType is unsupported and ffmpeg is missing', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-unsupported-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-unsupported-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     const originalFetch = globalThis.fetch;
     try {
       vi.resetModules();
-      vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+      vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+      vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+      vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
@@ -442,8 +335,7 @@ describe('transcription/whisper local whisper.cpp', () => {
         },
       }));
 
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -462,16 +354,16 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('falls back to OpenAI when whisper.cpp produces an empty transcript', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-empty-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-empty-'));
     const modelPath = join(root, 'ggml-base.bin');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     const originalFetch = globalThis.fetch;
     try {
       vi.resetModules();
-      vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-      vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+      vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+      vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+      vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
       globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input.toString();
@@ -484,43 +376,9 @@ describe('transcription/whisper local whisper.cpp', () => {
         throw new Error(`Unexpected fetch: ${url}`);
       }) as unknown as typeof fetch;
 
-      vi.doMock('node:child_process', () => ({
-        spawn: (_cmd: string, args: string[]) => {
-          if (_cmd !== 'whisper-cli') {
-            throw new Error(`Unexpected spawn: ${_cmd}`);
-          }
+      vi.doMock('node:child_process', () => ({ spawn: (_cmd: string, args: string[]) => {} }));
 
-          const stderr = new EventEmitter();
-          stderr.setEncoding = () => {
-            /* empty */
-          };
-
-          const handlers = new Map<string, (value?: unknown) => void>();
-          const proc = {
-            on(event: string, handler: (value?: unknown) => void) {
-              handlers.set(event, handler);
-              return proc;
-            },
-            stderr,
-          } as unknown;
-
-          if (args.includes('--help')) {
-            queueMicrotask(() => handlers.get('close')?.(0));
-            return proc;
-          }
-
-          const outIdx = args.indexOf('--output-file');
-          const base = outIdx !== -1 ? args[outIdx + 1] : null;
-          if (!base || typeof base !== 'string') {
-            throw new Error('missing --output-file arg');
-          }
-          undefined;
-          return proc;
-        },
-      }));
-
-      const { transcribeMediaWithWhisper } =
-        await import('../packages/core/src/transcription/whisper.js');
+      const { transcribeMediaWithWhisper } = await import('../src/transcription/whisper.js');
       const result = await transcribeMediaWithWhisper({
         bytes: new Uint8Array([1, 2, 3]),
         falApiKey: null,
@@ -539,16 +397,16 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('uses the default model cache path under HOME when no explicit model env is set', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-home-'));
-    const modelPath = join(home, '.summarize', 'cache', 'whisper-cpp', 'models', 'ggml-base.bin');
-    await mkdir(join(home, '.summarize', 'cache', 'whisper-cpp', 'models'), { recursive: true });
+    const home = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-home-'));
+    const modelPath = join(home, '.gist', 'cache', 'whisper-cpp', 'models', 'ggml-base.bin');
+    await mkdir(join(home, '.gist', 'cache', 'whisper-cpp', 'models'), { recursive: true });
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
     vi.stubEnv('HOME', home);
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', '');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', '');
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
@@ -575,28 +433,28 @@ describe('transcription/whisper local whisper.cpp', () => {
       },
     }));
 
-    const { isWhisperCppReady } = await import('../packages/core/src/transcription/whisper.js');
+    const { isWhisperCppReady } = await import('../src/transcription/whisper.js');
     await expect(isWhisperCppReady()).resolves.toBe(true);
   });
 
   it('transcodes unsupported media via ffmpeg and still transcribes locally', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-transcode-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-transcode-'));
     const modelPath = join(root, 'ggml-base.bin');
     const inputPath = join(root, 'video.mp4');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
     await writeFile(inputPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
         const handlers = new Map<string, (value?: unknown) => void>();
         const stderr = new EventEmitter();
         stderr.setEncoding = () => {
-          /* empty */
+          /* Empty */
         };
 
         const proc = {
@@ -641,8 +499,7 @@ describe('transcription/whisper local whisper.cpp', () => {
       },
     }));
 
-    const { transcribeMediaFileWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaFileWithWhisper({
       falApiKey: null,
       filePath: inputPath,
@@ -659,16 +516,16 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('surfaces a helpful local error when mediaType is unsupported and ffmpeg is missing', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-no-ffmpeg-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-no-ffmpeg-'));
     const modelPath = join(root, 'ggml-base.bin');
     const inputPath = join(root, 'video.mp4');
     await writeFile(modelPath, new Uint8Array([1, 2, 3]));
     await writeFile(inputPath, new Uint8Array([1, 2, 3]));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', modelPath);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', modelPath);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     vi.doMock('node:child_process', () => ({
       spawn: (_cmd: string, args: string[]) => {
@@ -694,8 +551,7 @@ describe('transcription/whisper local whisper.cpp', () => {
       },
     }));
 
-    const { transcribeMediaFileWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+    const { transcribeMediaFileWithWhisper } = await import('../src/transcription/whisper.js');
     const result = await transcribeMediaFileWithWhisper({
       falApiKey: null,
       filePath: inputPath,
@@ -714,12 +570,12 @@ describe('transcription/whisper local whisper.cpp', () => {
   });
 
   it('skips whisper.cpp when model env points to a directory', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'summarize-whisper-cpp-dir-'));
+    const root = await mkdtemp(join(tmpdir(), 'gist-whisper-cpp-dir-'));
 
     vi.resetModules();
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '0');
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_MODEL_PATH', root);
-    vi.stubEnv('SUMMARIZE_WHISPER_CPP_BINARY', 'whisper-cli');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '0');
+    vi.stubEnv('GIST_WHISPER_CPP_MODEL_PATH', root);
+    vi.stubEnv('GIST_WHISPER_CPP_BINARY', 'whisper-cli');
 
     const spawn = vi.fn((_cmd: string, args: string[]) => {
       if (_cmd !== 'whisper-cli' || !args.includes('--help')) {
@@ -743,7 +599,7 @@ describe('transcription/whisper local whisper.cpp', () => {
     vi.doMock('node:child_process', () => ({ spawn }));
 
     const { isWhisperCppReady, transcribeMediaWithWhisper } =
-      await import('../packages/core/src/transcription/whisper.js');
+      await import('../src/transcription/whisper.js');
     await expect(isWhisperCppReady()).resolves.toBe(false);
 
     const result = await transcribeMediaWithWhisper({

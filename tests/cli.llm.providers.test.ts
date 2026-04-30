@@ -61,9 +61,9 @@ function collectStdout() {
 }
 
 function writeJsonConfig(value: unknown) {
-  const root = mkdtempSync(join(tmpdir(), 'summarize-config-'));
-  mkdirSync(join(root, '.summarize'), { recursive: true });
-  writeFileSync(join(root, '.summarize', 'config.json'), JSON.stringify(value), 'utf8');
+  const root = mkdtempSync(join(tmpdir(), 'gist-config-'));
+  mkdirSync(join(root, '.gist'), { recursive: true });
+  writeFileSync(join(root, '.gist', 'config.json'), JSON.stringify(value), 'utf8');
   return root;
 }
 

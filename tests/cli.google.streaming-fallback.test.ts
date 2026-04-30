@@ -60,12 +60,7 @@ function collectStream() {
   return { getText: () => text, stream };
 }
 
-const execFileMock: ExecFileFn = ((file, args, _options, callback) => {
-  undefined;
-  undefined;
-  callback(null, '# converted\n\nhello\n', '');
-  return { pid: 123 } as unknown as ChildProcess;
-}) as ExecFileFn;
+const execFileMock: ExecFileFn = ((file, args, _options, callback) => {}) as ExecFileFn;
 
 describe('cli google streaming fallback', () => {
   it('falls back to non-streaming when streaming times out', async () => {
@@ -75,8 +70,8 @@ describe('cli google streaming fallback', () => {
       throw new Error('LLM request timed out');
     });
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-google-stream-timeout-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-google-stream-timeout-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -153,8 +148,8 @@ describe('cli google streaming fallback', () => {
     mocks.completeSimple.mockClear();
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-google-stream-fallback-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-google-stream-fallback-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -242,8 +237,8 @@ describe('cli google streaming fallback', () => {
       ),
     );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-google-stream-ok-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-google-stream-ok-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

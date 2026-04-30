@@ -4,8 +4,7 @@ import { createLinkPreviewClient } from '../src/content/index.js';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? null;
 const YT_DLP_PATH = process.env.YT_DLP_PATH ?? null;
-const LIVE =
-  process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(OPENAI_API_KEY) && Boolean(YT_DLP_PATH);
+const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(OPENAI_API_KEY) && Boolean(YT_DLP_PATH);
 
 describe('live YouTube transcript (yt-dlp)', () => {
   const run = LIVE ? it : it.skip;

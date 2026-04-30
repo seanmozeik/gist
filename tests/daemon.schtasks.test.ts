@@ -26,7 +26,7 @@ function clearFetch() {
 }
 
 function writeDaemonConfig(home: string, port = 8787) {
-  const dir = path.join(home, '.summarize');
+  const dir = path.join(home, '.gist');
   mkdirSync(dir, { recursive: true });
   const token = '0123456789abcdef0123456789abcdef';
   writeFileSync(
@@ -75,7 +75,7 @@ describe('daemon/schtasks install', () => {
 
   it('registers a hidden /XML task that launches via wscript with battery flags off', async () => {
     mockExecFileSuccess();
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     const out = collectStream();
 
     const { scriptPath } = await installScheduledTask({
@@ -88,12 +88,12 @@ describe('daemon/schtasks install', () => {
     expect(script).toContain('node dist/cli.js daemon run');
     expect(out.getText()).toContain('Installed Scheduled Task');
 
-    const launcherPath = path.join(home, '.summarize', 'daemon-launch.vbs');
+    const launcherPath = path.join(home, '.gist', 'daemon-launch.vbs');
     const launcher = readFileSync(launcherPath, 'utf8');
     expect(launcher).toContain('Set sh = CreateObject("WScript.Shell")');
     expect(launcher).toContain('sh.Run "node dist/cli.js daemon run", 0, False');
 
-    const xmlPath = path.join(home, '.summarize', 'daemon-task.xml');
+    const xmlPath = path.join(home, '.gist', 'daemon-task.xml');
     const xml = readFileSync(xmlPath, 'utf8');
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain('<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>');
@@ -119,7 +119,7 @@ describe('daemon/schtasks install', () => {
 
   it('falls back to COMPUTERNAME when USERDOMAIN is missing', async () => {
     mockExecFileSuccess();
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     const out = collectStream();
 
     await installScheduledTask({
@@ -128,17 +128,17 @@ describe('daemon/schtasks install', () => {
       stdout: out.stream,
     });
 
-    const xml = readFileSync(path.join(home, '.summarize', 'daemon-task.xml'), 'utf8');
+    const xml = readFileSync(path.join(home, '.gist', 'daemon-task.xml'), 'utf8');
     expect(xml).toContain(String.raw`<UserId>FALLBACK\testuser</UserId>`);
   });
 
   it('cleans up legacy launcher and pid artifacts on install', async () => {
     mockExecFileSuccess();
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
-    const summarizeDir = path.join(home, '.summarize');
-    mkdirSync(summarizeDir, { recursive: true });
-    const legacyLauncher = path.join(summarizeDir, 'daemon-run.vbs');
-    const legacyPid = path.join(summarizeDir, 'daemon.pid');
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
+    const gistDir = path.join(home, '.gist');
+    mkdirSync(gistDir, { recursive: true });
+    const legacyLauncher = path.join(gistDir, 'daemon-run.vbs');
+    const legacyPid = path.join(gistDir, 'daemon.pid');
     writeFileSync(legacyLauncher, 'old', 'utf8');
     writeFileSync(legacyPid, '1234', 'utf8');
     const out = collectStream();
@@ -174,7 +174,7 @@ describe('daemon/schtasks install', () => {
         return {} as never;
       },
     );
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     const out = collectStream();
 
     await expect(
@@ -207,7 +207,7 @@ describe('daemon/schtasks install', () => {
         return {} as never;
       },
     );
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     const out = collectStream();
 
     await expect(
@@ -231,7 +231,7 @@ describe('daemon/schtasks lifecycle', () => {
   it('kills the live daemon pid before rerunning the task', async () => {
     mockExecFileSuccess();
     setFetchPid(4242);
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     writeDaemonConfig(home);
     const out = collectStream();
 
@@ -254,7 +254,7 @@ describe('daemon/schtasks lifecycle', () => {
   it('skips taskkill on restart when the daemon is already down', async () => {
     mockExecFileSuccess();
     setFetchPid(null);
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     writeDaemonConfig(home);
     const out = collectStream();
 
@@ -270,14 +270,14 @@ describe('daemon/schtasks lifecycle', () => {
   it('removes the task script, launcher, xml definition, and any legacy artifacts on uninstall', async () => {
     mockExecFileSuccess();
     setFetchPid(5252);
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-schtasks-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-schtasks-'));
     writeDaemonConfig(home);
-    const summarizeDir = path.join(home, '.summarize');
-    const scriptPath = path.join(summarizeDir, 'daemon.cmd');
-    const launcherPath = path.join(summarizeDir, 'daemon-launch.vbs');
-    const xmlPath = path.join(summarizeDir, 'daemon-task.xml');
-    const legacyLauncher = path.join(summarizeDir, 'daemon-run.vbs');
-    const legacyPid = path.join(summarizeDir, 'daemon.pid');
+    const gistDir = path.join(home, '.gist');
+    const scriptPath = path.join(gistDir, 'daemon.cmd');
+    const launcherPath = path.join(gistDir, 'daemon-launch.vbs');
+    const xmlPath = path.join(gistDir, 'daemon-task.xml');
+    const legacyLauncher = path.join(gistDir, 'daemon-run.vbs');
+    const legacyPid = path.join(gistDir, 'daemon.pid');
     writeFileSync(scriptPath, 'script', 'utf8');
     writeFileSync(launcherPath, 'launcher', 'utf8');
     writeFileSync(xmlPath, 'xml', 'utf8');

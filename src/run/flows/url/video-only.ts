@@ -85,16 +85,16 @@ export async function handleVideoOnlyExtractedContent({
 
   let chosenModel: string | null = null;
   if (flags.progressEnabled) {
-    spinner.setText(renderStatus('Summarizing video'));
+    spinner.setText(renderStatus('Gisting video'));
   }
-  await hooks.summarizeAsset({
+  await hooks.gistAsset({
     attachment: loadedVideo.attachment,
     onModelChosen: (modelId) => {
       chosenModel = modelId;
       hooks.onModelChosen?.(modelId);
       if (flags.progressEnabled) {
         const meta = `${styleDim('(')}${styleDim('model: ')}${accent(modelId)}${styleDim(')')}`;
-        spinner.setText(renderStatusWithMeta('Summarizing video', meta));
+        spinner.setText(renderStatusWithMeta('Gisting video', meta));
       }
     },
     sourceKind: 'asset-url',

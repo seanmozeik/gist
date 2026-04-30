@@ -87,7 +87,7 @@ describe('openai provider helpers', () => {
       );
     });
 
-    const promptText = 'Summarize';
+    const promptText = 'Gist';
     const document = {
       bytes: pdfBytes,
       filename: 'test.pdf',
@@ -139,7 +139,7 @@ describe('openai provider helpers', () => {
           isOpenRouter: true,
           useChatCompletions: true,
         },
-        promptText: 'Summarize',
+        promptText: 'Gist',
         timeoutMs: 2000,
       }),
     ).rejects.toThrow(/OpenRouter does not support PDF attachments/);
@@ -155,7 +155,7 @@ describe('openai provider helpers', () => {
           isOpenRouter: false,
           useChatCompletions: true,
         },
-        promptText: 'Summarize',
+        promptText: 'Gist',
         timeoutMs: 2000,
       }),
     ).rejects.toThrow(/Document attachments require api.openai.com/);
@@ -178,7 +178,7 @@ describe('openai provider helpers', () => {
           isOpenRouter: false,
           useChatCompletions: true,
         },
-        promptText: 'Summarize',
+        promptText: 'Gist',
         timeoutMs: 2000,
       }),
     ).rejects.toThrow(/expected a document attachment/);
@@ -204,7 +204,7 @@ describe('openai provider helpers', () => {
           isOpenRouter: false,
           useChatCompletions: true,
         },
-        promptText: 'Summarize',
+        promptText: 'Gist',
         timeoutMs: 2000,
       }),
     ).rejects.toThrow(/OpenAI API error \(500\)/);
@@ -224,7 +224,7 @@ describe('openai provider helpers', () => {
           isOpenRouter: false,
           useChatCompletions: true,
         },
-        promptText: 'Summarize',
+        promptText: 'Gist',
         timeoutMs: 2000,
       }),
     ).rejects.toThrow(/empty summary/);
@@ -418,9 +418,9 @@ describe('openai provider helpers', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       expect(String(input)).toBe('https://openrouter.ai/api/v1/chat/completions');
       expect((init?.headers as Record<string, string>)?.['HTTP-Referer']).toBe(
-        'https://github.com/steipete/summarize',
+        'https://github.com/seanmozeik/gist',
       );
-      expect((init?.headers as Record<string, string>)?.['X-Title']).toBe('summarize');
+      expect((init?.headers as Record<string, string>)?.['X-Title']).toBe('gist');
       const body = JSON.parse(String(init?.body)) as {
         model: string;
         messages: { role: string; content: string }[];

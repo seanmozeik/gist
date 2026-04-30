@@ -1,6 +1,6 @@
 import type { MediaCache, TranscriptCache } from '../cache/types.js';
 import type { TranscriptionConfig } from '../transcript/transcription-config.js';
-import type { CacheMode, TranscriptSource } from './types.js';
+import type { TranscriptSource } from './types.js';
 
 // Enum-like constants for progress kinds (keeps call sites typo-resistant without TS `enum` runtime quirks).
 export const ProgressKind = {
@@ -10,12 +10,6 @@ export const ProgressKind = {
 
   FetchHtmlProgress: 'fetch-html-progress',
   FetchHtmlStart: 'fetch-html-start',
-  FirecrawlDone: 'firecrawl-done',
-
-  FirecrawlStart: 'firecrawl-start',
-  NitterDone: 'nitter-done',
-
-  NitterStart: 'nitter-start',
   TranscriptDone: 'transcript-done',
 
   TranscriptMediaDownloadDone: 'transcript-media-download-done',
@@ -28,14 +22,7 @@ export const ProgressKind = {
   TranscriptWhisperStart: 'transcript-whisper-start',
 } as const;
 
-export type CloudTranscriptionProviderHint = 'groq' | 'assemblyai' | 'gemini' | 'openai' | 'fal';
-
-export type TranscriptionProviderHint =
-  | 'cpp'
-  | 'onnx'
-  | 'unknown'
-  | CloudTranscriptionProviderHint
-  | `${CloudTranscriptionProviderHint}->${string}`;
+export type TranscriptionProviderHint = 'openrouter' | 'sidecar' | 'unknown';
 
 /** Public progress events emitted by link preview fetchers. */
 export type LinkPreviewProgressEvent =
@@ -98,35 +85,14 @@ export type LinkPreviewProgressEvent =
       source: TranscriptSource | null;
       hint: string | null;
     }
-  | { kind: 'firecrawl-start'; url: string; reason: string }
-  | {
-      kind: 'firecrawl-done';
-      url: string;
-      ok: boolean;
-      markdownBytes: number | null;
-      htmlBytes: number | null;
-    }
-  | { kind: 'nitter-start'; url: string }
-  | { kind: 'nitter-done'; url: string; ok: boolean; textBytes: number | null }
-  | { kind: 'bird-start'; url: string; client?: 'xurl' | 'bird' | null }
+  | { kind: 'bird-start'; url: string; client?: 'bird' | null }
   | {
       kind: 'bird-done';
       url: string;
-      client?: 'xurl' | 'bird' | null;
+      client?: 'bird' | null;
       ok: boolean;
       textBytes: number | null;
     };
-
-export interface FirecrawlScrapeResult {
-  markdown: string;
-  html?: string | null;
-  metadata?: Record<string, unknown> | null;
-}
-
-export type ScrapeWithFirecrawl = (
-  url: string,
-  options?: { cacheMode?: CacheMode; timeoutMs?: number },
-) => Promise<FirecrawlScrapeResult | null>;
 
 export type ConvertHtmlToMarkdown = (args: {
   url: string;
@@ -140,7 +106,7 @@ export interface BirdTweetMedia {
   kind: 'video' | 'audio';
   urls: string[];
   preferredUrl: string | null;
-  source: 'extended_entities' | 'card' | 'entities' | 'xurl';
+  source: 'extended_entities' | 'card' | 'entities';
 }
 
 export interface BirdTweetPayload {
@@ -149,7 +115,7 @@ export interface BirdTweetPayload {
   author?: { username?: string; name?: string };
   createdAt?: string;
   media?: BirdTweetMedia | null;
-  client?: 'xurl' | 'bird';
+  client?: 'bird';
 }
 
 export type ReadTweetWithBird = (args: {
@@ -169,15 +135,8 @@ export type ResolveTwitterCookies = (args: { url: string }) => Promise<TwitterCo
 export interface LinkPreviewDeps {
   fetch: typeof fetch;
   env?: Record<string, string | undefined>;
-  scrapeWithFirecrawl: ScrapeWithFirecrawl | null;
-  apifyApiToken: string | null;
   ytDlpPath: string | null;
   transcription?: TranscriptionConfig | null;
-  falApiKey?: string | null;
-  groqApiKey?: string | null;
-  assemblyaiApiKey?: string | null;
-  geminiApiKey?: string | null;
-  openaiApiKey?: string | null;
   convertHtmlToMarkdown: ConvertHtmlToMarkdown | null;
   transcriptCache: TranscriptCache | null;
   mediaCache?: MediaCache | null;

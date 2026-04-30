@@ -46,7 +46,7 @@ function makeUiState(overrides?: Partial<UiState>): UiState {
     media: null,
     panelOpen: true,
     settings: {
-      autoSummarize: true,
+      autoGist: true,
       automationEnabled: false,
       chatEnabled: true,
       fontSize: 15,

@@ -50,18 +50,18 @@ read_when:
   - transcript/OCR text appears before slide images finish extracting
 - No giant summary block under active slide cards.
 - Slide click: seek only (no modal).
-- OCR toggle appears near summarize control only when OCR is significant
+- OCR toggle appears near gist control only when OCR is significant
   (enough slides + total OCR chars); otherwise hide it.
 
 ## CLI
 
-- `summarize <url> --slides` streams a short intro paragraph and then a continuous narrative with slide images inserted inline where `[slide:N]` markers appear.
+- `gist <url> --slides` streams a short intro paragraph and then a continuous narrative with slide images inserted inline where `[slide:N]` markers appear.
   - The model is responsible for inserting every slide marker in order; text length is still governed by `--length`.
   - If inline images are unsupported, the CLI prints text-only output and notes how to export slides to disk.
   - Timestamp links use OSC-8 when supported (YouTube/Vimeo/Loom/Dropbox).
   - Progress line reports slide extraction steps (includes slide counts when available).
-- `summarize <url> --slides --extract` prints the full timed transcript and inserts slide images inline at matching timestamps.
-- `summarize slides <url>` extracts slides without summarizing (use `--render auto|kitty|iterm` for inline thumbnails).
+- `gist <url> --slides --extract` prints the full timed transcript and inserts slide images inline at matching timestamps.
+- `gist slides <url>` extracts slides without gisting (use `--render auto|kitty|iterm` for inline thumbnails).
 - Defaults to writing images under `./slides/<sourceId>/` (override via `--slides-dir` / `--output`).
 
 ## Implementation notes

@@ -12,7 +12,7 @@ import type { MediaCache } from '../../../cache/types.js';
 import type { LinkPreviewProgressEvent } from '../../../link-preview/deps.js';
 import { ProgressKind } from '../../../link-preview/deps.js';
 import { resolveLocalDirectMediaSource } from '../../../local-file.js';
-import { type TranscriptionConfig } from '../../transcription-config.js';
+import type { TranscriptionConfig } from '../../transcription-config.js';
 import { resolveTranscriptionStartInfo } from '../transcription-start.js';
 
 const YT_DLP_TIMEOUT_MS = 300_000;
@@ -31,11 +31,6 @@ interface YtDlpRequest {
   ytDlpPath: string | null;
   transcription?: Partial<TranscriptionConfig> | null;
   env?: Record<string, string | undefined>;
-  groqApiKey?: string | null;
-  assemblyaiApiKey?: string | null;
-  geminiApiKey?: string | null;
-  openaiApiKey?: string | null;
-  falApiKey?: string | null;
   url: string;
   onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
   service?: 'youtube' | 'podcast' | 'generic';
@@ -74,7 +69,9 @@ export const fetchTranscriptWithYtDlp = async ({
 
   if (!startInfo.availability.hasAnyProvider) {
     return {
-      error: new Error('No transcription provider available. Set SUMMARIZE_LOCAL_BASE_URL.'),
+      error: new Error(
+        'No transcription provider available. Set GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.',
+      ),
       notes,
       provider: null,
       text: null,
@@ -87,7 +84,7 @@ export const fetchTranscriptWithYtDlp = async ({
   const localFileInput = resolveLocalDirectMediaSource(url, mediaKind);
   const cachedMedia = localFileInput ? null : mediaCache ? await mediaCache.get({ url }) : null;
 
-  const outputFile = join(tmpdir(), `summarize-${randomUUID()}.mp3`);
+  const outputFile = join(tmpdir(), `gist-${randomUUID()}.mp3`);
   let filePath = localFileInput?.filePath ?? cachedMedia?.filePath ?? outputFile;
   const mediaType = localFileInput?.mediaType ?? 'audio/mpeg';
   const filename =
@@ -179,9 +176,10 @@ export const fetchTranscriptWithYtDlp = async ({
       url,
     });
     const result = await transcribeMediaFileWithWhisper({
+      env: effectiveEnv,
       filePath,
-      mediaType,
       filename,
+      mediaType,
       onProgress: (event: TranscriptionProgressEvent) => {
         progress?.({
           kind: ProgressKind.TranscriptWhisperProgress,
@@ -193,7 +191,6 @@ export const fetchTranscriptWithYtDlp = async ({
           url,
         });
       },
-      env: effectiveEnv,
     });
     if (result.notes.length > 0) {
       notes.push(...result.notes);
@@ -220,7 +217,7 @@ export const fetchTranscriptWithYtDlp = async ({
   } finally {
     if (shouldCleanup) {
       await fs.unlink(filePath).catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   }

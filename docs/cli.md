@@ -6,7 +6,7 @@ read_when:
 
 # CLI models
 
-Summarize can use installed CLIs (Claude, Codex, Gemini, Cursor Agent, OpenClaw, OpenCode) as local model backends.
+Gist can use installed CLIs (Claude, Codex, Gemini, Cursor Agent, OpenClaw, OpenCode) as local model backends.
 
 ## Model ids
 
@@ -38,9 +38,9 @@ Auto mode can prepend CLI attempts in two ways:
   - Applies only to **implicit** auto (when no model is set via flag/env/config).
   - Default behavior: only when no API key is configured.
   - Default order: `claude, gemini, codex, agent, openclaw, opencode`.
-  - Remembers + prioritizes the last successful CLI provider (`~/.summarize/cli-state.json`).
+  - Remembers + prioritizes the last successful CLI provider (`~/.gist/cli-state.json`).
 
-Gemini CLI performance: summarize sets `GEMINI_CLI_NO_RELAUNCH=true` for Gemini CLI runs to avoid a costly self-relaunch (can be overridden by setting it yourself).
+Gemini CLI performance: gist sets `GEMINI_CLI_NO_RELAUNCH=true` for Gemini CLI runs to avoid a costly self-relaunch (can be overridden by setting it yourself).
 
 Set explicit CLI allowlist:
 
@@ -82,7 +82,7 @@ Binary lookup:
 
 ## Attachments (images/files)
 
-When a CLI attempt is used for an image or non-text file, Summarize switches to a
+When a CLI attempt is used for an image or non-text file, Gist switches to a
 path-based prompt and enables the required tool flags:
 
 - Claude: `--tools Read --dangerously-skip-permissions`
@@ -126,29 +126,29 @@ Notes:
 Use a tiny local text file and run each provider with a longer timeout (Gemini can be slower):
 
 ```bash
-printf "Summarize CLI smoke input.\nOne short paragraph. Reply can be brief.\n" >/tmp/summarize-cli-smoke.txt
+printf "Gist CLI smoke input.\nOne short paragraph. Reply can be brief.\n" >/tmp/gist-cli-smoke.txt
 
-summarize --cli codex --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli claude --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli gemini --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli agent --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli openclaw --plain --timeout 2m /tmp/summarize-cli-smoke.txt
-summarize --cli opencode --plain --timeout 2m /tmp/summarize-cli-smoke.txt
+gist --cli codex --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli claude --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli gemini --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli agent --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli openclaw --plain --timeout 2m /tmp/gist-cli-smoke.txt
+gist --cli opencode --plain --timeout 2m /tmp/gist-cli-smoke.txt
 ```
 
 If Agent fails with auth, run `agent login` (interactive) or set `CURSOR_API_KEY`.
 
 ## Generate free preset (OpenRouter)
 
-`summarize` ships with a built-in preset `free`, backed by OpenRouter `:free` models.
+`gist` ships with a built-in preset `free`, backed by OpenRouter `:free` models.
 To regenerate the candidate list (and persist it in your config):
 
 ```bash
-summarize refresh-free
+gist refresh-free
 ```
 
 Options:
 
 - `--runs 2` (default): extra timing runs per selected model (total runs = 1 + runs)
 - `--smart 3` (default): number of “smart-first” picks (rest filled by fastest)
-- `--set-default`: also sets `"model": "free"` in `~/.summarize/config.json`
+- `--set-default`: also sets `"model": "free"` in `~/.gist/config.json`

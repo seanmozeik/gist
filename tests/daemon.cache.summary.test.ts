@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createCacheStore } from '../src/cache.js';
-import { streamSummaryForVisiblePage } from '../src/daemon/summarize.js';
+import { streamSummaryForVisiblePage } from '../src/daemon/gist.js';
 import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
 
 const mocks = vi.hoisted(() => ({
@@ -33,9 +33,9 @@ describe('daemon summary cache', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-daemon-cache-'));
-    const summarizeDir = join(root, '.summarize');
-    const cacheDir = join(summarizeDir, 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-daemon-cache-'));
+    const gistDir = join(root, '.gist');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -53,7 +53,7 @@ describe('daemon summary cache', () => {
       throw new Error('unexpected LiteLLM catalog fetch');
     });
 
-    const cachePath = join(summarizeDir, 'cache.sqlite');
+    const cachePath = join(gistDir, 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path: cachePath });
     const cacheState = {
       maxBytes: 1024 * 1024,
@@ -67,7 +67,7 @@ describe('daemon summary cache', () => {
       let out = '';
       const sink = {
         onModelChosen: () => {
-          /* empty */
+          /* Empty */
         },
         writeChunk: (text: string) => {
           out += text;

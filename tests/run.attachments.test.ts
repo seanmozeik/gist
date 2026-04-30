@@ -124,7 +124,7 @@ describe('run/attachments', () => {
   });
 
   it('keeps file source paths as-is', async () => {
-    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-asset-'));
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-asset-'));
     const filePath = path.join(base, 'sample.txt');
     await fs.writeFile(filePath, 'ok');
     const attachment = {

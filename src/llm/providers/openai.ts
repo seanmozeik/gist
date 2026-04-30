@@ -1,7 +1,7 @@
 import type { Context } from '@mariozechner/pi-ai';
 import { completeSimple } from '@mariozechner/pi-ai';
 
-import { isOpenRouterBaseUrl, normalizeBaseUrl } from '../../index.js';
+import { isOpenRouterBaseUrl, normalizeBaseUrl } from '../../openai/base-url.js';
 import type { Attachment } from '../attachments.js';
 import { createUnsupportedFunctionalityError } from '../errors.js';
 import { toOpenAiServiceTierParam, type ModelRequestOptions } from '../model-options.js';
@@ -276,7 +276,7 @@ function buildOpenAiRequestHeaders(openaiConfig: OpenAiClientConfig): Record<str
     authorization: `Bearer ${openaiConfig.apiKey}`,
     'content-type': 'application/json',
     ...(openaiConfig.isOpenRouter
-      ? { 'HTTP-Referer': 'https://github.com/steipete/summarize', 'X-Title': 'summarize' }
+      ? { 'HTTP-Referer': 'https://github.com/seanmozeik/gist', 'X-Title': 'gist' }
       : {}),
     ...openaiConfig.extraHeaders,
   };

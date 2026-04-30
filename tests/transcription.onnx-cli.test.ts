@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   resolvePreferredOnnxModel,
   transcribeWithOnnxCliFile,
-} from '../packages/core/src/transcription/onnx-cli.js';
+} from '../src/transcription/onnx-cli.js';
 
 const originalEnv = { ...process.env };
 
@@ -20,9 +20,9 @@ afterEach(() => {
 describe('onnx cli transcriber', () => {
   it('downloads huggingface artifacts on first run and substitutes placeholders', async () => {
     const cacheDir = join(tmpdir(), `onnx-cache-${randomUUID()}`);
-    process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
-    process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
-    process.env.SUMMARIZE_ONNX_PARAKEET_CMD =
+    process.env.GIST_ONNX_CACHE_DIR = cacheDir;
+    process.env.GIST_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
+    process.env.GIST_ONNX_PARAKEET_CMD =
       "cat {model} {vocab} {input} >/dev/null; printf 'downloaded'";
 
     const responses = [new Response('dummy-model'), new Response('dummy-vocab')];
@@ -55,12 +55,12 @@ describe('onnx cli transcriber', () => {
     await fs.writeFile(filePath, 'dummy');
 
     const cacheDir = join(tmpdir(), `onnx-cache-${randomUUID()}`);
-    process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
-    process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
+    process.env.GIST_ONNX_CACHE_DIR = cacheDir;
+    process.env.GIST_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
-    process.env.SUMMARIZE_ONNX_PARAKEET_CMD = "cat {input} >/dev/null; printf 'hello world'";
+    process.env.GIST_ONNX_PARAKEET_CMD = "cat {input} >/dev/null; printf 'hello world'";
 
     const result = await transcribeWithOnnxCliFile({
       filePath,
@@ -83,12 +83,12 @@ describe('onnx cli transcriber', () => {
     await fs.writeFile(filePath, 'dummy');
 
     const cacheDir = join(tmpdir(), `onnx-cache-${randomUUID()}`);
-    process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
-    process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
+    process.env.GIST_ONNX_CACHE_DIR = cacheDir;
+    process.env.GIST_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
-    process.env.SUMMARIZE_ONNX_PARAKEET_CMD = JSON.stringify([
+    process.env.GIST_ONNX_PARAKEET_CMD = JSON.stringify([
       'node',
       '-e',
       "process.stdout.write(process.argv[1] ?? '')",
@@ -115,12 +115,12 @@ describe('onnx cli transcriber', () => {
     await fs.writeFile(filePath, 'dummy');
 
     const cacheDir = join(tmpdir(), `onnx-cache-${randomUUID()}`);
-    process.env.SUMMARIZE_ONNX_CACHE_DIR = cacheDir;
-    process.env.SUMMARIZE_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
+    process.env.GIST_ONNX_CACHE_DIR = cacheDir;
+    process.env.GIST_ONNX_MODEL_BASE_URL = 'https://example.invalid/model';
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
 
-    process.env.SUMMARIZE_ONNX_PARAKEET_CMD =
+    process.env.GIST_ONNX_PARAKEET_CMD =
       'node -e "process.stdout.write(process.argv[process.argv.length - 1] ?? \'\')" -- {input}';
 
     const result = await transcribeWithOnnxCliFile({
@@ -142,13 +142,13 @@ describe('onnx cli transcriber', () => {
     const filePath = join(tmpdir(), `onnx-${randomUUID()}.wav`);
     await fs.writeFile(filePath, 'dummy');
 
-    delete process.env.SUMMARIZE_ONNX_PARAKEET_CMD;
+    delete process.env.GIST_ONNX_PARAKEET_CMD;
 
     const env = {
       ...process.env,
-      SUMMARIZE_ONNX_CACHE_DIR: join(tmpdir(), `onnx-cache-${randomUUID()}`),
-      SUMMARIZE_ONNX_MODEL_BASE_URL: 'https://example.invalid/model',
-      SUMMARIZE_ONNX_PARAKEET_CMD: "cat {input} >/dev/null; printf 'ok'",
+      GIST_ONNX_CACHE_DIR: join(tmpdir(), `onnx-cache-${randomUUID()}`),
+      GIST_ONNX_MODEL_BASE_URL: 'https://example.invalid/model',
+      GIST_ONNX_PARAKEET_CMD: "cat {input} >/dev/null; printf 'ok'",
     };
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('noop'));
@@ -162,9 +162,9 @@ describe('onnx cli transcriber', () => {
       totalDurationSeconds: null,
     });
 
-    const cacheDir = env.SUMMARIZE_ONNX_CACHE_DIR;
+    const cacheDir = env.GIST_ONNX_CACHE_DIR;
     if (!cacheDir) {
-      throw new Error('missing SUMMARIZE_ONNX_CACHE_DIR');
+      throw new Error('missing GIST_ONNX_CACHE_DIR');
     }
 
     await fs.rm(cacheDir, { force: true, recursive: true });
@@ -175,9 +175,9 @@ describe('onnx cli transcriber', () => {
   });
 
   it('resolves preferred ONNX model from env', () => {
-    expect(resolvePreferredOnnxModel({ SUMMARIZE_TRANSCRIBER: 'parakeet' })).toBe('parakeet');
-    expect(resolvePreferredOnnxModel({ SUMMARIZE_TRANSCRIBER: '  CANARY ' })).toBe('canary');
-    expect(resolvePreferredOnnxModel({ SUMMARIZE_TRANSCRIBER: 'whisper' })).toBeNull();
+    expect(resolvePreferredOnnxModel({ GIST_TRANSCRIBER: 'parakeet' })).toBe('parakeet');
+    expect(resolvePreferredOnnxModel({ GIST_TRANSCRIBER: '  CANARY ' })).toBe('canary');
+    expect(resolvePreferredOnnxModel({ GIST_TRANSCRIBER: 'whisper' })).toBeNull();
     expect(resolvePreferredOnnxModel({})).toBeNull();
   });
 
@@ -185,7 +185,7 @@ describe('onnx cli transcriber', () => {
     const filePath = join(tmpdir(), `onnx-${randomUUID()}.bin`);
     await fs.writeFile(filePath, 'dummy');
 
-    delete process.env.SUMMARIZE_ONNX_PARAKEET_CMD;
+    delete process.env.GIST_ONNX_PARAKEET_CMD;
 
     const result = await transcribeWithOnnxCliFile({
       filePath,

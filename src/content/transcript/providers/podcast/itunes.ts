@@ -65,6 +65,9 @@ export async function resolveApplePodcastEpisodeFromItunesLookup({
     });
     return sorted[0];
   })();
+  if (!chosen) {
+    return null;
+  }
 
   const episodeUrlRaw =
     typeof chosen.episodeUrl === 'string'

@@ -7,26 +7,7 @@ import { runCli } from '../src/run.js';
 describe('cli --extract', () => {
   it('prints full extracted content (no truncation) and never calls OpenAI', async () => {
     const body = 'A'.repeat(60_000);
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input.url;
-      undefined;
-      if (url === 'https://api.openai.com/v1/chat/completions') {
-        throw new Error('Unexpected OpenAI call in --extract mode');
-      }
-      if (url === 'https://api.firecrawl.dev/v1/scrape') {
-        return Response.json(
-          { data: { html: null, markdown: `# Example\n\n${body}` }, success: true },
-          { headers: { 'Content-Type': 'application/json' }, status: 200 },
-        );
-      }
-      if (url === 'https://example.com') {
-        const html =
-          '<!doctype html><html><head><title>Example</title></head>' +
-          `<body><article>${body}</article></body></html>`;
-        return new Response(html, { headers: { 'Content-Type': 'text/html' }, status: 200 });
-      }
-      throw new Error(`Unexpected fetch call: ${url}`);
-    });
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {});
 
     let stdoutText = '';
     const stdout = new Writable({

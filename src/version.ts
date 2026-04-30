@@ -8,8 +8,8 @@ export const FALLBACK_VERSION = '0.14.1';
 
 export function resolvePackageVersion(importMetaUrl?: string): string {
   const injected =
-    typeof process !== 'undefined' && typeof process.env.SUMMARIZE_VERSION === 'string'
-      ? process.env.SUMMARIZE_VERSION.trim()
+    typeof process !== 'undefined' && typeof process.env.GIST_VERSION === 'string'
+      ? process.env.GIST_VERSION.trim()
       : '';
   if (injected.length > 0) {
     return injected;
@@ -118,8 +118,8 @@ function resolveGitShaFromGitDir(gitDir: string): string | null {
 
 export function resolveGitSha(importMetaUrl?: string): string | null {
   const injected =
-    typeof process !== 'undefined' && typeof process.env.SUMMARIZE_GIT_SHA === 'string'
-      ? process.env.SUMMARIZE_GIT_SHA.trim()
+    typeof process !== 'undefined' && typeof process.env.GIST_GIT_SHA === 'string'
+      ? process.env.GIST_GIT_SHA.trim()
       : '';
   if (injected.length > 0) {
     return truncateSha(injected);

@@ -41,7 +41,7 @@ describe('url fetch options', () => {
   });
 
   it('forwards local file mtime through resolved options', async () => {
-    const filePath = path.join(tmpdir(), `summarize-fetch-options-${Date.now().toString()}.webm`);
+    const filePath = path.join(tmpdir(), `gist-fetch-options-${Date.now().toString()}.webm`);
     await fs.writeFile(filePath, 'video');
 
     try {

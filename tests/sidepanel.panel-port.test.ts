@@ -45,7 +45,7 @@ describe('sidepanel panel port runtime', () => {
       connect,
       getCurrentWindowId: async () => 17,
       onMessage: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -68,16 +68,14 @@ describe('sidepanel panel port runtime', () => {
     });
 
     await runtime.ensure();
-    expect(
-      (globalThis as { __summarizePanelPort?: chrome.runtime.Port }).__summarizePanelPort,
-    ).toBe(port);
+    expect((globalThis as { __gistPanelPort?: chrome.runtime.Port }).__gistPanelPort).toBe(port);
 
     port.emitMessage({ status: 'ok', type: 'ui:status' });
     expect(onMessage).toHaveBeenCalledWith({ status: 'ok', type: 'ui:status' });
 
     port.disconnect();
     expect(
-      (globalThis as { __summarizePanelPort?: chrome.runtime.Port }).__summarizePanelPort,
+      (globalThis as { __gistPanelPort?: chrome.runtime.Port }).__gistPanelPort,
     ).toBeUndefined();
   });
 
@@ -87,7 +85,7 @@ describe('sidepanel panel port runtime', () => {
       connect,
       getCurrentWindowId: async () => null,
       onMessage: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -104,7 +102,7 @@ describe('sidepanel panel port runtime', () => {
       connect: () => port,
       getCurrentWindowId: async () => 17,
       onMessage: () => {
-        /* empty */
+        /* Empty */
       },
     });
 

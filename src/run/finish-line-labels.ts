@@ -1,9 +1,8 @@
 import { formatCompactCount } from '../tty/format.js';
 
 export interface ExtractDiagnosticsForFinishLine {
-  strategy: 'bird' | 'xurl' | 'firecrawl' | 'html' | 'nitter';
-  firecrawl: { used: boolean };
-  markdown: { used: boolean; provider: 'firecrawl' | 'llm' | null; notes?: string | null };
+  strategy: 'bird' | 'html';
+  markdown: { used: boolean; provider: 'llm' | null; notes?: string | null };
   transcript: { textProvided: boolean; provider: string | null };
 }
 
@@ -23,21 +22,13 @@ export function buildExtractFinishLabel(args: {
 
   if (args.format === 'markdown') {
     const strategy = args.extracted.diagnostics.strategy ?? '';
-    const firecrawlUsed = strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used;
-    if (firecrawlUsed) {
-      return `${base} via firecrawl`;
-    }
     if (strategy === 'html' && args.markdownMode === 'readability') {
       return `${base} via readability`;
     }
 
     const mdUsed = args.extracted.diagnostics.markdown?.used;
-    const mdProvider = args.extracted.diagnostics.markdown.provider;
     const mdNotes = args.extracted.diagnostics.markdown.notes ?? null;
 
-    if (mdUsed && mdProvider === 'firecrawl') {
-      return `${base} via firecrawl`;
-    }
     if (mdUsed && mdNotes?.toLowerCase?.()?.includes('readability html used')) {
       return `${base} via readability`;
     }
@@ -53,17 +44,8 @@ export function buildExtractFinishLabel(args: {
   }
 
   const strategy = args.extracted.diagnostics.strategy ?? '';
-  if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
-    return `${base} via firecrawl`;
-  }
-  if (strategy === 'xurl') {
-    return `${base} via xurl`;
-  }
   if (strategy === 'bird') {
     return `${base} via bird`;
-  }
-  if (strategy === 'nitter') {
-    return `${base} via nitter`;
   }
   return base;
 }
@@ -73,17 +55,8 @@ export function buildSummaryFinishLabel(args: {
 }): string | null {
   const strategy = args.extracted.diagnostics.strategy ?? '';
   const sources: string[] = [];
-  if (strategy === 'xurl') {
-    sources.push('xurl');
-  }
   if (strategy === 'bird') {
     sources.push('bird');
-  }
-  if (strategy === 'nitter') {
-    sources.push('nitter');
-  }
-  if (strategy === 'firecrawl' || args.extracted.diagnostics.firecrawl?.used) {
-    sources.push('firecrawl');
   }
   const transcriptProvided = args.extracted.diagnostics.transcript?.textProvided;
   const words =

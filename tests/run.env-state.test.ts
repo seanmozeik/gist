@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SummarizeConfig } from '../src/config.js';
+import type { GistConfig } from '../src/config.js';
 import { resolveEnvState } from '../src/run/run-env.js';
 
 describe('resolveEnvState', () => {
@@ -12,10 +12,10 @@ describe('resolveEnvState', () => {
       FAL_KEY: 'sk-fal',
       FIRECRAWL_API_KEY: 'sk-firecrawl',
       GEMINI_API_KEY: 'sk-gemini',
+      GIST_YT_DLP_COOKIES_FROM_BROWSER: 'chrome',
       GROQ_API_KEY: 'sk-groq',
       NVIDIA_API_KEY: 'sk-nvidia',
       OPENAI_API_KEY: 'sk-openai',
-      SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER: 'chrome',
       XAI_API_KEY: 'sk-xai',
       YT_DLP_PATH: '/custom/yt-dlp',
       ZAI_API_KEY: 'sk-zai',
@@ -93,7 +93,7 @@ describe('resolveEnvState', () => {
 
   it('resolves base URLs from env and config', () => {
     const state = resolveEnvState({
-      configForCli: { nvidia: { baseUrl: 'https://custom-nvidia.com' } } satisfies SummarizeConfig,
+      configForCli: { nvidia: { baseUrl: 'https://custom-nvidia.com' } } satisfies GistConfig,
       env: {},
       envForRun: {
         GOOGLE_BASE_URL: 'https://custom-google.com',

@@ -7,7 +7,7 @@ import { Writable } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 
 const runCliMock = vi.fn(async () => {
-  /* empty */
+  /* Empty */
 });
 
 vi.mock('../src/run.js', () => ({ runCli: runCliMock }));
@@ -31,7 +31,7 @@ describe('cli main wiring', async () => {
       argv: [],
       env: {},
       exit: () => {
-        /* empty */
+        /* Empty */
       },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
@@ -77,7 +77,7 @@ describe('cli main wiring', async () => {
       argv: [],
       env: {},
       exit: () => {
-        /* empty */
+        /* Empty */
       },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
@@ -109,7 +109,7 @@ describe('cli main wiring', async () => {
   it('rethrows non-EPIPE stream errors', () => {
     const stream = new EventEmitter() as unknown as NodeJS.WritableStream;
     handlePipeErrors(stream, () => {
-      /* empty */
+      /* Empty */
     });
 
     const handler = stream.listeners('error')[0];
@@ -139,7 +139,7 @@ describe('cli main wiring', async () => {
       argv: ['--verbose=true'],
       env: {},
       exit: () => {
-        /* empty */
+        /* Empty */
       },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
@@ -174,7 +174,7 @@ describe('cli main wiring', async () => {
       argv: ['--verbose'],
       env: {},
       exit: () => {
-        /* empty */
+        /* Empty */
       },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
@@ -208,7 +208,7 @@ describe('cli main wiring', async () => {
       argv: [],
       env: {},
       exit: () => {
-        /* empty */
+        /* Empty */
       },
       fetch: globalThis.fetch.bind(globalThis),
       setExitCode: (code) => {
@@ -229,17 +229,17 @@ describe('cli main wiring', async () => {
   it('loads .env for cli runs without mutating process.env', async () => {
     runCliMock.mockReset().mockResolvedValue();
 
-    const directory = mkdtempSync(join(tmpdir(), 'summarize-dotenv-'));
+    const directory = mkdtempSync(join(tmpdir(), 'gist-dotenv-'));
     writeFileSync(
       join(directory, '.env'),
-      ['SUMMARIZE_DOTENV_TEST_KEY=from-dotenv', 'DOTENV_ONLY=only', ''].join('\n'),
+      ['GIST_DOTENV_TEST_KEY=from-dotenv', 'DOTENV_ONLY=only', ''].join('\n'),
       'utf8',
     );
 
     const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(directory);
 
-    const previous = process.env.SUMMARIZE_DOTENV_TEST_KEY;
-    process.env.SUMMARIZE_DOTENV_TEST_KEY = 'from-env';
+    const previous = process.env.GIST_DOTENV_TEST_KEY;
+    process.env.GIST_DOTENV_TEST_KEY = 'from-env';
     delete process.env.DOTENV_ONLY;
 
     try {
@@ -247,11 +247,11 @@ describe('cli main wiring', async () => {
         argv: [],
         env: process.env,
         exit: () => {
-          /* empty */
+          /* Empty */
         },
         fetch: globalThis.fetch.bind(globalThis),
         setExitCode: () => {
-          /* empty */
+          /* Empty */
         },
         stderr: new Writable({
           write(_c, _e, cb) {
@@ -267,15 +267,15 @@ describe('cli main wiring', async () => {
 
       expect(runCliMock).toHaveBeenCalledTimes(1);
       const merged = runCliMock.mock.calls[0]?.[1]?.env as Record<string, string | undefined>;
-      expect(merged.SUMMARIZE_DOTENV_TEST_KEY).toBe('from-env');
+      expect(merged.GIST_DOTENV_TEST_KEY).toBe('from-env');
       expect(merged.DOTENV_ONLY).toBe('only');
       expect(process.env.DOTENV_ONLY).toBeUndefined();
     } finally {
       cwdSpy.mockRestore();
       if (typeof previous === 'string') {
-        process.env.SUMMARIZE_DOTENV_TEST_KEY = previous;
+        process.env.GIST_DOTENV_TEST_KEY = previous;
       } else {
-        delete process.env.SUMMARIZE_DOTENV_TEST_KEY;
+        delete process.env.GIST_DOTENV_TEST_KEY;
       }
     }
   });

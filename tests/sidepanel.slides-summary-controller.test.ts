@@ -15,7 +15,7 @@ vi.mock('../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller', 
     streamOptions = options;
     streamOptionsList.push(options);
     streamStartSpy = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     streamAbortSpy = vi.fn();
     streamAbortSpies.push(streamAbortSpy);
@@ -29,7 +29,7 @@ function buildUiState(): UiState {
     media: { hasAudio: true, hasCaptions: true, hasVideo: true },
     panelOpen: true,
     settings: {
-      autoSummarize: false,
+      autoGist: false,
       automationEnabled: false,
       chatEnabled: true,
       hoverSummaries: false,

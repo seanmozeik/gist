@@ -84,7 +84,7 @@ vi.mock('../src/slides/index.js', async () => {
 
 describe('--slides dependency warning', () => {
   it('warns when slide extraction dependencies are missing in summary mode', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-slides-warning-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-slides-warning-'));
     const stdout = collectStream();
     const stderr = collectStream();
 

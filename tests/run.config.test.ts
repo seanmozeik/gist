@@ -10,7 +10,7 @@ function resolveTestConfigState(programOpts: Record<string, unknown>) {
   return resolveConfigState({
     cliFlagPresent: false,
     cliProviderArg: null,
-    envForRun: { HOME: mkdtempSync(join(tmpdir(), 'summarize-run-config-')) },
+    envForRun: { HOME: mkdtempSync(join(tmpdir(), 'gist-run-config-')) },
     languageExplicitlySet: false,
     programOpts: { videoMode: 'auto', ...programOpts },
     videoModeExplicitlySet: false,

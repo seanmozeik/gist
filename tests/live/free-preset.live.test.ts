@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { runCli } from '../../src/run.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 const ANSI_SGR_RE = /\u001B\[[0-9;]*m/;
 
 function shouldSoftSkipLiveError(message: string): boolean {
@@ -42,12 +42,12 @@ const silentStderr = new Writable({
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
         it.skip('requires OPENROUTER_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
 
-      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-live-free-'));
+      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-live-free-'));
       const env = {
         ...process.env,
         FORCE_COLOR: process.env.FORCE_COLOR ?? '1',
@@ -107,12 +107,12 @@ const silentStderr = new Writable({
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
         it.skip('requires OPENROUTER_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
 
-      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-live-free-stream-'));
+      const home = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-live-free-stream-'));
       const env = {
         ...process.env,
         FORCE_COLOR: process.env.FORCE_COLOR ?? '1',

@@ -9,7 +9,7 @@ import { refreshCacheStoreIfMissing } from '../src/run/cache-state.js';
 
 describe('cache state refresh', () => {
   it('recreates the cache store after the database file is removed', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-refresh-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-refresh-'));
     const cachePath = join(root, 'cache.sqlite');
 
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path: cachePath });

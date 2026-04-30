@@ -9,7 +9,7 @@ import { runCli } from '../src/run.js';
 
 describe('cli redirect handling', () => {
   it('uses the final URL after redirects for extraction output', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-cli-redirects-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-cli-redirects-'));
     const html = '<!doctype html><html><head><title>Ok</title></head><body><p>Hi</p></body></html>';
 
     const fetchMock = vi.fn(async () => {
@@ -17,10 +17,7 @@ describe('cli redirect handling', () => {
         headers: { 'content-type': 'text/html' },
         status: 200,
       });
-      Object.defineProperty(response, 'url', {
-        configurable: true,
-        value: 'https://summarize.sh/',
-      });
+      Object.defineProperty(response, 'url', { configurable: true, value: 'https://gist.sh/' });
       return response;
     });
 
@@ -47,6 +44,6 @@ describe('cli redirect handling', () => {
     );
 
     const parsed = JSON.parse(stdoutText) as { extracted: { url: string } };
-    expect(parsed.extracted.url).toBe('https://summarize.sh/');
+    expect(parsed.extracted.url).toBe('https://gist.sh/');
   });
 });

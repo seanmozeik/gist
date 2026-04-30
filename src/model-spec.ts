@@ -94,16 +94,16 @@ export function parseRequestedModelId(raw: string): RequestedModel {
       throw new Error('Invalid model id: nvidia/… is missing the model id');
     }
     return {
+      forceChatCompletions: true,
+      forceOpenRouter: false,
       kind: 'fixed',
+      llmModelId: `nvidia/${model}`,
+      openaiBaseUrlOverride: null,
+      openrouterProviders: null,
+      provider: 'local',
+      requiredEnv: 'OPENROUTER_API_KEY',
       transport: 'native',
       userModelId: `nvidia/${model}`,
-      llmModelId: `nvidia/${model}`,
-      provider: 'local',
-      openrouterProviders: null,
-      forceOpenRouter: false,
-      requiredEnv: 'OPENROUTER_API_KEY',
-      openaiBaseUrlOverride: null,
-      forceChatCompletions: true,
     };
   }
 

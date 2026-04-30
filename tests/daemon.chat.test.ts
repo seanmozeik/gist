@@ -45,7 +45,7 @@ beforeEach(() => {
 
 describe('daemon/chat', () => {
   it('uses native model ids when fixed model override is provided', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-'));
     const events: { event: string }[] = [];
     const meta: { model?: string | null }[] = [];
 
@@ -75,12 +75,12 @@ describe('daemon/chat', () => {
   });
 
   it('honors openai.useChatCompletions for fixed sidepanel chat models', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-openai-chat-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-openai-chat-'));
 
     await streamChatResponse({
       configForCli: { openai: { useChatCompletions: true } },
       emitMeta: () => {
-        /* empty */
+        /* Empty */
       },
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
@@ -90,7 +90,7 @@ describe('daemon/chat', () => {
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's-openai-chat',
@@ -104,7 +104,7 @@ describe('daemon/chat', () => {
   });
 
   it('routes github-copilot overrides through the GitHub Models gateway', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-github-models-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-github-models-'));
     const meta: { model?: string | null }[] = [];
 
     await streamChatResponse({
@@ -117,7 +117,7 @@ describe('daemon/chat', () => {
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's-gh',
@@ -140,7 +140,7 @@ describe('daemon/chat', () => {
   });
 
   it('runs fixed CLI model overrides through the CLI transport', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-cli-fixed-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-cli-fixed-'));
     const events: { event: string; data?: unknown }[] = [];
     const meta: { model?: string | null }[] = [];
 
@@ -164,7 +164,7 @@ describe('daemon/chat', () => {
       expect.objectContaining({ allowTools: false, model: 'gpt-5.2', provider: 'codex' }),
     );
     const args = vi.mocked(runCliModel).mock.calls[0]?.[0] as { prompt: string };
-    expect(args.prompt).toContain('You are Summarize Chat.');
+    expect(args.prompt).toContain('You are Gist Chat.');
     expect(args.prompt).toContain('User: Hi');
     expect(vi.mocked(streamTextWithContext).mock.calls.length).toBe(0);
     expect(meta[0]?.model).toBe('cli/codex/gpt-5.2');
@@ -172,7 +172,7 @@ describe('daemon/chat', () => {
   });
 
   it('resolves configured OpenCode models before emitting chat metadata', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-opencode-fixed-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-opencode-fixed-'));
     const meta: { model?: string | null }[] = [];
 
     await streamChatResponse({
@@ -186,7 +186,7 @@ describe('daemon/chat', () => {
       pageTitle: 'Example',
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's-opencode-fixed',
@@ -201,7 +201,7 @@ describe('daemon/chat', () => {
   });
 
   it('routes openrouter overrides through openrouter transport', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-openrouter-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-openrouter-'));
     const meta: { model?: string | null }[] = [];
 
     await streamChatResponse({
@@ -214,7 +214,7 @@ describe('daemon/chat', () => {
       pageTitle: null,
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's2',
@@ -230,7 +230,7 @@ describe('daemon/chat', () => {
   });
 
   it('uses auto model attempts without forcing openrouter', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-auto-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-auto-'));
     const meta: { model?: string | null }[] = [];
 
     const attempts = [
@@ -257,7 +257,7 @@ describe('daemon/chat', () => {
       pageTitle: null,
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's3',
@@ -273,7 +273,7 @@ describe('daemon/chat', () => {
   });
 
   it('honors openai.useChatCompletions for auto-selected sidepanel chat models', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-auto-openai-chat-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-auto-openai-chat-'));
 
     vi.mocked(buildAutoModelAttempts).mockReturnValue([
       {
@@ -290,7 +290,7 @@ describe('daemon/chat', () => {
     await streamChatResponse({
       configForCli: { openai: { useChatCompletions: true } },
       emitMeta: () => {
-        /* empty */
+        /* Empty */
       },
       env: { HOME: home, OPENAI_API_KEY: 'sk-openai' },
       fetchImpl: fetch,
@@ -300,7 +300,7 @@ describe('daemon/chat', () => {
       pageTitle: null,
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's-auto-openai-chat',
@@ -314,7 +314,7 @@ describe('daemon/chat', () => {
   });
 
   it('accepts legacy OpenRouter env mapping for auto attempts', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-auto-openrouter-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-auto-openrouter-'));
     const meta: { model?: string | null }[] = [];
 
     const attempts = [
@@ -345,7 +345,7 @@ describe('daemon/chat', () => {
       pageTitle: null,
       pageUrl: 'https://example.com',
       pushToSession: () => {
-        /* empty */
+        /* Empty */
       },
       session: {
         id: 's4',
@@ -361,7 +361,7 @@ describe('daemon/chat', () => {
   });
 
   it('falls back to CLI auto attempts when no API-key model is available', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-chat-cli-auto-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-chat-cli-auto-'));
     const meta: { model?: string | null }[] = [];
     const events: { event: string; data?: unknown }[] = [];
 

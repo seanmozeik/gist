@@ -9,7 +9,7 @@ describe('sidepanel chat session', () => {
 
   it('routes agent responses and chunks to the matching pending request', async () => {
     const send = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const chunks: string[] = [];
     const session = createChatSession({ send });
@@ -37,23 +37,23 @@ describe('sidepanel chat session', () => {
     vi.useFakeTimers();
     const setStatus = vi.fn();
     const hideReplOverlay = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const send = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const session = createChatSession({ agentTimeoutMs: 10, hideReplOverlay, send, setStatus });
 
     const request = session.requestAgent([], [], null);
     request.catch(() => {
-      /* empty */
+      /* Empty */
     });
     await vi.advanceTimersByTimeAsync(10);
     await expect(request).rejects.toThrow('Agent request timed out');
 
     const second = session.requestAgent([], [], null);
     second.catch(() => {
-      /* empty */
+      /* Empty */
     });
     session.requestAbort('Stopped');
     await expect(second).rejects.toThrow('Stopped');
@@ -64,7 +64,7 @@ describe('sidepanel chat session', () => {
 
   it('loads chat history responses and supports reset', async () => {
     const send = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const session = createChatSession({ send });
     const request = session.requestChatHistory('summary');

@@ -127,7 +127,7 @@ vi.mock('ora', () => {
   const ora = (opts: { text: string; stream: NodeJS.WritableStream }) => {
     const spinner = {
       clear() {
-        /* empty */
+        /* Empty */
       },
       isSpinning: true,
       start() {
@@ -146,7 +146,7 @@ vi.mock('ora', () => {
 
 describe('cli spinner output', () => {
   it('clears the "Loading file" spinner line (no scrollback junk) and includes file size', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-spinner-file-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-spinner-file-'));
     const pdfPath = join(root, 'test.pdf');
     const buf = Buffer.alloc(1536, 0);
     buf.write('%PDF-1.7\n', 0, 'utf8');
@@ -181,7 +181,7 @@ describe('cli spinner output', () => {
   });
 
   it('clears the "Fetching website" spinner line (no scrollback junk)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-spinner-web-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-spinner-web-'));
     const stdout = collectStream({ isTTY: false });
     const stderr = collectStream({ isTTY: true });
 
@@ -206,9 +206,9 @@ describe('cli spinner output', () => {
     expect(visibleErr).not.toMatch(/Fetching website/i);
   });
 
-  it('switches OSC progress to indeterminate for summarizing', async () => {
+  it('switches OSC progress to indeterminate for gisting', async () => {
     vi.useRealTimers();
-    const root = mkdtempSync(join(tmpdir(), 'summarize-spinner-osc-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-spinner-osc-'));
     const stdout = collectStream({ isTTY: true });
     const stderr = collectStream({ isTTY: true });
 
@@ -225,10 +225,10 @@ describe('cli spinner output', () => {
     });
 
     const rawErr = stderr.getText();
-    expect(rawErr).toContain('\u001B]9;4;3;;Summarizing');
+    expect(rawErr).toContain('\u001B]9;4;3;;Gisting');
   }, 15_000);
 
-  it('clears the "Summarizing" spinner line before streaming output', async () => {
+  it('clears the "Gisting" spinner line before streaming output', async () => {
     mocks.streamSimple.mockImplementationOnce(() =>
       makeTextDeltaStream(
         ['\nHello', ' world\n'],
@@ -239,8 +239,8 @@ describe('cli spinner output', () => {
       ),
     );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-spinner-stream-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-spinner-stream-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
     writeFileSync(
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),

@@ -84,7 +84,7 @@ describe('transcriber cli', () => {
 
     const out = collectStream();
     const handled = await handleTranscriberCliRequest({
-      envForRun: { SUMMARIZE_ONNX_PARAKEET_CMD: '["sherpa-onnx"]' },
+      envForRun: { GIST_ONNX_PARAKEET_CMD: '["sherpa-onnx"]' },
       normalizedArgv: ['transcriber', 'setup'],
       stderr: out.stream,
       stdout: out.stream,

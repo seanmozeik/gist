@@ -1,4 +1,4 @@
-import type { CliProvider, SummarizeConfig } from '../config.js';
+import type { CliProvider, GistConfig } from '../config.js';
 import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from '../openai/base-url.js';
 import { resolveCliAvailability, resolveExecutableInPath } from './env.js';
 
@@ -6,8 +6,6 @@ export interface EnvState {
   apiKey: string | null;
   openrouterApiKey: string | null;
   openrouterConfigured: boolean;
-  groqApiKey: string | null;
-  assemblyaiApiKey: string | null;
   openaiApiKey: string | null;
   xaiApiKey: string | null;
   googleApiKey: string | null;
@@ -16,14 +14,10 @@ export interface EnvState {
   zaiBaseUrl: string;
   nvidiaApiKey: string | null;
   nvidiaBaseUrl: string;
-  firecrawlApiKey: string | null;
-  firecrawlConfigured: boolean;
   googleConfigured: boolean;
   anthropicConfigured: boolean;
-  apifyToken: string | null;
   ytDlpPath: string | null;
   ytDlpCookiesFromBrowser: string | null;
-  falApiKey: string | null;
   cliAvailability: Partial<Record<CliProvider, boolean>>;
   envForAuto: Record<string, string | undefined>;
   providerBaseUrls: {
@@ -42,7 +36,7 @@ export function resolveEnvState({
 }: {
   env: Record<string, string | undefined>;
   envForRun: Record<string, string | undefined>;
-  configForCli: SummarizeConfig | null;
+  configForCli: GistConfig | null;
 }): EnvState {
   const xaiKeyRaw = typeof envForRun.XAI_API_KEY === 'string' ? envForRun.XAI_API_KEY : null;
   const openaiBaseUrl = resolveConfiguredBaseUrl({
@@ -94,8 +88,6 @@ export function resolveEnvState({
     typeof openaiBaseUrl === 'string' && isOpenRouterBaseUrl(openaiBaseUrl)
       ? (openRouterKeyRaw ?? openaiKeyRaw)
       : openaiKeyRaw;
-  const apifyToken =
-    typeof envForRun.APIFY_API_TOKEN === 'string' ? envForRun.APIFY_API_TOKEN : null;
   const ytDlpPath = (() => {
     const explicit = typeof envForRun.YT_DLP_PATH === 'string' ? envForRun.YT_DLP_PATH.trim() : '';
     if (explicit.length > 0) {
@@ -105,23 +97,14 @@ export function resolveEnvState({
   })();
   const ytDlpCookiesFromBrowser = (() => {
     const raw =
-      typeof envForRun.SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER === 'string'
-        ? envForRun.SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER
+      typeof envForRun.GIST_YT_DLP_COOKIES_FROM_BROWSER === 'string'
+        ? envForRun.GIST_YT_DLP_COOKIES_FROM_BROWSER
         : typeof envForRun.YT_DLP_COOKIES_FROM_BROWSER === 'string'
           ? envForRun.YT_DLP_COOKIES_FROM_BROWSER
           : '';
     const value = raw.trim();
     return value.length > 0 ? value : null;
   })();
-  const groqApiKey =
-    typeof envForRun.GROQ_API_KEY === 'string' ? envForRun.GROQ_API_KEY.trim() || null : null;
-  const assemblyaiApiKey =
-    typeof envForRun.ASSEMBLYAI_API_KEY === 'string'
-      ? envForRun.ASSEMBLYAI_API_KEY.trim() || null
-      : null;
-  const falApiKey = typeof envForRun.FAL_KEY === 'string' ? envForRun.FAL_KEY : null;
-  const firecrawlKey =
-    typeof envForRun.FIRECRAWL_API_KEY === 'string' ? envForRun.FIRECRAWL_API_KEY : null;
   const anthropicKeyRaw =
     typeof envForRun.ANTHROPIC_API_KEY === 'string' ? envForRun.ANTHROPIC_API_KEY : null;
   const googleKeyRaw =
@@ -133,14 +116,11 @@ export function resolveEnvState({
           ? envForRun.GOOGLE_API_KEY
           : null;
 
-  const firecrawlApiKey = firecrawlKey && firecrawlKey.trim().length > 0 ? firecrawlKey : null;
-  const firecrawlConfigured = firecrawlApiKey !== null;
   const xaiApiKey = xaiKeyRaw?.trim() ?? null;
   const zaiApiKey = zaiKeyRaw?.trim() ?? null;
-  const zaiBaseUrlEffective = zaiBaseUrl?.trim() ?? '' ?? 'https://api.z.ai/api/paas/v4';
+  const zaiBaseUrlEffective = zaiBaseUrl?.trim() ?? 'https://api.z.ai/api/paas/v4';
   const nvidiaApiKey = nvidiaKeyRaw?.trim() ?? null;
-  const nvidiaBaseUrlEffective =
-    nvidiaBaseUrl?.trim() ?? '' ?? 'https://integrate.api.nvidia.com/v1';
+  const nvidiaBaseUrlEffective = nvidiaBaseUrl?.trim() ?? 'https://integrate.api.nvidia.com/v1';
   const googleApiKey = googleKeyRaw?.trim() ?? null;
   const anthropicApiKey = anthropicKeyRaw?.trim() ?? null;
   const openrouterApiKey = (() => {
@@ -175,16 +155,10 @@ export function resolveEnvState({
     anthropicApiKey,
     anthropicConfigured,
     apiKey: apiKey?.trim() ?? null,
-    apifyToken,
-    assemblyaiApiKey,
     cliAvailability,
     envForAuto,
-    falApiKey,
-    firecrawlApiKey,
-    firecrawlConfigured,
     googleApiKey,
     googleConfigured,
-    groqApiKey,
     nvidiaApiKey,
     nvidiaBaseUrl: nvidiaBaseUrlEffective,
     openaiApiKey,

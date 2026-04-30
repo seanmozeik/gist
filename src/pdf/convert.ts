@@ -20,7 +20,7 @@ export async function convertPdfToMarkdown({
   const blob = new Blob([buffer], { type: 'application/pdf' });
   formData.append('file', blob, pdfName);
 
-  const response = await fetch(`${baseUrl}/convert-pdf`, { method: 'POST', body: formData });
+  const response = await fetch(`${baseUrl}/convert-pdf`, { body: formData, method: 'POST' });
 
   if (!response.ok) {
     const text = await response.text();
@@ -28,5 +28,5 @@ export async function convertPdfToMarkdown({
   }
 
   const data = (await response.json()) as { filename?: string; markdown?: string };
-  return { markdown: data.markdown ?? '', filename: data.filename ?? pdfName };
+  return { filename: data.filename ?? pdfName, markdown: data.markdown ?? '' };
 }

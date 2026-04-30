@@ -50,7 +50,7 @@ function createNonTtyStream() {
 }
 
 async function createTempSlide() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-slides-'));
   const imagePath = path.join(dir, 'slide_0001.png');
   await fs.writeFile(imagePath, pngData);
   return imagePath;
@@ -214,7 +214,7 @@ describe('renderSlidesInline', () => {
   });
 
   it('prints an empty image notice when the slide is blank', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'summarize-slides-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'gist-slides-'));
     const imagePath = path.join(dir, 'slide_0001.png');
     await fs.writeFile(imagePath, Buffer.alloc(0));
     const output = createTtyStream();

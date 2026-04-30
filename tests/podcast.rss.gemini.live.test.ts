@@ -7,7 +7,7 @@ const GEMINI_API_KEY =
   process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
   process.env.GOOGLE_API_KEY ??
   null;
-const LIVE = process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(GEMINI_API_KEY);
+const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(GEMINI_API_KEY);
 
 describe('live podcast RSS transcript (Gemini)', () => {
   const run = LIVE ? it : it.skip;
@@ -19,7 +19,7 @@ describe('live podcast RSS transcript (Gemini)', () => {
       const env = {
         ...process.env,
         GEMINI_API_KEY: GEMINI_API_KEY ?? '',
-        SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
+        GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
       };
 
       const client = createLinkPreviewClient({ env });

@@ -81,18 +81,18 @@ function stripAnsi(input: string): string {
   let out = '';
 
   for (let i = 0; i < input.length; i += 1) {
-    const ch = input[i];
+    const ch = input.charAt(i);
     if (ch !== '\u001B') {
       out += ch;
       continue;
     }
 
-    const next = input[i + 1];
+    const next = input.charAt(i + 1);
     if (next === '[') {
       // CSI: ESC [ ... <final>
       i += 2;
       while (i < input.length) {
-        const c = input[i];
+        const c = input.charAt(i);
         if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
           break;
         }
@@ -105,11 +105,11 @@ function stripAnsi(input: string): string {
       // OSC: ESC ] ... (BEL | ESC \)
       i += 2;
       while (i < input.length) {
-        const c = input[i];
+        const c = input.charAt(i);
         if (c === '\u0007') {
           break;
         }
-        if (c === '\u001B' && input[i + 1] === '\\') {
+        if (c === '\u001B' && input.charAt(i + 1) === '\\') {
           i += 1;
           break;
         }
@@ -119,7 +119,7 @@ function stripAnsi(input: string): string {
     }
 
     // Unknown ESC sequence (or stray ESC): drop the next character too to avoid leaving artifacts.
-    if (typeof next === 'string') {
+    if (next) {
       i += 1;
     }
   }

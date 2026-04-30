@@ -9,9 +9,8 @@ import type {
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_MAX_CONTENT_CHARACTERS = 8000;
 export const DEFAULT_CACHE_MODE: CacheMode = 'default';
-export type YoutubeTranscriptMode = 'auto' | 'web' | 'apify' | 'yt-dlp' | 'no-auto';
+export type YoutubeTranscriptMode = 'auto' | 'web' | 'yt-dlp' | 'no-auto';
 export type MediaTranscriptMode = 'auto' | 'prefer';
-export type FirecrawlMode = 'off' | 'auto' | 'always';
 export type ContentFormat = 'text' | 'markdown';
 export type MarkdownMode = 'off' | 'auto' | 'llm' | 'readability';
 
@@ -22,7 +21,6 @@ export interface FetchLinkContentOptions {
   youtubeTranscript?: YoutubeTranscriptMode;
   mediaTranscript?: MediaTranscriptMode;
   transcriptTimestamps?: boolean;
-  firecrawl?: FirecrawlMode;
   format?: ContentFormat;
   markdownMode?: MarkdownMode;
   fileMtime?: number | null;

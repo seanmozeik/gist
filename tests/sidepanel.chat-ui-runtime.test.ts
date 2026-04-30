@@ -6,10 +6,10 @@ import { createChatUiRuntime } from '../apps/chrome-extension/src/entrypoints/si
 
 class MockResizeObserver {
   observe() {
-    /* empty */
+    /* Empty */
   }
   disconnect() {
-    /* empty */
+    /* Empty */
   }
 }
 
@@ -53,14 +53,14 @@ describe('sidepanel chat ui runtime', () => {
     const clearMetrics = vi.fn();
     const clearQueuedMessages = vi.fn();
     const clearHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const loadHistory = vi.fn(async () => null);
     const persistHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const restoreHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const resetChatController = vi.fn();
     const resetChatSession = vi.fn();
@@ -108,14 +108,14 @@ describe('sidepanel chat ui runtime', () => {
 
     const focusSpy = vi.spyOn(chatInputEl, 'focus');
     const clearHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const loadHistory = vi.fn(async () => [{ id: '1' }]);
     const persistHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     const restoreHistory = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
 
     const runtime = createChatUiRuntime({

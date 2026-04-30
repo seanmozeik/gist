@@ -20,11 +20,9 @@ export {
 } from './link-preview/content/types.js';
 export type {
   ConvertHtmlToMarkdown,
-  FirecrawlScrapeResult,
   LinkPreviewDeps,
   LinkPreviewProgressEvent,
   ReadTweetWithBird,
-  ScrapeWithFirecrawl,
 } from './link-preview/deps.js';
 export { ProgressKind } from './link-preview/deps.js';
 export {

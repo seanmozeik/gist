@@ -15,7 +15,7 @@
 
 ### Fixes
 
-- CLI auto models: include config-provided environment values when selecting `auto` candidates, so API keys in `~/.summarize/config.json` are honored for URL summaries (#206, fixes #205, thanks @kaihendry and @solomonneas).
+- CLI auto models: include config-provided environment values when selecting `auto` candidates, so API keys in `~/.gist/config.json` are honored for URL summaries (#206, fixes #205, thanks @kaihendry and @solomonneas).
 - Chrome extension: skip always-on content scripts on Facebook, Instagram, and Meta CDN pages to avoid site compatibility issues (#208, fixes #106, thanks @solomonneas).
 
 ### Maintenance
@@ -29,7 +29,7 @@
 - YouTube and cache: make `--no-cache` bypass cached URL extraction, forward `OPENAI_API_KEY` into media transcription, and surface yt-dlp transcription failures in diagnostics (#197, thanks @mvance).
 - Chrome extension chat: isolate side-panel chat history by both tab and URL so navigating within a tab no longer shows another page's conversation (#189, thanks @Youpen-y).
 - Chrome extension chat: honor `openai.useChatCompletions` for side-panel chat requests, including fixed and auto-selected OpenAI models (#155, thanks @Zevan770).
-- Spotify podcasts: skip encrypted Spotify embed audio, fall back to publisher RSS enclosures, and surface podcast transcription failures instead of summarizing a bare URL.
+- Spotify podcasts: skip encrypted Spotify embed audio, fall back to publisher RSS enclosures, and surface podcast transcription failures instead of gisting a bare URL.
 - X extraction: surface unauthorized `xurl` responses with actionable auth/fallback guidance when Nitter is unavailable (#200, thanks @coygeek).
 - OpenClaw CLI: call current OpenClaw with `-m/--message` and reject oversized prompts before hitting argv limits (#199, thanks @Silver-Aurora).
 - Windows daemon: register the logon Scheduled Task via XML with battery-safe hidden launch settings, fix restart/uninstall process cleanup, and document the Administrator install flow (#192, thanks @ajmeese7).
@@ -41,7 +41,7 @@
 
 ### Features
 
-- Slides: support `--slides` for local video files in the main CLI and `summarize slides`, route local videos through the shared slide-aware flow, and document the local-file workflow (#149, thanks @steipete).
+- Slides: support `--slides` for local video files in the main CLI and `gist slides`, route local videos through the shared slide-aware flow, and document the local-file workflow (#149, thanks @steipete).
 - Models: add explicit `github-copilot/...` model support backed by GitHub Models, including shorthand ids like `github-copilot/gpt-5.4` and `GITHUB_TOKEN` / `GH_TOKEN` auth.
 - Models: add OpenCode as a first-class CLI provider across CLI flags, config, auto fallback, daemon picker/chat flows, and Chrome extension settings, while preserving existing OpenClaw behavior (#169, thanks @maciej).
 - CLI providers: add OpenClaw as a configurable CLI backend (`--cli openclaw`, `cli/openclaw/...`, `openclaw/...`) across config, daemon discovery, and docs (#165, thanks @yqf-ai).
@@ -56,16 +56,16 @@
 - Chrome extension slides: restore slide text/session state more reliably so reruns and reloads do not leave stale or blank slide summaries.
 - Transcription: retry Groq Whisper uploads via `curl` when Node multipart uploads get a 403, fixing local `.ogg` regressions on some environments.
 - YouTube: detect obviously truncated caption-track transcripts on long videos and fall through to yt-dlp transcription instead of caching a broken partial result (#184, thanks @sportiz91).
-- YouTube: treat yt-dlp “no audio stream” videos as a non-fatal unavailable transcript case so summarize can continue cleanly with an explanatory note (#161, thanks @mdsakalu).
+- YouTube: treat yt-dlp “no audio stream” videos as a non-fatal unavailable transcript case so gist can continue cleanly with an explanatory note (#161, thanks @mdsakalu).
 - Cache: include the prompt `<context>` block in summary cache hashing and bump the cache format version so stale cross-page summary collisions cannot be reused (#171, thanks @mvance).
 - CLI providers: stream OpenClaw prompts over stdin instead of `--message`, make daemon side-panel chat honor `openai.useChatCompletions`/custom OpenAI-compatible base URLs, and stop leaking raw Codex JSONL events like `thread.started` when no assistant text was produced.
 - Chrome extension: add a copy button for rendered summaries so results can be copied without manual selection.
 - Chrome extension chat: handle plain-string assistant replies in the side-panel agent loop instead of crashing on `.filter()` tool-call extraction (#186, thanks @Youpen-y).
-- Windows containers: let `summarize daemon install` start the daemon for the current container session without Scheduled Task registration, keep `0.0.0.0` binding Windows-only, and probe slide tools by spawning commands when PATH lookup is unreliable (#152, thanks @mathicg).
-- Windows daemon: keep Scheduled Task startup hidden without breaking `summarize daemon restart` or uninstall by tracking the hidden daemon PID and killing that process tree before reruns/removal (#146, thanks @mathicg).
+- Windows containers: let `gist daemon install` start the daemon for the current container session without Scheduled Task registration, keep `0.0.0.0` binding Windows-only, and probe slide tools by spawning commands when PATH lookup is unreliable (#152, thanks @mathicg).
+- Windows daemon: keep Scheduled Task startup hidden without breaking `gist daemon restart` or uninstall by tracking the hidden daemon PID and killing that process tree before reruns/removal (#146, thanks @mathicg).
 - Whisper.cpp: honor config-resolved transcription env overrides for readiness checks, model display, and local transcription so custom binary/model paths work outside `process.env` (#160, thanks @mdsakalu).
 - Daemon models: gracefully fall back for unrecognized custom models when using proxy base URLs instead of crashing on undefined API metadata (#175, thanks @douo).
-- Docs/setup: switch Homebrew instructions from the old tap to the official `brew install summarize` formula, including the side-panel setup UI and release checklist (#172, thanks @zeldrisho).
+- Docs/setup: switch Homebrew instructions from the old tap to the official `brew install gist` formula, including the side-panel setup UI and release checklist (#172, thanks @zeldrisho).
 - Chrome extension: detect blank `userAgentData.platform` browsers like Vivaldi by falling back to `navigator.platform` before choosing OS-specific setup instructions (#158, thanks @bytrangle).
 - Firecrawl: reject `--firecrawl always` for YouTube URLs with an explicit guidance error instead of silently skipping Firecrawl on the transcript-first path (#145, thanks @steipete).
 - YouTube: keep Gemini-only no-caption runs on the transcription path by forwarding the Google API key from the top-level URL flow into link-preview transcription config (#148, thanks @bytrangle).
@@ -85,15 +85,15 @@
 - Models: make daemon agent `artifacts` schemas Gemini-safe, improve Google empty-response handling with preview-to-stable fallback, and switch CLI/auto Gemini defaults away from brittle preview behavior (#82, #96).
 - Agents: expand model auto-resolution errors with checked models, missing env/CLI setup, and daemon restart guidance (#107).
 - Daemon: support multiple saved extension tokens, migrate legacy single-token configs, and accept any configured token for auth (#116).
-- Chrome extension: harden side-panel slides so SSE keepalives no longer false-time out, seeded placeholders no longer block pending/cached slide runs, retries can start a fresh summarize+slides run, and reruns replace stale slide state.
+- Chrome extension: harden side-panel slides so SSE keepalives no longer false-time out, seeded placeholders no longer block pending/cached slide runs, retries can start a fresh gist+slides run, and reruns replace stale slide state.
 - Chrome extension: refactor side-panel navigation/run attachment policy so late summary/slide runs no longer attach to the wrong page after tab or URL switches, and expand headless regression coverage for pending-run resume and slide-mode transitions.
 - Chrome extension: default fresh installs to slide mode, keep passive tab navigation out of chat, and align slide cards with CLI `--slides` by preferring per-slide summary text over raw transcript/OCR fallback.
 - Chrome extension tests: add stronger YouTube slide E2E coverage for loaded images, summary-backed slide text, and switching between videos mid-analysis without stale slide-summary bleed.
 - Chrome extension: isolate slide-summary stream callbacks per run and harden Playwright settings hydration so late events no longer blank slide text when switching videos mid-analysis.
 - Transcription: add Gemini audio/video transcription support across direct media, podcast/RSS, and yt-dlp YouTube fallback, including Files API uploads for larger media plus new Gemini live coverage (#89).
-- npm packaging: publish CLI with `pnpm publish` so `@steipete/summarize-core` is version-pinned in published metadata (no `workspace:*` in registry package).
+- npm packaging: publish CLI with `pnpm publish` so `@seanmozeik/gist-core` is version-pinned in published metadata (no `workspace:*` in registry package).
 - Slides: detect WezTerm as an iTerm-compatible terminal for inline slide images in `--slides` mode. (#133) — thanks @doodaaatimmy-creator.
-- CLI help: surface `summarize refresh-free` in `summarize help` output.
+- CLI help: surface `gist refresh-free` in `gist help` output.
 - CLI: report CLI provider timeouts explicitly, including the duration, command, and a `--timeout` hint instead of collapsing them into generic exec failures (#100, thanks @christophsturm).
 - Daemon: restrict CORS responses to trusted extension and localhost origins, with regression coverage for allowed and denied `Origin` headers (#108, thanks @sebastiondev).
 - Transcription: chunk oversized Groq Whisper uploads with ffmpeg in file mode instead of failing out on files above the 30MB limit (#134, thanks @WinnCook).
@@ -119,7 +119,7 @@
 
 ### Highlights
 
-- Auto CLI fallback: new controls and persisted last-success provider state (`~/.summarize/cli-state.json`) for no-key/local-CLI workflows.
+- Auto CLI fallback: new controls and persisted last-success provider state (`~/.gist/cli-state.json`) for no-key/local-CLI workflows.
 - Transcription reliability: Groq Whisper is now the preferred cloud transcriber, with custom OpenAI-compatible Whisper endpoint overrides.
 - Input reliability: binary-safe stdin handling, local media support in `--extract`, and fixes for local-file hangs/PDF preprocessing on custom OpenAI base URLs.
 
@@ -129,7 +129,7 @@
 - CLI auto mode: add implicit auto CLI fallback controls (`cli.autoFallback`, `--auto-cli-fallback`) and provider priority controls (`cli.providers`, `--cli-priority`), with persisted provider success ordering.
 - Transcription: add Groq Whisper as preferred cloud provider (#71, thanks @n0an).
 - Transcription: support custom OpenAI-compatible Whisper endpoints via `OPENAI_WHISPER_BASE_URL` (with safe `OPENAI_BASE_URL` fallback) (#65, thanks @toanbot).
-- Config: support generic `env` defaults in `~/.summarize/config.json` (fallback for any env var), while keeping legacy `apiKeys` mapping for compatibility (#63, thanks @entropyy0).
+- Config: support generic `env` defaults in `~/.gist/config.json` (fallback for any env var), while keeping legacy `apiKeys` mapping for compatibility (#63, thanks @entropyy0).
 
 ### Fixes
 
@@ -142,7 +142,7 @@
 - YouTube: keep explicit `--youtube apify` working when HTML fetch fails, while preserving duration metadata parity (#64, thanks @entropyy0).
 - Transcription: stabilize Groq-first fallback flow (no duplicate Groq retries in file mode), improve terminal error reporting, and surface Groq setup in media guidance (#71, thanks @n0an).
 - Media detection: detect more direct media URL extensions including `.ogg`/`.opus` (#65, thanks @toanbot).
-- Slides: allow yt-dlp cookies-from-browser via `SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER` to avoid YouTube 403s.
+- Slides: allow yt-dlp cookies-from-browser via `GIST_YT_DLP_COOKIES_FROM_BROWSER` to avoid YouTube 403s.
 - Daemon install: resolve symlinked/global bin paths and Windows shims when locating the CLI for install (#57, #62, thanks @entropyy0).
 - Extraction: strip hidden HTML + invisible Unicode before summarization or extract output (#61).
 - CLI: honor `--lang` for YouTube transcript→Markdown conversion in `--markdown-mode llm` (#56, thanks @entropyy0).
@@ -184,7 +184,7 @@
 - Extract-only: remove implicit 8k cap; new `--max-extract-characters`/daemon `maxExtractCharacters` allow opt-in limits; resolves transcript truncation.
 - Media: route direct media URLs to the transcription pipeline and raise the local media limit to 2GB (#47, thanks @n0an).
 - Daemon (macOS): `daemon install` now falls back from `launchctl bootstrap gui/<uid>` to `user/<uid>` and resolves sudo/root uid targeting to avoid bootstrap `Input/output error` / `Domain does not support specified action` failures (#75).
-- Slides: allow yt-dlp cookies-from-browser via `SUMMARIZE_YT_DLP_COOKIES_FROM_BROWSER` to avoid YouTube 403s.
+- Slides: allow yt-dlp cookies-from-browser via `GIST_YT_DLP_COOKIES_FROM_BROWSER` to avoid YouTube 403s.
 - Chrome Side Panel chat: support JSON agent replies with explicit SSE/JSON negotiation to avoid “stream ended” errors.
 - Chrome Side Panel: scope streams/state per window so other windows don’t wipe active summaries.
 - Chrome Side Panel chat: keep auto-scroll pinned while streaming when you’re already at the bottom.
@@ -213,7 +213,7 @@
 ### Improvements
 
 - Tooling: remove Biome and standardize on `oxfmt` + type-aware `oxlint`; `pnpm check` now enforces `format:check` before lint/tests.
-- Transcription: add auto transcriber selection (default) with ONNX-first when configured + `summarize transcriber setup`.
+- Transcription: add auto transcriber selection (default) with ONNX-first when configured + `gist transcriber setup`.
 - Cache: add media download caching with TTL/size caps + optional verification, plus `--no-media-cache`.
 - CLI: add themed output (24-bit ANSI), `--theme`, and config/env defaults for a consistent color scheme.
 - CLI: show determinate transcription progress percent when duration is known.
@@ -249,7 +249,7 @@
 - Daemon: `/v1/chat` + `extractOnly`, version in health/status pill, optional JSON log with rotation, and more resilient restart/install health checks.
 - Side Panel: advanced model row with “Scan free” (shows top free model after scan), a refresh summary control (cache bypass), plus richer length tooltips.
 - Side Panel UX: consolidated advanced layout and typography controls (font size A/AA, line-height), streamlined setup panel with inline copy, clearer status text, and tighter model/length controls.
-- Side Panel UX: keep the Auto summarize toggle on one line in Advanced.
+- Side Panel UX: keep the Auto gist toggle on one line in Advanced.
 - Streaming/metrics polish: faster stream flushes, shorter OpenRouter labels on wrap, and improved extraction metadata in chat.
 
 ### Fixes
@@ -257,9 +257,9 @@
 - Auto model selection: OpenRouter fallback now resolves provider-specific ids (dash/dot slug normalization) and skips fallback when no unique match.
 - Language auto: default to English when detection is uncertain.
 - OpenAI GPT-5: skip `temperature` in streaming requests to avoid 400s for unsupported params.
-- Side Panel stability: retryable stream errors, no abort crash, auto-summarize on open/source switch, synced chat toggle state, and caret alignment.
+- Side Panel stability: retryable stream errors, no abort crash, auto-gist on open/source switch, synced chat toggle state, and caret alignment.
 - YouTube duration handling: player API/HTML/yt-dlp fallbacks, transcript metadata propagation, and extension duration fallbacks.
-- URL extraction: preserve final redirected URLs so shorteners (t.co) summarize the real destination.
+- URL extraction: preserve final redirected URLs so shorteners (t.co) gist the real destination.
 - Hover summaries: proxy localhost daemon calls to avoid Chrome “Local network access” prompts.
 - Install: use npm releases for osc-progress/tokentally instead of git deps.
 
@@ -267,12 +267,12 @@
 
 ### Breaking
 
-- ESM-only: `@steipete/summarize` + `@steipete/summarize-core` no longer support CommonJS `require()`; the CLI binary is now ESM.
+- ESM-only: `@seanmozeik/gist` + `@seanmozeik/gist-core` no longer support CommonJS `require()`; the CLI binary is now ESM.
 
 ### Highlights
 
-- Chrome: add a real **Side Panel** extension (MV3) that summarizes the **current tab** and renders streamed Markdown.
-- Daemon: add `summarize daemon …` (localhost server on `127.0.0.1:8787`) for extension ↔ CLI integration.
+- Chrome: add a real **Side Panel** extension (MV3) that gists the **current tab** and renders streamed Markdown.
+- Daemon: add `gist daemon …` (localhost server on `127.0.0.1:8787`) for extension ↔ CLI integration.
   - Autostart: macOS LaunchAgent, Linux systemd user service, Windows Scheduled Task
   - Token pairing (shared secret)
   - Streaming over SSE
@@ -291,8 +291,8 @@
 - Chrome Side Panel: add length + language controls (presets + custom), forwarded to the daemon.
 - Daemon API: `mode: "auto"` accepts both `url` + extracted page `text`; daemon picks the best pipeline (YouTube/podcasts/media → URL, otherwise prefer visible page text) with a fallback attempt.
 - Daemon/Chrome: stream extra run metadata (`inputSummary`, `modelLabel`) over SSE for richer panel status.
-- Core: expose lightweight URL helpers at `@steipete/summarize-core/content/url` (YouTube/Twitter/podcast/direct-media detection).
-- Chrome Side Panel: new icon + extension `homepage_url` set to `summarize.sh`.
+- Core: expose lightweight URL helpers at `@seanmozeik/gist-core/content/url` (YouTube/Twitter/podcast/direct-media detection).
+- Chrome Side Panel: new icon + extension `homepage_url` set to `gist.sh`.
 - Providers: add configurable API base URLs (config + env) for OpenAI/Anthropic/Google/xAI (thanks @bunchjesse for the nudge).
 
 ### Fixes
@@ -301,7 +301,7 @@
 
 ### Improvements
 
-- Chrome Side Panel: stream SSE from the panel (no MV3 background stalls), use runtime messaging to avoid “disconnected port” errors, and improve auto-summarize de-dupe.
+- Chrome Side Panel: stream SSE from the panel (no MV3 background stalls), use runtime messaging to avoid “disconnected port” errors, and improve auto-gist de-dupe.
 - Chrome Side Panel UI: working status in header + 1px progress line (no layout jump), full-width subtitle, page title in header, idle subtitle shows `words/chars` (or media duration + words) + model, subtle metrics footer, continuous background, and native highlight/link accents.
 - Daemon: prefer the installed env snapshot over launchd’s minimal environment (improves `yt-dlp` / `whisper.cpp` PATH reliability, especially for X/Twitter video transcription).
 - X/Twitter: cookie handling now delegates to `yt-dlp --cookies-from-browser` (no sweet-cookie dependency).
@@ -317,13 +317,13 @@
 
 ### Fixed
 
-- Packaging: `@steipete/summarize-core` now ships a CJS build for `require()` consumers (fixes `pnpm dlx @steipete/summarize --help` and the published CLI runtime).
+- Packaging: `@seanmozeik/gist-core` now ships a CJS build for `require()` consumers (fixes `pnpm dlx @seanmozeik/gist --help` and the published CLI runtime).
 
 ## 0.7.0 - 2025-12-26
 
 ### Highlights
 
-- Packages: split into `@steipete/summarize-core` (library) + `@steipete/summarize` (CLI; depends on core). Versions are lockstep.
+- Packages: split into `@seanmozeik/gist-core` (library) + `@seanmozeik/gist` (CLI; depends on core). Versions are lockstep.
 - Streaming: scrollback-safe Markdown streaming (hybrid: line-by-line + block buffering for fenced code + tables). No cursor control, no full-frame redraws.
 - Output: Markdown rendering is automatic on TTY; use `--plain` for raw Markdown/text output.
 - Finish line: compact separators (`·`) and no duplicated `… words` when transcript stats are shown.
@@ -407,18 +407,18 @@
     - Skips candidates without API keys; retries next model on request errors.
     - Adds OpenRouter fallback attempts when `OPENROUTER_API_KEY` is present.
     - Shows the chosen model in the progress UI.
-  - Named model presets via config (`~/.summarize/config.json` → `models`), selectable as `--model <preset>`.
+  - Named model presets via config (`~/.gist/config.json` → `models`), selectable as `--model <preset>`.
   - Built-in preset: `--model free` (OpenRouter `:free` candidates; override via `models.free`).
 - **OpenRouter free preset maintenance**
-  - `summarize refresh-free` regenerates `models.free` by scanning OpenRouter `:free` models and testing availability + latency.
-  - `summarize refresh-free --set-default` also sets `"model": "free"` in `~/.summarize/config.json` (so free becomes your default).
+  - `gist refresh-free` regenerates `models.free` by scanning OpenRouter `:free` models and testing availability + latency.
+  - `gist refresh-free --set-default` also sets `"model": "free"` in `~/.gist/config.json` (so free becomes your default).
 - **CLI models**
   - Add `--cli <provider>` flag (equivalent to `--model cli/<provider>`).
   - `--cli` accepts case-insensitive providers and can be used without a provider to enable CLI auto selection.
 - **Content extraction**
   - Website extraction detects video-only pages:
     - YouTube embeds switch to transcript extraction automatically.
-    - Direct video URLs can be downloaded + summarized when `--video-mode auto|understand` and a Gemini key is available.
+    - Direct video URLs can be downloaded + gisted when `--video-mode auto|understand` and a Gemini key is available.
 - **Env**
   - `.env` in the current directory is loaded automatically (so API keys work without exporting env vars).
 
@@ -429,7 +429,7 @@
   - `cli.enabled` is an allowlist for CLI usage.
 - **OpenRouter**
   - Stop sending extra routing headers.
-  - `--model free`: when OpenRouter rejects routing with “No allowed providers”, print the exact provider names to allow and suggest running `summarize refresh-free`.
+  - `--model free`: when OpenRouter rejects routing with “No allowed providers”, print the exact provider names to allow and suggest running `gist refresh-free`.
   - `--max-output-tokens`: when explicitly set, it is also forwarded to OpenRouter calls.
 - **Refresh Free**
   - Default extra runs reduced to 2 (total runs = 1 + runs) to reduce rate-limit pressure.
@@ -442,12 +442,12 @@
 
 - **LLM / OpenRouter**
   - LLM request retries (`--retries`) and clearer timeout errors.
-  - `summarize refresh-free`: detect OpenRouter free-model rate limits and back off + retry.
+  - `gist refresh-free`: detect OpenRouter free-model rate limits and back off + retry.
 - **Streaming**
   - Normalize + de-dupe overlapping chunks to prevent repeated sections in live Markdown output.
 - **YouTube**
   - Prefer manual captions over auto-generated when both exist. Thanks @dougvk.
-  - Always summarize YouTube transcripts in auto mode (instead of printing the transcript).
+  - Always gist YouTube transcripts in auto mode (instead of printing the transcript).
 - **Prompting & metrics**
   - Don’t “pad” beyond input length when asking for longer summaries.
   - `--metrics detailed`: fold metrics into finish line and make labels less cryptic.
@@ -455,7 +455,7 @@
 ### Docs
 
 - Add documentation for presets and Refresh Free.
-- Add a “make free the default” quick start for `summarize refresh-free --set-default`.
+- Add a “make free the default” quick start for `gist refresh-free --set-default`.
 - Add a manual end-to-end checklist (`docs/manual-tests.md`).
 - Add a quick CLI smoke checklist (`docs/smoketest.md`).
 - Document CLI ordering and model selection behavior.
@@ -562,7 +562,7 @@ First public release.
 
 ### CLI
 
-- `summarize` CLI shipped via `@steipete/summarize` (plus optional library exports).
+- `gist` CLI shipped via `@seanmozeik/gist` (plus optional library exports).
 - Inputs: URL, local file path, or remote file URL (PDFs/images/audio/video/text).
 - Automatic map-reduce for large inputs.
 - Streaming output by default on TTY, with Markdown → ANSI rendering (via `markdansi`).
@@ -598,7 +598,7 @@ First public release.
 
 ### Pricing + limits
 
-- Token/cost estimates and model limits derived from LiteLLM’s model catalog, downloaded + cached under `~/.summarize/cache/`.
+- Token/cost estimates and model limits derived from LiteLLM’s model catalog, downloaded + cached under `~/.gist/cache/`.
 
 ### Quality
 

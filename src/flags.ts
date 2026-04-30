@@ -1,8 +1,7 @@
 import type { SummaryLength } from './shared/contracts.js';
 import { SUMMARY_LENGTHS } from './shared/contracts.js';
 
-export type YoutubeMode = 'auto' | 'web' | 'apify' | 'yt-dlp' | 'no-auto';
-export type FirecrawlMode = 'off' | 'auto' | 'always';
+export type YoutubeMode = 'auto' | 'web' | 'yt-dlp' | 'no-auto';
 export type MarkdownMode = 'off' | 'auto' | 'llm' | 'readability';
 export type ExtractFormat = 'text' | 'markdown';
 export type PreprocessMode = 'off' | 'auto' | 'always';
@@ -26,7 +25,7 @@ export function parseYoutubeMode(raw: string): YoutubeMode {
   if (normalized === 'autp') {
     return 'auto';
   }
-  if (normalized === 'auto' || normalized === 'web' || normalized === 'apify') {
+  if (normalized === 'auto' || normalized === 'web') {
     return normalized;
   }
   if (normalized === 'yt-dlp') {
@@ -36,14 +35,6 @@ export function parseYoutubeMode(raw: string): YoutubeMode {
     return 'no-auto';
   }
   throw new Error(`Unsupported --youtube: ${raw}`);
-}
-
-export function parseFirecrawlMode(raw: string): FirecrawlMode {
-  const normalized = raw.trim().toLowerCase();
-  if (normalized === 'off' || normalized === 'auto' || normalized === 'always') {
-    return normalized;
-  }
-  throw new Error(`Unsupported --firecrawl: ${raw}`);
 }
 
 export function parseMarkdownMode(raw: string): MarkdownMode {

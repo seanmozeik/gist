@@ -107,7 +107,11 @@ function normalizeLanguageTag(value: string): string {
   if (parts.length === 0) {
     return value;
   }
-  const [headRaw, ...rest] = parts;
+  const headRaw = parts[0];
+  if (!headRaw) {
+    return value;
+  }
+  const rest = parts.slice(1);
   const head = headRaw.toLowerCase();
   const tail = rest.map((p) =>
     p.length === 2 ? p.toUpperCase() : p.slice(0, 1).toUpperCase() + p.slice(1),

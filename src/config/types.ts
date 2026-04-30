@@ -48,7 +48,7 @@ export interface OpenAiConfig {
 export interface LocalConfig {
   /**
    * Base URL of the local sidecar server (e.g. http://localhost:8000).
-   * Also controlled by SUMMARIZE_LOCAL_BASE_URL env var.
+   * Also controlled by GIST_LOCAL_BASE_URL env var.
    */
   baseUrl?: string;
 }
@@ -111,12 +111,21 @@ export type ModelConfig =
   | { name: string };
 
 export interface ApiKeysConfig {
-  openrouter?: string;
+  anthropic?: string;
   apify?: string;
-  firecrawl?: string;
+  assemblyai?: string;
+  fal?: string;
+  gemini?: string;
+  google?: string;
+  groq?: string;
+  nvidia?: string;
+  openai?: string;
+  openrouter?: string;
+  xai?: string;
+  zai?: string;
 }
 
-export interface SummarizeConfig {
+export interface GistConfig {
   model?: ModelConfig;
   /**
    * Output language for summaries (default: auto = match source content language).

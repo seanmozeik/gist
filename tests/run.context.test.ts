@@ -8,8 +8,8 @@ import { resolveRunContextState } from '../src/run/run-context.js';
 
 describe('run context state', () => {
   it('combines config + env resolution', () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-context-'));
-    const configDir = join(root, '.summarize');
+    const root = mkdtempSync(join(tmpdir(), 'gist-context-'));
+    const configDir = join(root, '.gist');
     mkdirSync(configDir, { recursive: true });
     writeFileSync(
       join(configDir, 'config.json'),

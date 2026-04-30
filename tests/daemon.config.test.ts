@@ -47,7 +47,7 @@ describe('daemon config', () => {
   });
 
   it('reads missing/invalid config files', async () => {
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-daemon-config-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-daemon-config-'));
     const env = { HOME: home };
     const configPath = resolveDaemonConfigPath(env);
 
@@ -62,7 +62,7 @@ describe('daemon config', () => {
   });
 
   it('migrates v1 config to v2 tokens and defaults installedAt', async () => {
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-daemon-config-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-daemon-config-'));
     const env = { HOME: home };
     const configPath = resolveDaemonConfigPath(env);
 
@@ -90,7 +90,7 @@ describe('daemon config', () => {
   });
 
   it('parses v2 tokens and keeps the primary token', async () => {
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-daemon-config-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-daemon-config-'));
     const env = { HOME: home };
     const configPath = resolveDaemonConfigPath(env);
 
@@ -114,7 +114,7 @@ describe('daemon config', () => {
   });
 
   it('parses v2 tokens when primary token is omitted', async () => {
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-daemon-config-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-daemon-config-'));
     const env = { HOME: home };
     const configPath = resolveDaemonConfigPath(env);
 
@@ -136,18 +136,18 @@ describe('daemon config', () => {
   });
 
   it('writes config using normalized values', async () => {
-    const home = mkdtempSync(path.join(tmpdir(), 'summarize-daemon-config-'));
+    const home = mkdtempSync(path.join(tmpdir(), 'gist-daemon-config-'));
     const env = { HOME: home };
 
     const writtenPath = await writeDaemonConfig({
       config: {
         env: buildEnvSnapshotFromEnv({
+          GIST_ONNX_CANARY_CMD: ' run-canary {input}  ',
+          GIST_ONNX_PARAKEET_CMD: ' run-parakeet {input} ',
+          GIST_TRANSCRIBER: ' parakeet ',
           OPENAI_API_KEY: ' k ',
           OPENAI_WHISPER_BASE_URL: ' http://127.0.0.1:8080/v1 ',
           PATH: '',
-          SUMMARIZE_ONNX_CANARY_CMD: ' run-canary {input}  ',
-          SUMMARIZE_ONNX_PARAKEET_CMD: ' run-parakeet {input} ',
-          SUMMARIZE_TRANSCRIBER: ' parakeet ',
         }),
         installedAt: '2025-12-27T00:00:00.000Z',
         port: 2222.2,
@@ -166,11 +166,11 @@ describe('daemon config', () => {
     expect(parsed.port).toBe(2222);
     expect(parsed.installedAt).toBe('2025-12-27T00:00:00.000Z');
     expect(parsed.env).toEqual({
+      GIST_ONNX_CANARY_CMD: 'run-canary {input}',
+      GIST_ONNX_PARAKEET_CMD: 'run-parakeet {input}',
+      GIST_TRANSCRIBER: 'parakeet',
       OPENAI_API_KEY: 'k',
       OPENAI_WHISPER_BASE_URL: 'http://127.0.0.1:8080/v1',
-      SUMMARIZE_ONNX_CANARY_CMD: 'run-canary {input}',
-      SUMMARIZE_ONNX_PARAKEET_CMD: 'run-parakeet {input}',
-      SUMMARIZE_TRANSCRIBER: 'parakeet',
     });
   });
 });

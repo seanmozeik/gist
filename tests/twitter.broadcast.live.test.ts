@@ -17,26 +17,22 @@ const FAL_KEY = process.env.FAL_KEY ?? null;
 const YT_DLP_PATH = process.env.YT_DLP_PATH ?? null;
 const BIRD_PATH = resolveExecutableInPath('bird', ENV);
 const FFMPEG_PATH = resolveExecutableInPath('ffmpeg', ENV);
-const TWEET_URL = process.env.SUMMARIZE_LIVE_TWITTER_BROADCAST_URL ?? null;
+const TWEET_URL = process.env.GIST_LIVE_TWITTER_BROADCAST_URL ?? null;
 
 const LIVE =
-  process.env.SUMMARIZE_LIVE_TESTS === '1' &&
+  process.env.GIST_LIVE_TESTS === '1' &&
   Boolean(TWEET_URL) &&
   Boolean(YT_DLP_PATH) &&
   Boolean(BIRD_PATH) &&
   (Boolean(OPENAI_API_KEY) || Boolean(FAL_KEY));
 const LIVE_SLIDES = LIVE && Boolean(FFMPEG_PATH);
-const LIVE_FETCH_TIMEOUT_MS = Number(
-  process.env.SUMMARIZE_LIVE_TWITTER_FETCH_TIMEOUT_MS ?? '300000',
-);
+const LIVE_FETCH_TIMEOUT_MS = Number(process.env.GIST_LIVE_TWITTER_FETCH_TIMEOUT_MS ?? '300000');
 const LIVE_FETCH_TEST_TIMEOUT_MS = Number(
-  process.env.SUMMARIZE_LIVE_TWITTER_TEST_TIMEOUT_MS ?? '480000',
+  process.env.GIST_LIVE_TWITTER_TEST_TIMEOUT_MS ?? '480000',
 );
-const LIVE_SLIDES_TIMEOUT_MS = Number(
-  process.env.SUMMARIZE_LIVE_TWITTER_SLIDES_TIMEOUT_MS ?? '420000',
-);
+const LIVE_SLIDES_TIMEOUT_MS = Number(process.env.GIST_LIVE_TWITTER_SLIDES_TIMEOUT_MS ?? '420000');
 const LIVE_SLIDES_TEST_TIMEOUT_MS = Number(
-  process.env.SUMMARIZE_LIVE_TWITTER_SLIDES_TEST_TIMEOUT_MS ?? '780000',
+  process.env.GIST_LIVE_TWITTER_SLIDES_TEST_TIMEOUT_MS ?? '780000',
 );
 
 const createClient = () =>
@@ -89,7 +85,7 @@ describe('live X broadcast slides', () => {
         return;
       }
 
-      const slidesDir = mkdtempSync(path.join(tmpdir(), 'summarize-live-slides-'));
+      const slidesDir = mkdtempSync(path.join(tmpdir(), 'gist-live-slides-'));
       const settings = resolveSlideSettings({ cwd: slidesDir, slides: true, slidesDir });
       if (!settings) {
         throw new Error('Failed to resolve slide settings');

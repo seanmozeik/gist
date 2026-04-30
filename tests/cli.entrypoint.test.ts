@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const runCliMainMock = vi.fn(async () => {
-  /* empty */
+  /* Empty */
 });
 
 vi.mock('../src/cli-main.js', () => ({ runCliMain: runCliMainMock }));

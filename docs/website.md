@@ -24,11 +24,11 @@ Use this for non-YouTube URLs.
 
 Daemon note:
 
-- `/v1/summarize` accepts `format: "markdown"` plus `markdownMode`/`preprocess` to return extracted Markdown (especially when `extractOnly: true`).
+- `/v1/gist` accepts `format: "markdown"` plus `markdownMode`/`preprocess` to return extracted Markdown (especially when `extractOnly: true`).
 
 ## Short content
 
-- If extracted content is shorter than the requested summary length, summarize returns the content as-is.
+- If extracted content is shorter than the requested summary length, gist returns the content as-is.
 - Use `--force-summary` to override and always run the LLM.
 
 ## Twitter/X

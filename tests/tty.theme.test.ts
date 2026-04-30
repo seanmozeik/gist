@@ -38,8 +38,8 @@ describe('cli theme helpers', () => {
   });
 
   it('resolves truecolor preferences', () => {
-    expect(resolveTrueColor({ SUMMARIZE_TRUECOLOR: '1' })).toBe(true);
-    expect(resolveTrueColor({ SUMMARIZE_NO_TRUECOLOR: '1' })).toBe(false);
+    expect(resolveTrueColor({ GIST_TRUECOLOR: '1' })).toBe(true);
+    expect(resolveTrueColor({ GIST_NO_TRUECOLOR: '1' })).toBe(false);
     expect(resolveTrueColor({ COLORTERM: 'truecolor' })).toBe(true);
     expect(resolveTrueColor({ TERM_PROGRAM: 'iTerm.app' })).toBe(true);
     expect(resolveTrueColor({ TERM: 'xterm-256color' })).toBe(true);

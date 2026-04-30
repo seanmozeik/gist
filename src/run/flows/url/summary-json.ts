@@ -9,7 +9,6 @@ export function buildUrlJsonInput(options: {
 }) {
   const { flags, url, effectiveMarkdownMode, modelLabel } = options;
   return {
-    firecrawl: flags.firecrawlMode,
     format: flags.format,
     kind: 'url' as const,
     language: formatOutputLanguageForJson(flags.outputLanguage),
@@ -29,16 +28,9 @@ export function buildUrlJsonInput(options: {
 
 export function buildUrlJsonEnv(apiStatus: {
   openrouterApiKey: string | null;
-  apifyToken: string | null;
-  firecrawlConfigured: boolean;
-  firecrawlApiKey: string | null;
   ytDlpPath: string | null;
   ytDlpCookiesFromBrowser: string | null;
   localBaseUrl: string | null;
 }) {
-  return {
-    hasApifyToken: Boolean(apiStatus.apifyToken),
-    hasFirecrawlKey: apiStatus.firecrawlConfigured,
-    hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey),
-  };
+  return { hasOpenRouterKey: Boolean(apiStatus.openrouterApiKey) };
 }

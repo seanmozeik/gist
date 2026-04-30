@@ -15,10 +15,10 @@ const makeStub = (handler: (args: string[]) => { stdout?: string; stderr?: strin
     return {
       stdin: {
         end: () => {
-          /* empty */
+          /* Empty */
         },
         write: () => {
-          /* empty */
+          /* Empty */
         },
       },
     } as unknown as ReturnType<ExecFileFn>;
@@ -102,10 +102,10 @@ describe('runCliModel', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -252,7 +252,7 @@ describe('runCliModel', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: (chunk: string | Buffer) => {
             stdinText += String(chunk);
@@ -281,7 +281,7 @@ describe('runCliModel', () => {
     expect(seen[0]).toContain('--model');
     expect(seen[0]).toContain('openai/gpt-5.4');
     expect(stdinText).toBe('Test');
-    expect(seenCwd).toContain('summarize-opencode-');
+    expect(seenCwd).toContain('gist-opencode-');
   });
 
   it('uses configured OpenCode model when none is passed explicitly', async () => {
@@ -296,10 +296,10 @@ describe('runCliModel', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -332,7 +332,7 @@ describe('runCliModel', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: (chunk: string | Buffer) => {
             stdinText += String(chunk);
@@ -409,34 +409,7 @@ describe('runCliModel', () => {
   });
 
   it('reads the Codex output file', async () => {
-    const execFileImpl: ExecFileFn = ((_cmd, args, _options, cb) => {
-      const outputIndex = args.indexOf('--output-last-message');
-      const outputPath = outputIndex === -1 ? null : args[outputIndex + 1];
-      if (!outputPath) {
-        cb?.(new Error('missing output path'), '', '');
-        return {
-          stdin: {
-            end: () => {
-              /* empty */
-            },
-            write: () => {
-              /* empty */
-            },
-          },
-        } as unknown as ReturnType<ExecFileFn>;
-      }
-      undefined;
-      return {
-        stdin: {
-          end: () => {
-            /* empty */
-          },
-          write: () => {
-            /* empty */
-          },
-        },
-      } as unknown as ReturnType<ExecFileFn>;
-    }) as ExecFileFn;
+    const execFileImpl: ExecFileFn = ((_cmd, args, _options, cb) => {}) as ExecFileFn;
 
     const result = await runCliModel({
       allowTools: false,
@@ -452,36 +425,8 @@ describe('runCliModel', () => {
   });
 
   it('maps Codex GPT fast alias to GPT-5.5 fast service tier', async () => {
-    let seenArgs: string[] = [];
-    const execFileImpl: ExecFileFn = ((_cmd, args, _options, cb) => {
-      seenArgs = [...args];
-      const outputIndex = args.indexOf('--output-last-message');
-      const outputPath = outputIndex === -1 ? null : args[outputIndex + 1];
-      if (!outputPath) {
-        cb?.(new Error('missing output path'), '', '');
-        return {
-          stdin: {
-            end: () => {
-              /* empty */
-            },
-            write: () => {
-              /* empty */
-            },
-          },
-        } as unknown as ReturnType<ExecFileFn>;
-      }
-      undefined;
-      return {
-        stdin: {
-          end: () => {
-            /* empty */
-          },
-          write: () => {
-            /* empty */
-          },
-        },
-      } as unknown as ReturnType<ExecFileFn>;
-    }) as ExecFileFn;
+    const seenArgs: string[] = [];
+    const execFileImpl: ExecFileFn = ((_cmd, args, _options, cb) => {}) as ExecFileFn;
 
     const result = await runCliModel({
       allowTools: false,
@@ -612,10 +557,10 @@ describe('runCliModel', () => {
       return {
         stdin: {
           end: () => {
-            /* empty */
+            /* Empty */
           },
           write: () => {
-            /* empty */
+            /* Empty */
           },
         },
       } as unknown as ReturnType<ExecFileFn>;
@@ -647,9 +592,7 @@ describe('cli helpers', () => {
     expect(resolveCliBinary('claude', { claude: { binary: '/opt/claude' } }, {})).toBe(
       '/opt/claude',
     );
-    expect(resolveCliBinary('codex', null, { SUMMARIZE_CLI_CODEX: '/opt/codex' })).toBe(
-      '/opt/codex',
-    );
+    expect(resolveCliBinary('codex', null, { GIST_CLI_CODEX: '/opt/codex' })).toBe('/opt/codex');
     expect(resolveCliBinary('agent', null, { AGENT_PATH: '/opt/agent' })).toBe('/opt/agent');
     expect(resolveCliBinary('openclaw', null, { OPENCLAW_PATH: '/opt/openclaw' })).toBe(
       '/opt/openclaw',

@@ -1,4 +1,4 @@
-import type { CliProvider, SummarizeConfig } from './config.js';
+import type { CliProvider, GistConfig } from './config.js';
 import type { ModelAttempt } from './run/types.js';
 
 const DEFAULT_OPENROUTER_MODELS = [
@@ -16,7 +16,7 @@ const VIDEO_UNDERSTANDING_MODELS = [
 export function buildAutoModelAttempts(options: {
   allowAutoCliFallback: boolean;
   cliAvailability: Partial<Record<CliProvider, boolean>>;
-  config: SummarizeConfig | null;
+  config: GistConfig | null;
   desiredOutputTokens: number | null;
   env: Record<string, string | undefined>;
   isImplicitAutoSelection: boolean;
@@ -49,7 +49,7 @@ export function buildAutoModelAttempts(options: {
   // Add local sidecar attempt if configured
   const localBaseUrl =
     (globalThis as unknown as { __SIDECAR_BASE_URL?: string }).__SIDECAR_BASE_URL ??
-    options.env?.SUMMARIZE_LOCAL_BASE_URL ??
+    options.env?.GIST_LOCAL_BASE_URL ??
     options.config?.local?.baseUrl;
   if (localBaseUrl) {
     attempts.push({

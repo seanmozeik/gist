@@ -45,8 +45,8 @@ describe('cli streamed markdown rendering', () => {
         }),
       ),
     );
-    const root = mkdtempSync(join(tmpdir(), 'summarize-stream-md-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-stream-md-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(
@@ -115,8 +115,8 @@ describe('cli streamed markdown rendering', () => {
       ),
     );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-stream-md-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-stream-md-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

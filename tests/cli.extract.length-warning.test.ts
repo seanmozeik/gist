@@ -23,7 +23,7 @@ function collectStream() {
 
 describe('--extract warnings', () => {
   it('warns when --length is explicitly set with --extract (TTY stderr, non-JSON)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-length-warning-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-length-warning-'));
     const html =
       '<!doctype html><html><head><title>Hello</title></head>' +
       '<body><article><p>Hi</p></article></body></html>';
@@ -51,7 +51,7 @@ describe('--extract warnings', () => {
   });
 
   it('does not warn when --length is not explicitly set (default)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-length-no-warning-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-length-no-warning-'));
     const html =
       '<!doctype html><html><head><title>Hello</title></head>' +
       '<body><article><p>Hi</p></article></body></html>';
@@ -79,7 +79,7 @@ describe('--extract warnings', () => {
   });
 
   it('does not warn in --json mode', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-length-no-warning-json-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-length-no-warning-json-'));
     const html =
       '<!doctype html><html><head><title>Hello</title></head>' +
       '<body><article><p>Hi</p></article></body></html>';

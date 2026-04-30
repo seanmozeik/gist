@@ -1,5 +1,5 @@
 import { parseModelConfig, parseModelsConfig } from './config/model.js';
-import { readParsedConfigFile, resolveSummarizeConfigPath } from './config/read.js';
+import { readParsedConfigFile, resolveGistConfigPath } from './config/read.js';
 import {
   parseApiKeysConfig,
   parseCacheConfig,
@@ -12,7 +12,7 @@ import {
   parseOutputConfig,
   parseUiConfig,
 } from './config/sections.js';
-import type { SummarizeConfig } from './config/types.js';
+import type { GistConfig } from './config/types.js';
 
 export type {
   ApiKeysConfig,
@@ -32,17 +32,17 @@ export type {
   MediaCacheVerifyMode,
   ModelConfig,
   OpenAiConfig,
-  SummarizeConfig,
+  GistConfig,
   VideoMode,
 } from './config/types.js';
 
 export { mergeConfigEnv, resolveConfigEnv } from './config/env.js';
 
-export function loadSummarizeConfig({ env }: { env: Record<string, string | undefined> }): {
-  config: SummarizeConfig | null;
+export function loadGistConfig({ env }: { env: Record<string, string | undefined> }): {
+  config: GistConfig | null;
   path: string | null;
 } {
-  const path = resolveSummarizeConfigPath(env);
+  const path = resolveGistConfigPath(env);
   if (!path) {
     return { config: null, path: null };
   }

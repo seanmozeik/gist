@@ -60,8 +60,8 @@ describe('cli finish line + metrics', () => {
         ),
       );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-finish-line-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-finish-line-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     // LiteLLM cache: used for model limits (avoid network fetch in tests)
@@ -146,8 +146,8 @@ describe('cli finish line + metrics', () => {
         ),
       );
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-finish-line-small-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-finish-line-small-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     // LiteLLM cache: key without provider prefix to exercise prefix-stripped resolution for xai/...

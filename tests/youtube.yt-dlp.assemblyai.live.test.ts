@@ -17,7 +17,7 @@ const resolveYtDlpPath = (): string | null => {
 
 const YT_DLP_PATH = resolveYtDlpPath();
 const LIVE =
-  process.env.SUMMARIZE_LIVE_TESTS === '1' && Boolean(ASSEMBLYAI_API_KEY) && Boolean(YT_DLP_PATH);
+  process.env.GIST_LIVE_TESTS === '1' && Boolean(ASSEMBLYAI_API_KEY) && Boolean(YT_DLP_PATH);
 
 describe('live YouTube transcript (yt-dlp + AssemblyAI)', () => {
   const run = LIVE ? it : it.skip;
@@ -31,13 +31,13 @@ describe('live YouTube transcript (yt-dlp + AssemblyAI)', () => {
         ASSEMBLYAI_API_KEY: ASSEMBLYAI_API_KEY ?? '',
         FAL_KEY: '',
         GEMINI_API_KEY: '',
+        GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
+        GIST_ONNX_CANARY_CMD: '',
+        GIST_ONNX_PARAKEET_CMD: '',
         GOOGLE_API_KEY: '',
         GOOGLE_GENERATIVE_AI_API_KEY: '',
         GROQ_API_KEY: '',
         OPENAI_API_KEY: '',
-        SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
-        SUMMARIZE_ONNX_CANARY_CMD: '',
-        SUMMARIZE_ONNX_PARAKEET_CMD: '',
       };
 
       const client = createLinkPreviewClient({ env, ytDlpPath: YT_DLP_PATH });

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { CacheStore } from '../src/cache.js';
 import type { ExtractedLinkContent } from '../src/content/index.js';
 import { parseRequestedModelId } from '../src/model-spec.js';
-import { summarizeExtractedUrl } from '../src/run/flows/url/summary.js';
+import { gistExtractedUrl } from '../src/run/flows/url/summary.js';
 import type { UrlFlowContext } from '../src/run/flows/url/types.js';
 
 function collectStream() {
@@ -56,7 +56,7 @@ const extracted: ExtractedLinkContent = {
   wordCount: 20,
 };
 
-describe('summarizeExtractedUrl timestamp guard', () => {
+describe('gistExtractedUrl timestamp guard', () => {
   it('disables streaming and strips impossible key moments before output and cache', async () => {
     const stdout = collectStream();
     const stderr = collectStream();
@@ -69,10 +69,10 @@ describe('summarizeExtractedUrl timestamp guard', () => {
     let allowStreamingSeen: boolean | null = null;
     const cacheStore: CacheStore = {
       clear: () => {
-        /* empty */
+        /* Empty */
       },
       close: () => {
-        /* empty */
+        /* Empty */
       },
       getJson: () => null,
       getText: () => null,
@@ -85,7 +85,7 @@ describe('summarizeExtractedUrl timestamp guard', () => {
       transcriptCache: {
         get: () => null,
         set: () => {
-          /* empty */
+          /* Empty */
         },
       },
     };
@@ -131,12 +131,15 @@ describe('summarizeExtractedUrl timestamp guard', () => {
       hooks: {
         buildReport: async () => ({ calls: 0, durationMs: 0, tokens: 0 }),
         clearProgressForStdout: () => {
-          /* empty */
+          /* Empty */
         },
         clearProgressIfCurrent: () => {
-          /* empty */
+          /* Empty */
         },
         estimateCostUsd: async () => null,
+        gistAsset: async () => {
+          /* Empty */
+        },
         onExtracted: null,
         onLinkPreviewProgress: null,
         onModelChosen: null,
@@ -146,16 +149,13 @@ describe('summarizeExtractedUrl timestamp guard', () => {
         onSummaryCached: null,
         restoreProgressAfterStdout: null,
         setClearProgressBeforeStdout: () => {
-          /* empty */
+          /* Empty */
         },
         setTranscriptionCost: () => {
-          /* empty */
-        },
-        summarizeAsset: async () => {
-          /* empty */
+          /* Empty */
         },
         writeViaFooter: () => {
-          /* empty */
+          /* Empty */
         },
       },
       io: {
@@ -240,7 +240,7 @@ describe('summarizeExtractedUrl timestamp guard', () => {
       },
     };
 
-    await summarizeExtractedUrl({
+    await gistExtractedUrl({
       ctx,
       effectiveMarkdownMode: 'off',
       extracted,

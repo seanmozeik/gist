@@ -9,7 +9,7 @@ import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
 
 describe('daemon/flow-context extractOnly', () => {
   it('sets extractMode when extractOnly is true', () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-daemon-extract-only-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-daemon-extract-only-'));
     const cache: CacheState = { maxBytes: 0, mode: 'bypass', path: null, store: null, ttlMs: 0 };
 
     const ctx = createDaemonUrlFlowContext({
@@ -25,7 +25,7 @@ describe('daemon/flow-context extractOnly', () => {
       runStartedAtMs: Date.now(),
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });

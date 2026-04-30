@@ -39,7 +39,7 @@ describe('extractAssetContent', () => {
           env: {},
           envForRun: {},
           execFileImpl: (() => {
-            /* empty */
+            /* Empty */
           }) as never,
           preprocessMode: 'auto',
           timeoutMs: 1000,
@@ -61,7 +61,7 @@ describe('extractAssetContent', () => {
           env: {},
           envForRun: {},
           execFileImpl: (() => {
-            /* empty */
+            /* Empty */
           }) as never,
           preprocessMode: 'off',
           timeoutMs: 1000,
@@ -83,7 +83,7 @@ describe('extractAssetContent', () => {
           env: { PATH: '' },
           envForRun: { PATH: '' },
           execFileImpl: (() => {
-            /* empty */
+            /* Empty */
           }) as never,
           preprocessMode: 'auto',
           timeoutMs: 1000,

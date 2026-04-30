@@ -6,7 +6,7 @@ import { Writable } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CacheStore } from '../src/cache.js';
-import { summarizeMediaFile } from '../src/run/flows/asset/media.js';
+import { gistMediaFile } from '../src/run/flows/asset/media.js';
 import type { AssetSummaryContext } from '../src/run/flows/asset/summary.js';
 
 const createLinkPreviewClient = vi.hoisted(() => vi.fn());
@@ -46,10 +46,10 @@ function makeContext(overrides: Partial<AssetSummaryContext>): AssetSummaryConte
   } as AssetSummaryContext;
 }
 
-describe('summarizeMediaFile options', () => {
+describe('gistMediaFile options', () => {
   it('passes timeout/cacheMode and bypasses transcript cache when cache is disabled', async () => {
     createLinkPreviewClient.mockReset();
-    const root = mkdtempSync(join(tmpdir(), 'summarize-media-options-bypass-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-media-options-bypass-'));
     const audioPath = join(root, 'audio.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -78,7 +78,7 @@ describe('summarizeMediaFile options', () => {
     });
 
     await expect(
-      summarizeMediaFile(ctx, {
+      gistMediaFile(ctx, {
         attachment: {
           bytes: new Uint8Array(),
           filename: 'audio.mp3',
@@ -97,7 +97,7 @@ describe('summarizeMediaFile options', () => {
 
   it('uses transcript cache and default cache mode when enabled', async () => {
     createLinkPreviewClient.mockReset();
-    const root = mkdtempSync(join(tmpdir(), 'summarize-media-options-default-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-media-options-default-'));
     const audioPath = join(root, 'audio.mp3');
     writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
@@ -128,7 +128,7 @@ describe('summarizeMediaFile options', () => {
     });
 
     await expect(
-      summarizeMediaFile(ctx, {
+      gistMediaFile(ctx, {
         attachment: {
           bytes: new Uint8Array(),
           filename: 'audio.mp3',

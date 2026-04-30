@@ -2,10 +2,10 @@ import { spawn } from 'node:child_process';
 import { accessSync, constants as fsConstants } from 'node:fs';
 import path from 'node:path';
 
-import type { CliProvider, SummarizeConfig } from '../config.js';
+import type { CliProvider, GistConfig } from '../config.js';
 import { isCliDisabled, resolveCliBinary } from '../llm/cli.js';
 
-type ConfigForCli = SummarizeConfig | null;
+type ConfigForCli = GistConfig | null;
 
 function isExecutable(filePath: string): boolean {
   try {

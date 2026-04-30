@@ -99,7 +99,7 @@ describe('createUrlExtractionSession', () => {
   });
 
   it('bypasses extract-cache reuse for local file URLs and forwards file mtime', async () => {
-    const filePath = path.join(tmpdir(), `summarize-local-slides-${Date.now().toString()}.webm`);
+    const filePath = path.join(tmpdir(), `gist-local-slides-${Date.now().toString()}.webm`);
     await fs.writeFile(filePath, 'video');
 
     try {
@@ -128,7 +128,7 @@ describe('createUrlExtractionSession', () => {
   });
 
   it('prefers transcript extraction for local slide videos', async () => {
-    const filePath = path.join(tmpdir(), `summarize-local-slides-${Date.now().toString()}.webm`);
+    const filePath = path.join(tmpdir(), `gist-local-slides-${Date.now().toString()}.webm`);
     await fs.writeFile(filePath, 'video');
 
     try {

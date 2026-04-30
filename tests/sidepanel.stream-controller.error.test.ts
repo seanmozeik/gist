@@ -55,7 +55,7 @@ describe('sidepanel stream controller error handling', () => {
         }),
       getToken: async () => 'token',
       onMeta: () => {
-        /* empty */
+        /* Empty */
       },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
@@ -77,11 +77,11 @@ describe('sidepanel stream controller error handling', () => {
       },
       getToken: async () => 'token',
       onMeta: () => {
-        /* empty */
+        /* Empty */
       },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: () => {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -102,7 +102,7 @@ describe('sidepanel stream controller error handling', () => {
         }),
       getToken: async () => 'token',
       onMeta: () => {
-        /* empty */
+        /* Empty */
       },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
@@ -119,7 +119,7 @@ describe('sidepanel stream controller error handling', () => {
     const statuses: string[] = [];
     const stalledStream = new ReadableStream<Uint8Array>({
       start() {
-        /* empty */
+        /* Empty */
       },
     });
 
@@ -129,7 +129,7 @@ describe('sidepanel stream controller error handling', () => {
       idleTimeoutMessage: 'Timed out waiting for daemon output.',
       idleTimeoutMs: 25,
       onMeta: () => {
-        /* empty */
+        /* Empty */
       },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),
@@ -162,7 +162,7 @@ describe('sidepanel stream controller error handling', () => {
       idleTimeoutMessage: 'Timed out waiting for daemon output.',
       idleTimeoutMs: 25,
       onMeta: () => {
-        /* empty */
+        /* Empty */
       },
       onPhaseChange: (phase) => phases.push(phase),
       onStatus: (text) => statuses.push(text),

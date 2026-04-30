@@ -6,18 +6,18 @@ read_when:
 
 # Output language
 
-By default, `summarize` writes the summary in the **same language as the source content** (`--language auto`). If language detection is uncertain, it falls back to English.
+By default, `gist` writes the summary in the **same language as the source content** (`--language auto`). If language detection is uncertain, it falls back to English.
 
 This affects the language of the generated summary text (not extraction/transcription).
 
 ## CLI
 
 ```bash
-summarize <input> --language auto
-summarize <input> --language en
-summarize <input> --language de
-summarize <input> --language english
-summarize <input> --lang german
+gist <input> --language auto
+gist <input> --language en
+gist <input> --language de
+gist <input> --language english
+gist <input> --lang german
 ```
 
 Supported inputs (best-effort):

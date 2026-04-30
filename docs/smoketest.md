@@ -54,10 +54,10 @@ Goal: exercise URL + file inputs, extraction + LLM summary paths, multiple model
 
 ## Commands (template)
 
-- Website: `pnpm summarize -- "<url>" --model <model> --length short`
-- YouTube: `pnpm summarize -- "<url>" --model <model> --youtube auto`
-- File URL: `pnpm summarize -- "<url>" --model <model>`
-- Local file: `pnpm summarize -- "<path>" --model <model>`
+- Website: `pnpm gist -- "<url>" --model <model> --length short`
+- YouTube: `pnpm gist -- "<url>" --model <model> --youtube auto`
+- File URL: `pnpm gist -- "<url>" --model <model>`
+- Local file: `pnpm gist -- "<path>" --model <model>`
 
 ## Capture
 

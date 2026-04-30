@@ -26,7 +26,7 @@ describe('sidepanel bootstrap runtime', () => {
   it('hydrates settings, binds lifecycle, and pings', async () => {
     const calls: string[] = [];
     const loadedSettings = {
-      autoSummarize: true,
+      autoGist: true,
       automationEnabled: false,
       chatEnabled: false,
       fontFamily: 'IBM Plex Sans',
@@ -47,7 +47,7 @@ describe('sidepanel bootstrap runtime', () => {
       bindSettingsStorage: { getSettingsHydrated: () => true } as never,
       bindSidepanelLifecycle: {
         sendReady: () => {
-          /* empty */
+          /* Empty */
         },
       } as never,
       clearPendingSettingsSnapshot: () => {
@@ -107,7 +107,7 @@ describe('sidepanel bootstrap runtime', () => {
       bindSettingsStorage: { getSettingsHydrated: () => true } as never,
       bindSidepanelLifecycle: {
         sendReady: () => {
-          /* empty */
+          /* Empty */
         },
       } as never,
       clearPendingSettingsSnapshot: () => {
@@ -119,7 +119,7 @@ describe('sidepanel bootstrap runtime', () => {
       getPendingSettingsSnapshot: () => null,
       hideAutomationNotice: () => calls.push('hide-automation'),
       loadSettings: async () => ({
-        autoSummarize: false,
+        autoGist: false,
         automationEnabled: true,
         chatEnabled: true,
         fontFamily: 'Skolar',

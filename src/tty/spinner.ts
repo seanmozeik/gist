@@ -30,25 +30,25 @@ export function startSpinner({
   if (!enabled) {
     return {
       clear: () => {
-        /* empty */
+        /* Empty */
       },
       pause: () => {
-        /* empty */
+        /* Empty */
       },
       refresh: () => {
-        /* empty */
+        /* Empty */
       },
       resume: () => {
-        /* empty */
+        /* Empty */
       },
       setText: () => {
-        /* empty */
+        /* Empty */
       },
       stop: () => {
-        /* empty */
+        /* Empty */
       },
       stopAndClear: () => {
-        /* empty */
+        /* Empty */
       },
     };
   }
@@ -65,17 +65,17 @@ export function startSpinner({
 
   if (typeof oraStream.cursorTo !== 'function') {
     oraStream.cursorTo = () => {
-      /* empty */
+      /* Empty */
     };
   }
   if (typeof oraStream.clearLine !== 'function') {
     oraStream.clearLine = () => {
-      /* empty */
+      /* Empty */
     };
   }
   if (typeof oraStream.moveCursor !== 'function') {
     oraStream.moveCursor = () => {
-      /* empty */
+      /* Empty */
     };
   }
 

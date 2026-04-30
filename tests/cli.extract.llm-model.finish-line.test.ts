@@ -32,8 +32,8 @@ function collectStream() {
 
 describe('cli --extract finish line includes model when LLM ran', () => {
   it('prints extraction label + model id when markdown conversion uses an LLM', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-llm-finish-line-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-llm-finish-line-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

@@ -102,7 +102,7 @@ export function resolveCliBinary(
   if (isNonEmptyString(env[pathKey])) {
     return env[pathKey].trim();
   }
-  const envKey = `SUMMARIZE_CLI_${provider.toUpperCase()}`;
+  const envKey = `GIST_CLI_${provider.toUpperCase()}`;
   if (isNonEmptyString(env[envKey])) {
     return env[envKey].trim();
   }
@@ -220,7 +220,7 @@ export async function runCliModel({
       requestedModel,
       providerExtraArgs,
     );
-    const outputDir = await fs.mkdtemp(path.join(tmpdir(), 'summarize-codex-'));
+    const outputDir = await fs.mkdtemp(path.join(tmpdir(), 'gist-codex-'));
     const outputPath = path.join(outputDir, 'last-message.txt');
     args.push(...codexExtraArgs);
     args.push('exec', '--output-last-message', outputPath, '--skip-git-repo-check', '--json');

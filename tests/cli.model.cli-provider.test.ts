@@ -83,7 +83,7 @@ function collectStream() {
 }
 
 describe('cli run.ts CLI provider model path', () => {
-  it('summarizes via cli/<provider> and includes metrics finish line', async () => {
+  it('gists via cli/<provider> and includes metrics finish line', async () => {
     const stdout = collectStream();
     const stderr = collectStream();
     (stderr.stream as unknown as { isTTY?: boolean }).isTTY = false;

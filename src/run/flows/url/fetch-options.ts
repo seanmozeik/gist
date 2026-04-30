@@ -1,14 +1,12 @@
 import type { CacheMode, FetchLinkContentOptions } from '../../../content/index.js';
 import { isLocalFileUrl, resolveLocalFileMtime } from '../../../content/local-file.js';
-import { isDirectVideoInput } from '../../../content/url.js';
 
 interface UrlFetchFlags {
   timeoutMs: number;
   maxExtractCharacters?: number | null;
-  youtubeMode: 'auto' | 'web' | 'apify' | 'yt-dlp' | 'no-auto';
+  youtubeMode: 'auto' | 'web' | 'yt-dlp' | 'no-auto';
   videoMode: 'auto' | 'transcript' | 'understand';
   transcriptTimestamps: boolean;
-  firecrawlMode: 'off' | 'auto' | 'always';
 }
 
 interface UrlMarkdownOptions {
@@ -16,13 +14,7 @@ interface UrlMarkdownOptions {
   markdownRequested: boolean;
 }
 
-export function shouldPreferTranscriptForTarget({
-  targetUrl,
-  videoMode,
-}: {
-  targetUrl: string;
-  videoMode: UrlFetchFlags['videoMode'];
-}): boolean {
+export function shouldPreferTranscriptForTarget(videoMode: UrlFetchFlags['videoMode']): boolean {
   return videoMode === 'transcript';
 }
 
@@ -43,16 +35,13 @@ export function resolveUrlFetchOptions({
     options: {
       cacheMode,
       fileMtime: localFile ? resolveLocalFileMtime(targetUrl) : null,
-      firecrawl: flags.firecrawlMode,
       format: markdown.markdownRequested ? 'markdown' : 'text',
       markdownMode: markdown.markdownRequested ? markdown.effectiveMarkdownMode : undefined,
       maxCharacters:
         typeof flags.maxExtractCharacters === 'number' && flags.maxExtractCharacters > 0
           ? flags.maxExtractCharacters
           : undefined,
-      mediaTranscript: shouldPreferTranscriptForTarget({ targetUrl, videoMode: flags.videoMode })
-        ? 'prefer'
-        : 'auto',
+      mediaTranscript: shouldPreferTranscriptForTarget(flags.videoMode) ? 'prefer' : 'auto',
       timeoutMs: flags.timeoutMs,
       transcriptTimestamps: flags.transcriptTimestamps,
       youtubeTranscript: flags.youtubeMode,

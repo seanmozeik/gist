@@ -42,8 +42,8 @@ describe('cli input token limits', () => {
     );
     mocks.completeSimple.mockReset();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-input-limit-'));
-    const cacheDir = join(root, '.summarize', 'cache');
+    const root = mkdtempSync(join(tmpdir(), 'gist-input-limit-'));
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
 
     writeFileSync(

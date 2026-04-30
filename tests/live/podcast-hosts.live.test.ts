@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { runCli } from '../../src/run.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 const collectStream = () => {
   let text = '';
@@ -106,7 +106,7 @@ const silentStderr = new Writable({
       const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY?.trim() ?? '';
       if (!FIRECRAWL_API_KEY) {
         it.skip('requires FIRECRAWL_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }

@@ -1,21 +1,16 @@
 import { resolveTranscriptForLink } from '../../transcript/index.js';
 import { resolveTranscriptionAvailability } from '../../transcript/providers/transcription-start.js';
-import { isDirectMediaUrl, isYouTubeUrl } from '../../url.js';
-import type { FirecrawlScrapeResult, LinkPreviewDeps } from '../deps.js';
-import type { CacheMode, FirecrawlDiagnostics, TranscriptResolution } from '../types.js';
-import { normalizeForPrompt } from './cleaner.js';
-import { MIN_READABILITY_CONTENT_CHARACTERS } from './constants.js';
-import { fetchHtmlDocument, fetchWithFirecrawl } from './fetcher.js';
-import { buildResultFromFirecrawl, shouldFallbackToFirecrawl } from './firecrawl.js';
+import { isDirectMediaUrl } from '../../url.js';
+import type { LinkPreviewDeps } from '../deps.js';
+import type { CacheMode, TranscriptResolution } from '../types.js';
+import { fetchHtmlDocument } from './fetcher.js';
 import { buildResultFromHtmlDocument } from './html.js';
 import { extractApplePodcastIds, extractSpotifyEpisodeId } from './podcast-utils.js';
-import { extractReadabilityFromHtml } from './readability.js';
+import type { extractReadabilityFromHtml } from './readability.js';
 import {
-  isAnubisHtml,
   isBlockedTwitterContent,
   isTwitterBroadcastUrl,
   isTwitterStatusUrl,
-  toNitterUrls,
 } from './twitter-utils.js';
 import type { ExtractedLinkContent, FetchLinkContentOptions, MarkdownMode } from './types.js';
 import {
@@ -23,7 +18,6 @@ import {
   ensureTranscriptDiagnostics,
   finalizeExtractedLinkContent,
   resolveCacheMode,
-  resolveFirecrawlMode,
   resolveMaxCharacters,
   resolveTimeoutMs,
   selectBaseContent,
@@ -58,20 +52,16 @@ export async function fetchLinkContent(
   const youtubeTranscriptMode = options?.youtubeTranscript ?? 'auto';
   const mediaTranscriptMode = options?.mediaTranscript ?? 'auto';
   const transcriptTimestamps = options?.transcriptTimestamps ?? false;
-  const firecrawlMode = resolveFirecrawlMode(options);
   const markdownRequested = (options?.format ?? 'text') === 'markdown';
   const markdownMode: MarkdownMode = options?.markdownMode ?? 'auto';
   const fileMtime = options?.fileMtime ?? null;
-
-  const canUseFirecrawl =
-    firecrawlMode !== 'off' && deps.scrapeWithFirecrawl !== null && !isYouTubeUrl(url);
 
   const spotifyEpisodeId = extractSpotifyEpisodeId(url);
   if (spotifyEpisodeId) {
     const transcriptionAvailability = await resolveTranscriptionAvailability({ env: deps.env });
     if (!transcriptionAvailability.hasAnyProvider) {
       throw new Error(
-        'Spotify episode transcription requires a transcription provider (install whisper-cpp or set GROQ_API_KEY, ASSEMBLYAI_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, or FAL_KEY); otherwise you may only get a captcha/recaptcha HTML page.',
+        'Spotify episode transcription requires GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.',
       );
     }
 
@@ -101,13 +91,6 @@ export async function fetchLinkContent(
       baseContent: selectBaseContent('', transcriptResolution.text, transcriptResolution.segments),
       description: null,
       diagnostics: {
-        firecrawl: {
-          attempted: false,
-          cacheMode,
-          cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-          notes: 'Spotify short-circuit skipped HTML/Firecrawl',
-          used: false,
-        },
         markdown: {
           notes: 'Spotify short-circuit uses transcript content',
           provider: null,
@@ -132,7 +115,7 @@ export async function fetchLinkContent(
     const transcriptionAvailability = await resolveTranscriptionAvailability({ env: deps.env });
     if (!transcriptionAvailability.hasAnyProvider) {
       throw new Error(
-        'Apple Podcasts transcription requires a transcription provider (install whisper-cpp or set GROQ_API_KEY, ASSEMBLYAI_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, or FAL_KEY); otherwise you may only get a slow/blocked HTML page.',
+        'Apple Podcasts transcription requires GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.',
       );
     }
 
@@ -162,13 +145,6 @@ export async function fetchLinkContent(
       baseContent: selectBaseContent('', transcriptResolution.text, transcriptResolution.segments),
       description: null,
       diagnostics: {
-        firecrawl: {
-          attempted: false,
-          cacheMode,
-          cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-          notes: 'Apple Podcasts short-circuit skipped HTML/Firecrawl',
-          used: false,
-        },
         markdown: {
           notes: 'Apple Podcasts short-circuit uses transcript content',
           provider: null,
@@ -209,20 +185,13 @@ export async function fetchLinkContent(
     );
     transcriptDiagnostics.notes = appendNote(
       transcriptDiagnostics.notes,
-      'X broadcast: skipped HTML/Firecrawl',
+      'X broadcast: skipped HTML fetch',
     );
 
     return finalizeExtractedLinkContent({
       baseContent: selectBaseContent('', transcriptResolution.text, transcriptResolution.segments),
       description: null,
       diagnostics: {
-        firecrawl: {
-          attempted: false,
-          cacheMode,
-          cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-          notes: 'X broadcast short-circuit skipped HTML/Firecrawl',
-          used: false,
-        },
         markdown: {
           notes: 'X broadcast uses transcript content',
           provider: null,
@@ -262,20 +231,13 @@ export async function fetchLinkContent(
     );
     transcriptDiagnostics.notes = appendNote(
       transcriptDiagnostics.notes,
-      'Direct media URL: skipped HTML/Firecrawl',
+      'Direct media URL: skipped HTML fetch',
     );
 
     return finalizeExtractedLinkContent({
       baseContent: selectBaseContent('', transcriptResolution.text, transcriptResolution.segments),
       description: null,
       diagnostics: {
-        firecrawl: {
-          attempted: false,
-          cacheMode,
-          cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-          notes: 'Direct media URL skipped HTML/Firecrawl',
-          used: false,
-        },
         markdown: {
           notes: 'Direct media URL uses transcript content',
           provider: null,
@@ -295,70 +257,8 @@ export async function fetchLinkContent(
     });
   }
 
-  let firecrawlAttempted = false;
-  let firecrawlPayload: FirecrawlScrapeResult | null = null;
-  const firecrawlDiagnostics: FirecrawlDiagnostics = {
-    attempted: false,
-    cacheMode,
-    cacheStatus: cacheMode === 'bypass' ? 'bypassed' : 'unknown',
-    notes: null,
-    used: false,
-  };
-
   const twitterStatus = isTwitterStatusUrl(url);
-  const nitterUrls = twitterStatus ? toNitterUrls(url) : [];
   let birdError: unknown = null;
-  let nitterError: unknown = null;
-
-  const attemptFirecrawl = async (reason: string): Promise<ExtractedLinkContent | null> => {
-    if (!canUseFirecrawl) {
-      return null;
-    }
-
-    if (!firecrawlAttempted) {
-      const attempt = await fetchWithFirecrawl(url, deps.scrapeWithFirecrawl, {
-        cacheMode,
-        onProgress: deps.onProgress ?? null,
-        reason,
-        timeoutMs,
-      });
-      firecrawlAttempted = true;
-      firecrawlPayload = attempt.payload;
-      firecrawlDiagnostics.attempted = attempt.diagnostics.attempted;
-      firecrawlDiagnostics.used = attempt.diagnostics.used;
-      firecrawlDiagnostics.cacheMode = attempt.diagnostics.cacheMode;
-      firecrawlDiagnostics.cacheStatus = attempt.diagnostics.cacheStatus;
-      firecrawlDiagnostics.notes = attempt.diagnostics.notes ?? null;
-    }
-
-    firecrawlDiagnostics.notes = appendNote(firecrawlDiagnostics.notes, reason);
-
-    if (!firecrawlPayload) {
-      return null;
-    }
-
-    const firecrawlResult = await buildResultFromFirecrawl({
-      cacheMode,
-      deps,
-      firecrawlDiagnostics,
-      markdownRequested,
-      maxCharacters,
-      mediaTranscriptMode,
-      payload: firecrawlPayload,
-      transcriptTimestamps,
-      url,
-      youtubeTranscriptMode,
-    });
-    if (firecrawlResult) {
-      return firecrawlResult;
-    }
-
-    firecrawlDiagnostics.notes = appendNote(
-      firecrawlDiagnostics.notes,
-      'Firecrawl returned empty content',
-    );
-    return null;
-  };
 
   const attemptBird = async (): Promise<ExtractedLinkContent | null> => {
     if (!deps.readTweetWithBird || !twitterStatus) {
@@ -369,7 +269,7 @@ export async function fetchLinkContent(
     try {
       const tweet = await deps.readTweetWithBird({ timeoutMs, url });
       const text = tweet?.text?.trim() ?? '';
-      const tweetClient = tweet?.client === 'xurl' ? 'xurl' : 'bird';
+      const tweetClient = 'bird';
       if (text.length === 0) {
         deps.onProgress?.({
           client: tweetClient,
@@ -420,7 +320,6 @@ export async function fetchLinkContent(
         ),
         description,
         diagnostics: {
-          firecrawl: firecrawlDiagnostics,
           markdown: {
             notes: `${tweetClient} tweet fetch provides plain text`,
             provider: null,
@@ -458,73 +357,6 @@ export async function fetchLinkContent(
     return birdResult;
   }
 
-  const attemptNitter = async (): Promise<string | null> => {
-    if (nitterUrls.length === 0) {
-      return null;
-    }
-    for (const nitterUrl of nitterUrls) {
-      deps.onProgress?.({ kind: 'nitter-start', url: nitterUrl });
-      try {
-        const nitterResult = await fetchHtmlDocument(deps.fetch, nitterUrl, { timeoutMs });
-        const nitterHtml = nitterResult.html;
-        if (!nitterHtml.trim()) {
-          nitterError = new Error(`Nitter returned empty body from ${new URL(nitterUrl).host}`);
-          deps.onProgress?.({ kind: 'nitter-done', ok: false, textBytes: null, url: nitterUrl });
-          continue;
-        }
-        if (isAnubisHtml(nitterHtml)) {
-          nitterError = new Error(
-            `Nitter returned Anubis challenge from ${new URL(nitterUrl).host}`,
-          );
-          deps.onProgress?.({ kind: 'nitter-done', ok: false, textBytes: null, url: nitterUrl });
-          continue;
-        }
-        deps.onProgress?.({
-          kind: 'nitter-done',
-          ok: true,
-          textBytes: Buffer.byteLength(nitterHtml, 'utf8'),
-          url: nitterUrl,
-        });
-        return nitterHtml;
-      } catch (error) {
-        nitterError = error;
-        deps.onProgress?.({ kind: 'nitter-done', ok: false, textBytes: null, url: nitterUrl });
-      }
-    }
-    return null;
-  };
-
-  const nitterHtml = await attemptNitter();
-  if (nitterHtml) {
-    const nitterResult = await buildResultFromHtmlDocument({
-      cacheMode,
-      deps,
-      firecrawlDiagnostics,
-      html: nitterHtml,
-      markdownMode,
-      markdownRequested,
-      maxCharacters,
-      mediaTranscriptMode,
-      readabilityCandidate: null,
-      timeoutMs,
-      transcriptTimestamps,
-      url,
-      youtubeTranscriptMode,
-    });
-    if (!isBlockedTwitterContent(nitterResult.content)) {
-      nitterResult.diagnostics.strategy = 'nitter';
-      return nitterResult;
-    }
-    nitterError = new Error('Nitter returned blocked or empty content');
-  }
-
-  if (firecrawlMode === 'always') {
-    const firecrawlResult = await attemptFirecrawl('Firecrawl forced via options');
-    if (firecrawlResult) {
-      return firecrawlResult;
-    }
-  }
-
   let htmlResult: { html: string; finalUrl: string } | null = null;
   let htmlError: unknown = null;
 
@@ -538,48 +370,16 @@ export async function fetchLinkContent(
   }
 
   if (!htmlResult) {
-    if (!canUseFirecrawl) {
-      throw htmlError instanceof Error ? htmlError : new Error('Failed to fetch HTML document');
-    }
-
-    const firecrawlResult = await attemptFirecrawl('HTML fetch failed; falling back to Firecrawl');
-    if (firecrawlResult) {
-      return firecrawlResult;
-    }
-
-    const firecrawlError = firecrawlDiagnostics.notes
-      ? `; Firecrawl notes: ${firecrawlDiagnostics.notes}`
-      : '';
-    throw new Error(
-      `Failed to fetch HTML document${firecrawlError}${
-        htmlError instanceof Error ? `; HTML error: ${htmlError.message}` : ''
-      }`,
-    );
+    throw htmlError instanceof Error ? htmlError : new Error('Failed to fetch HTML document');
   }
 
   const { html } = htmlResult;
   const effectiveUrl = htmlResult.finalUrl || url;
-  let readabilityCandidate: Awaited<ReturnType<typeof extractReadabilityFromHtml>> | null = null;
-
-  if (firecrawlMode === 'auto' && shouldFallbackToFirecrawl(html)) {
-    readabilityCandidate = await extractReadabilityFromHtml(html, effectiveUrl);
-    const readabilityText = readabilityCandidate?.text
-      ? normalizeForPrompt(readabilityCandidate.text)
-      : '';
-    if (readabilityText.length < MIN_READABILITY_CONTENT_CHARACTERS) {
-      const firecrawlResult = await attemptFirecrawl(
-        'HTML content looked blocked/thin; falling back to Firecrawl',
-      );
-      if (firecrawlResult) {
-        return firecrawlResult;
-      }
-    }
-  }
+  const readabilityCandidate: Awaited<ReturnType<typeof extractReadabilityFromHtml>> | null = null;
 
   const htmlExtracted = await buildResultFromHtmlDocument({
     cacheMode,
     deps,
-    firecrawlDiagnostics,
     html,
     markdownMode,
     markdownRequested,
@@ -597,13 +397,7 @@ export async function fetchLinkContent(
       : birdError
         ? `X CLI failed: ${birdError instanceof Error ? birdError.message : String(birdError)}`
         : 'X CLI returned no text';
-    const nitterNote =
-      nitterUrls.length > 0
-        ? nitterError
-          ? `Nitter failed: ${nitterError instanceof Error ? nitterError.message : String(nitterError)}`
-          : 'Nitter returned no text'
-        : 'Nitter not available';
-    throw new Error(`Unable to fetch tweet content from X. ${birdNote}. ${nitterNote}.`);
+    throw new Error(`Unable to fetch tweet content from X. ${birdNote}.`);
   }
   return htmlExtracted;
 }

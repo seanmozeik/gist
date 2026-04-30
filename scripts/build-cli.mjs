@@ -21,7 +21,7 @@ const gitSha = (() => {
 // ESM binary wrapper.
 // Avoid bundling: CJS deps (e.g. commander) can trigger esbuild's dynamic-require shim in ESM output.
 const wrapper = `#!/usr/bin/env node
-${gitSha ? `if (!process.env.SUMMARIZE_GIT_SHA) process.env.SUMMARIZE_GIT_SHA = ${JSON.stringify(gitSha)}\n` : ''}await import('./esm/cli.js')
+${gitSha ? `if (!process.env.GIST_GIT_SHA) process.env.GIST_GIT_SHA = ${JSON.stringify(gitSha)}\n` : ''}await import('./esm/cli.js')
 `;
 
 await writeFile(path.join(distDir, 'cli.js'), wrapper, 'utf8');

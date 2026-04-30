@@ -11,7 +11,7 @@ import {
 import { createCacheStateFromConfig } from './cache-state.js';
 import { parseCliProviderArg } from './env.js';
 import { isPdfExtension, isTranscribableExtension } from './flows/asset/input.js';
-import { summarizeMediaFile as summarizeMediaFileImpl } from './flows/asset/media.js';
+import { gistMediaFile as gistMediaFileImpl } from './flows/asset/media.js';
 import { createMediaCacheFromConfig } from './media-cache-state.js';
 import { createProgressGate } from './progress.js';
 import { resolveRunContextState } from './run-context.js';
@@ -77,14 +77,12 @@ export async function createRunnerPlan(options: {
     timeoutMs,
     retries,
     preprocessMode,
-    requestedFirecrawlMode,
     markdownMode,
     metricsEnabled,
     metricsDetailed,
     shouldComputeReport,
     markdownModeExplicitlySet,
   } = resolveRunnerFlags({
-    envForRun,
     normalizedArgv,
     programOpts,
     url: inputTarget.kind === 'url' ? inputTarget.url : url,
@@ -121,9 +119,6 @@ export async function createRunnerPlan(options: {
     openaiRequestOptionsOverride,
     configModelLabel,
     openrouterApiKey,
-    firecrawlApiKey,
-    firecrawlConfigured,
-    apifyToken,
     ytDlpPath,
     ytDlpCookiesFromBrowser,
     cliAvailability,
@@ -141,9 +136,9 @@ export async function createRunnerPlan(options: {
   const themeName = resolveThemeNameFromSources({
     cli: (programOpts as { theme?: unknown }).theme,
     config: config?.ui?.theme,
-    env: envForRun.SUMMARIZE_THEME,
+    env: envForRun.GIST_THEME,
   });
-  envForRun.SUMMARIZE_THEME = themeName;
+  envForRun.GIST_THEME = themeName;
   if (!promptOverride && typeof config?.prompt === 'string' && config.prompt.trim().length > 0) {
     promptOverride = config.prompt.trim();
   }
@@ -205,7 +200,6 @@ export async function createRunnerPlan(options: {
     requestedModelLabel,
     isNamedModelSelection,
     isImplicitAutoSelection,
-    wantsFreeNamedModel,
     configForModelSelection,
     isFallbackModel,
   } = resolveModelSelection({ config, configForCli, configPath, envForRun, explicitModelArg });
@@ -260,7 +254,7 @@ export async function createRunnerPlan(options: {
     envForRun,
     execFileImpl,
     llmCalls,
-    localBaseUrl: envForRun.SUMMARIZE_LOCAL_BASE_URL?.trim() ?? config?.local?.baseUrl ?? null,
+    localBaseUrl: envForRun.GIST_LOCAL_BASE_URL?.trim() ?? config?.local?.baseUrl ?? null,
     openaiRequestOptions,
     openaiRequestOptionsOverride,
     openaiUseChatCompletions,
@@ -291,16 +285,16 @@ export async function createRunnerPlan(options: {
     restoreProgressAfterStdout?.();
   };
 
-  const { summarizeAsset, assetInputContext, urlFlowContext } = createRunnerFlowContexts({
+  const { gistAsset, assetInputContext, urlFlowContext } = createRunnerFlowContexts({
     buildReport,
     cacheState,
     clearProgressForStdout,
     clearProgressIfCurrent,
+    estimateCostUsd: metrics.estimateCostUsd,
     flags: {
       configModelLabel,
       configPath,
       extractMode,
-      firecrawlMode: requestedFirecrawlMode,
       forceSummary,
       format,
       json,
@@ -331,15 +325,13 @@ export async function createRunnerPlan(options: {
       videoMode,
       youtubeMode,
     },
+    gistMediaFileImpl,
     io: { env, envForRun, execFileImpl, fetch: trackedFetch, stderr, stdout },
     mediaCache,
     model: {
       allowAutoCliFallback: false,
       apiStatus: {
-        apifyToken,
-        firecrawlApiKey,
-        firecrawlConfigured,
-        localBaseUrl: envForRun.SUMMARIZE_LOCAL_BASE_URL?.trim() ?? config?.local?.baseUrl ?? null,
+        localBaseUrl: envForRun.GIST_LOCAL_BASE_URL?.trim() ?? config?.local?.baseUrl ?? null,
         openrouterApiKey,
         ytDlpCookiesFromBrowser,
         ytDlpPath,
@@ -361,13 +353,10 @@ export async function createRunnerPlan(options: {
       requestedModelInput,
       requestedModelLabel,
       summaryEngine,
-      wantsFreeNamedModel,
     },
-    estimateCostUsd: metrics.estimateCostUsd,
     restoreProgressAfterStdout,
     setClearProgressBeforeStdout,
     setTranscriptionCost,
-    summarizeMediaFileImpl,
     writeViaFooter,
   });
 
@@ -377,19 +366,16 @@ export async function createRunnerPlan(options: {
       await executeRunnerInput({
         extractAssetContext: { env, envForRun, execFileImpl, preprocessMode, timeoutMs },
         extractMode,
-        slidesEnabled: false,
+        gistAsset,
         handleFileInputContext: assetInputContext,
         inputTarget,
         isYoutubeUrl,
         outputExtractedAssetContext: {
           apiStatus: {
-            openrouterApiKey,
-            apifyToken,
-            firecrawlConfigured,
-            firecrawlApiKey: null,
-            ytDlpPath: null,
-            ytDlpCookiesFromBrowser: null,
             localBaseUrl: null,
+            openrouterApiKey,
+            ytDlpCookiesFromBrowser: null,
+            ytDlpPath: null,
           },
           flags: {
             format,
@@ -414,10 +400,9 @@ export async function createRunnerPlan(options: {
         progressEnabled,
         renderSpinnerStatus,
         renderSpinnerStatusWithModel,
-        runUrlFlowContext: urlFlowContext,
 
+        runUrlFlowContext: urlFlowContext,
         stdin: stdin ?? process.stdin,
-        summarizeAsset,
         url,
         withUrlAssetContext: assetInputContext,
       });

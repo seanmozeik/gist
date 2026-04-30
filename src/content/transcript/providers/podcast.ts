@@ -88,7 +88,7 @@ export const fetchTranscript = async (
   };
 
   const transcribe = (request: TranscribeRequest): Promise<TranscriptionResult> =>
-    transcribeMediaUrl({ fetchImpl: options.fetch, notes, progress, env: options.env, ...request });
+    transcribeMediaUrl({ env: options.env, fetchImpl: options.fetch, notes, progress, ...request });
 
   const flow: PodcastFlowContext = {
     attemptedProviders,

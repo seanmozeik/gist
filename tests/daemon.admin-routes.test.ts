@@ -28,10 +28,10 @@ const findFreePort = async (): Promise<number> =>
 
 describe('daemon admin routes', () => {
   it('serves daemon log tail from the extracted admin route handler', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-admin-logs-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-admin-logs-'));
     const port = await findFreePort();
     const token = 'test-token-admin-logs';
-    const configDir = join(home, '.summarize');
+    const configDir = join(home, '.gist');
     const logDir = join(configDir, 'logs');
     const logPath = join(logDir, 'daemon.jsonl');
     mkdirSync(logDir, { recursive: true });
@@ -84,7 +84,7 @@ describe('daemon admin routes', () => {
   });
 
   it('reports tool availability and empty process state through admin routes', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-admin-tools-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-admin-tools-'));
     const port = await findFreePort();
     const token = 'test-token-admin-tools';
     const binDir = join(home, 'bin');

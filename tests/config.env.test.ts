@@ -4,11 +4,11 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { loadSummarizeConfig, mergeConfigEnv } from '../src/config.js';
+import { loadGistConfig, mergeConfigEnv } from '../src/config.js';
 
 const writeConfig = (raw: string) => {
-  const root = mkdtempSync(join(tmpdir(), 'summarize-config-env-'));
-  const configDir = join(root, '.summarize');
+  const root = mkdtempSync(join(tmpdir(), 'gist-config-env-'));
+  const configDir = join(root, '.gist');
   mkdirSync(configDir, { recursive: true });
   const configPath = join(configDir, 'config.json');
   writeFileSync(configPath, raw, 'utf8');
@@ -23,18 +23,18 @@ describe('config env', () => {
       env: { CUSTOM_FLAG: 'enabled', OPENAI_API_KEY: 'sk-config' },
     });
 
-    const result = loadSummarizeConfig({ env: { HOME: root } });
+    const result = loadGistConfig({ env: { HOME: root } });
     expect(result.config?.env).toEqual({ CUSTOM_FLAG: 'enabled', OPENAI_API_KEY: 'sk-config' });
   });
 
   it('throws when env is not an object', () => {
     const { root } = writeJsonConfig({ env: 'nope' });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(/"env" must be an object/i);
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(/"env" must be an object/i);
   });
 
   it('throws when env value is not a string', () => {
     const { root } = writeJsonConfig({ env: { OPENAI_API_KEY: 123 } });
-    expect(() => loadSummarizeConfig({ env: { HOME: root } })).toThrow(
+    expect(() => loadGistConfig({ env: { HOME: root } })).toThrow(
       /"env\.OPENAI_API_KEY" must be a string/i,
     );
   });

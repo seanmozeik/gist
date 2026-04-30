@@ -29,12 +29,12 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('model presets: no silent fallback', () => {
   it('throws instead of returning extracted text when the preset fails', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preset-no-fallback-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preset-no-fallback-'));
     const filePath = join(root, 'input.txt');
     writeFileSync(filePath, 'hello world', 'utf8');
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         models: { free: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] } },
       }),

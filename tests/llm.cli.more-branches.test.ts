@@ -22,10 +22,10 @@ describe('llm/cli extra branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;
@@ -59,10 +59,10 @@ describe('llm/cli extra branches', () => {
         return {
           stdin: {
             end() {
-              /* empty */
+              /* Empty */
             },
             write() {
-              /* empty */
+              /* Empty */
             },
           },
         } as unknown as ChildProcess;

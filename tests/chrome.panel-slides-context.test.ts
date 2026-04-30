@@ -11,7 +11,7 @@ describe('chrome panel slides context', () => {
     const send = vi.fn();
 
     await handlePanelSlidesContextRequest({
-      canSummarizeUrl: () => false,
+      canGistUrl: () => false,
       fetchImpl: vi.fn() as never,
       getActiveTab: vi.fn(async () => null) as never,
       loadSettings: vi.fn(async () => ({ extendedLogging: false, token: '' })) as never,
@@ -43,7 +43,7 @@ describe('chrome panel slides context', () => {
     })) as never;
 
     await handlePanelSlidesContextRequest({
-      canSummarizeUrl: () => true,
+      canGistUrl: () => true,
       fetchImpl,
       getActiveTab: vi.fn(async () => ({
         id: 4,

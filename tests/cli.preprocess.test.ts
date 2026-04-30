@@ -50,15 +50,11 @@ describe('cli preprocess / markitdown integration', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-off-by-format-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-off-by-format-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
-    const execFileMock = vi.fn((file, args, _opts, cb) => {
-      undefined;
-      undefined;
-      cb(new Error('boom'), '', '');
-    });
+    const execFileMock = vi.fn((file, args, _opts, cb) => {});
 
     const run = () =>
       runCli(
@@ -88,7 +84,7 @@ describe('cli preprocess / markitdown integration', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-auto-retry-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-auto-retry-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
@@ -139,15 +135,11 @@ describe('cli preprocess / markitdown integration', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-anthropic-pdf-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-anthropic-pdf-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%PDF minimal\n%%EOF\n', 'utf8'));
 
-    const execFileMock = vi.fn((file, args, _opts, cb) => {
-      undefined;
-      undefined;
-      cb(null, '# Converted\n\nShould not run\n', '');
-    });
+    const execFileMock = vi.fn((file, args, _opts, cb) => {});
 
     const fetchMock = vi.fn(async () => {
       return Response.json(
@@ -197,15 +189,11 @@ describe('cli preprocess / markitdown integration', () => {
     mocks.streamSimple.mockClear();
     process.env.OPENAI_BASE_URL = '';
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-openai-pdf-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-openai-pdf-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%PDF minimal\n%%EOF\n', 'utf8'));
 
-    const execFileMock = vi.fn((file, args, _opts, cb) => {
-      undefined;
-      undefined;
-      cb(null, '# Converted\n\nShould not run\n', '');
-    });
+    const execFileMock = vi.fn((file, args, _opts, cb) => {});
 
     const fetchMock = vi.fn(async () => {
       return Response.json(
@@ -246,7 +234,7 @@ describe('cli preprocess / markitdown integration', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-openai-custom-base-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-openai-custom-base-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%PDF minimal\n%%EOF\n', 'utf8'));
 
@@ -294,15 +282,11 @@ describe('cli preprocess / markitdown integration', () => {
     );
     mocks.streamSimple.mockClear();
 
-    const root = mkdtempSync(join(tmpdir(), 'summarize-preprocess-always-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-preprocess-always-'));
     const pdfPath = join(root, 'test.pdf');
     writeFileSync(pdfPath, Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj\n<<>>\nendobj\n', 'utf8'));
 
-    const execFileMock = vi.fn((file, args, _opts, cb) => {
-      undefined;
-      undefined;
-      cb(null, '# Converted\n\nAlways\n', '');
-    });
+    const execFileMock = vi.fn((file, args, _opts, cb) => {});
 
     const run = () =>
       runCli(

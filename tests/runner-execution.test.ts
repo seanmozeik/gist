@@ -25,6 +25,9 @@ function buildOptions(overrides?: Partial<Parameters<typeof executeRunnerInput>[
       timeoutMs: 1000,
     },
     extractMode: false,
+    gistAsset: vi.fn(async ({ onModelChosen }) => {
+      onModelChosen('openai/gpt-5.4');
+    }),
     handleFileInputContext: {},
     inputTarget: { kind: 'url', url: 'https://example.com' } as never,
     isYoutubeUrl: false,
@@ -64,9 +67,6 @@ function buildOptions(overrides?: Partial<Parameters<typeof executeRunnerInput>[
     runUrlFlowContext: {},
     slidesEnabled: false,
     stdin: process.stdin,
-    summarizeAsset: vi.fn(async ({ onModelChosen }) => {
-      onModelChosen('openai/gpt-5.4');
-    }),
     url: 'https://example.com',
     withUrlAssetContext: {},
     ...overrides,
@@ -80,7 +80,7 @@ describe('runner execution', () => {
 
   it('handles stdin via a temp file and cleans up', async () => {
     const cleanup = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     createTempFileFromStdin.mockResolvedValue({ cleanup, filePath: '/tmp/stdin.txt' });
     handleFileInput.mockResolvedValueOnce(true);
@@ -93,7 +93,7 @@ describe('runner execution', () => {
 
   it('throws when stdin conversion still cannot be handled', async () => {
     const cleanup = vi.fn(async () => {
-      /* empty */
+      /* Empty */
     });
     createTempFileFromStdin.mockResolvedValue({ cleanup, filePath: '/tmp/stdin.txt' });
     handleFileInput.mockResolvedValueOnce(false);
@@ -125,7 +125,7 @@ describe('runner execution', () => {
     expect(runUrlFlow).not.toHaveBeenCalled();
   });
 
-  it('summarizes asset urls and updates spinner with model name', async () => {
+  it('gists asset urls and updates spinner with model name', async () => {
     const spinner = { setText: vi.fn() };
     handleFileInput.mockResolvedValue(false);
     withUrlAsset.mockImplementation(async (_ctx, _url, _isYoutube, fn) => {
@@ -141,8 +141,8 @@ describe('runner execution', () => {
 
     await executeRunnerInput(buildOptions());
 
-    expect(spinner.setText).toHaveBeenCalledWith('Summarizing');
-    expect(spinner.setText).toHaveBeenCalledWith('Summarizing:openai/gpt-5.4');
+    expect(spinner.setText).toHaveBeenCalledWith('Gisting');
+    expect(spinner.setText).toHaveBeenCalledWith('Gisting:openai/gpt-5.4');
     expect(runUrlFlow).not.toHaveBeenCalled();
   });
 
@@ -158,7 +158,7 @@ describe('runner execution', () => {
     });
 
     await expect(executeRunnerInput(buildOptions({ url: null }))).rejects.toThrow(
-      'Only HTTP and HTTPS URLs can be summarized',
+      'Only HTTP and HTTPS URLs can be gisted',
     );
   });
 

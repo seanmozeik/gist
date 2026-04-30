@@ -61,7 +61,7 @@ afterEach(() => {
 
 describe('runUrlFlow slides done hook', () => {
   it('emits ok when slides finish', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-slides-done-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-slides-done-'));
     const url = 'https://www.youtube.com/watch?v=abc123def45';
     const content =
       '<!doctype html><html><head><title>Video</title></head><body>Test</body></html>';
@@ -110,7 +110,7 @@ describe('runUrlFlow slides done hook', () => {
       slides,
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });
@@ -126,7 +126,7 @@ describe('runUrlFlow slides done hook', () => {
   });
 
   it('emits error when slides extraction fails', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-slides-done-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-slides-done-'));
     const url = 'https://www.youtube.com/watch?v=abc123def45';
     const content =
       '<!doctype html><html><head><title>Video</title></head><body>Test</body></html>';
@@ -173,7 +173,7 @@ describe('runUrlFlow slides done hook', () => {
       slides,
       stdoutSink: {
         writeChunk: () => {
-          /* empty */
+          /* Empty */
         },
       },
     });

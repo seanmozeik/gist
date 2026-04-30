@@ -4,11 +4,11 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { NEGATIVE_TTL_MS } from '../packages/core/src/content/index.js';
 import { createCacheStore, type CacheStore } from '../src/cache.js';
+import { NEGATIVE_TTL_MS } from '../src/content/index.js';
 
 /**
- * Regression test for https://github.com/steipete/summarize/issues/114
+ * Regression test for https://github.com/seanmozeik/gist/issues/114
  *
  * When the transcript source is "unavailable" (e.g. Apify timeout), the
  * extract cache entry must use a short TTL (NEGATIVE_TTL_MS) instead of
@@ -62,7 +62,7 @@ describe('extract cache TTL for unavailable transcripts (#114)', () => {
   let storePath: string;
 
   const createStore = async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-extract-ttl-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-extract-ttl-'));
     storePath = join(root, 'cache.sqlite');
     store = await createCacheStore({ maxBytes: 10 * 1024 * 1024, path: storePath });
     return store;

@@ -307,7 +307,7 @@ export async function resolveTwitterCookies({
           : undefined;
     const spec = buildCookiesFromBrowserSpec(source, profile);
     const label = formatBrowserSourceLabel(source, profile);
-    firstCandidate ??= { spec, label };
+    firstCandidate ??= { label, spec };
 
     if (hasCookiesStore(source, profile, runtimePlatform, runtimeHome, env)) {
       cookies.cookiesFromBrowser = spec;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { generateTextWithModelId, streamTextWithModelId } from '../../src/llm/generate-text.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 function shouldSoftSkipLiveError(message: string): boolean {
   return /model.*not found|does not exist|permission|access|unauthorized|forbidden|404|not_found|model_not_found|empty summary|empty response/i.test(
@@ -29,7 +29,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.openaiApiKey) {
         it.skip('requires OPENAI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -59,7 +59,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.openaiApiKey) {
         it.skip('requires OPENAI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -97,7 +97,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.openaiApiKey) {
         it.skip('requires OPENAI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -135,7 +135,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.anthropicApiKey) {
         it.skip('requires ANTHROPIC_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -165,7 +165,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.anthropicApiKey) {
         it.skip('requires ANTHROPIC_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -195,7 +195,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.xaiApiKey) {
         it.skip('requires XAI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
@@ -225,7 +225,7 @@ function shouldSoftSkipLiveError(message: string): boolean {
     async () => {
       if (!apiKeys.googleApiKey) {
         it.skip('requires GEMINI_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }

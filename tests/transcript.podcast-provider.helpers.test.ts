@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { __test__ } from '../packages/core/src/content/transcript/providers/podcast.js';
+import { __test__ } from '../src/content/transcript/providers/podcast.js';
 
 describe('podcast transcript provider - helper branches', () => {
   it('parses and normalizes headers', () => {
@@ -127,7 +127,7 @@ describe('podcast transcript provider - helper branches', () => {
   });
 
   it('downloadToFile throws on non-OK responses and writes when body is missing', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-podcast-dl-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-podcast-dl-'));
     const filePath = join(root, 'episode.bin');
 
     await expect(

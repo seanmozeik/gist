@@ -18,10 +18,10 @@ const noopStream = () =>
 
 describe('cli missing API key errors', () => {
   it('errors when a preset uses OpenRouter but OPENROUTER_API_KEY is missing', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-missing-key-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-missing-key-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
     writeFileSync(
-      join(root, '.summarize', 'config.json'),
+      join(root, '.gist', 'config.json'),
       JSON.stringify({
         models: {
           free: { mode: 'auto', rules: [{ candidates: ['openrouter/openai/gpt-5-mini'] }] },

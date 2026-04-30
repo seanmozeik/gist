@@ -6,7 +6,7 @@ import { createMetricsController } from '../apps/chrome-extension/src/entrypoint
 
 class MockResizeObserver {
   observe() {
-    /* empty */
+    /* Empty */
   }
 }
 

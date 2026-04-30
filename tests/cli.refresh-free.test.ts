@@ -27,8 +27,8 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('refresh-free', () => {
   it('writes models.free and shows total runs (1 + runs)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -59,7 +59,7 @@ describe('refresh-free', () => {
     });
 
     expect(stderr.getText()).toMatch(/Refresh Free: found 2 :free models; testing \(runs=3/i);
-    const configPath = join(root, '.summarize', 'config.json');
+    const configPath = join(root, '.gist', 'config.json');
     const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
       models?: { free?: { rules?: { candidates?: string[] }[] } };
     };
@@ -68,8 +68,8 @@ describe('refresh-free', () => {
   });
 
   it('accepts --runs 0 (no refine pass)', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -109,8 +109,8 @@ describe('refresh-free', () => {
         return { text: 'OK' };
       });
 
-      const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-      mkdirSync(join(root, '.summarize'), { recursive: true });
+      const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+      mkdirSync(join(root, '.gist'), { recursive: true });
 
       const stdout = collectStream();
       const stderr = collectStream();
@@ -142,8 +142,8 @@ describe('refresh-free', () => {
   });
 
   it('filters models below default min params and prints skip list in --verbose', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -179,7 +179,7 @@ describe('refresh-free', () => {
     expect(stderr.getText()).toMatch(/filtered 1\/2 small models \(<27B\)/i);
     expect(stderr.getText()).toMatch(/skip acme\/tiny-13b:free/i);
     expect(stdout.getText()).toMatch(/Wrote .*config\.json/i);
-    const configPath = join(root, '.summarize', 'config.json');
+    const configPath = join(root, '.gist', 'config.json');
     const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
       models?: { free?: { rules?: { candidates?: string[] }[] } };
     };
@@ -188,8 +188,8 @@ describe('refresh-free', () => {
   });
 
   it('caps selection to 10 candidates', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -219,7 +219,7 @@ describe('refresh-free', () => {
     });
 
     expect(stderr.getText()).toMatch(/selected 10 candidates/i);
-    const configPath = join(root, '.summarize', 'config.json');
+    const configPath = join(root, '.gist', 'config.json');
     const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
       models?: { free?: { rules?: { candidates?: string[] }[] } };
     };
@@ -231,8 +231,8 @@ describe('refresh-free', () => {
     vi.useFakeTimers();
     try {
       vi.setSystemTime(new Date('2025-01-01T00:00:00Z'));
-      const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-      mkdirSync(join(root, '.summarize'), { recursive: true });
+      const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+      mkdirSync(join(root, '.gist'), { recursive: true });
 
       const stdout = collectStream();
       const stderr = collectStream();
@@ -261,7 +261,7 @@ describe('refresh-free', () => {
       });
 
       expect(stderr.getText()).toMatch(/filtered 1\/2 old models \(>180d\)/i);
-      const configPath = join(root, '.summarize', 'config.json');
+      const configPath = join(root, '.gist', 'config.json');
       const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
         models?: { free?: { rules?: { candidates?: string[] }[] } };
       };
@@ -286,10 +286,10 @@ describe('refresh-free', () => {
   });
 
   it('sets config model=free with --set-default', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
-    const configPath = join(root, '.summarize', 'config.json');
+    const configPath = join(root, '.gist', 'config.json');
     writeFileSync(
       configPath,
       JSON.stringify({ model: 'auto', models: { keep: { id: 'openai/gpt-5.2' } } }, null, 2),
@@ -324,8 +324,8 @@ describe('refresh-free', () => {
   });
 
   it('prints metadata (params, ctx, out, modality) in Selected section', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-refresh-free-'));
-    mkdirSync(join(root, '.summarize'), { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-refresh-free-'));
+    mkdirSync(join(root, '.gist'), { recursive: true });
 
     const stdout = collectStream();
     const stderr = collectStream();

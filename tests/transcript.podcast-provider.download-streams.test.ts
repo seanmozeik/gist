@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { MAX_OPENAI_UPLOAD_BYTES } from '../packages/core/src/transcription/whisper.js';
+import { MAX_OPENAI_UPLOAD_BYTES } from '../src/transcription/whisper.js';
 
 type SpawnPlan = 'ffmpeg-ok' | 'ffmpeg-missing';
 
@@ -42,7 +42,7 @@ async function importPodcastProviderWithFfmpeg(plan: SpawnPlan) {
     },
   }));
 
-  return import('../packages/core/src/content/transcript/providers/podcast.js');
+  return import('../src/content/transcript/providers/podcast.js');
 }
 
 const baseOptions = {

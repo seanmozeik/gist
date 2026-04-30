@@ -273,40 +273,13 @@ function formatProvider(hint: string): string {
   if (hint === 'onnx') {
     return 'ONNX (Parakeet/Canary)';
   }
-  const labelForPart = (part: string, chained: boolean) => {
-    if (part === 'groq') {
-      return 'Whisper/Groq';
-    }
-    if (part === 'assemblyai') {
-      return 'AssemblyAI';
-    }
-    if (part === 'gemini') {
-      return 'Gemini';
-    }
-    if (part === 'openai') {
-      return 'Whisper/OpenAI';
-    }
-    if (part === 'fal') {
-      return chained ? 'FAL' : 'Whisper/FAL';
-    }
-    return part;
-  };
-  if (hint === 'groq') {
-    return 'Whisper/Groq';
+  if (hint === 'sidecar') {
+    return 'Sidecar';
   }
-  if (hint === 'assemblyai') {
-    return 'AssemblyAI';
+  if (hint === 'openrouter') {
+    return 'OpenRouter';
   }
-  if (hint === 'gemini') {
-    return 'Gemini';
-  }
-  if (hint === 'openai') {
-    return 'Whisper/OpenAI';
-  }
-  if (hint === 'fal') {
-    return 'Whisper/FAL';
-  }
-  return 'Whisper';
+  return 'Transcription';
 }
 
 function firstChainPart(value: string): string;

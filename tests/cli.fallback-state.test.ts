@@ -11,7 +11,7 @@ import {
 
 describe('run/cli-fallback-state', () => {
   it('stores and restores the last successful CLI provider', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-cli-fallback-state-'));
+    const home = mkdtempSync(join(tmpdir(), 'gist-cli-fallback-state-'));
     expect(await readLastSuccessfulCliProvider({ HOME: home })).toBeNull();
 
     await writeLastSuccessfulCliProvider({ env: { HOME: home }, provider: 'claude' });
@@ -19,14 +19,14 @@ describe('run/cli-fallback-state', () => {
   });
 
   it('supports USERPROFILE when HOME is unset', async () => {
-    const userProfile = mkdtempSync(join(tmpdir(), 'summarize-cli-fallback-profile-'));
+    const userProfile = mkdtempSync(join(tmpdir(), 'gist-cli-fallback-profile-'));
     await writeLastSuccessfulCliProvider({ env: { USERPROFILE: userProfile }, provider: 'agent' });
     expect(await readLastSuccessfulCliProvider({ USERPROFILE: userProfile })).toBe('agent');
   });
 
   it('ignores invalid stored providers', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-cli-fallback-invalid-'));
-    const dir = join(home, '.summarize');
+    const home = mkdtempSync(join(tmpdir(), 'gist-cli-fallback-invalid-'));
+    const dir = join(home, '.gist');
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'cli-state.json'), JSON.stringify({ lastSuccessfulProvider: 'nope' }));
     expect(await readLastSuccessfulCliProvider({ HOME: home })).toBeNull();

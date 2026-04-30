@@ -47,8 +47,8 @@ console.log(JSON.stringify({ usage: { input_tokens: 1, output_tokens: 1 } }));
 };
 
 describe('daemon redirect e2e', () => {
-  it('summarizes with the final redirect URL in the prompt', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'summarize-daemon-redirects-'));
+  it('gists with the final redirect URL in the prompt', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'gist-daemon-redirects-'));
     const port = await findFreePort();
     const token = 'test-token-1234567890';
     const codexPath = createFakeCodex(home);
@@ -59,10 +59,7 @@ describe('daemon redirect e2e', () => {
         headers: { 'content-type': 'text/html' },
         status: 200,
       });
-      Object.defineProperty(response, 'url', {
-        configurable: true,
-        value: 'https://summarize.sh/',
-      });
+      Object.defineProperty(response, 'url', { configurable: true, value: 'https://gist.sh/' });
       return response;
     };
 
@@ -96,7 +93,7 @@ describe('daemon redirect e2e', () => {
     });
     const serverPromise = runDaemonServer({
       config: { installedAt: new Date().toISOString(), port, token, version: 1 },
-      env: { HOME: home, SUMMARIZE_CLI_CODEX: codexPath, SUMMARIZE_MODEL: 'cli/codex' },
+      env: { GIST_CLI_CODEX: codexPath, GIST_MODEL: 'cli/codex', HOME: home },
       fetchImpl: fetchImpl as typeof fetch,
       onListening: () => resolveReady?.(),
       onSessionEvent: (event, sessionId) => {
@@ -124,7 +121,7 @@ describe('daemon redirect e2e', () => {
     await ready;
 
     try {
-      const runRes = await fetch(`http://127.0.0.1:${port}/v1/summarize`, {
+      const runRes = await fetch(`http://127.0.0.1:${port}/v1/gist`, {
         body: JSON.stringify({
           language: 'auto',
           length: 'short',
@@ -155,7 +152,7 @@ describe('daemon redirect e2e', () => {
       }
 
       const summary = await chunkPromise;
-      expect(summary).toContain('https://summarize.sh/');
+      expect(summary).toContain('https://gist.sh/');
       expect(summary).not.toContain('https://t.co/abc');
     } finally {
       clearTimeout(timeoutId);

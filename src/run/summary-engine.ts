@@ -19,7 +19,7 @@ import {
   isStreamingTimeoutError,
   mergeStreamingChunk,
 } from './streaming.js';
-import { resolveModelIdForLlmCall, summarizeWithModelId } from './summary-llm.js';
+import { resolveModelIdForLlmCall, gistWithModelId } from './summary-llm.js';
 import { isRichTty, markdownRenderWidth, supportsColor } from './terminal.js';
 import type { ModelAttempt, ModelMeta } from './types.js';
 
@@ -81,7 +81,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     if (requiredEnv === 'OPENROUTER_API_KEY') {
       return Boolean(deps.apiKeys.openrouterApiKey);
     }
-    // null = no env var required (local sidecar)
+    // Null = no env var required (local sidecar)
     if (requiredEnv === null) {
       return true;
     }
@@ -103,7 +103,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     }
 
     if (attempt.requiredEnv === null) {
-      return `Local sidecar not configured for model ${attempt.userModelId}. Set SUMMARIZE_LOCAL_BASE_URL or ~/.summarize/config.json local.baseUrl.`;
+      return `Local sidecar not configured for model ${attempt.userModelId}. Set GIST_LOCAL_BASE_URL or ~/.gist/config.json local.baseUrl.`;
     }
 
     return `Missing ${attempt.requiredEnv} for model ${attempt.userModelId}. Set the env var or choose a different --model.`;
@@ -171,8 +171,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           completionTokens: result.usage?.completionTokens ?? 0,
           costUsd: result.costUsd ?? null,
           model: attempt.userModelId,
-          provider: 'cli',
           promptTokens: result.usage?.promptTokens ?? 0,
+          provider: 'cli',
         });
       }
       return {
@@ -238,7 +238,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
     }
 
     if (!streamingEnabledForCall) {
-      const result = await summarizeWithModelId({
+      const result = await gistWithModelId({
         apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
         fetchImpl: deps.trackedFetch,
         forceChatCompletions,
@@ -257,8 +257,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       deps.llmCalls.push({
         completionTokens: result.usage?.completionTokens ?? 0,
         model: result.canonicalModelId,
-        provider: result.provider,
         promptTokens: result.usage?.promptTokens ?? 0,
+        provider: result.provider,
       });
       const summary = result.text.trim();
       if (!summary) {
@@ -311,7 +311,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           deps.verboseColor,
           deps.envForRun,
         );
-        const result = await summarizeWithModelId({
+        const result = await gistWithModelId({
           apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
           fetchImpl: deps.trackedFetch,
           forceChatCompletions,
@@ -330,8 +330,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         deps.llmCalls.push({
           completionTokens: result.usage?.completionTokens ?? 0,
           model: result.canonicalModelId,
-          provider: result.provider,
           promptTokens: result.usage?.promptTokens ?? 0,
+          provider: result.provider,
         });
         summary = result.text;
         streamResult = null;
@@ -343,7 +343,7 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
           deps.verboseColor,
           deps.envForRun,
         );
-        const result = await summarizeWithModelId({
+        const result = await gistWithModelId({
           apiKeys: { openrouterApiKey: deps.apiKeys.openrouterApiKey },
           fetchImpl: deps.trackedFetch,
           forceOpenRouter: attempt.forceOpenRouter,
@@ -360,8 +360,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
         deps.llmCalls.push({
           completionTokens: result.usage?.completionTokens ?? 0,
           model: result.canonicalModelId,
-          provider: result.provider,
           promptTokens: result.usage?.promptTokens ?? 0,
+          provider: result.provider,
         });
         summary = result.text;
         streamResult = null;
@@ -461,8 +461,8 @@ export function createSummaryEngine(deps: SummaryEngineDeps) {
       deps.llmCalls.push({
         completionTokens: usage?.completionTokens ?? 0,
         model: streamResult.canonicalModelId,
-        provider: streamResult.provider,
         promptTokens: usage?.promptTokens ?? 0,
+        provider: streamResult.provider,
       });
       summary = streamed;
       if (shouldStreamSummaryToStdout) {

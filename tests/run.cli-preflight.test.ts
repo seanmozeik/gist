@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   buildRefreshFreeHelp: vi.fn(() => 'REFRESH_FREE_HELP'),
   handleDaemonRequest: vi.fn(async () => false),
   refreshFree: vi.fn(async () => {
-    /* empty */
+    /* Empty */
   }),
 }));
 
@@ -48,7 +48,7 @@ describe('run/cli-preflight', () => {
     expect(
       handleHelpRequest({
         envForRun: {},
-        normalizedArgv: ['summarize', '--help'],
+        normalizedArgv: ['gist', '--help'],
         stderr: stderr.stream,
         stdout: stdout.stream,
       }),

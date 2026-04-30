@@ -2,7 +2,7 @@
 
 ## Goal
 
-Strip summarize down to a single-package CLI focused on:
+Strip gist down to a single-package CLI focused on:
 
 - **OpenRouter** for LLM summarization
 - **Local sidecar** (`local/` prefix) for models at your FastAPI server (port 8000)
@@ -53,7 +53,7 @@ Strip summarize down to a single-package CLI focused on:
 #### Direct Provider Integrations — REMOVED ✅
 
 - Z.AI, NVIDIA, xAI, Anthropic, Google, OpenAI as native providers all removed
-- `SummarizeConfig` simplified: only `openrouter`, `apify`, `firecrawl`, `local`, `cli` sections remain
+- `GistConfig` simplified: only `openrouter`, `apify`, `firecrawl`, `local`, `cli` sections remain
 - Config section parsers updated (removed old provider parsers)
 - Summary engine simplified to only use OpenRouter + sidecar config
 
@@ -62,7 +62,7 @@ Strip summarize down to a single-package CLI focused on:
 - All transcription providers deleted: assemblyai, fal, gemini, groq, openai, whisper-cpp, onnx
 - Created `src/transcription/endpoint.ts` for local sidecar `/transcribe` endpoint
 - Media flows updated to use sidecar transcription only
-- `TranscriptionConfig` simplified to only check for `SUMMARIZE_LOCAL_BASE_URL`
+- `TranscriptionConfig` simplified to only check for `GIST_LOCAL_BASE_URL`
 
 #### Bird CLI Wrapper — KEPT ✅
 
@@ -122,7 +122,7 @@ Strip summarize down to a single-package CLI focused on:
 
 - Created `src/pdf/convert.ts` — POST to `${baseUrl}/convert-pdf` (multipart upload)
 - Sidecar uses marker-v1 model for state-of-the-art PDF → markdown conversion
-- `preprocess.ts`: prefers sidecar `/convert-pdf` for PDFs when `SUMMARIZE_LOCAL_BASE_URL` set
+- `preprocess.ts`: prefers sidecar `/convert-pdf` for PDFs when `GIST_LOCAL_BASE_URL` set
 - Falls back to `uvx/markitdown` for non-PDF files and when no sidecar available
 - Added `localBaseUrl` to `AssetPreprocessContext` interface
 - Updated `summary.ts` asset flow to pass `localBaseUrl` through
@@ -208,7 +208,7 @@ if (parsed.provider === 'openrouter') {
 ### Config Shape
 
 ```typescript
-interface SummarizeConfig {
+interface GistConfig {
   model?: ModelConfig;
   local?: LocalConfig; // sidecar config
   openrouter?: OpenRouterConfig;

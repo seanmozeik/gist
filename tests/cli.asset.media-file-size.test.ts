@@ -45,8 +45,8 @@ function makeContext(): AssetSummaryContext {
     configForModelSelection: null,
     desiredOutputTokens: null,
     env: {
+      GIST_WHISPER_CPP_BINARY: '/usr/bin/whisper-cli',
       OPENAI_API_KEY: 'test-key',
-      SUMMARIZE_WHISPER_CPP_BINARY: '/usr/bin/whisper-cli',
       YT_DLP_PATH: 'yt-dlp',
     },
     envForAuto: {},
@@ -95,16 +95,16 @@ function makeContext(): AssetSummaryContext {
   };
 }
 
-describe('summarizeMediaFile size limits', () => {
+describe('gistMediaFile size limits', () => {
   it('rejects local media larger than 2GB', async () => {
     const hugeSize = 2 * 1024 * 1024 * 1024 + 1;
     statSync.mockReturnValue({ mtimeMs: 123, size: hugeSize });
 
-    const { summarizeMediaFile } = await import('../src/run/flows/asset/media.js');
+    const { gistMediaFile } = await import('../src/run/flows/asset/media.js');
     const ctx = makeContext();
 
     await expect(
-      summarizeMediaFile(ctx, {
+      gistMediaFile(ctx, {
         attachment: {
           bytes: new Uint8Array(),
           filename: 'huge.mp3',

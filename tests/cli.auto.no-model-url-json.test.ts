@@ -9,7 +9,7 @@ import { runCli } from '../src/run.js';
 
 describe('--model auto no-model-url-json', () => {
   it('prints JSON output with llm=null when all model calls are skipped', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-auto-no-model-url-json-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-auto-no-model-url-json-'));
     const html = `<!doctype html><html><head><title>Ok</title></head><body><article><p>${'A'.repeat(
       2000,
     )}</p></article></body></html>`;

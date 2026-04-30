@@ -8,13 +8,13 @@ import {
 const urls = {
   shaArm: 'arm-sha',
   shaX64: 'x64-sha',
-  urlArm: 'https://example.com/summarize-macos-arm64.tar.gz',
-  urlX64: 'https://example.com/summarize-macos-x64.tar.gz',
+  urlArm: 'https://example.com/gist-macos-arm64.tar.gz',
+  urlX64: 'https://example.com/gist-macos-x64.tar.gz',
 };
 
 describe('updateFormulaForMacArtifacts', () => {
   it('updates existing dual-arch formula blocks', () => {
-    const input = `class Summarize < Formula
+    const input = `class Gist < Formula
   on_arm do
     url "https://old.example/arm.tgz"
     sha256 "old-arm"
@@ -41,8 +41,8 @@ end
   });
 
   it('converts arm64-only formulas to macOS-only dual-arch blocks', () => {
-    const input = `class Summarize < Formula
-  desc "summarize"
+    const input = `class Gist < Formula
+  desc "gist"
   homepage "https://example.com"
   url "https://old.example/arm.tgz"
   sha256 "old-arm"
@@ -65,7 +65,7 @@ end
   });
 
   it('rewrites fallback formulas to a canonical macOS-only shape', () => {
-    const input = `class Summarize < Formula
+    const input = `class Gist < Formula
   url "https://old.example/default.tgz"
   sha256 "old-default"
 end

@@ -27,26 +27,11 @@ export function createWebsiteProgress({
   const styleDim = (text: string) => (theme ? theme.dim(text) : text);
   const renderStatus = (label: string, detail: string) =>
     theme ? `${styleLabel(label)}${styleDim(detail)}` : `${label}${detail}`;
-  const renderTweetCliLabel = (client?: 'xurl' | 'bird' | null) =>
-    client === 'xurl' ? 'Xurl' : client === 'bird' ? 'Bird' : 'X';
+  const renderTweetCliLabel = (client?: 'bird' | null) => (client === 'bird' ? 'Bird' : 'X');
 
   const stopAll = () => {
     fetchRenderer.stop();
     transcriptRenderer.stop();
-  };
-
-  const formatFirecrawlReason = (reason: string) => {
-    const lower = reason.toLowerCase();
-    if (lower.includes('forced')) {
-      return 'forced';
-    }
-    if (lower.includes('html fetch failed')) {
-      return 'fallback: HTML fetch failed';
-    }
-    if (lower.includes('blocked') || lower.includes('thin')) {
-      return 'fallback: blocked/thin HTML';
-    }
-    return reason;
   };
 
   return {
@@ -68,40 +53,6 @@ export function createWebsiteProgress({
           return;
         }
         spinner.setText(renderStatus(label, ': failed; fallback…'));
-        return;
-      }
-
-      if (event.kind === 'nitter-start') {
-        stopAll();
-        spinner.setText(renderStatus('Nitter', ': fetching…'));
-        return;
-      }
-
-      if (event.kind === 'nitter-done') {
-        stopAll();
-        if (event.ok && typeof event.textBytes === 'number') {
-          spinner.setText(renderStatus('Nitter', `: got ${formatBytes(event.textBytes)}…`));
-          return;
-        }
-        spinner.setText(renderStatus('Nitter', ': failed; fallback…'));
-        return;
-      }
-
-      if (event.kind === 'firecrawl-start') {
-        stopAll();
-        const reason = event.reason ? formatFirecrawlReason(event.reason) : '';
-        const suffix = reason ? ` (${reason})` : '';
-        spinner.setText(renderStatus('Firecrawl', `: scraping${suffix}…`));
-        return;
-      }
-
-      if (event.kind === 'firecrawl-done') {
-        stopAll();
-        if (event.ok && typeof event.markdownBytes === 'number') {
-          spinner.setText(renderStatus('Firecrawl', `: got ${formatBytes(event.markdownBytes)}…`));
-          return;
-        }
-        spinner.setText(renderStatus('Firecrawl', ': no content; fallback…'));
         return;
       }
 

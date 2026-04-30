@@ -46,9 +46,11 @@ export async function transcribeMediaUrl({
   const startInfo = await resolveTranscriptionStartInfo({ env });
   if (!startInfo.availability.hasAnyProvider) {
     return {
-      text: null,
+      error: new Error(
+        'No transcription provider available. Set GIST_LOCAL_BASE_URL or OPENROUTER_API_KEY.',
+      ),
       provider: null,
-      error: new Error('No transcription provider available. Set SUMMARIZE_LOCAL_BASE_URL.'),
+      text: null,
     };
   }
 
@@ -72,7 +74,7 @@ export async function transcribeMediaUrl({
     url: progress.url,
   });
 
-  const tmpFile = join(tmpdir(), `summarize-podcast-${crypto.randomUUID()}.bin`);
+  const tmpFile = join(tmpdir(), `gist-podcast-${crypto.randomUUID()}.bin`);
   try {
     const downloadedBytes = await downloadToFile(fetchImpl, url, tmpFile, {
       onProgress: (nextDownloadedBytes) =>
@@ -118,11 +120,11 @@ export async function transcribeMediaUrl({
     };
 
     const transcript = await transcribeMediaFileWithWhisper({
-      filePath: tmpFile,
-      mediaType,
-      filename,
-      onProgress,
       env,
+      filePath: tmpFile,
+      filename,
+      mediaType,
+      onProgress,
     });
     if (transcript.notes.length > 0) {
       notes.push(...transcript.notes);
@@ -130,7 +132,7 @@ export async function transcribeMediaUrl({
     return { error: transcript.error, provider: transcript.provider, text: transcript.text };
   } finally {
     await fs.unlink(tmpFile).catch(() => {
-      /* empty */
+      /* Empty */
     });
   }
 }
@@ -202,12 +204,12 @@ export async function downloadToFile(
       options?.onProgress?.(downloadedBytes);
     } finally {
       await reader.cancel().catch(() => {
-        /* empty */
+        /* Empty */
       });
     }
   } finally {
     await handle.close().catch(() => {
-      /* empty */
+      /* Empty */
     });
   }
   return downloadedBytes;

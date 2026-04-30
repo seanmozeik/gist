@@ -6,19 +6,19 @@ read_when:
 
 # LLM / summarization mode
 
-By default `summarize` will call an LLM using **direct provider API keys**. When CLI tools are
+By default `gist` will call an LLM using **direct provider API keys**. When CLI tools are
 installed, auto mode can use local CLI models via `cli.enabled` or implicit auto CLI fallback
 (`cli.autoFallback`; see `docs/cli.md`).
 
 ## Defaults
 
 - Default model: `auto`
-- Override with `SUMMARIZE_MODEL`, config file (`model`), or `--model`.
+- Override with `GIST_MODEL`, config file (`model`), or `--model`.
 
 ## Env
 
-- `.env` (optional): when running the CLI, `summarize` also reads `.env` in the current working directory and merges it into the environment (real env vars win).
-- `~/.summarize/config.json` `env` (optional): fallback env defaults when process env is missing/blank.
+- `.env` (optional): when running the CLI, `gist` also reads `.env` in the current working directory and merges it into the environment (real env vars win).
+- `~/.gist/config.json` `env` (optional): fallback env defaults when process env is missing/blank.
 - `XAI_API_KEY` (required for `xai/...` models)
 - `XAI_BASE_URL` (optional; override xAI API endpoint)
 - `OPENAI_API_KEY` (required for `openai/...` models)
@@ -34,7 +34,7 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
 - `GOOGLE_BASE_URL` / `GEMINI_BASE_URL` (optional; override Google API endpoint)
 - `ANTHROPIC_API_KEY` (required for `anthropic/...` models)
 - `ANTHROPIC_BASE_URL` (optional; override Anthropic API endpoint)
-- `SUMMARIZE_MODEL` (optional; overrides default model selection)
+- `GIST_MODEL` (optional; overrides default model selection)
 - `CLAUDE_PATH` / `CODEX_PATH` / `GEMINI_PATH` / `AGENT_PATH` / `OPENCLAW_PATH` / `OPENCODE_PATH` (optional; override CLI binary paths)
 
 ## Flags
@@ -84,7 +84,7 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
   - This is _soft guidance_ to the model (no hard truncation).
   - Minimum numeric value: 50 chars.
   - Built-in default: `xl`.
-  - Config default: `output.length` in `~/.summarize/config.json`.
+  - Config default: `output.length` in `~/.gist/config.json`.
   - Output format is Markdown; use short paragraphs and only add bullets when they improve scanability.
 - `--force-summary`
   - Always run the LLM even when extracted content is shorter than the requested length.
@@ -99,7 +99,7 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
 - `--fast`
   - Shorthand for `--service-tier fast` on OpenAI models.
 - `--service-tier default|fast|priority|flex`
-  - OpenAI service tier override. `fast` is the summarize-facing alias for OpenAI `priority`; `default` sends no service tier.
+  - OpenAI service tier override. `fast` is the gist-facing alias for OpenAI `priority`; `default` sends no service tier.
 - `--retries <count>`
   - LLM retry attempts on timeout (default: 1).
 - `--json` (includes prompt + summary in one JSON object)

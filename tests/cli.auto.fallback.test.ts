@@ -71,10 +71,10 @@ describe('cli auto fallback behavior', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-auto-fallback-'));
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-auto-fallback-'));
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
-      join(tempRoot, '.summarize', 'config.json'),
+      join(tempRoot, '.gist', 'config.json'),
       JSON.stringify({
         model: {
           mode: 'auto',
@@ -133,10 +133,10 @@ describe('cli auto fallback behavior', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const tempRoot = mkdtempSync(join(tmpdir(), 'summarize-auto-fallback-'));
-    mkdirSync(join(tempRoot, '.summarize'), { recursive: true });
+    const tempRoot = mkdtempSync(join(tmpdir(), 'gist-auto-fallback-'));
+    mkdirSync(join(tempRoot, '.gist'), { recursive: true });
     writeFileSync(
-      join(tempRoot, '.summarize', 'config.json'),
+      join(tempRoot, '.gist', 'config.json'),
       JSON.stringify({
         model: {
           mode: 'auto',

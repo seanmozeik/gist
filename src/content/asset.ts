@@ -192,7 +192,7 @@ export function resolveInputTarget(raw: string): InputTarget {
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('Only HTTP and HTTPS URLs can be summarized');
+    throw new Error('Only HTTP and HTTPS URLs can be gisted');
   }
   // Preserve user input (do not canonicalize like adding trailing slashes),
   // But apply our minimal normalization fixes (e.g. `\\?` -> `?`).

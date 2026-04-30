@@ -1,29 +1,26 @@
-# Summarize Guardrails
+# Gist Guardrails
 
-- Hard rule: single source of truth = `~/Projects/summarize`; never commit in `vendor/summarize` (treat it as a read-only checkout).
+- Hard rule: single source of truth = `~/Projects/gist`; never commit in `vendor/gist` (treat it as a read-only checkout).
 - Note: multiple agents often work in this folder. If you see files/changes you do not recognize, ignore them and list them at the end.
 
 ## Workspace layout
 
-- Monorepo (bun workspace).
-- Packages:
-  - `@steipete/summarize` = CLI + UX (TTY/progress/streaming). Depends on core.
-  - `@steipete/summarize-core` (`packages/core`) = library surface for programmatic use (Sweetistics etc). No CLI entrypoints.
-- Versioning: lockstep versions; publish order: core first, then CLI (`scripts/release.sh` / `RELEASING.md`).
+- Single-package Bun/TypeScript CLI.
+- Package:
+  - `@seanmozeik/gist` = CLI + library exports for extraction, prompts, TTY/progress, and streaming.
+- Product target:
+  - Agent-friendly CLI: paste a URL, local path, or stdin and get extracted text or a summary.
+  - Keep broad source support: articles/web pages, YouTube, Twitter/X, podcasts/RSS/audio, remote assets, local files, and stdin.
+  - Keep model backends simple: OpenRouter, local sidecar (`local/...`), and CLI providers (`claude`, `codex`, `gemini`, `agent`).
+  - Do not resurrect Chrome extension, daemon, slides, direct native model providers, local model downloads, or pricing/cost lookup.
 - Dev:
-  - Build: `bun run build` (builds core first)
+  - Build: `bun run build`
   - Gate: `bun run check`
-  - Import from apps: prefer `@steipete/summarize-core` to avoid pulling CLI-only deps.
-- Daemon: restart with `bun run summarize daemon restart`; verify via `bun run summarize daemon status`.
-- Rebuild (extension + daemon): run **both** in order:
-  1. `bun -C apps/chrome-extension run build`
-  2. `bun run summarize daemon restart`
-- Extension tests:
-  - `bun -C apps/chrome-extension run test:chrome` = supported automated path.
-  - Firefox Playwright extension tests are not reliable (`moz-extension://` limitation); default `test:firefox` skips.
-  - Use `bun -C apps/chrome-extension run test:firefox:force` only for explicit diagnostics.
+  - Typecheck: `bun run typecheck`
+  - CLI smoke: `bun src/cli.ts --help`
+  - Tests exist but are currently stale/noisy; prefer build/typecheck and focused smoke checks unless the task is specifically test cleanup.
 - Commits: use `committer "type: message" <files...>` (Conventional Commits).
-- Patches: `patches/@zag-js__preact@1.40.0.patch` adds missing `@zagjs/shared` exports. Bun applies via `patchedDependencies` in package.json (same as pnpm).
+- `packages/core` has been deleted. Keep this as a single-package CLI/library unless the product shape changes deliberately.
 
 ## Code exploration — prefer `ast-outline` over full reads
 

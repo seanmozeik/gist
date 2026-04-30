@@ -6,21 +6,21 @@ read_when:
 
 # NVIDIA Parakeet/Canary ONNX transcription
 
-Summarize can now run local transcription through NVIDIA's Parakeet-TDT 0.6B-v3 or Canary 1B-v2 ONNX exports by shelling out to a user-provided CLI. Auto selection prefers ONNX when configured; you can still force Whisper or a specific ONNX model.
+Gist can now run local transcription through NVIDIA's Parakeet-TDT 0.6B-v3 or Canary 1B-v2 ONNX exports by shelling out to a user-provided CLI. Auto selection prefers ONNX when configured; you can still force Whisper or a specific ONNX model.
 
 ## How to enable
 
-1. Install a CLI capable of running the ONNX models (e.g. `sherpa-onnx` or a custom wrapper). Homebrew may not have a formula; use upstream binaries or build from source if needed. The CLI must emit the transcribed text on stdout and accept a single WAV input path. **Summarize now downloads the Hugging Face model files automatically on first use** into the cache (see below), so your command template can reference the provided paths.
+1. Install a CLI capable of running the ONNX models (e.g. `sherpa-onnx` or a custom wrapper). Homebrew may not have a formula; use upstream binaries or build from source if needed. The CLI must emit the transcribed text on stdout and accept a single WAV input path. **Gist now downloads the Hugging Face model files automatically on first use** into the cache (see below), so your command template can reference the provided paths.
 2. Set one (or both) command templates:
 
 - Recommended (no shell): provide a JSON array (command + args):
-  - `SUMMARIZE_ONNX_PARAKEET_CMD='["sherpa-onnx", "...", "--tokens", "{vocab}", "--offline-ctc-model", "{model}", "--input-wav", "{input}"]'`
-  - `SUMMARIZE_ONNX_CANARY_CMD='["my-canary-wrapper", "{model_dir}", "{input}"]'`
-- Shell string (advanced): `SUMMARIZE_ONNX_PARAKEET_CMD="sherpa-onnx ... --tokens {vocab} --offline-ctc-model {model} --input-wav {input}"`
+  - `GIST_ONNX_PARAKEET_CMD='["sherpa-onnx", "...", "--tokens", "{vocab}", "--offline-ctc-model", "{model}", "--input-wav", "{input}"]'`
+  - `GIST_ONNX_CANARY_CMD='["my-canary-wrapper", "{model_dir}", "{input}"]'`
+- Shell string (advanced): `GIST_ONNX_PARAKEET_CMD="sherpa-onnx ... --tokens {vocab} --offline-ctc-model {model} --input-wav {input}"`
 
 Notes:
 
-- If you use the shell string form, **do not quote placeholders** (Summarize shell-escapes substituted paths so spaces work and injection risk is reduced).
+- If you use the shell string form, **do not quote placeholders** (Gist shell-escapes substituted paths so spaces work and injection risk is reduced).
 
 Placeholders:
 
@@ -31,16 +31,16 @@ Placeholders:
 
 3. Pick the ONNX model via CLI or env:
 
-- Auto (default): leave `SUMMARIZE_TRANSCRIBER` unset or set `SUMMARIZE_TRANSCRIBER=auto`
+- Auto (default): leave `GIST_TRANSCRIBER` unset or set `GIST_TRANSCRIBER=auto`
 - CLI: `--transcriber parakeet` or `--transcriber canary`
-- Env: `SUMMARIZE_TRANSCRIBER=parakeet` (or `canary`)
+- Env: `GIST_TRANSCRIBER=parakeet` (or `canary`)
 
-For the Chrome extension, you can pick a permanent default under **Settings → Model → Advanced Overrides → Transcriber**. The selection is sent with every request. Make sure the daemon environment still has your ONNX CLI commands configured (env vars above) so the override can take effect. Alternatively, export the env vars before running `summarize daemon install --token <TOKEN>` so the daemon inherits your ONNX command templates and default transcriber.
+For the Chrome extension, you can pick a permanent default under **Settings → Model → Advanced Overrides → Transcriber**. The selection is sent with every request. Make sure the daemon environment still has your ONNX CLI commands configured (env vars above) so the override can take effect. Alternatively, export the env vars before running `gist daemon install --token <TOKEN>` so the daemon inherits your ONNX command templates and default transcriber.
 
 ### Cache + download details
 
-- Artifacts are stored under `${SUMMARIZE_ONNX_CACHE_DIR || $XDG_CACHE_HOME || ~/.cache}/summarize/onnx/<model>/`.
-- Set `SUMMARIZE_ONNX_MODEL_BASE_URL` to point at a mirror (defaults to the Hugging Face repo for the chosen model).
+- Artifacts are stored under `${GIST_ONNX_CACHE_DIR || $XDG_CACHE_HOME || ~/.cache}/gist/onnx/<model>/`.
+- Set `GIST_ONNX_MODEL_BASE_URL` to point at a mirror (defaults to the Hugging Face repo for the chosen model).
 - The first run downloads `model.onnx` and `vocab.txt`; subsequent runs reuse cached files.
 
 ## Behavior

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SummarizeConfig } from '../src/config.js';
+import type { GistConfig } from '../src/config.js';
 import { prependCliCandidates, resolveCliAutoFallbackConfig } from '../src/model-auto-cli.js';
 import { buildAutoModelAttempts } from '../src/model-auto.js';
 
 describe('auto model selection', () => {
   it('preserves candidate order (native then OpenRouter fallback)', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini', 'xai/grok-4-fast'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -28,7 +28,7 @@ describe('auto model selection', () => {
   });
 
   it('skips OpenRouter fallback when no mapping is found', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-fast-non-reasoning'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -47,7 +47,7 @@ describe('auto model selection', () => {
   });
 
   it('skips OpenRouter fallback when multiple OpenRouter ids match the same slug', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-fast'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -66,7 +66,7 @@ describe('auto model selection', () => {
   });
 
   it('matches OpenRouter ids when punctuation differs in slug', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-1-fast'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -88,7 +88,7 @@ describe('auto model selection', () => {
   });
 
   it('skips OpenRouter fallback when normalized slug is ambiguous', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-1-fast'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -107,7 +107,7 @@ describe('auto model selection', () => {
   });
 
   it('prefers exact OpenRouter id even if slug is ambiguous', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-fast'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -129,7 +129,7 @@ describe('auto model selection', () => {
   });
 
   it('matches OpenRouter ids case-insensitively', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -151,7 +151,7 @@ describe('auto model selection', () => {
   });
 
   it('does not add OpenRouter fallback without OPENROUTER_API_KEY', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -170,7 +170,7 @@ describe('auto model selection', () => {
   });
 
   it('skips OpenRouter fallback when OpenRouter catalog is empty', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -189,7 +189,7 @@ describe('auto model selection', () => {
   });
 
   it('adds an OpenRouter fallback attempt when OPENROUTER_API_KEY is set', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -209,7 +209,7 @@ describe('auto model selection', () => {
   });
 
   it('does not add an OpenRouter fallback when video understanding is required', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['google/gemini-3-flash'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -227,7 +227,7 @@ describe('auto model selection', () => {
   });
 
   it('respects explicit openrouter/... candidates (no native attempt)', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openrouter/openai/gpt-5-nano'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -246,7 +246,7 @@ describe('auto model selection', () => {
   });
 
   it('treats OpenRouter model ids as opaque (meta-llama/... etc)', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: {
         mode: 'auto',
         rules: [{ candidates: ['openrouter/meta-llama/llama-3.3-70b-instruct:free'] }],
@@ -268,7 +268,7 @@ describe('auto model selection', () => {
   });
 
   it('selects candidates via token bands (first match wins)', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: {
         mode: 'auto',
         rules: [
@@ -299,7 +299,7 @@ describe('auto model selection', () => {
   });
 
   it('filters candidates by LiteLLM max input tokens (skips too-small context)', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-nano', 'openai/gpt-5-mini'] }] },
     };
 
@@ -323,7 +323,7 @@ describe('auto model selection', () => {
   });
 
   it('supports multi-kind "when" arrays', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: {
         mode: 'auto',
         rules: [
@@ -375,7 +375,7 @@ describe('auto model selection', () => {
   });
 
   it('prepends CLI candidates when enabled', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       cli: { enabled: ['claude', 'gemini', 'codex'] },
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
@@ -395,7 +395,7 @@ describe('auto model selection', () => {
   });
 
   it('prepends auto CLI fallback candidates for implicit auto when no API keys are set', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -415,7 +415,7 @@ describe('auto model selection', () => {
   });
 
   it('does not prepend auto CLI fallback candidates for explicit --model auto', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -435,7 +435,7 @@ describe('auto model selection', () => {
   });
 
   it('does not prepend auto CLI fallback candidates when API keys are present', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -455,7 +455,7 @@ describe('auto model selection', () => {
   });
 
   it('prioritizes last successful CLI provider in auto CLI fallback mode', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -477,7 +477,7 @@ describe('auto model selection', () => {
   });
 
   it('prepends a bare OpenCode CLI fallback when no default model is configured', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({
@@ -497,7 +497,7 @@ describe('auto model selection', () => {
   });
 
   it('uses the configured OpenCode model for CLI fallback candidates', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       cli: { opencode: { model: 'openai/gpt-5.4' } },
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
@@ -518,7 +518,7 @@ describe('auto model selection', () => {
   });
 
   it('dedupes configured CLI auto-fallback order', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       cli: {
         autoFallback: {
           enabled: true,
@@ -562,7 +562,7 @@ describe('auto model selection', () => {
   });
 
   it('skips CLI candidates when video understanding is required', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       cli: { enabled: ['claude'] },
       model: { mode: 'auto', rules: [{ candidates: ['google/gemini-3-flash'] }] },
     };
@@ -583,7 +583,7 @@ describe('auto model selection', () => {
   });
 
   it('does not reorder CLI providers when preferred is already first', () => {
-    const config: SummarizeConfig = {
+    const config: GistConfig = {
       model: { mode: 'auto', rules: [{ candidates: ['openai/gpt-5-mini'] }] },
     };
     const attempts = buildAutoModelAttempts({

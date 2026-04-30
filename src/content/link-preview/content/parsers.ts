@@ -47,22 +47,6 @@ export function extractMetadataFromHtml(html: string, url: string): ParsedMetada
   return { description, siteName, title };
 }
 
-export function extractMetadataFromFirecrawl(
-  metadata: Record<string, unknown> | null | undefined,
-): ParsedMetadata {
-  return {
-    description: pickFirstText([
-      metadataString(metadata, 'description'),
-      metadataString(metadata, 'ogDescription'),
-    ]),
-    siteName: pickFirstText([
-      metadataString(metadata, 'siteName'),
-      metadataString(metadata, 'ogSiteName'),
-    ]),
-    title: pickFirstText([metadataString(metadata, 'title'), metadataString(metadata, 'ogTitle')]),
-  };
-}
-
 function pickMetaContent($: CheerioAPI, selectors: MetaSelector[]): string | null {
   for (const selector of selectors) {
     const meta = $(`meta[${selector.attribute}="${selector.value}"]`).first();
@@ -89,15 +73,4 @@ function extractTagText($: CheerioAPI, tagName: string): string | null {
   }
   const text = decodeHtmlEntities(element.text());
   return normalizeCandidate(text);
-}
-
-function metadataString(
-  metadata: Record<string, unknown> | null | undefined,
-  key: string,
-): string | null {
-  if (!metadata) {
-    return null;
-  }
-  const value = metadata[key];
-  return typeof value === 'string' ? normalizeCandidate(value) : null;
 }

@@ -74,11 +74,11 @@ describe('cli media API key mapping', () => {
   });
 
   it('maps OPENAI_API_KEY into URL extraction transcription options', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-media-key-url-integration-'));
-    const summarizeDir = join(root, '.summarize');
-    mkdirSync(summarizeDir, { recursive: true });
+    const root = mkdtempSync(join(tmpdir(), 'gist-media-key-url-integration-'));
+    const gistDir = join(root, '.gist');
+    mkdirSync(gistDir, { recursive: true });
 
-    const cacheDir = join(summarizeDir, 'cache');
+    const cacheDir = join(gistDir, 'cache');
     mkdirSync(cacheDir, { recursive: true });
     writeFileSync(
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),

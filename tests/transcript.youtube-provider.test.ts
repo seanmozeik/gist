@@ -17,12 +17,12 @@ const ytdlp = vi.hoisted(() => ({
   fetchTranscriptWithYtDlp: vi.fn(),
 }));
 
-vi.mock('../packages/core/src/content/transcript/providers/youtube/api.js', () => api);
-vi.mock('../packages/core/src/content/transcript/providers/youtube/captions.js', () => captions);
-vi.mock('../packages/core/src/content/transcript/providers/youtube/apify.js', () => apify);
-vi.mock('../packages/core/src/content/transcript/providers/youtube/yt-dlp.js', () => ytdlp);
+vi.mock('../src/content/transcript/providers/youtube/api.js', () => api);
+vi.mock('../src/content/transcript/providers/youtube/captions.js', () => captions);
+vi.mock('../src/content/transcript/providers/youtube/apify.js', () => apify);
+vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ytdlp);
 
-import { fetchTranscript } from '../packages/core/src/content/transcript/providers/youtube.js';
+import { fetchTranscript } from '../src/content/transcript/providers/youtube.js';
 
 const baseOptions = {
   apifyApiToken: null,

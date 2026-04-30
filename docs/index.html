@@ -4,19 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
-    <title>summarize — CLI + Chrome Side Panel for fast summaries</title>
+    <title>gist — CLI + Chrome Side Panel for fast summaries</title>
     <meta
       name="description"
-      content="Summarize is a fast CLI and a Chrome Side Panel extension for clean extraction and sharp summaries."
+      content="Gist is a fast CLI and a Chrome Side Panel extension for clean extraction and sharp summaries."
     />
-    <link rel="canonical" href="https://summarize.sh/" />
-    <meta property="og:title" content="summarize" />
+    <link rel="canonical" href="https://gist.sh/" />
+    <meta property="og:title" content="gist" />
     <meta
       property="og:description"
       content="Fast summaries, in the CLI and the Chrome Side Panel."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://summarize.sh/" />
+    <meta property="og:url" content="https://gist.sh/" />
     <meta name="theme-color" content="#0b0f12" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,14 +30,14 @@
   <body>
     <main class="shell">
       <header class="top">
-        <a class="brand" href="./index.html" aria-label="summarize home">
+        <a class="brand" href="./index.html" aria-label="gist home">
           <span class="brand__mark" aria-hidden="true">s</span>
-          <span class="brand__word">summarize</span>
+          <span class="brand__word">gist</span>
         </a>
         <nav class="nav" aria-label="Primary">
           <a data-nav="home" href="./index.html">Home</a>
           <a data-nav="docs" href="./docs/index.html">Docs</a>
-          <a href="https://github.com/steipete/summarize">GitHub</a>
+          <a href="https://github.com/seanmozeik/gist">GitHub</a>
         </nav>
       </header>
 
@@ -47,20 +47,20 @@
             <p class="kicker">CLI + Chrome Extension</p>
             <h1 class="title">Summaries that live where you work.</h1>
             <p class="lede">
-              Summarize turns links, files, and media into sharp summaries with a real extraction
+              Gist turns links, files, and media into sharp summaries with a real extraction
               pipeline. Use the <strong>CLI</strong> for automation or the
               <strong>Chrome Side Panel</strong> for one-click summaries of the current tab.
               Supports <strong>local, paid, and free</strong> models.
             </p>
             <div class="ctaRow">
               <a class="btn btn--primary" href="./docs/index.html">Docs</a>
-              <a class="btn" href="https://github.com/steipete/summarize">GitHub</a>
+              <a class="btn" href="https://github.com/seanmozeik/gist">GitHub</a>
             </div>
             <div class="quickRow">
               <div class="quickRow__label">Quickstart</div>
               <div class="quickRow__code">
-                <code id="install">npm i -g @steipete/summarize</code>
-                <code id="run">summarize "https://example.com/article"</code>
+                <code id="install">npm i -g @seanmozeik/gist</code>
+                <code id="run">gist "https://example.com/article"</code>
               </div>
               <div class="quickRow__actions">
                 <button class="btn" data-copy="#install">Copy install</button>
@@ -71,13 +71,13 @@
 
           <div class="hero__visual">
             <figure class="shot shot--cli">
-              <img src="./assets/summarize-cli.png" alt="Summarize CLI output" loading="lazy" />
+              <img src="./assets/gist-cli.png" alt="Gist CLI output" loading="lazy" />
               <figcaption>CLI: streaming summaries in the terminal.</figcaption>
             </figure>
             <figure class="shot shot--ext">
               <img
-                src="./assets/summarize-extension.png"
-                alt="Summarize Chrome extension side panel"
+                src="./assets/gist-extension.png"
+                alt="Gist Chrome extension side panel"
                 loading="lazy"
               />
               <figcaption>Extension: a live Side Panel for the active tab.</figcaption>
@@ -93,11 +93,11 @@
             <h2>Fast summaries, scripted or interactive.</h2>
           </div>
           <p>
-            Built for automation: extract clean text, summarize with your model, and output JSON or
+            Built for automation: extract clean text, gist with your model, and output JSON or
             Markdown. Works with URLs, PDFs, images, audio/video, YouTube, and podcasts.
           </p>
           <ul class="list">
-            <li><strong>Extract + summarize</strong> with Firecrawl fallback.</li>
+            <li><strong>Extract + gist</strong> with Firecrawl fallback.</li>
             <li>
               <strong>Media pipeline</strong> with transcript-first flow and Whisper fallback.
             </li>
@@ -107,9 +107,9 @@
             </li>
           </ul>
           <div class="cardCode">
-            <pre><code>summarize "https://example.com" --length long
-summarize "https://youtu.be/..." --youtube auto
-summarize "/path/report.pdf" --model google/gemini-3-flash-preview</code></pre>
+            <pre><code>gist "https://example.com" --length long
+gist "https://youtu.be/..." --youtube auto
+gist "/path/report.pdf" --model google/gemini-3-flash-preview</code></pre>
           </div>
           <div class="ctaRow">
             <a class="btn btn--ghost" href="./docs/cli.html">CLI docs</a>
@@ -139,10 +139,10 @@ summarize "/path/report.pdf" --model google/gemini-3-flash-preview</code></pre>
             <a class="btn btn--ghost" href="./docs/chrome-extension.html">Extension docs</a>
             <a
               class="btn"
-              href="https://chromewebstore.google.com/detail/summarize/cejgnmmhbbpdmjnfppjdfkocebngehfg"
+              href="https://chromewebstore.google.com/detail/gist/cejgnmmhbbpdmjnfppjdfkocebngehfg"
               >Chrome Web Store</a
             >
-            <a class="btn" href="https://github.com/steipete/summarize/releases/latest"
+            <a class="btn" href="https://github.com/seanmozeik/gist/releases/latest"
               >Latest release</a
             >
           </div>
@@ -193,7 +193,7 @@ summarize "/path/report.pdf" --model google/gemini-3-flash-preview</code></pre>
             <div class="flowStep">
               <span class="flowStep__num">03</span>
               <div>
-                <h4>Summarize + format</h4>
+                <h4>Gist + format</h4>
                 <p>LLM output, streaming in the CLI or Side Panel, with metrics.</p>
               </div>
             </div>
@@ -216,10 +216,10 @@ summarize "/path/report.pdf" --model google/gemini-3-flash-preview</code></pre>
       </section>
 
       <footer class="footer">
-        <span>Canonical: <a href="https://summarize.sh">summarize.sh</a></span>
+        <span>Canonical: <a href="https://gist.sh">gist.sh</a></span>
         <span
           ><a href="./docs/index.html">Docs</a> ·
-          <a href="https://github.com/steipete/summarize">GitHub</a></span
+          <a href="https://github.com/seanmozeik/gist">GitHub</a></span
         >
       </footer>
     </main>

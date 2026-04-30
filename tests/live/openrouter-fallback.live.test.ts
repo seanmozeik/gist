@@ -1,11 +1,11 @@
 import { getModels } from '@mariozechner/pi-ai';
 import { describe, expect, it } from 'vitest';
 
-import type { SummarizeConfig } from '../../src/config.js';
+import type { GistConfig } from '../../src/config.js';
 import { generateTextWithModelId } from '../../src/llm/generate-text.js';
 import { buildAutoModelAttempts } from '../../src/model-auto.js';
 
-const LIVE = process.env.SUMMARIZE_LIVE_TEST === '1';
+const LIVE = process.env.GIST_LIVE_TEST === '1';
 
 function shouldSoftSkipLiveError(message: string): boolean {
   return /(model.*not found|does not exist|permission|access|unauthorized|forbidden|404|not_found|model_not_found|no allowed providers are available|rate limit)/i.test(
@@ -22,12 +22,12 @@ function shouldSoftSkipLiveError(message: string): boolean {
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY?.trim() ?? '';
       if (!OPENROUTER_API_KEY) {
         it.skip('requires OPENROUTER_API_KEY', () => {
-          /* empty */
+          /* Empty */
         });
         return;
       }
 
-      const config: SummarizeConfig = {
+      const config: GistConfig = {
         model: { mode: 'auto', rules: [{ candidates: ['xai/grok-4-1-fast'] }] },
       };
 

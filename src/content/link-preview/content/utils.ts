@@ -7,7 +7,6 @@ import {
   type ExtractedLinkContent,
   type FetchLinkContentOptions,
   type FinalizationArguments,
-  type FirecrawlMode,
   type TranscriptResolution,
 } from './types.js';
 
@@ -65,14 +64,6 @@ export function resolveTimeoutMs(options?: FetchLinkContentOptions): number {
   return Math.floor(candidate);
 }
 
-export function resolveFirecrawlMode(options?: FetchLinkContentOptions): FirecrawlMode {
-  const candidate = options?.firecrawl;
-  if (candidate === 'off' || candidate === 'auto' || candidate === 'always') {
-    return candidate;
-  }
-  return 'auto';
-}
-
 export function appendNote(existing: string | null | undefined, next: string): string {
   if (!next) {
     return existing ?? '';
@@ -120,7 +111,7 @@ export function selectBaseContent(
   return `Transcript:\n${normalizedTranscript}`;
 }
 
-export function summarizeTranscript(transcriptText: string | null) {
+export function gistTranscript(transcriptText: string | null) {
   if (!transcriptText) {
     return { transcriptCharacters: null, transcriptLines: null, transcriptWordCount: null };
   }
@@ -188,7 +179,7 @@ export function finalizeExtractedLinkContent({
                   .filter((value) => value.length > 0).length
               : 0,
         };
-  const { transcriptCharacters, transcriptLines, transcriptWordCount } = summarizeTranscript(
+  const { transcriptCharacters, transcriptLines, transcriptWordCount } = gistTranscript(
     transcriptResolution.text,
   );
   const transcriptionProvider = resolveTranscriptionProviderFromTranscriptMetadata(

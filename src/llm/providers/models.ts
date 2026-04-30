@@ -17,13 +17,9 @@ export function resolveOpenAiModel({
   const api = openaiConfig.useChatCompletions ? 'openai-completions' : 'openai-responses';
   const baseUrl = openaiConfig.baseURL ?? base?.baseUrl ?? 'https://api.openai.com/v1';
   const headers = openaiConfig.isOpenRouter
-    ? {
-        ...base?.headers,
-        'HTTP-Referer': 'https://github.com/steipete/summarize',
-        'X-Title': 'summarize',
-      }
+    ? { ...base?.headers, 'HTTP-Referer': 'https://github.com/seanmozeik/gist', 'X-Title': 'gist' }
     : openaiConfig.extraHeaders
-      ? { ...(base?.headers ?? {}), ...openaiConfig.extraHeaders }
+      ? { ...base?.headers, ...openaiConfig.extraHeaders }
       : base?.headers;
   return {
     ...(base ?? createSyntheticModel({ allowImages, api, baseUrl, modelId, provider: 'openai' })),

@@ -9,7 +9,7 @@ describe('sidepanel slide image urls', () => {
   });
 
   it('rewrites session slide urls to stable endpoint', () => {
-    const url = 'http://127.0.0.1:8787/v1/summarize/xyz/slides/7?v=4';
+    const url = 'http://127.0.0.1:8787/v1/gist/xyz/slides/7?v=4';
     expect(normalizeSlideImageUrl(url, 'abc', 7)).toBe('http://127.0.0.1:8787/v1/slides/abc/7?v=4');
   });
 

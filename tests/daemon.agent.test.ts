@@ -57,16 +57,16 @@ const makeModel = (provider: string, modelId: string) => ({
   reasoning: false,
 });
 
-const makeTempHome = () => mkdtempSync(join(tmpdir(), 'summarize-daemon-agent-'));
+const makeTempHome = () => mkdtempSync(join(tmpdir(), 'gist-daemon-agent-'));
 
 const writeHomeConfig = (home: string, config: unknown) => {
-  const configDir = join(home, '.summarize');
+  const configDir = join(home, '.gist');
   mkdirSync(configDir, { recursive: true });
   writeFileSync(join(configDir, 'config.json'), JSON.stringify(config, null, 2), 'utf8');
 };
 
 const makeFakeCliBin = (binary: string) => {
-  const dir = mkdtempSync(join(tmpdir(), `summarize-daemon-cli-${binary}-`));
+  const dir = mkdtempSync(join(tmpdir(), `gist-daemon-cli-${binary}-`));
   const file = join(dir, binary);
   writeFileSync(file, '#!/bin/sh\nexit 0\n');
   chmodSync(file, 0o755);
@@ -207,7 +207,7 @@ describe('daemon/agent', () => {
     ).rejects.toThrow(/Missing OPENROUTER_API_KEY/);
   });
 
-  it('includes summarize tool definitions when automation is enabled', async () => {
+  it('includes gist tool definitions when automation is enabled', async () => {
     const home = makeTempHome();
     await completeAgentResponse({
       automationEnabled: true,
@@ -217,11 +217,11 @@ describe('daemon/agent', () => {
       pageContent: 'Hello world',
       pageTitle: null,
       pageUrl: 'https://example.com',
-      tools: ['summarize'],
+      tools: ['gist'],
     });
 
     const context = mockCompleteSimple.mock.calls[0]?.[1] as { tools?: Tool[] };
-    expect(context.tools?.some((tool) => tool.name === 'summarize')).toBe(true);
+    expect(context.tools?.some((tool) => tool.name === 'gist')).toBe(true);
   });
 
   it('exposes artifacts tool definitions when automation is enabled', async () => {
@@ -325,7 +325,7 @@ describe('daemon/agent', () => {
       expect.objectContaining({ allowTools: false, model: 'gpt-5.2', provider: 'codex' }),
     );
     const args = vi.mocked(runCliModel).mock.calls[0]?.[0] as { prompt: string };
-    expect(args.prompt).toContain('You are Summarize Chat, not Claude.');
+    expect(args.prompt).toContain('You are Gist Chat, not Claude.');
     expect(args.prompt).toContain('User: Hi');
     expect(mockCompleteSimple).not.toHaveBeenCalled();
     expect(assistant.content).toBe('cli agent');

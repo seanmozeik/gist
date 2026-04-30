@@ -81,7 +81,7 @@ vi.mock('../src/llm/generate-text.js', () => ({
 
 describe('cli run.ts free preset error branches', () => {
   const setupLiteLlmCache = (root: string) => {
-    const cacheDir = join(root, '.summarize', 'cache');
+    const cacheDir = join(root, '.gist', 'cache');
     mkdirSync(cacheDir, { recursive: true });
     writeFileSync(
       join(cacheDir, 'litellm-model_prices_and_context_window.json'),
@@ -96,7 +96,7 @@ describe('cli run.ts free preset error branches', () => {
   };
 
   it('throws lastError message when all free attempts fail with Error', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-free-fail-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-free-fail-'));
     setupLiteLlmCache(root);
 
     const globalFetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
@@ -123,7 +123,7 @@ describe('cli run.ts free preset error branches', () => {
   });
 
   it('throws a generic "no model available" when failures are non-Error throwables', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-free-fail-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-free-fail-'));
     setupLiteLlmCache(root);
 
     const globalFetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {

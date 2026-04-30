@@ -35,7 +35,7 @@ vi.mock('@mariozechner/pi-ai', () => ({
 }));
 
 function writeLiteLlmCache(root: string) {
-  const cacheDir = join(root, '.summarize', 'cache');
+  const cacheDir = join(root, '.gist', 'cache');
   mkdirSync(cacheDir, { recursive: true });
   writeFileSync(
     join(cacheDir, 'litellm-model_prices_and_context_window.json'),
@@ -67,7 +67,7 @@ async function runStreamedSummary(
       ),
     );
 
-  const root = mkdtempSync(join(tmpdir(), 'summarize-stream-merge-'));
+  const root = mkdtempSync(join(tmpdir(), 'gist-stream-merge-'));
   writeLiteLlmCache(root);
   const globalFetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
     throw new Error('unexpected LiteLLM catalog fetch');

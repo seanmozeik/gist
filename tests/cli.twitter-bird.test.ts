@@ -72,7 +72,7 @@ vi.mock('ora', () => {
     let currentText = opts.text;
     const spinner = {
       clear() {
-        /* empty */
+        /* Empty */
       },
       isSpinning: true,
       start() {
@@ -97,7 +97,7 @@ vi.mock('ora', () => {
 
 describe('cli X status line', () => {
   it('prefers xurl in the status line when both xurl and bird are installed', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-bird-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-bird-'));
     const binDir = join(root, 'bin');
     mkdirSync(binDir, { recursive: true });
     const xurlPath = join(binDir, 'xurl');

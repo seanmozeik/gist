@@ -50,9 +50,9 @@ describe('--verbose', () => {
       { env: {}, fetch: fetchMock as unknown as typeof fetch, stderr, stdout },
     );
 
-    expect(stderrText).toContain('[summarize] config url=https://example.com');
-    expect(stderrText).toContain('[summarize] extract start');
-    expect(stderrText).toContain('[summarize] extract done strategy=html');
+    expect(stderrText).toContain('[gist] config url=https://example.com');
+    expect(stderrText).toContain('[gist] extract start');
+    expect(stderrText).toContain('[gist] extract done strategy=html');
     expect(stderrText).toContain('transcriptSource=none');
     expect(stderrText).toContain('extract firecrawl attempted=false used=false');
     expect(stderrText).toContain('extract transcript textProvided=false');
@@ -157,7 +157,7 @@ describe('--debug', () => {
       { env: {}, fetch: fetchMock as unknown as typeof fetch, stderr, stdout },
     );
 
-    expect(stderrText).toContain('[summarize] config url=https://example.com');
-    expect(stderrText).toContain('[summarize] extract start');
+    expect(stderrText).toContain('[gist] config url=https://example.com');
+    expect(stderrText).toContain('[gist] extract start');
   });
 });

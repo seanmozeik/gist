@@ -14,7 +14,7 @@ import {
 
 describe('asset loaders', () => {
   it('rejects non-files and oversize local files', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-'));
     const dirPath = join(root, 'dir');
     mkdirSync(dirPath, { recursive: true });
     await expect(loadLocalAsset({ filePath: dirPath })).rejects.toThrow(/Not a file/i);
@@ -70,7 +70,7 @@ describe('asset loaders', () => {
   });
 
   it('creates image parts when media type is image/*', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-asset-img-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-asset-img-'));
     const jpgPath = join(root, 'test.jpg');
     // Minimal JPEG header.
     writeFileSync(jpgPath, Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43, 0x00]));
@@ -113,7 +113,7 @@ describe('asset loaders', () => {
 
 describe('asset helpers', () => {
   it('resolves input targets from files and urls', () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-input-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-input-'));
     const filePath = join(root, 'doc.txt');
     writeFileSync(filePath, 'hello');
 
@@ -131,7 +131,7 @@ describe('asset helpers', () => {
   });
 
   it('handles file urls and rejects unsupported protocols', () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-file-url-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-file-url-'));
     const filePath = join(root, 'report.txt');
     writeFileSync(filePath, 'hello');
     const fileUrl = new URL(`file://${filePath}`);
@@ -167,7 +167,7 @@ describe('asset helpers', () => {
       kind: 'image',
       mediaType: 'image/png',
     };
-    const messages = buildAssetPromptMessages({ attachment, promptText: 'Summarize' });
+    const messages = buildAssetPromptMessages({ attachment, promptText: 'Gist' });
     expect(messages[0]?.role).toBe('user');
     const content = messages[0]?.content ?? [];
     expect(content).toHaveLength(2);

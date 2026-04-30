@@ -20,10 +20,10 @@ function noopStream(): Writable {
 
 describe('--clear-cache', () => {
   it('clears the cache database and exits', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-clear-cache-'));
-    const summarizeDir = join(root, '.summarize');
-    mkdirSync(summarizeDir, { recursive: true });
-    const cachePath = join(summarizeDir, 'cache.sqlite');
+    const root = mkdtempSync(join(tmpdir(), 'gist-clear-cache-'));
+    const gistDir = join(root, '.gist');
+    mkdirSync(gistDir, { recursive: true });
+    const cachePath = join(gistDir, 'cache.sqlite');
     writeFileSync(cachePath, 'dummy', 'utf8');
 
     await runCli(['--clear-cache'], {
@@ -37,7 +37,7 @@ describe('--clear-cache', () => {
   });
 
   it('requires --clear-cache to be used alone', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-clear-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-clear-cache-'));
     await expect(
       runCli(['--clear-cache', 'https://example.com'], {
         env: { HOME: root },
@@ -49,7 +49,7 @@ describe('--clear-cache', () => {
   });
 
   it('does not create a cache db when --no-cache is set', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-no-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-no-cache-'));
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url;
       if (url === 'https://example.com') {
@@ -65,6 +65,6 @@ describe('--clear-cache', () => {
       stdout: noopStream(),
     });
 
-    expect(existsSync(join(root, '.summarize', 'cache.sqlite'))).toBe(false);
+    expect(existsSync(join(root, '.gist', 'cache.sqlite'))).toBe(false);
   });
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildDaemonRequestBody,
-  buildSummarizeRequestBody,
+  buildGistRequestBody,
 } from '../apps/chrome-extension/src/lib/daemon-payload.js';
 import { defaultSettings } from '../apps/chrome-extension/src/lib/settings.js';
 
@@ -77,7 +77,7 @@ describe('chrome/daemon-payload', () => {
   });
 
   it('forces transcript video mode when inputMode=video', () => {
-    const body = buildSummarizeRequestBody({
+    const body = buildGistRequestBody({
       extracted: { text: '', title: 'Video', truncated: false, url: 'https://example.com/video' },
       inputMode: 'video',
       settings: defaultSettings,
@@ -88,7 +88,7 @@ describe('chrome/daemon-payload', () => {
   });
 
   it('forces page mode when inputMode=page', () => {
-    const body = buildSummarizeRequestBody({
+    const body = buildGistRequestBody({
       extracted: {
         text: 'Hello',
         title: 'Article',
@@ -104,7 +104,7 @@ describe('chrome/daemon-payload', () => {
   });
 
   it('adds timestamps when requested', () => {
-    const body = buildSummarizeRequestBody({
+    const body = buildGistRequestBody({
       extracted: { text: '', title: 'Video', truncated: false, url: 'https://example.com/video' },
       settings: defaultSettings,
       timestamps: true,
@@ -129,7 +129,7 @@ describe('chrome/daemon-payload', () => {
   });
 
   it('requests slides when enabled', () => {
-    const body = buildSummarizeRequestBody({
+    const body = buildGistRequestBody({
       extracted: {
         text: '',
         title: 'Video',

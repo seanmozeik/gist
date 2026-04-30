@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchLinkContent } from '../packages/core/src/content/link-preview/content/index.js';
+import { fetchLinkContent } from '../src/content/link-preview/content/index.js';
 
 describe('Spotify episode short-circuit', () => {
   it('skips fetching the Spotify episode HTML page and returns transcript content (URL variations)', async () => {
@@ -91,9 +91,9 @@ describe('Spotify episode short-circuit', () => {
             convertHtmlToMarkdown: null,
             env: {
               GEMINI_API_KEY: '',
+              GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
               GOOGLE_API_KEY: '',
               GOOGLE_GENERATIVE_AI_API_KEY: '',
-              SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
             },
             falApiKey: null,
             fetch: fetchImpl as unknown as typeof fetch,
@@ -115,7 +115,7 @@ describe('Spotify episode short-circuit', () => {
   });
 
   it('fails loudly when no transcription keys are configured', async () => {
-    vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+    vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
     try {
       await expect(
         fetchLinkContent(
@@ -126,9 +126,9 @@ describe('Spotify episode short-circuit', () => {
             convertHtmlToMarkdown: null,
             env: {
               GEMINI_API_KEY: '',
+              GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
               GOOGLE_API_KEY: '',
               GOOGLE_GENERATIVE_AI_API_KEY: '',
-              SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
             },
             falApiKey: null,
             fetch: vi.fn() as unknown as typeof fetch,
@@ -208,7 +208,7 @@ describe('Spotify episode short-circuit', () => {
     });
 
     try {
-      vi.stubEnv('SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP', '1');
+      vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
       vi.stubGlobal('fetch', geminiFetch as unknown as typeof fetch);
       const result = await fetchLinkContent(
         `https://open.spotify.com/episode/${episodeId}`,
@@ -218,9 +218,9 @@ describe('Spotify episode short-circuit', () => {
           convertHtmlToMarkdown: null,
           env: {
             GEMINI_API_KEY: 'GEMINI',
+            GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
             GOOGLE_API_KEY: '',
             GOOGLE_GENERATIVE_AI_API_KEY: '',
-            SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1',
           },
           falApiKey: null,
           fetch: fetchImpl as unknown as typeof fetch,

@@ -8,7 +8,7 @@ import { buildTranscriptCacheKey, createCacheStore } from '../src/cache.js';
 
 describe('cache store', () => {
   it('round-trips text entries', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path });
 
@@ -19,7 +19,7 @@ describe('cache store', () => {
   });
 
   it('round-trips json entries and returns null for invalid json', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path });
 
@@ -33,7 +33,7 @@ describe('cache store', () => {
   });
 
   it('expires entries based on ttl', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 1024 * 1024, path });
 
@@ -44,7 +44,7 @@ describe('cache store', () => {
   });
 
   it('evicts oldest entries when size cap exceeded', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({ maxBytes: 60, path });
 
@@ -58,7 +58,7 @@ describe('cache store', () => {
   });
 
   it('namespaces transcript cache by namespace', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({
       maxBytes: 1024 * 1024,
@@ -93,7 +93,7 @@ describe('cache store', () => {
   });
 
   it('transcript cache normalizes unknown sources and handles bad payloads', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'summarize-cache-'));
+    const root = mkdtempSync(join(tmpdir(), 'gist-cache-'));
     const path = join(root, 'cache.sqlite');
     const store = await createCacheStore({
       maxBytes: 1024 * 1024,

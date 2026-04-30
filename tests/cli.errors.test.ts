@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { toNitterUrls } from '../packages/core/src/content/link-preview/content/twitter-utils.js';
+import { toNitterUrls } from '../src/content/link-preview/content/twitter-utils.js';
 import { runCli } from '../src/run.js';
 
 const noopStream = () =>
@@ -18,7 +18,7 @@ const noopStream = () =>
   });
 
 describe('cli error handling', () => {
-  const home = mkdtempSync(join(tmpdir(), 'summarize-tests-errors-'));
+  const home = mkdtempSync(join(tmpdir(), 'gist-tests-errors-'));
 
   it('errors when url is missing', async () => {
     await expect(
@@ -28,7 +28,7 @@ describe('cli error handling', () => {
         stderr: noopStream(),
         stdout: noopStream(),
       }),
-    ).rejects.toThrow(/Usage: summarize/);
+    ).rejects.toThrow(/Usage: gist/);
   });
 
   it('errors when url is not http(s)', async () => {
@@ -39,7 +39,7 @@ describe('cli error handling', () => {
         stderr: noopStream(),
         stdout: noopStream(),
       }),
-    ).rejects.toThrow('Only HTTP and HTTPS URLs can be summarized');
+    ).rejects.toThrow('Only HTTP and HTTPS URLs can be gisted');
   });
 
   it('errors when --firecrawl always is set without a key', async () => {
@@ -147,7 +147,7 @@ describe('cli error handling', () => {
     ).rejects.toThrow('Use either --model or --cli');
   });
 
-  it('prints extracted content when summarizing without any model API keys (default auto)', async () => {
+  it('prints extracted content when gisting without any model API keys (default auto)', async () => {
     const html = `<!doctype html><html><head><title>Ok</title></head><body><article><p>${'A'.repeat(
       260,
     )}</p></article></body></html>`;

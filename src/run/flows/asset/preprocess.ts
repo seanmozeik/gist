@@ -284,9 +284,9 @@ export async function prepareAssetPrompt({
     if (isPdf && ctx.localBaseUrl) {
       try {
         const result = await convertPdfToMarkdown({
+          baseUrl: ctx.localBaseUrl,
           bytes: fileBytes,
           filename: attachment.filename,
-          baseUrl: ctx.localBaseUrl,
         });
         preprocessedMarkdown = result.markdown;
         usingPreprocessedMarkdown = true;
