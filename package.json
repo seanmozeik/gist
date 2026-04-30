@@ -14,7 +14,7 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/chmod-bin.mjs",
     "check": "bun run typecheck",
     "clean": "rimraf dist",
     "dev:cli": "bun src/cli.ts",
