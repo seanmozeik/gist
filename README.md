@@ -260,7 +260,7 @@ Notes:
 
 ### Model ids
 
-Use gateway-style ids: `<provider>/<model>`.
+Use OpenRouter model ids directly as `<author>/<model>`. `local/...` is the only non-OpenRouter model id path.
 
 Examples:
 
@@ -274,7 +274,7 @@ Examples:
 - `xai/grok-4-fast-non-reasoning`
 - `google/gemini-3-flash`
 - `zai/glm-4.7`
-- `openrouter/openai/gpt-5-mini` (force OpenRouter)
+- `openrouter/openai/gpt-5-mini` (explicit OpenRouter prefix also works)
 
 Note: some models/providers do not support streaming or certain file media types. When that happens, the CLI prints a friendly error (or auto-disables streaming for that model when supported by the provider).
 `gpt-5.4-mini` and `gpt-5.4-nano` are treated as real model ids; the same shorthand also works under `github-copilot/...`.
@@ -616,20 +616,14 @@ Environment variable precedence:
 
 ### Environment variables
 
-Set the key matching your chosen `--model`:
+Set `OPENROUTER_API_KEY` for model calls. `local/...` models use `GIST_LOCAL_BASE_URL` instead.
 
 - Optional fallback defaults can be stored in config:
-  - `~/.gist/config.json` -> `"env": { "OPENAI_API_KEY": "sk-..." }`
+  - `~/.gist/config.json` -> `"env": { "OPENROUTER_API_KEY": "sk-or-..." }`
   - process env always takes precedence
   - legacy `"apiKeys"` still works (mapped to env names)
-
-- `OPENAI_API_KEY` (for `openai/...`)
-- `NVIDIA_API_KEY` (for `nvidia/...`)
-- `ANTHROPIC_API_KEY` (for `anthropic/...`)
-- `XAI_API_KEY` (for `xai/...`)
-- `Z_AI_API_KEY` (for `zai/...`; supports `ZAI_API_KEY` alias)
-- `GEMINI_API_KEY` (for `google/...`)
-  - also accepts `GOOGLE_GENERATIVE_AI_API_KEY` and `GOOGLE_API_KEY` as aliases
+- `OPENROUTER_API_KEY` (for non-`local/...` models)
+- `GIST_LOCAL_BASE_URL` (for `local/...` models)
 
 OpenAI-compatible chat completions toggle:
 
@@ -644,7 +638,8 @@ UI theme:
 OpenRouter (OpenAI-compatible):
 
 - Set `OPENROUTER_API_KEY=...`
-- Prefer forcing OpenRouter per model id: `--model openrouter/<author>/<slug>`
+- Use OpenRouter model ids directly: `--model <author>/<slug>` (for example `google/gemini-3-flash`)
+- The explicit `openrouter/<author>/<slug>` form is still accepted
 - Built-in preset: `--model free` (uses a default set of OpenRouter `:free` models)
 
 ### `gist refresh-free`
@@ -682,31 +677,12 @@ Flags:
 Example:
 
 ```bash
-OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model openrouter/meta-llama/llama-3.1-8b-instruct:free
-OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model openrouter/minimax/minimax-m2.5
+OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model meta-llama/llama-3.1-8b-instruct:free
+OPENROUTER_API_KEY=sk-or-... gist "https://example.com" --model minimax/minimax-m2.5
 ```
 
 If your OpenRouter account enforces an allowed-provider list, make sure at least one provider
 is allowed for the selected model. When routing fails, `gist` prints the exact providers to allow.
-
-Legacy: `OPENAI_BASE_URL=https://openrouter.ai/api/v1` (and either `OPENAI_API_KEY` or `OPENROUTER_API_KEY`) also works.
-
-NVIDIA API Catalog (OpenAI-compatible; free credits):
-
-- Set `NVIDIA_API_KEY=...`
-- Optional: `NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1`
-- Credits: API Catalog trial starts with 1000 free API credits on signup (up to 5000 total via “Request More” in the API Catalog profile)
-- Pick a model id from `/v1/models` (examples: fast `stepfun-ai/step-3.5-flash`, strong but slower `z-ai/glm5`)
-
-```bash
-export NVIDIA_API_KEY="nvapi-..."
-gist "https://example.com" --model nvidia/stepfun-ai/step-3.5-flash
-```
-
-Z.AI (OpenAI-compatible):
-
-- `Z_AI_API_KEY=...` (or `ZAI_API_KEY=...`)
-- Optional base URL override: `Z_AI_BASE_URL=...`
 
 Optional services:
 

@@ -24,13 +24,13 @@ This is also the built-in default when you don’t specify a model.
 
 Model ids:
 
-- Native: `<provider>/<model>` (e.g. `openai/gpt-5-mini`, `google/gemini-3-flash`)
-- Forced OpenRouter: `openrouter/<author>/<slug>` (e.g. `openrouter/meta-llama/llama-3.3-70b-instruct:free`)
+- OpenRouter: `<author>/<model>` (e.g. `openai/gpt-5-mini`, `google/gemini-3-flash`)
+- Explicit OpenRouter prefix: `openrouter/<author>/<slug>` also works
+- Local sidecar: `local/<model>`
 
 Behavior:
 
-- If you pass an `openrouter/...` model id, the request uses OpenRouter (and requires `OPENROUTER_API_KEY`).
-- If you pass a native model id, the CLI prefers the native provider SDK when its key is available, and can fall back to OpenRouter when no native key exists (and `OPENROUTER_API_KEY` is set).
+- Any non-`local/...` model id uses OpenRouter and requires `OPENROUTER_API_KEY`.
 
 ## How selection works
 
@@ -74,7 +74,7 @@ Example:
           { "candidates": ["xai/grok-4-fast-non-reasoning"] }
         ]
       },
-      { "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"] }
+      { "candidates": ["openai/gpt-5-mini", "google/gemini-3-flash"] }
     ]
   },
   "media": { "videoMode": "auto" }

@@ -88,25 +88,6 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     };
   }
 
-  if (lower.startsWith('nvidia/')) {
-    const model = trimmed.slice('nvidia/'.length).trim();
-    if (model.length === 0) {
-      throw new Error('Invalid model id: nvidia/… is missing the model id');
-    }
-    return {
-      forceChatCompletions: true,
-      forceOpenRouter: false,
-      kind: 'fixed',
-      llmModelId: `nvidia/${model}`,
-      openaiBaseUrlOverride: null,
-      openrouterProviders: null,
-      provider: 'local',
-      requiredEnv: 'OPENROUTER_API_KEY',
-      transport: 'native',
-      userModelId: `nvidia/${model}`,
-    };
-  }
-
   if (lower.startsWith('cli/')) {
     const parts = trimmed
       .split('/')
@@ -145,34 +126,43 @@ export function parseRequestedModelId(raw: string): RequestedModel {
   if (!trimmed.includes('/')) {
     const fastOpenAi = resolveOpenAiFastModelId(trimmed);
     if (fastOpenAi) {
+      const llmModelId = `openrouter/openai/${fastOpenAi.modelId}`;
       return {
-        forceOpenRouter: false,
+        forceOpenRouter: true,
         kind: 'fixed',
-        llmModelId: `openai/${fastOpenAi.modelId}`,
+        llmModelId,
+        openrouterModelId: `openai/${fastOpenAi.modelId}`,
         openrouterProviders: null,
-        provider: 'local',
         requestOptions: fastOpenAi.options,
         requiredEnv: 'OPENROUTER_API_KEY',
-        transport: 'native',
+        transport: 'openrouter',
         userModelId: trimmed,
       };
     }
-    throw new Error(
-      `Unknown model "${trimmed}". Expected "auto" or a provider-prefixed id like openrouter/... or cli/....`,
-    );
   }
 
   const userModelId = normalizeGatewayStyleModelId(trimmed);
   const parsed = parseGatewayStyleModelId(userModelId);
   const llmModelId = userModelId;
-  const requiredEnv = parsed.provider === 'local' ? null : ('OPENROUTER_API_KEY' as const);
+  if (parsed.provider === 'openrouter') {
+    return {
+      forceOpenRouter: true,
+      kind: 'fixed',
+      llmModelId,
+      openrouterModelId: parsed.model,
+      openrouterProviders: null,
+      requiredEnv: 'OPENROUTER_API_KEY',
+      transport: 'openrouter',
+      userModelId,
+    };
+  }
   return {
     forceOpenRouter: false,
     kind: 'fixed',
     llmModelId,
     openrouterProviders: null,
     provider: parsed.provider,
-    requiredEnv,
+    requiredEnv: null,
     transport: 'native',
     userModelId,
   };

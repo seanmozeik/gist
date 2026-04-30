@@ -78,7 +78,7 @@ export interface ModelSelection {
 export function resolveModelSelection({
   config,
   configForCli,
-  configPath,
+  configPath: _configPath,
   envForRun,
   explicitModelArg,
 }: {
@@ -165,12 +165,6 @@ export function resolveModelSelection({
       }
       throw new Error(
         `Invalid model "${namedModelMatch?.name ?? requestedModelInput}": unsupported model config`,
-      );
-    }
-
-    if (requestedModelInputLower !== 'auto' && !requestedModelInput.includes('/')) {
-      throw new Error(
-        `Unknown model "${requestedModelInput}". Define it in ${configPath ?? '~/.gist/config.json'} under "models", or use a provider-prefixed id like openrouter/...`,
       );
     }
 

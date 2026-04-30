@@ -88,7 +88,8 @@ export interface AutoRule {
   /**
    * Candidate model ids (ordered).
    *
-   * - OpenRouter: `openrouter/<provider>/<model>` (e.g. `openrouter/meta/llama-3.1-8b-instruct`)
+   * - OpenRouter: `<author>/<model>` or `openrouter/<author>/<model>`
+   *   (e.g. `meta/llama-3.1-8b-instruct`)
    * - Local sidecar: `local/<model-name>` (e.g. `local/qwen2.5-7b`)
    */
   candidates?: string[];

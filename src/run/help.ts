@@ -82,7 +82,7 @@ export function buildProgram() {
     .option('--retries <count>', 'LLM retry attempts on timeout (default: 1).', '1')
     .option(
       '--model <model>',
-      'LLM model id: auto, <name>, cli/<provider>/<model>, local/<model>, or openrouter/<author>/<slug> (default: auto)',
+      'LLM model id: auto, <name>, <author>/<slug> via OpenRouter, cli/<provider>/<model>, or local/<model> (default: auto)',
     )
     .option(
       '--fast',
@@ -199,7 +199,7 @@ ${heading('Examples')}
   ${cmd('gist "https://www.youtube.com/watch?v=I845O57ZSy4&t=11s" --extract --youtube web')}
   ${cmd('gist "https://podcasts.apple.com/.../id123?i=456" --extract')} ${dim('# podcast transcript')}
   ${cmd('gist "/path/to/audio.mp3" --extract')} ${dim('# local media transcript')}
-  ${cmd('gist "https://example.com" --length 20k --max-output-tokens 2k --timeout 2m --model openrouter/openai/gpt-5-mini')}
+  ${cmd('gist "https://example.com" --length 20k --max-output-tokens 2k --timeout 2m --model openai/gpt-5-mini')}
   ${cmd('gist "https://example.com" --model local/qwen-smol')} ${dim('# local sidecar')}
   ${cmd('gist "https://example.com" --model mymodel')} ${dim('# config preset')}
   ${cmd('gist "https://example.com" --json --verbose')}
@@ -207,7 +207,7 @@ ${heading('Examples')}
   ${cmd('gist refresh-free')} ${dim('# scan/update working OpenRouter :free models')}
 
 ${heading('Env Vars')}
-  OPENROUTER_API_KEY                required for openrouter/... models and OpenRouter transcription
+  OPENROUTER_API_KEY                required for OpenRouter models and OpenRouter transcription
   GIST_LOCAL_BASE_URL               optional local sidecar URL for local/... models and local transcription
   GIST_TRANSCRIPTION_MODEL          optional OpenRouter transcription model (default: openai/whisper-1)
   CLAUDE_PATH                       optional (path to Claude CLI binary)
@@ -223,7 +223,7 @@ ${heading('Env Vars')}
 
 ${heading('Hint')}
   ${cmd('gist refresh-free')} ${dim('# refresh free-model candidates into ~/.gist/config.json')}
-  ${cmd('gist --model openrouter/openai/gpt-5-mini "https://example.com"')}
+  ${cmd('gist --model openai/gpt-5-mini "https://example.com"')}
   ${cmd('gist --model local/qwen-smol "https://example.com"')}
 
 ${heading('Support')}
@@ -246,7 +246,7 @@ export function buildConciseHelp(): string {
     '',
     'Examples:',
     '  gist "https://example.com"',
-    '  gist "/path/to/file.pdf" --model openrouter/openai/gpt-5-mini',
+    '  gist "/path/to/file.pdf" --model openai/gpt-5-mini',
     '  pbpaste | gist -',
     '',
     'Run gist --help for full options.',

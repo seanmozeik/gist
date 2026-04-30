@@ -6,7 +6,7 @@ read_when:
 
 # LLM / summarization mode
 
-By default `gist` will call an LLM using **direct provider API keys**. When CLI tools are
+By default `gist` will call LLMs through OpenRouter, except for `local/...` models. When CLI tools are
 installed, auto mode can use local CLI models via `cli.enabled` or implicit auto CLI fallback
 (`cli.autoFallback`; see `docs/cli.md`).
 
@@ -19,21 +19,9 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
 
 - `.env` (optional): when running the CLI, `gist` also reads `.env` in the current working directory and merges it into the environment (real env vars win).
 - `~/.gist/config.json` `env` (optional): fallback env defaults when process env is missing/blank.
-- `XAI_API_KEY` (required for `xai/...` models)
-- `XAI_BASE_URL` (optional; override xAI API endpoint)
-- `OPENAI_API_KEY` (required for `openai/...` models)
-- `OPENAI_BASE_URL` (optional; OpenAI-compatible API endpoint, e.g. OpenRouter)
-- `OPENAI_USE_CHAT_COMPLETIONS` (optional; force OpenAI chat completions)
-- `NVIDIA_API_KEY` (required for `nvidia/...` models; alias: `NGC_API_KEY`)
-- `NVIDIA_BASE_URL` (optional; override NVIDIA OpenAI-compatible API endpoint; default: `https://integrate.api.nvidia.com/v1`)
-- `OPENROUTER_API_KEY` (optional; required for `openrouter/...` models; also used when `OPENAI_BASE_URL` points to OpenRouter)
-- `GITHUB_TOKEN` / `GH_TOKEN` (required for `github-copilot/...` models via GitHub Models)
-- `Z_AI_API_KEY` (required for `zai/...` models; supports `ZAI_API_KEY` alias)
-- `Z_AI_BASE_URL` (optional; override default Z.AI base URL)
-- `GEMINI_API_KEY` (required for `google/...` models; also accepts `GOOGLE_GENERATIVE_AI_API_KEY` / `GOOGLE_API_KEY`)
-- `GOOGLE_BASE_URL` / `GEMINI_BASE_URL` (optional; override Google API endpoint)
-- `ANTHROPIC_API_KEY` (required for `anthropic/...` models)
-- `ANTHROPIC_BASE_URL` (optional; override Anthropic API endpoint)
+- `OPENROUTER_API_KEY` (required for OpenRouter model ids, including `google/...`, `anthropic/...`, `openai/...`, and explicit `openrouter/...`)
+- `OPENAI_BASE_URL` (optional; OpenAI-compatible API endpoint for `local/...`)
+- `OPENAI_USE_CHAT_COMPLETIONS` (optional; force OpenAI chat completions for compatible endpoints)
 - `GIST_MODEL` (optional; overrides default model selection)
 - `CLAUDE_PATH` / `CODEX_PATH` / `GEMINI_PATH` / `AGENT_PATH` / `OPENCLAW_PATH` / `OPENCODE_PATH` (optional; override CLI binary paths)
 
@@ -55,13 +43,13 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
     - `google/gemini-3-flash`
     - `openai/gpt-5-mini`
     - `openai/gpt-5-nano`
-    - `github-copilot/gpt-5.4`
     - `nvidia/z-ai/glm5`
     - `zai/glm-4.7`
     - `xai/grok-4-fast-non-reasoning`
     - `google/gemini-2.0-flash`
     - `anthropic/claude-sonnet-4-5`
-    - `openrouter/meta-llama/llama-3.3-70b-instruct:free` (force OpenRouter)
+    - `meta-llama/llama-3.3-70b-instruct:free`
+    - `openrouter/meta-llama/llama-3.3-70b-instruct:free` (explicit OpenRouter prefix)
 - `--cli [provider]`
   - Examples: `--cli claude`, `--cli Gemini`, `--cli codex`, `--cli agent`, `--cli openclaw`, `--cli opencode` (equivalent to `--model cli/<provider>`); `--cli` alone uses auto selection with CLI enabled.
 - `--model auto`
@@ -112,27 +100,6 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
 - Final check: remove sponsor/ad references or mentions of skipping/ignoring content. Remove any quotation marks. Ensure standout excerpts are italicized; otherwise omit them.
 - Hard rules: never mention sponsor/ads; never output quotation marks of any kind (straight or curly), even for titles.
 
-## Z.AI
-
-Use `--model zai/<model>` (e.g. `zai/glm-4.7`). Defaults to Z.AI’s base URL and uses chat completions.
-
-## GitHub Copilot / GitHub Models
-
-Use `--model github-copilot/<model>` for explicit GitHub-hosted model calls.
-
-- Examples:
-  - `github-copilot/gpt-5.4`
-  - `github-copilot/gpt-5.4-mini`
-  - `github-copilot/gpt-5.4-nano`
-  - `github-copilot/gpt-5-mini`
-  - `github-copilot/gpt-5-nano`
-  - `github-copilot/anthropic/claude-haiku-4.5`
-- Auth: `GITHUB_TOKEN` or `GH_TOKEN`
-- Transport: GitHub Models chat completions (`https://models.github.ai/inference`)
-- Notes:
-  - bare shorthand like `github-copilot/gpt-5.4` or `github-copilot/claude-opus-4.6` auto-expands to the provider-qualified backend id
-  - document attachments stay unsupported in this mode
-
 ## Input limits
 
 - Text prompts are checked against the model’s max input tokens (LiteLLM catalog) using a GPT tokenizer.
@@ -140,6 +107,6 @@ Use `--model github-copilot/<model>` for explicit GitHub-hosted model calls.
 
 ## PDF attachments
 
-- For PDF inputs, `--preprocess auto` will send the PDF directly to Anthropic/OpenAI/Gemini when a fixed model supports documents; otherwise we fall back to markitdown.
+- For PDF inputs, `--preprocess auto` will send the PDF directly to the selected OpenRouter model when it supports documents; otherwise we fall back to markitdown.
 - `--preprocess always` forces markitdown (no direct attachments).
 - Streaming is disabled for document attachments.

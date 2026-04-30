@@ -229,8 +229,8 @@ Define presets you can select via `--model <preset>`:
       "rules": [
         {
           "candidates": [
-            "openrouter/google/gemini-2.0-flash-exp:free",
-            "openrouter/meta-llama/llama-3.3-70b-instruct:free"
+            "google/gemini-2.0-flash-exp:free",
+            "meta-llama/llama-3.3-70b-instruct:free"
           ]
         }
       ]
@@ -290,7 +290,7 @@ For auto selection with rules:
           { "candidates": ["xai/grok-4-fast-non-reasoning"] }
         ]
       },
-      { "candidates": ["openai/gpt-5-mini", "openrouter/openai/gpt-5-mini"] }
+      { "candidates": ["openai/gpt-5-mini", "google/gemini-3-flash"] }
     ]
   },
   "media": { "videoMode": "auto" }

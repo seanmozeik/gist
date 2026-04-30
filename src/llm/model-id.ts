@@ -12,15 +12,14 @@ export interface ParsedModelId {
   canonical: string;
 }
 
-const PROVIDERS = new Set(['openrouter', 'local'] as LlmProvider[]);
-
 /**
  * Parse a model ID into provider + model name.
  *
  * Formats:
  * - `openrouter/<author>/<model>` → openrouter provider
  * - `local/<model-name>` → local sidecar
- * - Bare model IDs without prefix → defaults to openrouter for backwards compat
+ * - `<author>/<model>` → OpenRouter model id
+ * - Bare model IDs without prefix → OpenRouter model id
  */
 export function normalizeGatewayStyleModelId(raw: string): string {
   const trimmed = raw.trim();
@@ -39,11 +38,11 @@ export function normalizeGatewayStyleModelId(raw: string): string {
   const provider = lower.slice(0, slash) as LlmProvider;
   const model = trimmed.slice(slash + 1);
 
-  if (!PROVIDERS.has(provider)) {
-    throw new Error(`Unsupported model provider "${provider}". Use openrouter/... or local/...`);
-  }
   if (model.trim().length === 0) {
     throw new Error('Missing model id after provider prefix');
+  }
+  if (provider !== 'openrouter' && provider !== 'local') {
+    return `openrouter/${trimmed}`;
   }
   return `${provider}/${model}`;
 }
