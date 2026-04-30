@@ -1,7 +1,7 @@
 import type { Api, Context, Model } from '@mariozechner/pi-ai';
 
-import { createSyntheticModel, tryGetModel, wantsImages } from './shared.js';
-import type { OpenAiClientConfig } from './types.js';
+import { createSyntheticModel, tryGetModel, wantsImages } from './shared';
+import type { OpenAiClientConfig } from './types';
 
 export function resolveOpenAiModel({
   modelId,

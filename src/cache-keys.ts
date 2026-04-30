@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
-import type { LengthArg } from './flags.js';
-import type { OutputLanguage } from './language.js';
+import type { LengthArg } from './flags';
+import type { OutputLanguage } from './language';
 
 export function hashString(value: string): string {
   return createHash('sha256').update(value).digest('hex');

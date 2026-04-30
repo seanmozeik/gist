@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });

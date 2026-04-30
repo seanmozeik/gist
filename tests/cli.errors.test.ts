@@ -5,8 +5,8 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { toNitterUrls } from '../src/content/link-preview/content/twitter-utils.js';
-import { runCli } from '../src/run.js';
+import { toNitterUrls } from '../src/content/link-preview/content/twitter-utils';
+import { runCli } from '../src/run';
 
 const noopStream = () =>
   new Writable({

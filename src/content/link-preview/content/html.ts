@@ -1,28 +1,28 @@
-import { resolveTranscriptForLink } from '../../transcript/index.js';
-import { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from '../../url.js';
-import type { LinkPreviewDeps } from '../deps.js';
-import type { MarkdownDiagnostics } from '../types.js';
-import { extractArticleContent, sanitizeHtmlForMarkdownConversion } from './article.js';
-import { normalizeForPrompt } from './cleaner.js';
+import { resolveTranscriptForLink } from '../../transcript/index';
+import { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from '../../url';
+import type { LinkPreviewDeps } from '../deps';
+import type { MarkdownDiagnostics } from '../types';
+import { extractArticleContent, sanitizeHtmlForMarkdownConversion } from './article';
+import { normalizeForPrompt } from './cleaner';
 import {
   MIN_HTML_CONTENT_CHARACTERS,
   MIN_METADATA_DESCRIPTION_CHARACTERS,
   MIN_READABILITY_CONTENT_CHARACTERS,
   READABILITY_RELATIVE_THRESHOLD,
 } from './constants.js';
-import { extractJsonLdContent } from './jsonld.js';
-import { extractMetadataFromHtml } from './parsers.js';
-import { isPodcastHost, isPodcastLikeJsonLdType } from './podcast-utils.js';
-import { extractReadabilityFromHtml, toReadabilityHtml } from './readability.js';
-import type { ExtractedLinkContent, FetchLinkContentOptions, MarkdownMode } from './types.js';
+import { extractJsonLdContent } from './jsonld';
+import { extractMetadataFromHtml } from './parsers';
+import { isPodcastHost, isPodcastLikeJsonLdType } from './podcast-utils';
+import { extractReadabilityFromHtml, toReadabilityHtml } from './readability';
+import type { ExtractedLinkContent, FetchLinkContentOptions, MarkdownMode } from './types';
 import {
   ensureTranscriptDiagnostics,
   finalizeExtractedLinkContent,
   pickFirstText,
   selectBaseContent,
 } from './utils.js';
-import { detectPrimaryVideoFromHtml } from './video.js';
-import { extractYouTubeShortDescription } from './youtube.js';
+import { detectPrimaryVideoFromHtml } from './video';
+import { extractYouTubeShortDescription } from './youtube';
 
 const LEADING_CONTROL_PATTERN = /^[\s\p{Cc}]+/u;
 

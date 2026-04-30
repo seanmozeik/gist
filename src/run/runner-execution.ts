@@ -1,16 +1,16 @@
-import { loadLocalAsset, type InputTarget } from '../content/asset.js';
-import type { RunMetricsReport } from '../costs.js';
-import type { ExecFileFn } from '../markitdown.js';
-import { startSpinner } from '../tty/spinner.js';
-import type { AssetAttachment } from './attachments.js';
-import { MAX_PDF_EXTRACT_BYTES } from './constants.js';
-import { extractAssetContent } from './flows/asset/extract.js';
-import type { AssetExtractContext } from './flows/asset/extract.js';
-import { handleFileInput, isPdfExtension, withUrlAsset } from './flows/asset/input.js';
-import { outputExtractedAsset } from './flows/asset/output.js';
-import type { GistAssetArgs } from './flows/asset/summary.js';
-import { runUrlFlow } from './flows/url/flow.js';
-import { createTempFileFromStdin } from './stdin-temp-file.js';
+import { loadLocalAsset, type InputTarget } from '../content/asset';
+import type { RunMetricsReport } from '../costs';
+import type { ExecFileFn } from '../markitdown';
+import { startSpinner } from '../tty/spinner';
+import type { AssetAttachment } from './attachments';
+import { MAX_PDF_EXTRACT_BYTES } from './constants';
+import { extractAssetContent } from './flows/asset/extract';
+import type { AssetExtractContext } from './flows/asset/extract';
+import { handleFileInput, isPdfExtension, withUrlAsset } from './flows/asset/input';
+import { outputExtractedAsset } from './flows/asset/output';
+import type { GistAssetArgs } from './flows/asset/summary';
+import { runUrlFlow } from './flows/url/flow';
+import { createTempFileFromStdin } from './stdin-temp-file';
 
 export async function executeRunnerInput(options: {
   inputTarget: InputTarget;

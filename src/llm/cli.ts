@@ -3,9 +3,9 @@ import fs from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import type { CliConfig, CliProvider } from '../config.js';
-import type { ExecFileFn } from '../markitdown.js';
-import { execCliWithInput } from './cli-exec.js';
+import type { CliConfig, CliProvider } from '../config';
+import type { ExecFileFn } from '../markitdown';
+import { execCliWithInput } from './cli-exec';
 import {
   parseCodexOutputFromJsonl,
   isJsonCliProvider,
@@ -13,7 +13,7 @@ import {
   parseJsonProviderOutput,
   type JsonCliProvider,
 } from './cli-provider-output.js';
-import type { LlmTokenUsage } from './generate-text.js';
+import type { LlmTokenUsage } from './generate-text';
 
 const DEFAULT_BINARIES: Record<CliProvider, string> = {
   agent: 'agent',

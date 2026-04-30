@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildUrlJsonEnv, buildUrlJsonInput } from '../src/run/flows/url/summary-json.js';
+import { buildUrlJsonEnv, buildUrlJsonInput } from '../src/run/flows/url/summary-json';
 
 describe('run url summary json', () => {
   it('builds preset-length input payloads', () => {

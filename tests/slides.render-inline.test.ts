@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { renderSlidesInline } from '../src/run/slides-render.js';
+import { renderSlidesInline } from '../src/run/slides-render';
 
 const pngData = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3kq0cAAAAASUVORK5CYII=',

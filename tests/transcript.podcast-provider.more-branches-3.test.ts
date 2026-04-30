@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MAX_OPENAI_UPLOAD_BYTES } from '../src/transcription/whisper.js';
-import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
+import { MAX_OPENAI_UPLOAD_BYTES } from '../src/transcription/whisper';
+import { stubMissingTranscriptionEnv } from './helpers/transcription-env';
 
 type SpawnPlan = 'ffmpeg-ok' | 'ffmpeg-missing';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createChatHistoryRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-history-runtime.js';
+import { createChatHistoryRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-history-runtime';
 
 describe('sidepanel chat history runtime', () => {
   it('persists compacted messages', async () => {

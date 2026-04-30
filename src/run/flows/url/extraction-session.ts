@@ -1,18 +1,18 @@
-import { buildExtractCacheKey } from '../../../cache.js';
-import { NEGATIVE_TTL_MS } from '../../../content/index.js';
+import { buildExtractCacheKey } from '../../../cache';
+import { NEGATIVE_TTL_MS } from '../../../content/index';
 import {
   createLinkPreviewClient,
   type ExtractedLinkContent,
   type LinkPreviewProgressEvent,
 } from '../../../content/index.js';
-import * as urlUtils from '../../../content/url.js';
-import { readTweetWithPreferredClient } from '../../bird.js';
-import { resolveTwitterCookies } from '../../cookies/twitter.js';
-import { hasBirdCli } from '../../env.js';
-import { writeVerbose } from '../../logging.js';
-import { fetchLinkContentWithBirdTip } from './extract.js';
-import { resolveUrlFetchOptions } from './fetch-options.js';
-import type { UrlFlowContext } from './types.js';
+import * as urlUtils from '../../../content/url';
+import { readTweetWithPreferredClient } from '../../bird';
+import { resolveTwitterCookies } from '../../cookies/twitter';
+import { hasBirdCli } from '../../env';
+import { writeVerbose } from '../../logging';
+import { fetchLinkContentWithBirdTip } from './extract';
+import { resolveUrlFetchOptions } from './fetch-options';
+import type { UrlFlowContext } from './types';
 
 type LinkPreviewClientOptions = NonNullable<Parameters<typeof createLinkPreviewClient>[0]>;
 type ConvertHtmlToMarkdown = LinkPreviewClientOptions['convertHtmlToMarkdown'];
@@ -137,6 +137,10 @@ export function createUrlExtractionSession({
           : false;
       const isTwitter = urlUtils.isTwitterStatusUrl?.(targetUrl) ?? false;
       const isPodcast = urlUtils.isPodcastHost?.(targetUrl) ?? false;
+      const isForcedYoutubeYtDlp = options.youtubeTranscript === 'yt-dlp';
+      if (isForcedYoutubeYtDlp) {
+        throw error;
+      }
       if (!preferUrlMode || isTwitter || isPodcast) {
         throw error;
       }

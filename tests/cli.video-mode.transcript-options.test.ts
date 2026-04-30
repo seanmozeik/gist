@@ -65,7 +65,7 @@ vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 describe('cli --video-mode transcript', () => {
   it('passes media transcript preference to the extractor', async () => {

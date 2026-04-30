@@ -1,18 +1,18 @@
-import { resolveTranscriptForLink } from '../../transcript/index.js';
-import { resolveTranscriptionAvailability } from '../../transcript/providers/transcription-start.js';
-import { isDirectMediaUrl } from '../../url.js';
-import type { LinkPreviewDeps } from '../deps.js';
-import type { CacheMode, TranscriptResolution } from '../types.js';
-import { fetchHtmlDocument } from './fetcher.js';
-import { buildResultFromHtmlDocument } from './html.js';
-import { extractApplePodcastIds, extractSpotifyEpisodeId } from './podcast-utils.js';
-import type { extractReadabilityFromHtml } from './readability.js';
+import { resolveTranscriptForLink } from '../../transcript/index';
+import { resolveTranscriptionAvailability } from '../../transcript/providers/transcription-start';
+import { isDirectMediaUrl } from '../../url';
+import type { LinkPreviewDeps } from '../deps';
+import type { CacheMode, TranscriptResolution } from '../types';
+import { fetchHtmlDocument } from './fetcher';
+import { buildResultFromHtmlDocument } from './html';
+import { extractApplePodcastIds, extractSpotifyEpisodeId } from './podcast-utils';
+import type { extractReadabilityFromHtml } from './readability';
 import {
   isBlockedTwitterContent,
   isTwitterBroadcastUrl,
   isTwitterStatusUrl,
 } from './twitter-utils.js';
-import type { ExtractedLinkContent, FetchLinkContentOptions, MarkdownMode } from './types.js';
+import type { ExtractedLinkContent, FetchLinkContentOptions, MarkdownMode } from './types';
 import {
   appendNote,
   ensureTranscriptDiagnostics,

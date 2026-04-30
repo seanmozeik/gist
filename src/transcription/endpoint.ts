@@ -170,8 +170,12 @@ export async function transcribeMediaWithWhisper(
 
     const response = await fetch(endpoint, { body: formData, method: 'POST' });
     if (!response.ok) {
+      const detail = (await response.text().catch(() => '')).trim();
+      const suffix = detail ? `: ${detail.slice(0, 500)}` : '';
       return {
-        error: new Error(`Transcription failed: ${response.status} ${response.statusText}`),
+        error: new Error(
+          `Transcription failed: ${response.status} ${response.statusText}${suffix}`,
+        ),
         notes: [],
         provider: 'sidecar',
         text: null,

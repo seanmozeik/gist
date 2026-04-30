@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeGatewayStyleModelId, parseGatewayStyleModelId } from '../src/llm/model-id.js';
+import { normalizeGatewayStyleModelId, parseGatewayStyleModelId } from '../src/llm/model-id';
 
 describe('model id parsing', () => {
   it('normalizes gateway-style ids', () => {

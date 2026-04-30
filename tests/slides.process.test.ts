@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runWithConcurrency } from '../src/slides/process.js';
+import { runWithConcurrency } from '../src/slides/process';
 
 describe('slides process helpers', () => {
   it('returns early for empty task lists', async () => {

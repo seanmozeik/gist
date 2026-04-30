@@ -1,8 +1,8 @@
-import type { DirectMediaKind } from '../../direct-media.js';
-import { normalizeTranscriptText } from '../normalize.js';
-import type { TranscriptionConfig } from '../transcription-config.js';
-import type { ProviderFetchOptions, ProviderResult } from '../types.js';
-import { resolveTranscriptProviderCapabilities } from './transcription-capability.js';
+import type { DirectMediaKind } from '../../direct-media';
+import { normalizeTranscriptText } from '../normalize';
+import type { TranscriptionConfig } from '../transcription-config';
+import type { ProviderFetchOptions, ProviderResult } from '../types';
+import { resolveTranscriptProviderCapabilities } from './transcription-capability';
 
 export async function fetchDirectMediaTranscript({
   url,

@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { streamChatResponse } from '../src/daemon/chat.js';
-import { runCliModel } from '../src/llm/cli.js';
-import { streamTextWithContext } from '../src/llm/generate-text.js';
-import { buildAutoModelAttempts } from '../src/model-auto.js';
+import { streamChatResponse } from '../src/daemon/chat';
+import { runCliModel } from '../src/llm/cli';
+import { streamTextWithContext } from '../src/llm/generate-text';
+import { buildAutoModelAttempts } from '../src/model-auto';
 
 vi.mock('../src/llm/cli.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../src/llm/cli.js')>();

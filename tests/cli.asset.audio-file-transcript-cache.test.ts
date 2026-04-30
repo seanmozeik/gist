@@ -10,8 +10,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { TranscriptCache } from '../src/content/cache/types.js';
-import { readTranscriptCache } from '../src/content/transcript/cache.js';
+import type { TranscriptCache } from '../src/content/cache/types';
+import { readTranscriptCache } from '../src/content/transcript/cache';
 
 describe('transcript cache integration with audio files', () => {
   it('caches transcripts using file modification time as cache key component', async () => {

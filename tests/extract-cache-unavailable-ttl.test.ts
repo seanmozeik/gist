@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createCacheStore, type CacheStore } from '../src/cache.js';
-import { NEGATIVE_TTL_MS } from '../src/content/index.js';
+import { createCacheStore, type CacheStore } from '../src/cache';
+import { NEGATIVE_TTL_MS } from '../src/content/index';
 
 /**
  * Regression test for https://github.com/seanmozeik/gist/issues/114

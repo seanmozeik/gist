@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildMinimalPdf } from './helpers/pdf.js';
+import { buildMinimalPdf } from './helpers/pdf';
 
 const mocks = vi.hoisted(() => ({ completeSimple: vi.fn() }));
 

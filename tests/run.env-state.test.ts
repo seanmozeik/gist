@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { GistConfig } from '../src/config.js';
-import { resolveEnvState } from '../src/run/run-env.js';
+import type { GistConfig } from '../src/config';
+import { resolveEnvState } from '../src/run/run-env';
 
 describe('resolveEnvState', () => {
   it('resolves various API keys and configurations from env and config', () => {

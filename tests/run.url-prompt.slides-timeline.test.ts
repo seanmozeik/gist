@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildPromptContentHash } from '../src/cache.js';
-import type { ExtractedLinkContent } from '../src/content/index.js';
-import { buildUrlPrompt } from '../src/run/flows/url/summary.js';
-import type { SlideExtractionResult } from '../src/slides/types.js';
+import { buildPromptContentHash } from '../src/cache';
+import type { ExtractedLinkContent } from '../src/content/index';
+import { buildUrlPrompt } from '../src/run/flows/url/summary';
+import type { SlideExtractionResult } from '../src/slides/types';
 
 const baseExtracted: ExtractedLinkContent = {
   content: 'Transcript:\nhello',

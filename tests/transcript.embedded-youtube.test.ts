@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractEmbeddedYouTubeUrlFromHtml } from '../src/content/transcript/utils.js';
+import { extractEmbeddedYouTubeUrlFromHtml } from '../src/content/transcript/utils';
 
 describe('extractEmbeddedYouTubeUrlFromHtml', () => {
   it('returns a watch URL for a lightweight embed page', async () => {

@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
 
-import { parseBirdTweetPayload } from './bird/parse.js';
-import type { BirdTweetMedia } from './bird/types.js';
-import { BIRD_TIP, TWITTER_HOSTS } from './constants.js';
+import { parseBirdTweetPayload } from './bird/parse';
+import type { BirdTweetMedia } from './bird/types';
+import { BIRD_TIP, TWITTER_HOSTS } from './constants';
 
 export interface BirdTweetPayload {
   id?: string;

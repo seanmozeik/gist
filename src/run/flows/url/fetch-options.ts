@@ -1,5 +1,5 @@
-import type { CacheMode, FetchLinkContentOptions } from '../../../content/index.js';
-import { isLocalFileUrl, resolveLocalFileMtime } from '../../../content/local-file.js';
+import type { CacheMode, FetchLinkContentOptions } from '../../../content/index';
+import { isLocalFileUrl, resolveLocalFileMtime } from '../../../content/local-file';
 
 interface UrlFetchFlags {
   timeoutMs: number;

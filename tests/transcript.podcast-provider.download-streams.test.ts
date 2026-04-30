@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { MAX_OPENAI_UPLOAD_BYTES } from '../src/transcription/whisper.js';
+import { MAX_OPENAI_UPLOAD_BYTES } from '../src/transcription/whisper';
 
 type SpawnPlan = 'ffmpeg-ok' | 'ffmpeg-missing';
 

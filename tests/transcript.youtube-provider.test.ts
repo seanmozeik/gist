@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
+import { stubMissingTranscriptionEnv } from './helpers/transcription-env';
 
 const api = vi.hoisted(() => ({
   extractYoutubeiTranscriptConfig: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock('../src/content/transcript/providers/youtube/captions.js', () => caption
 vi.mock('../src/content/transcript/providers/youtube/apify.js', () => apify);
 vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ytdlp);
 
-import { fetchTranscript } from '../src/content/transcript/providers/youtube.js';
+import { fetchTranscript } from '../src/content/transcript/providers/youtube';
 
 const baseOptions = {
   apifyApiToken: null,

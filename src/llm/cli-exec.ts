@@ -1,6 +1,6 @@
 import type { ExecFileException } from 'node:child_process';
 
-import type { ExecFileFn } from '../markitdown.js';
+import type { ExecFileFn } from '../markitdown';
 
 type CliExecError = ExecFileException & {
   cmd?: string;

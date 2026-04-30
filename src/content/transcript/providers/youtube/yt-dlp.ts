@@ -3,17 +3,17 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 
-import { spawnTracked } from '../../../../processes.js';
+import { spawnTracked } from '../../../../processes';
 import {
   transcribeMediaFileWithWhisper,
   type TranscriptionProgressEvent,
 } from '../../../../transcription/endpoint.js';
-import type { MediaCache } from '../../../cache/types.js';
-import type { LinkPreviewProgressEvent } from '../../../link-preview/deps.js';
-import { ProgressKind } from '../../../link-preview/deps.js';
-import { resolveLocalDirectMediaSource } from '../../../local-file.js';
-import type { TranscriptionConfig } from '../../transcription-config.js';
-import { resolveTranscriptionStartInfo } from '../transcription-start.js';
+import type { MediaCache } from '../../../cache/types';
+import type { LinkPreviewProgressEvent } from '../../../link-preview/deps';
+import { ProgressKind } from '../../../link-preview/deps';
+import { resolveLocalDirectMediaSource } from '../../../local-file';
+import type { TranscriptionConfig } from '../../transcription-config';
+import { resolveTranscriptionStartInfo } from '../transcription-start';
 
 const YT_DLP_TIMEOUT_MS = 300_000;
 const MAX_STDERR_BYTES = 8192;
@@ -46,6 +46,7 @@ interface YtDlpDurationRequest {
 
 export const fetchTranscriptWithYtDlp = async ({
   ytDlpPath,
+  transcription,
   env,
   url,
   onProgress,
@@ -64,7 +65,7 @@ export const fetchTranscriptWithYtDlp = async ({
       text: null,
     };
   }
-  const effectiveEnv = env ?? process.env;
+  const effectiveEnv = transcription?.env ?? env ?? process.env;
   const startInfo = await resolveTranscriptionStartInfo({ env: effectiveEnv });
 
   if (!startInfo.availability.hasAnyProvider) {

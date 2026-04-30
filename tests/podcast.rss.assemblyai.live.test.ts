@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY ?? null;
 const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(ASSEMBLYAI_API_KEY);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasResolvedSlidesPayload } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-pending.js';
+import { hasResolvedSlidesPayload } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-pending';
 
 describe('sidepanel pending slides', () => {
   it('treats seeded placeholder slides as unresolved', () => {

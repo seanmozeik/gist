@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? null;
 const YT_DLP_PATH = process.env.YT_DLP_PATH ?? null;

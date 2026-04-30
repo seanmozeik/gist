@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchWithTimeout } from '../src/run/fetch-with-timeout.js';
+import { fetchWithTimeout } from '../src/run/fetch-with-timeout';
 
 describe('run/fetch-with-timeout', () => {
   it('passes through when init.signal is set', async () => {

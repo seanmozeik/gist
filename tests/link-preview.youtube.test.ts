@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const jsonResponse = (payload: unknown, status = 200) =>
   Response.json(payload, { headers: { 'Content-Type': 'application/json' }, status });

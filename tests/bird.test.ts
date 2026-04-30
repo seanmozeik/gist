@@ -10,7 +10,7 @@ import {
   readTweetWithXurl,
   withBirdTip,
 } from '../src/run/bird.js';
-import { BIRD_TIP } from '../src/run/constants.js';
+import { BIRD_TIP } from '../src/run/constants';
 
 const TEST_CLI_TIMEOUT_MS = 10_000;
 

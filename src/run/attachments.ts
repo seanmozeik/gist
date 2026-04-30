@@ -4,9 +4,9 @@ import path from 'node:path';
 
 import mime from 'mime';
 
-import type { loadLocalAsset } from '../content/asset.js';
-import type { LlmProvider } from '../llm/model-id.js';
-import { formatBytes } from '../tty/format.js';
+import type { loadLocalAsset } from '../content/asset';
+import type { LlmProvider } from '../llm/model-id';
+import { formatBytes } from '../tty/format';
 
 export type AssetAttachment = Awaited<ReturnType<typeof loadLocalAsset>>['attachment'];
 

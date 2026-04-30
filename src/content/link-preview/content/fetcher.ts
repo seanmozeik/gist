@@ -3,7 +3,7 @@ import {
   withBunCompressionHeaders,
   withBunIdentityEncoding,
 } from '../../bun.js';
-import type { LinkPreviewProgressEvent } from '../deps.js';
+import type { LinkPreviewProgressEvent } from '../deps';
 
 const REQUEST_HEADERS: Record<string, string> = {
   Accept:

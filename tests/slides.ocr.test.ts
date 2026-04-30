@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cleanOcrText, estimateOcrConfidence } from '../src/slides/ocr.js';
+import { cleanOcrText, estimateOcrConfidence } from '../src/slides/ocr';
 
 describe('slides ocr helpers', () => {
   it('cleans noisy lines and keeps readable content', () => {

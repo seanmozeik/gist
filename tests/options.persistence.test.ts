@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createOptionsSaveRuntime } from '../apps/chrome-extension/src/entrypoints/options/persistence.js';
+import { createOptionsSaveRuntime } from '../apps/chrome-extension/src/entrypoints/options/persistence';
 
 describe('options persistence', () => {
   it('debounces autosave and flushes one queued rerun', async () => {

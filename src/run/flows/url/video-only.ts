@@ -1,9 +1,9 @@
-import { loadRemoteAsset } from '../../../content/asset.js';
-import type { ExtractedLinkContent } from '../../../content/index.js';
-import { assertAssetMediaTypeSupported } from '../../attachments.js';
-import { writeVerbose } from '../../logging.js';
-import { deriveExtractionUi, type UrlExtractionUi } from './extract.js';
-import type { UrlFlowContext } from './types.js';
+import { loadRemoteAsset } from '../../../content/asset';
+import type { ExtractedLinkContent } from '../../../content/index';
+import { assertAssetMediaTypeSupported } from '../../attachments';
+import { writeVerbose } from '../../logging';
+import { deriveExtractionUi, type UrlExtractionUi } from './extract';
+import type { UrlFlowContext } from './types';
 
 export type VideoOnlyResult =
   | { handled: true }

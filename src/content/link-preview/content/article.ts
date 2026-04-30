@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import sanitizeHtml from 'sanitize-html';
 
-import { decodeHtmlEntities, normalizeWhitespace } from './cleaner.js';
-import { stripHiddenHtml } from './visibility.js';
+import { decodeHtmlEntities, normalizeWhitespace } from './cleaner';
+import { stripHiddenHtml } from './visibility';
 
 const MIN_SEGMENT_LENGTH = 30;
 

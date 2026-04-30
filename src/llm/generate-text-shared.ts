@@ -1,9 +1,9 @@
 import type { Context, Message } from '@mariozechner/pi-ai';
 
-import type { Prompt } from './prompt.js';
-import { userTextAndImageMessage } from './prompt.js';
-import type { LlmTokenUsage } from './types.js';
-import { normalizeTokenUsage } from './usage.js';
+import type { Prompt } from './prompt';
+import { userTextAndImageMessage } from './prompt';
+import type { LlmTokenUsage } from './types';
+import { normalizeTokenUsage } from './usage';
 
 export function promptToContext(prompt: Prompt): Context {
   const attachments = prompt.attachments ?? [];

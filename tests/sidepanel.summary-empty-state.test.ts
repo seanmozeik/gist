@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSummaryEmptyState } from '../apps/chrome-extension/src/entrypoints/sidepanel/summary-empty-state.js';
+import { buildSummaryEmptyState } from '../apps/chrome-extension/src/entrypoints/sidepanel/summary-empty-state';
 
 describe('sidepanel summary empty state', () => {
   it('shows a ready state for manual gist', () => {

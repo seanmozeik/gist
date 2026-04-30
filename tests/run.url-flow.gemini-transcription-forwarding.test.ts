@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { CacheState } from '../src/cache.js';
-import type { ExtractedLinkContent } from '../src/content/index.js';
-import type { LinkPreviewClientOptions } from '../src/content/index.js';
-import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
+import type { CacheState } from '../src/cache';
+import type { ExtractedLinkContent } from '../src/content/index';
+import type { LinkPreviewClientOptions } from '../src/content/index';
+import { createDaemonUrlFlowContext } from '../src/daemon/flow-context';
 
 const mocks = vi.hoisted(() => {
   const fetchLinkContent = vi.fn<(url: string) => Promise<ExtractedLinkContent>>();
@@ -22,7 +22,7 @@ vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runUrlFlow } from '../src/run/flows/url/flow.js';
+import { runUrlFlow } from '../src/run/flows/url/flow';
 
 afterEach(() => {
   vi.clearAllMocks();

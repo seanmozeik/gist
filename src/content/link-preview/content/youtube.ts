@@ -1,4 +1,4 @@
-import { normalizeWhitespace } from './cleaner.js';
+import { normalizeWhitespace } from './cleaner';
 
 function extractBalancedJsonObject(source: string, startAt: number): string | null {
   const start = source.indexOf('{', startAt);

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runChatAgentLoop } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-agent-loop.js';
+import { runChatAgentLoop } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-agent-loop';
 
 function createController() {
   return {

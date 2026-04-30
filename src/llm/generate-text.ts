@@ -1,4 +1,4 @@
-import { maybeGenerateDocumentText } from './generate-text-document.js';
+import { maybeGenerateDocumentText } from './generate-text-document';
 import {
   computeRetryDelayMs,
   isRetryableTimeoutError,
@@ -6,15 +6,15 @@ import {
   resolveEffectiveTemperature,
   sleep,
 } from './generate-text-shared.js';
-import { streamTextWithContext } from './generate-text-stream.js';
-import { parseGatewayStyleModelId } from './model-id.js';
-import type { LlmProvider } from './model-id.js';
-import type { ModelRequestOptions } from './model-options.js';
-import type { Prompt } from './prompt.js';
-import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities.js';
-import { completeOpenAiText } from './providers/openai.js';
-import type { OpenAiClientConfig } from './providers/types.js';
-import type { LlmTokenUsage } from './types.js';
+import { streamTextWithContext } from './generate-text-stream';
+import { parseGatewayStyleModelId } from './model-id';
+import type { LlmProvider } from './model-id';
+import type { ModelRequestOptions } from './model-options';
+import type { Prompt } from './prompt';
+import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities';
+import { completeOpenAiText } from './providers/openai';
+import type { OpenAiClientConfig } from './providers/types';
+import type { LlmTokenUsage } from './types';
 
 export { streamTextWithContext } from './generate-text-stream.js';
 

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { loadGistConfig } from '../src/config.js';
+import { loadGistConfig } from '../src/config';
 
 describe('config error handling', () => {
   it('throws on invalid JSON', () => {

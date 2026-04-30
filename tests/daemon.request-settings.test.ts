@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveRunOverrides } from '../src/run/run-settings.js';
+import { resolveRunOverrides } from '../src/run/run-settings';
 
 describe('run/run-settings overrides', () => {
   it('parses mode overrides when valid', () => {

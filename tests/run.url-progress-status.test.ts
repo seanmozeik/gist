@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createUrlProgressStatus } from '../src/run/flows/url/progress-status.js';
+import { createUrlProgressStatus } from '../src/run/flows/url/progress-status';
 
 describe('url progress status', () => {
   it('keeps slide progress visible while summary updates happen', () => {

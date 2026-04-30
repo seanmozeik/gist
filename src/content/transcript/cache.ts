@@ -1,4 +1,4 @@
-import type { TranscriptCache } from '../cache/types.js';
+import type { TranscriptCache } from '../cache/types';
 import type {
   CacheMode,
   TranscriptDiagnostics,

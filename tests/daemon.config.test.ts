@@ -20,7 +20,7 @@ import {
   DAEMON_CONFIG_FILENAME,
   DAEMON_PORT_DEFAULT,
 } from '../src/daemon/constants.js';
-import { buildEnvSnapshotFromEnv } from '../src/daemon/env-snapshot.js';
+import { buildEnvSnapshotFromEnv } from '../src/daemon/env-snapshot';
 
 describe('daemon config', () => {
   it('resolves config path and errors without HOME', () => {

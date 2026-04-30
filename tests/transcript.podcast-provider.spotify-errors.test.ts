@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchTranscript } from '../src/content/transcript/providers/podcast.js';
+import { fetchTranscript } from '../src/content/transcript/providers/podcast';
 
 const baseOptions = {
   apifyApiToken: null,

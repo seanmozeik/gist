@@ -20,7 +20,7 @@ vi.mock('../src/content/transcript/index.js', () => ({
   resolveTranscriptForLink: mocks.resolveTranscriptForLink,
 }));
 
-import { fetchLinkContent } from '../src/content/link-preview/content/index.js';
+import { fetchLinkContent } from '../src/content/link-preview/content/index';
 
 const buildDeps = (fetchImpl: typeof fetch) => ({
   apifyApiToken: null,

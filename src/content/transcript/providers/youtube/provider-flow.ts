@@ -1,19 +1,19 @@
-import { normalizeTranscriptText } from '../../normalize.js';
-import type { TranscriptionConfig } from '../../transcription-config.js';
+import { normalizeTranscriptText } from '../../normalize';
+import type { TranscriptionConfig } from '../../transcription-config';
 import type {
   ProviderContext,
   ProviderFetchOptions,
   ProviderResult,
   TranscriptSource,
 } from '../../types.js';
-import { extractYouTubeVideoId } from '../../utils.js';
-import { extractYoutubeiTranscriptConfig, fetchTranscriptFromTranscriptEndpoint } from './api.js';
+import { extractYouTubeVideoId } from '../../utils';
+import { extractYoutubeiTranscriptConfig, fetchTranscriptFromTranscriptEndpoint } from './api';
 import {
   extractYoutubeDurationSeconds,
   fetchTranscriptFromCaptionTracks,
   fetchYoutubeDurationSecondsViaPlayer,
 } from './captions.js';
-import { fetchDurationSecondsWithYtDlp, fetchTranscriptWithYtDlp } from './yt-dlp.js';
+import { fetchDurationSecondsWithYtDlp, fetchTranscriptWithYtDlp } from './yt-dlp';
 
 /**
  * Check if a transcript is suspiciously short relative to the video duration.

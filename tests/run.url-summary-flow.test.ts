@@ -2,11 +2,11 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import type { CacheStore } from '../src/cache.js';
-import type { ExtractedLinkContent } from '../src/content/index.js';
-import { parseRequestedModelId } from '../src/model-spec.js';
-import { gistExtractedUrl } from '../src/run/flows/url/summary.js';
-import type { UrlFlowContext } from '../src/run/flows/url/types.js';
+import type { CacheStore } from '../src/cache';
+import type { ExtractedLinkContent } from '../src/content/index';
+import { parseRequestedModelId } from '../src/model-spec';
+import { gistExtractedUrl } from '../src/run/flows/url/summary';
+import type { UrlFlowContext } from '../src/run/flows/url/types';
 
 function collectStream() {
   let text = '';

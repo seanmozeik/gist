@@ -1,4 +1,4 @@
-import type { BirdTweetMedia } from './types.js';
+import type { BirdTweetMedia } from './types';
 
 const URL_PREFIX_PATTERN = /^https?:\/\//i;
 

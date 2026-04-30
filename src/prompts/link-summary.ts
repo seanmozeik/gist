@@ -1,7 +1,7 @@
-import type { OutputLanguage } from '../language.js';
-import { formatOutputLanguageInstruction } from '../language.js';
-import type { SummaryLength } from '../shared/contracts.js';
-import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from './format.js';
+import type { OutputLanguage } from '../language';
+import { formatOutputLanguageInstruction } from '../language';
+import type { SummaryLength } from '../shared/contracts';
+import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from './format';
 import {
   formatPresetLengthGuidance,
   resolveSummaryLengthSpec,

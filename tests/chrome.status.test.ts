@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { splitStatusPercent } from '../apps/chrome-extension/src/lib/status.js';
+import { splitStatusPercent } from '../apps/chrome-extension/src/lib/status';
 
 describe('chrome/status', () => {
   it('splits a trailing percent', () => {

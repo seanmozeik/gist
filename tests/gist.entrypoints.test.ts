@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { SUMMARY_LENGTHS as INDEX_LENGTHS } from '../src/index.js';
-import { SUMMARY_LENGTHS as CONTRACT_LENGTHS } from '../src/shared/contracts.js';
+import { SUMMARY_LENGTHS as INDEX_LENGTHS } from '../src/index';
+import { SUMMARY_LENGTHS as CONTRACT_LENGTHS } from '../src/shared/contracts';
 
 describe('gist entrypoints', () => {
   it('exports summary length presets', () => {

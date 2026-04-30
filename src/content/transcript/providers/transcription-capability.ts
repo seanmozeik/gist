@@ -1,5 +1,5 @@
-import type { TranscriptionConfig } from '../transcription-config.js';
-import type { ProviderResult, TranscriptSource } from '../types.js';
+import type { TranscriptionConfig } from '../transcription-config';
+import type { ProviderResult, TranscriptSource } from '../types';
 import {
   resolveTranscriptionAvailability,
   type TranscriptionAvailability,

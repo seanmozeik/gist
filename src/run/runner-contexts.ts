@@ -1,8 +1,8 @@
-import type { CacheState } from '../cache.js';
-import type { MediaCache } from '../content/index.js';
-import { createAssetSummaryContext, type GistAssetArgs } from './flows/asset/summary.js';
-import { gistAsset as gistAssetFlow } from './flows/asset/summary.js';
-import { createUrlFlowContext, type UrlFlowContext } from './flows/url/types.js';
+import type { CacheState } from '../cache';
+import type { MediaCache } from '../content/index';
+import { createAssetSummaryContext, type GistAssetArgs } from './flows/asset/summary';
+import { gistAsset as gistAssetFlow } from './flows/asset/summary';
+import { createUrlFlowContext, type UrlFlowContext } from './flows/url/types';
 
 type GistMediaFile = typeof import('./flows/asset/media.js').gistMediaFile;
 

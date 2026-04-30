@@ -1,11 +1,11 @@
 import { render as renderMarkdownAnsi } from 'markdansi';
 
-import type { RunMetricsReport } from '../../../costs.js';
-import type { AssetAttachment } from '../../attachments.js';
-import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
-import { prepareMarkdownForTerminal } from '../../markdown.js';
-import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
-import type { AssetExtractResult } from './extract.js';
+import type { RunMetricsReport } from '../../../costs';
+import type { AssetAttachment } from '../../attachments';
+import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line';
+import { prepareMarkdownForTerminal } from '../../markdown';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal';
+import type { AssetExtractResult } from './extract';
 
 export async function outputExtractedAsset({
   io,

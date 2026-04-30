@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ProviderContext, ProviderFetchOptions } from '../src/content/transcript/types.js';
-import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
+import type { ProviderContext, ProviderFetchOptions } from '../src/content/transcript/types';
+import { stubMissingTranscriptionEnv } from './helpers/transcription-env';
 
 const mocks = vi.hoisted(() => ({ fetchTranscriptWithYtDlp: vi.fn(), isWhisperCppReady: vi.fn() }));
 

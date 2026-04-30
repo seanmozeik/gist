@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchTranscript } from '../src/content/transcript/providers/podcast.js';
-import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
+import { fetchTranscript } from '../src/content/transcript/providers/podcast';
+import { stubMissingTranscriptionEnv } from './helpers/transcription-env';
 
 const baseOptions = {
   apifyApiToken: null,

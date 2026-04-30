@@ -5,9 +5,9 @@ import { Writable } from 'node:stream';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
-import type { createUrlExtractionSession as createUrlExtractionSessionType } from '../src/run/flows/url/extraction-session.js';
-import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
+import { runCli } from '../src/run';
+import type { createUrlExtractionSession as createUrlExtractionSessionType } from '../src/run/flows/url/extraction-session';
+import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock';
 
 type CreateUrlExtractionSessionArgs = Parameters<typeof createUrlExtractionSessionType>[0];
 

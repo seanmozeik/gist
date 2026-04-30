@@ -6,7 +6,7 @@ import type { Message } from '@mariozechner/pi-ai';
 import { fileTypeFromBuffer } from 'file-type';
 import mime from 'mime';
 
-import { userTextAndImageMessage } from '../llm/prompt.js';
+import { userTextAndImageMessage } from '../llm/prompt';
 
 export type InputTarget =
   | { kind: 'url'; url: string }

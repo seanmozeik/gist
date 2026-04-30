@@ -1,4 +1,4 @@
-import type { LlmCall, RunMetricsReport } from '../costs.js';
+import type { LlmCall, RunMetricsReport } from '../costs';
 
 export interface RunMetrics {
   llmCalls: LlmCall[];

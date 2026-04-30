@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { encodeSseEvent, parseSseEvent, type SseEvent } from '../src/shared/sse-events.js';
+import { encodeSseEvent, parseSseEvent, type SseEvent } from '../src/shared/sse-events';
 
 describe('sse events', () => {
   it('encodes and parses known events', () => {

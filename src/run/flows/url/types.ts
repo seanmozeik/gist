@@ -1,19 +1,19 @@
-import type { CacheState } from '../../../cache.js';
-import type { CliProvider, GistConfig } from '../../../config.js';
+import type { CacheState } from '../../../cache';
+import type { CliProvider, GistConfig } from '../../../config';
 import type {
   ExtractedLinkContent,
   LinkPreviewProgressEvent,
   MediaCache,
 } from '../../../content/index.js';
-import type { LlmCall, RunMetricsReport } from '../../../costs.js';
-import type { StreamMode } from '../../../flags.js';
-import type { OutputLanguage } from '../../../language.js';
-import type { ModelRequestOptions } from '../../../llm/model-options.js';
-import type { ExecFileFn } from '../../../markitdown.js';
-import type { FixedModelSpec, RequestedModel } from '../../../model-spec.js';
-import type { SummaryLength } from '../../../shared/contracts.js';
-import type { createSummaryEngine } from '../../summary-engine.js';
-import type { GistAssetArgs } from '../asset/summary.js';
+import type { LlmCall, RunMetricsReport } from '../../../costs';
+import type { StreamMode } from '../../../flags';
+import type { OutputLanguage } from '../../../language';
+import type { ModelRequestOptions } from '../../../llm/model-options';
+import type { ExecFileFn } from '../../../markitdown';
+import type { FixedModelSpec, RequestedModel } from '../../../model-spec';
+import type { SummaryLength } from '../../../shared/contracts';
+import type { createSummaryEngine } from '../../summary-engine';
+import type { GistAssetArgs } from '../asset/summary';
 
 export interface UrlFlowIo {
   env: Record<string, string | undefined>;

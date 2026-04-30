@@ -19,7 +19,7 @@ vi.mock('../src/run/flows/asset/input.js', () => ({
   withUrlAsset: vi.fn(async () => false),
 }));
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 const noopStream = () =>
   new Writable({

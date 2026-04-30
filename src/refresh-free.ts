@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 
 import JSON5 from 'json5';
 
-import { generateTextWithModelId } from './llm/generate-text.js';
+import { generateTextWithModelId } from './llm/generate-text';
 
 interface RefreshFreeOptions {
   runs: number;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveSlideSettings } from '../src/slides/index.js';
+import { resolveSlideSettings } from '../src/slides/index';
 
 describe('resolveSlideSettings', () => {
   it('returns null when slides are disabled', () => {

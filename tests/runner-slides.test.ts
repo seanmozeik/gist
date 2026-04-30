@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveRunnerSlidesSettings } from '../src/run/runner-slides.js';
+import { resolveRunnerSlidesSettings } from '../src/run/runner-slides';
 
 describe('resolveRunnerSlidesSettings', () => {
   it('allows slides for local video files', () => {

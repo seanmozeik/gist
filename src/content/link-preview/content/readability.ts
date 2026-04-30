@@ -1,4 +1,4 @@
-import { stripHiddenHtml } from './visibility.js';
+import { stripHiddenHtml } from './visibility';
 
 export interface ReadabilityResult {
   text: string;

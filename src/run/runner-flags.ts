@@ -8,10 +8,11 @@ import {
   parseStreamMode,
   type YoutubeMode,
 } from '../flags.js';
-import { resolveCliRunSettings } from './run-settings.js';
+import { resolveCliRunSettings } from './run-settings';
 
 export interface RunnerFlagResolution {
   videoModeExplicitlySet: boolean;
+  youtubeModeExplicitlySet: boolean;
   lengthExplicitlySet: boolean;
   languageExplicitlySet: boolean;
   noCacheFlag: boolean;
@@ -53,6 +54,7 @@ export function resolveRunnerFlags({
   url: string | null;
 }): RunnerFlagResolution {
   const videoModeExplicitlySet = hasFlag(normalizedArgv, '--video-mode');
+  const youtubeModeExplicitlySet = hasFlag(normalizedArgv, '--youtube');
   const lengthExplicitlySet = hasFlag(normalizedArgv, '--length');
   const languageExplicitlySet = hasFlag(normalizedArgv, '--language', '--lang');
   const noCacheFlag = programOpts.cache === false;
@@ -133,5 +135,6 @@ export function resolveRunnerFlags({
     verbose,
     videoModeExplicitlySet,
     youtubeMode: runSettings.youtubeMode,
+    youtubeModeExplicitlySet,
   };
 }

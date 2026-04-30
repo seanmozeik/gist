@@ -1,31 +1,31 @@
 import type { Command } from 'commander';
 
-import type { CacheState } from '../cache.js';
-import type { ExecFileFn } from '../markitdown.js';
-import type { FixedModelSpec } from '../model-spec.js';
+import type { CacheState } from '../cache';
+import type { ExecFileFn } from '../markitdown';
+import type { FixedModelSpec } from '../model-spec';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
 } from '../tty/theme.js';
-import { createCacheStateFromConfig } from './cache-state.js';
-import { parseCliProviderArg } from './env.js';
-import { isPdfExtension, isTranscribableExtension } from './flows/asset/input.js';
-import { gistMediaFile as gistMediaFileImpl } from './flows/asset/media.js';
-import { createMediaCacheFromConfig } from './media-cache-state.js';
-import { createProgressGate } from './progress.js';
-import { resolveRunContextState } from './run-context.js';
-import { resolveRunInput } from './run-input.js';
-import { createRunMetrics } from './run-metrics.js';
-import { resolveModelSelection } from './run-models.js';
-import { resolveDesiredOutputTokens } from './run-output.js';
-import { buildPromptLengthInstruction, resolveSummaryLength } from './run-settings.js';
-import { resolveStreamSettings } from './run-stream.js';
-import { createRunnerFlowContexts } from './runner-contexts.js';
-import { executeRunnerInput } from './runner-execution.js';
-import { resolveRunnerFlags } from './runner-flags.js';
-import { createSummaryEngine } from './summary-engine.js';
-import { isRichTty, supportsColor } from './terminal.js';
+import { createCacheStateFromConfig } from './cache-state';
+import { parseCliProviderArg } from './env';
+import { isPdfExtension, isTranscribableExtension } from './flows/asset/input';
+import { gistMediaFile as gistMediaFileImpl } from './flows/asset/media';
+import { createMediaCacheFromConfig } from './media-cache-state';
+import { createProgressGate } from './progress';
+import { resolveRunContextState } from './run-context';
+import { resolveRunInput } from './run-input';
+import { createRunMetrics } from './run-metrics';
+import { resolveModelSelection } from './run-models';
+import { resolveDesiredOutputTokens } from './run-output';
+import { buildPromptLengthInstruction, resolveSummaryLength } from './run-settings';
+import { resolveStreamSettings } from './run-stream';
+import { createRunnerFlowContexts } from './runner-contexts';
+import { executeRunnerInput } from './runner-execution';
+import { resolveRunnerFlags } from './runner-flags';
+import { createSummaryEngine } from './summary-engine';
+import { isRichTty, supportsColor } from './terminal';
 
 export interface RunnerPlan {
   cacheState: CacheState;
@@ -71,7 +71,8 @@ export async function createRunnerPlan(options: {
     maxExtractCharacters,
     isYoutubeUrl,
     format,
-    youtubeMode,
+    youtubeMode: requestedYoutubeMode,
+    youtubeModeExplicitlySet,
     lengthArg: requestedLengthArg,
     maxOutputTokensArg,
     timeoutMs,
@@ -132,6 +133,9 @@ export async function createRunnerPlan(options: {
     programOpts,
     videoModeExplicitlySet,
   });
+  const youtubeMode = youtubeModeExplicitlySet
+    ? requestedYoutubeMode
+    : (config?.media?.youtubeMode ?? requestedYoutubeMode);
 
   const themeName = resolveThemeNameFromSources({
     cli: (programOpts as { theme?: unknown }).theme,

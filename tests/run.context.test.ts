@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { resolveRunContextState } from '../src/run/run-context.js';
+import { resolveRunContextState } from '../src/run/run-context';
 
 describe('run context state', () => {
   it('combines config + env resolution', () => {

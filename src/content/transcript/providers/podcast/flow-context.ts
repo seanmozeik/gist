@@ -1,6 +1,6 @@
-import type { TranscriptionConfig } from '../../transcription-config.js';
-import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../../types.js';
-import type { TranscribeRequest, TranscriptionResult } from './media.js';
+import type { TranscriptionConfig } from '../../transcription-config';
+import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../../types';
+import type { TranscribeRequest, TranscriptionResult } from './media';
 
 export interface PodcastFlowContext {
   context: ProviderContext;

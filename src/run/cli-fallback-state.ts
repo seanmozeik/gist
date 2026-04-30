@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import type { CliProvider } from '../config.js';
+import type { CliProvider } from '../config';
 
 const STATE_FILE_NAME = 'cli-state.json';
 

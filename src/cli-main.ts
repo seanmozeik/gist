@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { runCli } from './run.js';
+import { runCli } from './run';
 
 export interface CliMainArgs {
   argv: string[];

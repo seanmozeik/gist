@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 describe('cli --extract', () => {
   it('prints full extracted content (no truncation) and never calls OpenAI', async () => {

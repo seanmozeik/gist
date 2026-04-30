@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { makeAssistantMessage } from './helpers/pi-ai-mock.js';
+import { makeAssistantMessage } from './helpers/pi-ai-mock';
 
 const mocks = vi.hoisted(() => {
   const completeSimple = vi.fn();
@@ -75,7 +75,7 @@ vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 function collectStream() {
   let text = '';

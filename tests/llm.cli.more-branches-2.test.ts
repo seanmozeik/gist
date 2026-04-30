@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { isCliDisabled, resolveCliBinary, runCliModel } from '../src/llm/cli.js';
+import { isCliDisabled, resolveCliBinary, runCliModel } from '../src/llm/cli';
 
 describe('llm/cli more branches', () => {
   it('isCliDisabled respects cli.enabled allowlist', () => {

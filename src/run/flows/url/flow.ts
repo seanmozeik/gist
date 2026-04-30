@@ -3,22 +3,22 @@ import {
   resolveThemeNameFromSources,
   resolveTrueColor,
 } from '../../../tty/theme.js';
-import { UVX_TIP } from '../../constants.js';
-import { hasUvxCli } from '../../env.js';
+import { UVX_TIP } from '../../constants';
+import { hasUvxCli } from '../../env';
 import {
   estimateWhisperTranscriptionCostUsd,
   formatOptionalNumber,
   formatOptionalString,
   formatUSD,
 } from '../../format.js';
-import { writeVerbose } from '../../logging.js';
-import { deriveExtractionUi, logExtractionDiagnostics } from './extract.js';
-import { createUrlExtractionSession } from './extraction-session.js';
-import { createUrlFlowProgress } from './flow-progress.js';
-import { createMarkdownConverters } from './markdown.js';
-import { buildUrlPrompt, outputExtractedUrl, gistExtractedUrl } from './summary.js';
-import type { UrlFlowContext } from './types.js';
-import { handleVideoOnlyExtractedContent } from './video-only.js';
+import { writeVerbose } from '../../logging';
+import { deriveExtractionUi, logExtractionDiagnostics } from './extract';
+import { createUrlExtractionSession } from './extraction-session';
+import { createUrlFlowProgress } from './flow-progress';
+import { createMarkdownConverters } from './markdown';
+import { buildUrlPrompt, outputExtractedUrl, gistExtractedUrl } from './summary';
+import type { UrlFlowContext } from './types';
+import { handleVideoOnlyExtractedContent } from './video-only';
 
 export async function runUrlFlow({
   ctx,

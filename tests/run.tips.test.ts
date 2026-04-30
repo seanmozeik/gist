@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { UVX_TIP } from '../src/run/constants.js';
-import { withUvxTip } from '../src/run/tips.js';
+import { UVX_TIP } from '../src/run/constants';
+import { withUvxTip } from '../src/run/tips';
 
 describe('run/tips', () => {
   it('keeps original error when uvx is available', () => {

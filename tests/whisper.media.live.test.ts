@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { transcribeMediaWithWhisper } from '../src/transcription/whisper.js';
+import { transcribeMediaWithWhisper } from '../src/transcription/whisper';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? null;
 const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(OPENAI_API_KEY);

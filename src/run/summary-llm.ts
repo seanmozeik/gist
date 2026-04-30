@@ -1,7 +1,7 @@
-import { generateTextWithModelId } from '../llm/generate-text.js';
-import type { LlmProvider } from '../llm/model-id.js';
-import type { ModelRequestOptions } from '../llm/model-options.js';
-import type { Prompt } from '../llm/prompt.js';
+import { generateTextWithModelId } from '../llm/generate-text';
+import type { LlmProvider } from '../llm/model-id';
+import type { ModelRequestOptions } from '../llm/model-options';
+import type { Prompt } from '../llm/prompt';
 
 export async function resolveModelIdForLlmCall({
   parsedModel,

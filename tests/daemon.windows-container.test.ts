@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isWindowsContainerEnvironment } from '../src/daemon/windows-container.js';
+import { isWindowsContainerEnvironment } from '../src/daemon/windows-container';
 
 describe('daemon/windows-container', () => {
   it('defaults to desktop mode when no container markers are present', () => {

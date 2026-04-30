@@ -6,8 +6,8 @@ import {
   resolveThemeNameFromSources,
   resolveTrueColor,
 } from '../tty/theme.js';
-import { SUPPORT_URL } from './constants.js';
-import { supportsColor } from './terminal.js';
+import { SUPPORT_URL } from './constants';
+import { supportsColor } from './terminal';
 
 export function buildProgram() {
   return new Command()
@@ -183,6 +183,12 @@ export function attachRichHelp(
   program.addHelpText(
     'after',
     () => `
+${heading('Commands')}
+  ${cmd('gist <input> [flags]')} ${dim('# extract or summarize a URL, file, or stdin')}
+  ${cmd('gist refresh-free [flags]')} ${dim('# refresh OpenRouter :free model candidates')}
+  ${cmd('gist auth [provider]')} ${dim('# manage stored API keys')}
+  ${cmd('gist help <command>')} ${dim('# show command-specific help')}
+
 ${heading('Examples')}
   ${cmd('gist "https://example.com"')}
   ${cmd('gist "https://example.com" --extract')} ${dim('# extracted plain text')}
@@ -231,6 +237,12 @@ export function buildConciseHelp(): string {
     'gist - Extract or summarize links, media, local files, and stdin.',
     '',
     'Usage: gist <input> [flags]',
+    '',
+    'Commands:',
+    '  gist <input> [flags]',
+    '  gist refresh-free [flags]',
+    '  gist auth [provider]',
+    '  gist help <command>',
     '',
     'Examples:',
     '  gist "https://example.com"',

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 import { describe, expect, it } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const GEMINI_API_KEY =
   process.env.GEMINI_API_KEY ??

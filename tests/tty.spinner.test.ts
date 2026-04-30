@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { startSpinner } from '../src/tty/spinner.js';
+import { startSpinner } from '../src/tty/spinner';
 
 const { oraMock } = vi.hoisted(() => ({ oraMock: vi.fn() }));
 

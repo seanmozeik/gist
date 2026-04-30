@@ -1,6 +1,6 @@
-import type { CliProvider } from '../config.js';
-import { resolveConfigState } from './run-config.js';
-import { resolveEnvState } from './run-env.js';
+import type { CliProvider } from '../config';
+import { resolveConfigState } from './run-config';
+import { resolveEnvState } from './run-env';
 
 export function resolveRunContextState({
   env,

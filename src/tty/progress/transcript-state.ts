@@ -1,11 +1,11 @@
-import type { LinkPreviewProgressEvent } from '../../content/index.js';
+import type { LinkPreviewProgressEvent } from '../../content/index';
 import {
   formatBytes,
   formatBytesPerSecond,
   formatDurationSecondsSmart,
   formatElapsedMs,
 } from '../format.js';
-import type { ThemeRenderer } from '../theme.js';
+import type { ThemeRenderer } from '../theme';
 
 export interface TranscriptProgressState {
   phase: 'idle' | 'download' | 'whisper';

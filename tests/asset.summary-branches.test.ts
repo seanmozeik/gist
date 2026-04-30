@@ -9,7 +9,7 @@ vi.mock('../src/run/flows/asset/preprocess.js', () => ({
 }));
 vi.mock('../src/run/model-attempts.js', () => ({ runModelAttempts: mocks.runModelAttempts }));
 
-import { gistAsset } from '../src/run/flows/asset/summary.js';
+import { gistAsset } from '../src/run/flows/asset/summary';
 
 const collectStream = () => {
   let text = '';

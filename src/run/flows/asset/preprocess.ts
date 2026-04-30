@@ -1,12 +1,12 @@
-import type { OutputLanguage } from '../../../language.js';
-import type { Attachment } from '../../../llm/attachments.js';
-import { resolveOpenAiClientConfig } from '../../../llm/providers/openai.js';
-import { convertToMarkdownWithMarkitdown } from '../../../markitdown.js';
-import type { FixedModelSpec } from '../../../model-spec.js';
-import { convertPdfToMarkdown } from '../../../pdf/convert.js';
-import { buildFileSummaryPrompt, buildFileTextSummaryPrompt } from '../../../prompts/index.js';
-import type { SummaryLength } from '../../../shared/contracts.js';
-import { formatBytes } from '../../../tty/format.js';
+import type { OutputLanguage } from '../../../language';
+import type { Attachment } from '../../../llm/attachments';
+import { resolveOpenAiClientConfig } from '../../../llm/providers/openai';
+import { convertToMarkdownWithMarkitdown } from '../../../markitdown';
+import type { FixedModelSpec } from '../../../model-spec';
+import { convertPdfToMarkdown } from '../../../pdf/convert';
+import { buildFileSummaryPrompt, buildFileTextSummaryPrompt } from '../../../prompts/index';
+import type { SummaryLength } from '../../../shared/contracts';
+import { formatBytes } from '../../../tty/format';
 import {
   type AssetAttachment,
   getFileBytesFromAttachment,
@@ -15,9 +15,9 @@ import {
   shouldMarkitdownConvertMediaType,
   supportsNativeFileAttachment,
 } from '../../attachments.js';
-import { MAX_TEXT_BYTES_DEFAULT } from '../../constants.js';
-import { hasUvxCli } from '../../env.js';
-import { withUvxTip } from '../../tips.js';
+import { MAX_TEXT_BYTES_DEFAULT } from '../../constants';
+import { hasUvxCli } from '../../env';
+import { withUvxTip } from '../../tips';
 
 export interface AssetPreprocessContext {
   env: Record<string, string | undefined>;
@@ -286,6 +286,7 @@ export async function prepareAssetPrompt({
         const result = await convertPdfToMarkdown({
           baseUrl: ctx.localBaseUrl,
           bytes: fileBytes,
+          endpoint: ctx.envForRun.GIST_PDF_CONVERT_ENDPOINT ?? ctx.env.GIST_PDF_CONVERT_ENDPOINT,
           filename: attachment.filename,
         });
         preprocessedMarkdown = result.markdown;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createNavigationRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/navigation-runtime.js';
+import { createNavigationRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/navigation-runtime';
 
 describe('sidepanel navigation runtime', () => {
   beforeEach(() => {

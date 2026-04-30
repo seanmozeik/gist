@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildChatPageContent } from '../apps/chrome-extension/src/lib/chat-context.js';
+import { buildChatPageContent } from '../apps/chrome-extension/src/lib/chat-context';
 
 describe('chrome/chat-context', () => {
   it('includes summary when transcript is within cap', () => {

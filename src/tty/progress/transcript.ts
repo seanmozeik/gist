@@ -1,6 +1,6 @@
-import type { LinkPreviewProgressEvent } from '../../content/index.js';
-import type { OscProgressController } from '../osc-progress.js';
-import type { ThemeRenderer } from '../theme.js';
+import type { LinkPreviewProgressEvent } from '../../content/index';
+import type { OscProgressController } from '../osc-progress';
+import type { ThemeRenderer } from '../theme';
 import {
   applyTranscriptProgressEvent,
   createTranscriptProgressState,

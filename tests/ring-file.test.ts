@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createRingFileWriter } from '../src/logging/ring-file.js';
+import { createRingFileWriter } from '../src/logging/ring-file';
 
 describe('ring file writer', () => {
   it('rotates when size exceeds max bytes', async () => {

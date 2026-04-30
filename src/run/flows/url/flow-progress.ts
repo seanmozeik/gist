@@ -1,9 +1,9 @@
-import { createOscProgressController } from '../../../tty/osc-progress.js';
-import { startSpinner } from '../../../tty/spinner.js';
-import type { createThemeRenderer } from '../../../tty/theme.js';
-import { createWebsiteProgress } from '../../../tty/website-progress.js';
-import { createUrlProgressStatus } from './progress-status.js';
-import type { UrlFlowContext } from './types.js';
+import { createOscProgressController } from '../../../tty/osc-progress';
+import { startSpinner } from '../../../tty/spinner';
+import type { createThemeRenderer } from '../../../tty/theme';
+import { createWebsiteProgress } from '../../../tty/website-progress';
+import { createUrlProgressStatus } from './progress-status';
+import type { UrlFlowContext } from './types';
 
 export function createUrlFlowProgress({
   ctx,

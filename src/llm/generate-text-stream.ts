@@ -1,16 +1,16 @@
 import { streamSimple } from '@mariozechner/pi-ai';
 import type { Context } from '@mariozechner/pi-ai';
 
-import { createUnsupportedFunctionalityError } from './errors.js';
-import { resolveEffectiveTemperature, streamUsageWithTimeout } from './generate-text-shared.js';
-import type { LlmApiKeys } from './generate-text.js';
-import { parseGatewayStyleModelId } from './model-id.js';
-import type { LlmProvider } from './model-id.js';
-import type { ModelRequestOptions } from './model-options.js';
-import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities.js';
-import { completeOpenAiText } from './providers/openai.js';
-import type { OpenAiClientConfig } from './providers/types.js';
-import type { LlmTokenUsage } from './types.js';
+import { createUnsupportedFunctionalityError } from './errors';
+import type { LlmApiKeys } from './generate-text';
+import { resolveEffectiveTemperature, streamUsageWithTimeout } from './generate-text-shared';
+import { parseGatewayStyleModelId } from './model-id';
+import type { LlmProvider } from './model-id';
+import type { ModelRequestOptions } from './model-options';
+import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities';
+import { completeOpenAiText } from './providers/openai';
+import type { OpenAiClientConfig } from './providers/types';
+import type { LlmTokenUsage } from './types';
 
 export interface StreamTextWithContextArgs {
   modelId: string;

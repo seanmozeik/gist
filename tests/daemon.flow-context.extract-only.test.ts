@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { CacheState } from '../src/cache.js';
-import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
+import type { CacheState } from '../src/cache';
+import { createDaemonUrlFlowContext } from '../src/daemon/flow-context';
 
 describe('daemon/flow-context extractOnly', () => {
   it('sets extractMode when extractOnly is true', () => {

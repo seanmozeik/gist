@@ -1,4 +1,4 @@
-import type { TranscriptSegment } from '../link-preview/types.js';
+import type { TranscriptSegment } from '../link-preview/types';
 
 const TIMESTAMP_SPLIT_PATTERN = /:/;
 

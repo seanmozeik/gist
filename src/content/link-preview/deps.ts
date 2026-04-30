@@ -1,6 +1,6 @@
-import type { MediaCache, TranscriptCache } from '../cache/types.js';
-import type { TranscriptionConfig } from '../transcript/transcription-config.js';
-import type { TranscriptSource } from './types.js';
+import type { MediaCache, TranscriptCache } from '../cache/types';
+import type { TranscriptionConfig } from '../transcript/transcription-config';
+import type { TranscriptSource } from './types';
 
 // Enum-like constants for progress kinds (keeps call sites typo-resistant without TS `enum` runtime quirks).
 export const ProgressKind = {

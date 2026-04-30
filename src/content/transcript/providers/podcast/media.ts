@@ -6,9 +6,9 @@ import {
   transcribeMediaFileWithWhisper,
   type TranscriptionProgressEvent,
 } from '../../../../transcription/endpoint.js';
-import type { ProviderFetchOptions } from '../../types.js';
-import { resolveTranscriptionStartInfo } from '../transcription-start.js';
-import { MAX_REMOTE_MEDIA_BYTES, TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
+import type { ProviderFetchOptions } from '../../types';
+import { resolveTranscriptionStartInfo } from '../transcription-start';
+import { MAX_REMOTE_MEDIA_BYTES, TRANSCRIPTION_TIMEOUT_MS } from './constants';
 
 export interface TranscribeRequest {
   url: string;

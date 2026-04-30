@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSlidesSessionStore } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-session-store.js';
+import { createSlidesSessionStore } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-session-store';
 
 describe('sidepanel slides session store', () => {
   it('resolves effective input mode and increments context ids', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isYouTubeWatchUrl } from '../apps/chrome-extension/src/lib/youtube-url.js';
+import { isYouTubeWatchUrl } from '../apps/chrome-extension/src/lib/youtube-url';
 
 describe('chrome/youtube-url', () => {
   it('accepts real YouTube watch URLs', () => {

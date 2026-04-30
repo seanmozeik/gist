@@ -1,5 +1,6 @@
-import type { CliProvider, GistConfig } from './config.js';
-import type { ModelAttempt } from './run/types.js';
+import type { CliProvider, GistConfig } from './config';
+import { normalizeGatewayStyleModelId, parseGatewayStyleModelId } from './llm/model-id';
+import type { ModelAttempt } from './run/types';
 
 const DEFAULT_OPENROUTER_MODELS = [
   'openrouter/meta/llama-3.3-70b-versatile',
@@ -12,6 +13,62 @@ const VIDEO_UNDERSTANDING_MODELS = [
   'openrouter/google/gemini-2.0-flash-exp',
   ...DEFAULT_OPENROUTER_MODELS,
 ];
+
+function selectConfiguredCandidates(options: {
+  config: GistConfig | null;
+  kind: 'video' | 'image' | 'text' | 'file';
+  promptTokens: number | null;
+}): string[] | null {
+  const model = options.config?.model;
+  if (!model || !('mode' in model) || model.mode !== 'auto' || !model.rules?.length) {
+    return null;
+  }
+
+  for (const rule of model.rules) {
+    if (rule.when?.length && !rule.when.includes(options.kind)) {
+      continue;
+    }
+
+    if (rule.candidates?.length) {
+      return rule.candidates;
+    }
+
+    if (rule.bands?.length) {
+      for (const band of rule.bands) {
+        const min = band.token?.min;
+        const max = band.token?.max;
+        const promptTokens = options.promptTokens;
+        const matches =
+          promptTokens === null
+            ? min === undefined && max === undefined
+            : (min === undefined || promptTokens >= min) &&
+              (max === undefined || promptTokens <= max);
+        if (matches) {
+          return band.candidates;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function buildGatewayModelAttempt(
+  rawModelId: string,
+  openrouterProviders: string[] | null,
+): ModelAttempt {
+  const userModelId = normalizeGatewayStyleModelId(rawModelId);
+  const parsed = parseGatewayStyleModelId(userModelId);
+  return {
+    forceOpenRouter: parsed.provider === 'openrouter',
+    llmModelId: parsed.canonical,
+    openrouterProviders: parsed.provider === 'openrouter' ? openrouterProviders : null,
+    requestOptions: undefined,
+    requiredEnv: parsed.provider === 'openrouter' ? 'OPENROUTER_API_KEY' : null,
+    transport: parsed.provider === 'openrouter' ? 'openrouter' : 'native',
+    userModelId: parsed.canonical,
+  };
+}
 
 export function buildAutoModelAttempts(options: {
   allowAutoCliFallback: boolean;
@@ -28,22 +85,16 @@ export function buildAutoModelAttempts(options: {
 }): ModelAttempt[] {
   const attempts: ModelAttempt[] = [];
 
-  // Build model list based on kind and requirements
-  const models = options.requiresVideoUnderstanding
-    ? VIDEO_UNDERSTANDING_MODELS
-    : DEFAULT_OPENROUTER_MODELS;
+  const models =
+    selectConfiguredCandidates({
+      config: options.config,
+      kind: options.kind,
+      promptTokens: options.promptTokens,
+    }) ??
+    (options.requiresVideoUnderstanding ? VIDEO_UNDERSTANDING_MODELS : DEFAULT_OPENROUTER_MODELS);
 
-  // Add openrouter attempts for each model
   for (const model of models) {
-    attempts.push({
-      forceOpenRouter: true,
-      llmModelId: null,
-      openrouterProviders: options.openrouterProvidersFromEnv,
-      requestOptions: undefined,
-      requiredEnv: 'OPENROUTER_API_KEY',
-      transport: 'openrouter',
-      userModelId: model,
-    });
+    attempts.push(buildGatewayModelAttempt(model, options.openrouterProvidersFromEnv));
   }
 
   // Add local sidecar attempt if configured

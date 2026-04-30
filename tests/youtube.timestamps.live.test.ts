@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 const LIVE = process.env.GIST_LIVE_TESTS === '1' && Boolean(process.env.OPENAI_API_KEY);
 const URL = 'https://www.youtube.com/watch?v=9pUWFJgBc5Q';

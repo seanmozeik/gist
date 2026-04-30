@@ -1,9 +1,9 @@
-import type { LinkPreviewProgressEvent } from '../content/index.js';
-import { formatBytes } from './format.js';
-import type { OscProgressController } from './osc-progress.js';
-import { createFetchHtmlProgressRenderer } from './progress/fetch-html.js';
-import { createTranscriptProgressRenderer } from './progress/transcript.js';
-import type { ThemeRenderer } from './theme.js';
+import type { LinkPreviewProgressEvent } from '../content/index';
+import { formatBytes } from './format';
+import type { OscProgressController } from './osc-progress';
+import { createFetchHtmlProgressRenderer } from './progress/fetch-html';
+import { createTranscriptProgressRenderer } from './progress/transcript';
+import type { ThemeRenderer } from './theme';
 
 export function createWebsiteProgress({
   enabled,

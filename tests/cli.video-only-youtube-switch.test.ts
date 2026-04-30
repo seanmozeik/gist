@@ -141,7 +141,7 @@ vi.mock('../src/content/index.js', () => ({
   createLinkPreviewClient: mocks.createLinkPreviewClient,
 }));
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 describe('cli video-only pages', () => {
   it('switches to YouTube transcript when a page is video-only', async () => {

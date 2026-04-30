@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { resolveTwitterCookies } from '../src/run/cookies/twitter.js';
+import { resolveTwitterCookies } from '../src/run/cookies/twitter';
 
 function makeTempHome(): string {
   return mkdtempSync(path.join(tmpdir(), 'gist-twitter-cookies-'));

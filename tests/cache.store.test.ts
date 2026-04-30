@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildTranscriptCacheKey, createCacheStore } from '../src/cache.js';
+import { buildTranscriptCacheKey, createCacheStore } from '../src/cache';
 
 describe('cache store', () => {
   it('round-trips text entries', async () => {

@@ -1,18 +1,18 @@
 import { render as renderMarkdownAnsi } from 'markdansi';
 
-import type { ExtractedLinkContent } from '../../../content/index.js';
-import type { RunMetricsReport } from '../../../costs.js';
-import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line.js';
-import { writeVerbose } from '../../logging.js';
-import { prepareMarkdownForTerminal } from '../../markdown.js';
-import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
-import type { UrlExtractionUi } from './extract.js';
-import { buildFinishExtras, pickModelForFinishLine } from './summary-finish.js';
-import { buildUrlJsonEnv, buildUrlJsonInput } from './summary-json.js';
-import { buildUrlPrompt as buildSummaryPrompt } from './summary-prompt.js';
-import { resolveUrlSummaryExecution } from './summary-resolution.js';
-import { buildSummaryTimestampLimitInstruction } from './summary-timestamps.js';
-import type { UrlFlowContext } from './types.js';
+import type { ExtractedLinkContent } from '../../../content/index';
+import type { RunMetricsReport } from '../../../costs';
+import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line';
+import { writeVerbose } from '../../logging';
+import { prepareMarkdownForTerminal } from '../../markdown';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal';
+import type { UrlExtractionUi } from './extract';
+import { buildFinishExtras, pickModelForFinishLine } from './summary-finish';
+import { buildUrlJsonEnv, buildUrlJsonInput } from './summary-json';
+import { buildUrlPrompt as buildSummaryPrompt } from './summary-prompt';
+import { resolveUrlSummaryExecution } from './summary-resolution';
+import { buildSummaryTimestampLimitInstruction } from './summary-timestamps';
+import type { UrlFlowContext } from './types';
 
 async function writeUrlJsonOutput({
   ctx,

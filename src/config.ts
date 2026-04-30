@@ -1,5 +1,5 @@
-import { parseModelConfig, parseModelsConfig } from './config/model.js';
-import { readParsedConfigFile, resolveGistConfigPath } from './config/read.js';
+import { parseModelConfig, parseModelsConfig } from './config/model';
+import { readParsedConfigFile, resolveGistConfigPath } from './config/read';
 import {
   parseApiKeysConfig,
   parseCacheConfig,
@@ -12,7 +12,7 @@ import {
   parseOutputConfig,
   parseUiConfig,
 } from './config/sections.js';
-import type { GistConfig } from './config/types.js';
+import type { GistConfig } from './config/types';
 
 export type {
   ApiKeysConfig,

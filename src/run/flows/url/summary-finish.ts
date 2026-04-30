@@ -1,8 +1,8 @@
-import type { ExtractedLinkContent } from '../../../content/index.js';
-import { parseGatewayStyleModelId } from '../../../llm/model-id.js';
-import { buildLengthPartsForFinishLine } from '../../finish-line.js';
-import type { ModelAttempt } from '../../types.js';
-import type { UrlFlowContext } from './types.js';
+import type { ExtractedLinkContent } from '../../../content/index';
+import { parseGatewayStyleModelId } from '../../../llm/model-id';
+import { buildLengthPartsForFinishLine } from '../../finish-line';
+import type { ModelAttempt } from '../../types';
+import type { UrlFlowContext } from './types';
 
 export function buildFinishExtras({
   extracted,

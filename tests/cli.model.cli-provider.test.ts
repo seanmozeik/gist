@@ -69,7 +69,7 @@ vi.mock('../src/llm/cli.js', () => ({
   runCliModel: mocks.runCliModel,
 }));
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 function collectStream() {
   let text = '';

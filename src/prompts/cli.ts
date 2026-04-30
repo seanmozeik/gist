@@ -1,8 +1,8 @@
-import type { OutputLanguage } from '../language.js';
-import { formatOutputLanguageInstruction } from '../language.js';
-import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from './format.js';
-import { pickSummaryLengthForCharacters, type SummaryLengthTarget } from './link-summary.js';
-import { formatPresetLengthGuidance, resolveSummaryLengthSpec } from './summary-lengths.js';
+import type { OutputLanguage } from '../language';
+import { formatOutputLanguageInstruction } from '../language';
+import { buildInstructions, buildTaggedPrompt, type PromptOverrides } from './format';
+import { pickSummaryLengthForCharacters, type SummaryLengthTarget } from './link-summary';
+import { formatPresetLengthGuidance, resolveSummaryLengthSpec } from './summary-lengths';
 
 function formatTargetLength(summaryLength: SummaryLengthTarget): string {
   if (typeof summaryLength === 'string') {

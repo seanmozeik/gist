@@ -1,9 +1,9 @@
-import type { OutputLanguage } from '../language.js';
-import { formatOutputLanguageInstruction } from '../language.js';
-import type { LlmTokenUsage } from './generate-text.js';
-import { generateTextWithModelId } from './generate-text.js';
-import type { LlmProvider } from './model-id.js';
-import type { ModelRequestOptions } from './model-options.js';
+import type { OutputLanguage } from '../language';
+import { formatOutputLanguageInstruction } from '../language';
+import type { LlmTokenUsage } from './generate-text';
+import { generateTextWithModelId } from './generate-text';
+import type { LlmProvider } from './model-id';
+import type { ModelRequestOptions } from './model-options';
 
 const MAX_TRANSCRIPT_INPUT_CHARACTERS = 200_000;
 

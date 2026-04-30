@@ -15,7 +15,7 @@ vi.mock('../src/content/transcript/providers/youtube.js', () => ({
   fetchTranscript: mocks.fetchYoutube,
 }));
 
-import { resolveTranscriptForLink } from '../src/content/transcript/index.js';
+import { resolveTranscriptForLink } from '../src/content/transcript/index';
 
 describe('transcript progress events', () => {
   it('does not emit transcript-start/done for generic pages', async () => {

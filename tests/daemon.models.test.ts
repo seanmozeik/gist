@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildModelPickerOptions } from '../src/daemon/models.js';
+import { buildModelPickerOptions } from '../src/daemon/models';
 
 describe('daemon /v1/models', () => {
   it('includes local OpenAI-compatible models without OPENAI_API_KEY', async () => {

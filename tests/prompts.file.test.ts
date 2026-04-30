@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseOutputLanguage } from '../src/language.js';
-import { buildFileSummaryPrompt, buildFileTextSummaryPrompt } from '../src/prompts/index.js';
+import { parseOutputLanguage } from '../src/language';
+import { buildFileSummaryPrompt, buildFileTextSummaryPrompt } from '../src/prompts/index';
 
 describe('buildFileSummaryPrompt', () => {
   it('builds a prompt for preset length', () => {

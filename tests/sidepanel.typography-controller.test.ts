@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createTypographyController } from '../apps/chrome-extension/src/entrypoints/sidepanel/typography-controller.js';
+import { createTypographyController } from '../apps/chrome-extension/src/entrypoints/sidepanel/typography-controller';
 
 function createController() {
   const sizeSmBtn = document.createElement('button');

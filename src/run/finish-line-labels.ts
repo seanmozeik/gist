@@ -1,4 +1,4 @@
-import { formatCompactCount } from '../tty/format.js';
+import { formatCompactCount } from '../tty/format';
 
 export interface ExtractDiagnosticsForFinishLine {
   strategy: 'bird' | 'html';

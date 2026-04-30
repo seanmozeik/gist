@@ -1,5 +1,5 @@
-import type { SummaryLength } from './shared/contracts.js';
-import { SUMMARY_LENGTHS } from './shared/contracts.js';
+import type { SummaryLength } from './shared/contracts';
+import { SUMMARY_LENGTHS } from './shared/contracts';
 
 export type YoutubeMode = 'auto' | 'web' | 'yt-dlp' | 'no-auto';
 export type MarkdownMode = 'off' | 'auto' | 'llm' | 'readability';

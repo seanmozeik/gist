@@ -5,8 +5,8 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { createCacheStore } from '../src/cache.js';
-import { runCli } from '../src/run.js';
+import { createCacheStore } from '../src/cache';
+import { runCli } from '../src/run';
 
 function collectStream() {
   let text = '';

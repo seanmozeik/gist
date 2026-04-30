@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeDaemonEnv } from '../src/daemon/env-merge.js';
+import { mergeDaemonEnv } from '../src/daemon/env-merge';
 
 describe('daemon/env-merge', () => {
   it('prefers snapshot values (launchd-safe)', () => {

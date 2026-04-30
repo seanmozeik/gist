@@ -1,4 +1,4 @@
-import type { LlmTokenUsage } from './types.js';
+import type { LlmTokenUsage } from './types';
 
 export function normalizeTokenUsage(raw: unknown): LlmTokenUsage | null {
   if (!raw || typeof raw !== 'object') {

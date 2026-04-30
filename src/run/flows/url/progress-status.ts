@@ -1,5 +1,5 @@
-import type { OscProgressController } from '../../../tty/osc-progress.js';
-import { applySummaryText, createUrlProgressStatusState } from './progress-status-state.js';
+import type { OscProgressController } from '../../../tty/osc-progress';
+import { applySummaryText, createUrlProgressStatusState } from './progress-status-state';
 
 export function createUrlProgressStatus({
   enabled,

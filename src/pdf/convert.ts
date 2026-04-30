@@ -9,10 +9,12 @@ export async function convertPdfToMarkdown({
   bytes,
   filename,
   baseUrl,
+  endpoint,
 }: {
   bytes: Uint8Array;
   filename: string | null;
   baseUrl: string;
+  endpoint?: string | null;
 }): Promise<PdfConversionResult> {
   const formData = new FormData();
   const buffer = Buffer.from(bytes);
@@ -20,7 +22,8 @@ export async function convertPdfToMarkdown({
   const blob = new Blob([buffer], { type: 'application/pdf' });
   formData.append('file', blob, pdfName);
 
-  const response = await fetch(`${baseUrl}/convert-pdf`, { body: formData, method: 'POST' });
+  const pdfEndpoint = endpoint?.trim() || '/convert-pdf';
+  const response = await fetch(`${baseUrl}${pdfEndpoint}`, { body: formData, method: 'POST' });
 
   if (!response.ok) {
     const text = await response.text();

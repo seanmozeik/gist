@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildIdleSubtitle } from '../apps/chrome-extension/src/lib/header.js';
+import { buildIdleSubtitle } from '../apps/chrome-extension/src/lib/header';
 
 describe('chrome/header', () => {
   it('keeps only the input summary', () => {

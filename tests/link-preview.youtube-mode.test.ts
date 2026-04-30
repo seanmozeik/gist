@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
-import { stubMissingTranscriptionEnv } from './helpers/transcription-env.js';
+import { createLinkPreviewClient } from '../src/content/index';
+import { stubMissingTranscriptionEnv } from './helpers/transcription-env';
 
 const jsonResponse = (payload: unknown, status = 200) =>
   Response.json(payload, { headers: { 'Content-Type': 'application/json' }, status });

@@ -5,8 +5,8 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import type { ExecFileFn } from '../src/markitdown.js';
-import { runCli } from '../src/run.js';
+import type { ExecFileFn } from '../src/markitdown';
+import { runCli } from '../src/run';
 
 describe('--model cli/... progress', () => {
   it('runs a fixed CLI model with TTY progress enabled', async () => {

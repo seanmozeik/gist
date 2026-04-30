@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 
-import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from '../cache.js';
-import { loadGistConfig, mergeConfigEnv } from '../config.js';
-import { mergeSecretEnv, readSecretsEnv } from '../secrets.js';
-import { formatVersionLine } from '../version.js';
+import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from '../cache';
+import { loadGistConfig, mergeConfigEnv } from '../config';
+import { mergeSecretEnv, readSecretsEnv } from '../secrets';
+import { formatVersionLine } from '../version';
 
 export async function prepareRunEnvironment(
   argv: string[],

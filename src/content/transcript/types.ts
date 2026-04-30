@@ -1,8 +1,8 @@
-import type { MediaCache } from '../cache/types.js';
-import type { MediaTranscriptMode, YoutubeTranscriptMode } from '../link-preview/content/types.js';
-import type { LinkPreviewProgressEvent, ResolveTwitterCookies } from '../link-preview/deps.js';
-import type { TranscriptResolution, TranscriptSource } from '../link-preview/types.js';
-import type { TranscriptionConfig } from './transcription-config.js';
+import type { MediaCache } from '../cache/types';
+import type { MediaTranscriptMode, YoutubeTranscriptMode } from '../link-preview/content/types';
+import type { LinkPreviewProgressEvent, ResolveTwitterCookies } from '../link-preview/deps';
+import type { TranscriptResolution, TranscriptSource } from '../link-preview/types';
+import type { TranscriptionConfig } from './transcription-config';
 
 export type TranscriptService = 'youtube' | 'podcast' | 'generic';
 

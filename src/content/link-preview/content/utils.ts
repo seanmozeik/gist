@@ -1,6 +1,6 @@
-import { formatTranscriptSegments } from '../../transcript/timestamps.js';
-import type { CacheMode, TranscriptDiagnostics } from '../types.js';
-import { applyContentBudget, normalizeCandidate, normalizeForPrompt } from './cleaner.js';
+import { formatTranscriptSegments } from '../../transcript/timestamps';
+import type { CacheMode, TranscriptDiagnostics } from '../types';
+import { applyContentBudget, normalizeCandidate, normalizeForPrompt } from './cleaner';
 import {
   DEFAULT_CACHE_MODE,
   DEFAULT_TIMEOUT_MS,

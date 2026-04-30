@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseShowinfoTimestamp } from '../src/slides/index.js';
+import { parseShowinfoTimestamp } from '../src/slides/index';
 
 describe('parseShowinfoTimestamp', () => {
   it('parses pts_time from showinfo lines', () => {

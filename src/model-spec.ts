@@ -1,7 +1,7 @@
-import type { CliProvider } from './config.js';
-import { normalizeGatewayStyleModelId, parseGatewayStyleModelId } from './llm/model-id.js';
-import type { LlmProvider } from './llm/model-id.js';
-import type { ModelRequestOptions } from './llm/model-options.js';
+import type { CliProvider } from './config';
+import { normalizeGatewayStyleModelId, parseGatewayStyleModelId } from './llm/model-id';
+import type { LlmProvider } from './llm/model-id';
+import type { ModelRequestOptions } from './llm/model-options';
 import {
   DEFAULT_CLI_MODELS,
   type RequiredModelEnv,
@@ -79,7 +79,7 @@ export function parseRequestedModelId(raw: string): RequestedModel {
     return {
       forceOpenRouter: true,
       kind: 'fixed',
-      llmModelId: `openai/${openrouterModelId}`,
+      llmModelId: `openrouter/${openrouterModelId}`,
       openrouterModelId,
       openrouterProviders: null,
       requiredEnv: 'OPENROUTER_API_KEY',

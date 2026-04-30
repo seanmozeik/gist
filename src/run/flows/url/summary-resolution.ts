@@ -1,29 +1,29 @@
 import { countTokens } from 'gpt-tokenizer';
 
-import { buildLengthKey, buildLanguageKey } from '../../../cache-keys.js';
-import { buildSummaryCacheKey } from '../../../cache.js';
-import type { ExtractedLinkContent } from '../../../content/index.js';
-import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url.js';
-import type { Prompt } from '../../../llm/prompt.js';
-import { buildAutoModelAttempts } from '../../../model-auto.js';
-import { SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index.js';
+import { buildSummaryCacheKey } from '../../../cache';
+import { buildLengthKey, buildLanguageKey } from '../../../cache-keys';
+import type { ExtractedLinkContent } from '../../../content/index';
+import { isTwitterStatusUrl, isYouTubeUrl } from '../../../content/url';
+import type { Prompt } from '../../../llm/prompt';
+import { buildAutoModelAttempts } from '../../../model-auto';
+import { SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index';
 import {
   readLastSuccessfulCliProvider,
   writeLastSuccessfulCliProvider,
 } from '../../cli-fallback-state.js';
-import { parseCliUserModelId } from '../../env.js';
-import { writeVerbose } from '../../logging.js';
-import { runModelAttempts } from '../../model-attempts.js';
-import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter.js';
-import type { ModelAttempt } from '../../types.js';
-import { buildModelMetaFromAttempt } from './summary-finish.js';
-import { shouldBypassShortContentSummary } from './summary-prompt.js';
+import { parseCliUserModelId } from '../../env';
+import { writeVerbose } from '../../logging';
+import { runModelAttempts } from '../../model-attempts';
+import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter';
+import type { ModelAttempt } from '../../types';
+import { buildModelMetaFromAttempt } from './summary-finish';
+import { shouldBypassShortContentSummary } from './summary-prompt';
 import {
   resolveSummaryTimestampUpperBound,
   sanitizeSummaryKeyMoments,
   shouldSanitizeSummaryKeyMoments,
 } from './summary-timestamps.js';
-import type { UrlFlowContext } from './types.js';
+import type { UrlFlowContext } from './types';
 
 interface SummaryResolutionUseExtracted {
   kind: 'use-extracted';

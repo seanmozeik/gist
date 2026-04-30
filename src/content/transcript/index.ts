@@ -1,10 +1,10 @@
-import type { LinkPreviewDeps } from '../link-preview/deps.js';
+import type { LinkPreviewDeps } from '../link-preview/deps';
 import type {
   CacheMode,
   TranscriptDiagnostics,
   TranscriptResolution,
 } from '../link-preview/types.js';
-import { mapCachedSource, readTranscriptCache, writeTranscriptCache } from './cache.js';
+import { mapCachedSource, readTranscriptCache, writeTranscriptCache } from './cache';
 import {
   canHandle as canHandleGeneric,
   fetchTranscript as fetchGeneric,
@@ -17,7 +17,7 @@ import {
   canHandle as canHandleYoutube,
   fetchTranscript as fetchYoutube,
 } from './providers/youtube.js';
-import { resolveTranscriptionConfig } from './transcription-config.js';
+import { resolveTranscriptionConfig } from './transcription-config';
 import type {
   ProviderContext,
   ProviderFetchOptions,

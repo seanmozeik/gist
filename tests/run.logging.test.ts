@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createRetryLogger } from '../src/run/logging.js';
+import { createRetryLogger } from '../src/run/logging';
 
 describe('run/logging', () => {
   it('formats retry reasons', () => {

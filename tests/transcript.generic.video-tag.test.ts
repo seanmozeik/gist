@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchTranscript } from '../src/content/transcript/providers/generic.js';
+import { fetchTranscript } from '../src/content/transcript/providers/generic';
 
 const fetchTranscriptWithYtDlp = vi.fn(async () => ({
   error: null,

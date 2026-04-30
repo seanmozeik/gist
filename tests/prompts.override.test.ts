@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseOutputLanguage } from '../src/language.js';
+import { parseOutputLanguage } from '../src/language';
 import {
   buildFileTextSummaryPrompt,
   buildLinkSummaryPrompt,

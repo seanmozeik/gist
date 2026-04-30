@@ -1,10 +1,10 @@
-import { createUnsupportedFunctionalityError } from './errors.js';
-import type { LlmProvider } from './model-id.js';
-import type { ModelRequestOptions } from './model-options.js';
-import type { Prompt } from './prompt.js';
-import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities.js';
-import { completeOpenAiDocument } from './providers/openai.js';
-import type { LlmTokenUsage } from './types.js';
+import { createUnsupportedFunctionalityError } from './errors';
+import type { LlmProvider } from './model-id';
+import type { ModelRequestOptions } from './model-options';
+import type { Prompt } from './prompt';
+import { resolveOpenAiCompatibleClientConfigForProvider } from './provider-capabilities';
+import { completeOpenAiDocument } from './providers/openai';
+import type { LlmTokenUsage } from './types';
 
 interface ParsedModel {
   provider: LlmProvider;

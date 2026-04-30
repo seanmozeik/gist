@@ -5,8 +5,8 @@ import {
   isDirectMediaUrl,
   isDirectVideoInput,
 } from './direct-media.js';
-import { isPodcastHost } from './link-preview/content/podcast-utils.js';
-import { isTwitterBroadcastUrl, isTwitterStatusUrl } from './link-preview/content/twitter-utils.js';
+import { isPodcastHost } from './link-preview/content/podcast-utils';
+import { isTwitterBroadcastUrl, isTwitterStatusUrl } from './link-preview/content/twitter-utils';
 
 export const isYouTubeUrl = (rawUrl: string): boolean => {
   try {

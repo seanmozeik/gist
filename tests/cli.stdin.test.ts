@@ -5,7 +5,7 @@ import { Readable, Writable } from 'node:stream';
 
 import { afterAll, describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 const noopStream = () =>
   new Writable({

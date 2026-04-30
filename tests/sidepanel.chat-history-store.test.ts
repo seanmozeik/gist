@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createChatHistoryStore } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-history-store.js';
-import type { ChatMessage } from '../apps/chrome-extension/src/entrypoints/sidepanel/types.js';
+import { createChatHistoryStore } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-history-store';
+import type { ChatMessage } from '../apps/chrome-extension/src/entrypoints/sidepanel/types';
 
 function createMemoryStorage(): chrome.storage.StorageArea {
   const values = new Map<string, unknown>();

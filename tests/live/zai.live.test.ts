@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { runCli } from '../../src/run.js';
+import { runCli } from '../../src/run';
 
 const LIVE = process.env.GIST_LIVE_TEST === '1';
 const ZAI_KEY = process.env.Z_AI_API_KEY ?? process.env.ZAI_API_KEY ?? null;

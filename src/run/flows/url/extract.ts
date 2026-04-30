@@ -1,9 +1,9 @@
-import type { ExtractedLinkContent, FetchLinkContentOptions } from '../../../content/index.js';
-import { formatBytes } from '../../../tty/format.js';
-import { withBirdTip } from '../../bird.js';
-import { buildSummaryFinishLabel } from '../../finish-line.js';
-import { formatOptionalNumber, formatOptionalString } from '../../format.js';
-import { writeVerbose } from '../../logging.js';
+import type { ExtractedLinkContent, FetchLinkContentOptions } from '../../../content/index';
+import { formatBytes } from '../../../tty/format';
+import { withBirdTip } from '../../bird';
+import { buildSummaryFinishLabel } from '../../finish-line';
+import { formatOptionalNumber, formatOptionalString } from '../../format';
+import { writeVerbose } from '../../logging';
 
 export interface UrlExtractionUi {
   contentSizeLabel: string;

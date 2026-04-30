@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSlidesTextController } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-text-controller.js';
+import { createSlidesTextController } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-text-controller';
 
 describe('sidepanel slides text controller', () => {
   it('builds transcript-first descriptions from timed text', () => {

@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { withUrlAsset } from '../src/run/flows/asset/input.js';
+import { withUrlAsset } from '../src/run/flows/asset/input';
 
 describe('media URL routing', () => {
   it('routes direct media URLs with query parameters to transcription', async () => {

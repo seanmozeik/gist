@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import extensionConfig from '../apps/chrome-extension/wxt.config.js';
+import extensionConfig from '../apps/chrome-extension/wxt.config';
 
 describe('firefox extension manifest', () => {
   it('uses sidebar_action and omits sidePanel permission', () => {

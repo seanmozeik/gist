@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { GistConfig } from '../src/config.js';
-import { prependCliCandidates, resolveCliAutoFallbackConfig } from '../src/model-auto-cli.js';
-import { buildAutoModelAttempts } from '../src/model-auto.js';
+import type { GistConfig } from '../src/config';
+import { buildAutoModelAttempts } from '../src/model-auto';
+import { prependCliCandidates, resolveCliAutoFallbackConfig } from '../src/model-auto-cli';
 
 describe('auto model selection', () => {
   it('preserves candidate order (native then OpenRouter fallback)', () => {

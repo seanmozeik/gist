@@ -1,5 +1,5 @@
-import type { ModelRequestOptions } from './model-options.js';
-import type { OpenAiClientConfig } from './providers/types.js';
+import type { ModelRequestOptions } from './model-options';
+import type { OpenAiClientConfig } from './providers/types';
 
 // Re-export from provider-profile
 export {

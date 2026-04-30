@@ -8,14 +8,14 @@ import { statSync } from 'node:fs';
 import { isAbsolute, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { createLinkPreviewClient, type ExtractedLinkContent } from '../../../content/index.js';
-import type { AssetAttachment } from '../../attachments.js';
-import { readTweetWithPreferredClient } from '../../bird.js';
-import { resolveTwitterCookies } from '../../cookies/twitter.js';
-import { hasBirdCli } from '../../env.js';
-import { writeVerbose } from '../../logging.js';
-import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from './media-policy.js';
-import type { AssetSummaryContext, GistAssetArgs } from './summary.js';
+import { createLinkPreviewClient, type ExtractedLinkContent } from '../../../content/index';
+import type { AssetAttachment } from '../../attachments';
+import { readTweetWithPreferredClient } from '../../bird';
+import { resolveTwitterCookies } from '../../cookies/twitter';
+import { hasBirdCli } from '../../env';
+import { writeVerbose } from '../../logging';
+import { MAX_LOCAL_MEDIA_BYTES, MAX_LOCAL_MEDIA_LABEL } from './media-policy';
+import type { AssetSummaryContext, GistAssetArgs } from './summary';
 
 /**
  * Get file modification time for cache invalidation support.

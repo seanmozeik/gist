@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { clearCacheFiles, createCacheStore } from '../src/cache.js';
-import { refreshCacheStoreIfMissing } from '../src/run/cache-state.js';
+import { clearCacheFiles, createCacheStore } from '../src/cache';
+import { refreshCacheStoreIfMissing } from '../src/run/cache-state';
 
 describe('cache state refresh', () => {
   it('recreates the cache store after the database file is removed', async () => {

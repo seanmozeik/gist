@@ -1,8 +1,8 @@
 import type { Command } from 'commander';
 
-import { refreshFree } from '../refresh-free.js';
-import { authStatus, deleteSecret, saveSecret } from '../secrets.js';
-import { attachRichHelp, buildProgram } from './help.js';
+import { refreshFree } from '../refresh-free';
+import { authStatus, deleteSecret, saveSecret } from '../secrets';
+import { attachRichHelp, buildProgram } from './help';
 
 interface HelpContext {
   normalizedArgv: string[];

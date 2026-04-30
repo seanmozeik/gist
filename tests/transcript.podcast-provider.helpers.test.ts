@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { __test__ } from '../src/content/transcript/providers/podcast.js';
+import { __test__ } from '../src/content/transcript/providers/podcast';
 
 describe('podcast transcript provider - helper branches', () => {
   it('parses and normalizes headers', () => {

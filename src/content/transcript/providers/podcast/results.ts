@@ -1,5 +1,5 @@
-import type { ProviderResult } from '../../types.js';
-import type { TranscriptionResult } from './media.js';
+import type { ProviderResult } from '../../types';
+import type { TranscriptionResult } from './media';
 
 export function joinNotes(notes: string[]): string | null {
   return notes.length > 0 ? notes.join('; ') : null;

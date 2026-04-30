@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { resolveGoogleModelForUsage } from '../src/llm/google-models.js';
+import { resolveGoogleModelForUsage } from '../src/llm/google-models';
 
 describe('google model resolution (Gemini API ListModels)', () => {
   it('skips ListModels for stable model ids', async () => {

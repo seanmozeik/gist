@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({ execFile: vi.fn() }));
 
 vi.mock('node:child_process', () => ({ execFile: mocks.execFile }));
 
-import { DAEMON_LAUNCH_AGENT_LABEL } from '../src/daemon/constants.js';
+import { DAEMON_LAUNCH_AGENT_LABEL } from '../src/daemon/constants';
 import {
   installLaunchAgent,
   resolveLaunchctlDomains,

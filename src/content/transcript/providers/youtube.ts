@@ -1,6 +1,6 @@
-import { resolveTranscriptionConfig } from '../transcription-config.js';
-import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types.js';
-import { resolveTranscriptProviderCapabilities } from './transcription-capability.js';
+import { resolveTranscriptionConfig } from '../transcription-config';
+import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types';
+import { resolveTranscriptProviderCapabilities } from './transcription-capability';
 import {
   buildUnavailableResult,
   loadYoutubeHtml,

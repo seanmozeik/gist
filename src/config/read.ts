@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import JSON5 from 'json5';
 
-import { isRecord } from './parse-helpers.js';
+import { isRecord } from './parse-helpers';
 
 export function resolveGistConfigPath(env: Record<string, string | undefined>): string | null {
   const home = env.HOME?.trim() ?? env.USERPROFILE?.trim() ?? null;

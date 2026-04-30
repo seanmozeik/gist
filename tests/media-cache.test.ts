@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createMediaCache } from '../src/media-cache.js';
+import { createMediaCache } from '../src/media-cache';
 
 const makeTempDir = async (prefix: string) => {
   return mkdtemp(join(tmpdir(), prefix));

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSlidesHydrator } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator.js';
-import { encodeSseEvent, type SseEvent, type SseSlidesData } from '../src/shared/sse-events.js';
+import { createSlidesHydrator } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-hydrator';
+import { encodeSseEvent, type SseEvent, type SseSlidesData } from '../src/shared/sse-events';
 
 const encoder = new TextEncoder();
 

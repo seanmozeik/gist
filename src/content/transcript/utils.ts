@@ -1,6 +1,6 @@
 import { load } from 'cheerio';
 
-import { extractYouTubeVideoId } from '../url.js';
+import { extractYouTubeVideoId } from '../url';
 
 export { extractYouTubeVideoId, isYouTubeUrl, isYouTubeVideoUrl } from '../url.js';
 

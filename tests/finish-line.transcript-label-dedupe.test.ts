@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildFinishLineText } from '../src/run/finish-line.js';
+import { buildFinishLineText } from '../src/run/finish-line';
 
 describe('finish line transcript label de-dupe', () => {
   it('does not repeat YouTube label when transcript label already includes it', () => {

@@ -1,15 +1,15 @@
 import type { Context } from '@mariozechner/pi-ai';
 import { completeSimple } from '@mariozechner/pi-ai';
 
-import { isOpenRouterBaseUrl, normalizeBaseUrl } from '../../openai/base-url.js';
-import type { Attachment } from '../attachments.js';
-import { createUnsupportedFunctionalityError } from '../errors.js';
-import { toOpenAiServiceTierParam, type ModelRequestOptions } from '../model-options.js';
-import type { LlmTokenUsage } from '../types.js';
-import { normalizeOpenAiUsage, normalizeTokenUsage } from '../usage.js';
-import { resolveOpenAiModel } from './models.js';
-import { bytesToBase64 } from './shared.js';
-import type { OpenAiClientConfig } from './types.js';
+import { isOpenRouterBaseUrl, normalizeBaseUrl } from '../../openai/base-url';
+import type { Attachment } from '../attachments';
+import { createUnsupportedFunctionalityError } from '../errors';
+import { toOpenAiServiceTierParam, type ModelRequestOptions } from '../model-options';
+import type { LlmTokenUsage } from '../types';
+import { normalizeOpenAiUsage, normalizeTokenUsage } from '../usage';
+import { resolveOpenAiModel } from './models';
+import { bytesToBase64 } from './shared';
+import type { OpenAiClientConfig } from './types';
 
 export interface OpenAiClientConfigInput {
   apiKeys: { openaiApiKey: string | null; openrouterApiKey: string | null };

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createChatSession } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-session.js';
+import { createChatSession } from '../apps/chrome-extension/src/entrypoints/sidepanel/chat-session';
 
 describe('sidepanel chat session', () => {
   beforeEach(() => {

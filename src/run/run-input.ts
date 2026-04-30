@@ -1,8 +1,8 @@
 import type { Command } from 'commander';
 
-import type { InputTarget } from '../content/asset.js';
-import { resolveInputTarget } from '../content/asset.js';
-import { buildConciseHelp } from './help.js';
+import type { InputTarget } from '../content/asset';
+import { resolveInputTarget } from '../content/asset';
+import { buildConciseHelp } from './help';
 
 export interface InputResolution {
   inputTarget: InputTarget;

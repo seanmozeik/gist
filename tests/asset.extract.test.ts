@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractAssetContent } from '../src/run/flows/asset/extract.js';
+import { extractAssetContent } from '../src/run/flows/asset/extract';
 
 describe('extractAssetContent', () => {
   it('returns inline text for text-like files', async () => {

@@ -1,6 +1,6 @@
-import { parseLengthArg } from '../flags.js';
-import { parseOpenAiReasoningEffort, parseOpenAiTextVerbosity } from '../llm/model-options.js';
-import { isCliThemeName, listCliThemes } from '../tty/theme.js';
+import { parseLengthArg, parseYoutubeMode } from '../flags';
+import { parseOpenAiReasoningEffort, parseOpenAiTextVerbosity } from '../llm/model-options';
+import { isCliThemeName, listCliThemes } from '../tty/theme';
 import {
   isRecord,
   parseCliProvider,
@@ -234,7 +234,11 @@ export function parseMediaConfig(root: Record<string, unknown>) {
     value.videoMode === 'understand'
       ? (value.videoMode as VideoMode)
       : undefined;
-  return videoMode ? { videoMode } : undefined;
+  const youtubeMode =
+    typeof value.youtubeMode === 'string' ? parseYoutubeMode(value.youtubeMode) : undefined;
+  return videoMode || youtubeMode
+    ? { ...(videoMode ? { videoMode } : {}), ...(youtubeMode ? { youtubeMode } : {}) }
+    : undefined;
 }
 
 export function parseLocalConfig(

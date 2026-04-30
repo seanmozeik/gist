@@ -7,7 +7,7 @@ import {
   DEFAULT_CACHE_TTL_DAYS,
   resolveCachePath,
 } from '../cache.js';
-import type { GistConfig } from '../config.js';
+import type { GistConfig } from '../config';
 
 export async function createCacheStateFromConfig({
   envForRun,

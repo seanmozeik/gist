@@ -11,7 +11,7 @@ export {
   buildSummaryCacheKeyValue,
   buildTranscriptCacheKeyValue,
 } from './cache-keys.js';
-import type { TranscriptCache, TranscriptSource } from './content/index.js';
+import type { TranscriptCache, TranscriptSource } from './content/index';
 
 export type CacheKind = 'extract' | 'summary' | 'transcript' | 'chat';
 

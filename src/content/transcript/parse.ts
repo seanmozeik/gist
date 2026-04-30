@@ -1,5 +1,5 @@
-import type { TranscriptSegment } from '../link-preview/types.js';
-import { parseTimestampStringToMs, parseTimestampToMs } from './timestamps.js';
+import type { TranscriptSegment } from '../link-preview/types';
+import { parseTimestampStringToMs, parseTimestampToMs } from './timestamps';
 
 export interface TranscriptParseResult {
   text: string | null;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { installChromeStorage } from './helpers/chrome-storage.js';
+import { installChromeStorage } from './helpers/chrome-storage';
 
 const LOG_KEY = 'gist:extension-logs';
 

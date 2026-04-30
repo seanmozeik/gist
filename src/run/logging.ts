@@ -3,8 +3,8 @@ import {
   resolveThemeNameFromSources,
   resolveTrueColor,
 } from '../tty/theme.js';
-import { VERBOSE_PREFIX } from './constants.js';
-import { ansi } from './terminal.js';
+import { VERBOSE_PREFIX } from './constants';
+import { ansi } from './terminal';
 
 export function writeVerbose(
   stderr: NodeJS.WritableStream,

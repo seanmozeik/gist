@@ -16,7 +16,7 @@ import {
   saveSkill,
   type Skill,
 } from '../apps/chrome-extension/src/automation/skills-store.js';
-import { createSkillsController } from '../apps/chrome-extension/src/entrypoints/options/skills-controller.js';
+import { createSkillsController } from '../apps/chrome-extension/src/entrypoints/options/skills-controller';
 
 function createSkill(name: string, overrides: Partial<Skill> = {}): Skill {
   return {

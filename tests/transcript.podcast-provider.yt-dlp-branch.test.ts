@@ -12,7 +12,7 @@ vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ({
   fetchTranscriptWithYtDlp: mocks.fetchTranscriptWithYtDlp,
 }));
 
-import { fetchTranscript } from '../src/content/transcript/providers/podcast.js';
+import { fetchTranscript } from '../src/content/transcript/providers/podcast';
 
 const baseOptions = {
   apifyApiToken: null,

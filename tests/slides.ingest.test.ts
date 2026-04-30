@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { prepareSlidesInput } from '../src/slides/ingest.js';
+import { prepareSlidesInput } from '../src/slides/ingest';
 
 describe('slides ingest', () => {
   it('short-circuits on cached media', async () => {

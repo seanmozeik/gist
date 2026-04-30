@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveInputTarget } from '../src/content/asset.js';
+import { resolveInputTarget } from '../src/content/asset';
 
 describe('resolveInputTarget', () => {
   it('accepts valid URLs unchanged', () => {

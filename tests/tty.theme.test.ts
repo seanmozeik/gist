@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CliThemeName } from '../src/tty/theme.js';
+import type { CliThemeName } from '../src/tty/theme';
 import {
   createThemeRenderer,
   parseCliThemeName,

@@ -1,5 +1,5 @@
-import type { RunMetricsReport } from '../costs.js';
-import { formatCompactCount, formatElapsedMs } from '../tty/format.js';
+import type { RunMetricsReport } from '../costs';
+import { formatCompactCount, formatElapsedMs } from '../tty/format';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
@@ -11,7 +11,7 @@ export {
   type ExtractDiagnosticsForFinishLine,
 } from './finish-line-labels.js';
 export { buildLengthPartsForFinishLine, type ExtractedForLengths } from './finish-line-lengths.js';
-import { formatUSD, sumNumbersOrNull } from './format.js';
+import { formatUSD, sumNumbersOrNull } from './format';
 
 export interface FinishLineText {
   line: string;

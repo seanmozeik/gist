@@ -1,10 +1,10 @@
-import type { CliProvider, GistConfig } from '../config.js';
-import { loadGistConfig } from '../config.js';
-import { parseVideoMode } from '../flags.js';
-import { type OutputLanguage, parseOutputLanguage } from '../language.js';
-import { parseOpenAiReasoningEffort, parseOpenAiServiceTier } from '../llm/model-options.js';
-import type { ModelRequestOptions } from '../llm/model-options.js';
-import { parseBooleanEnv } from './env.js';
+import type { CliProvider, GistConfig } from '../config';
+import { loadGistConfig } from '../config';
+import { parseVideoMode } from '../flags';
+import { type OutputLanguage, parseOutputLanguage } from '../language';
+import { parseOpenAiReasoningEffort, parseOpenAiServiceTier } from '../llm/model-options';
+import type { ModelRequestOptions } from '../llm/model-options';
+import { parseBooleanEnv } from './env';
 
 export interface ConfigState {
   config: GistConfig | null;

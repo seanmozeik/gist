@@ -1,5 +1,5 @@
-import { UVX_TIP } from './constants.js';
-import { hasUvxCli } from './env.js';
+import { UVX_TIP } from './constants';
+import { hasUvxCli } from './env';
 
 export function withUvxTip(error: unknown, env: Record<string, string | undefined>): Error {
   if (hasUvxCli(env)) {

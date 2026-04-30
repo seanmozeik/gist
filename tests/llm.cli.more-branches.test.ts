@@ -2,7 +2,7 @@ import type { ChildProcess } from 'node:child_process';
 
 import { describe, expect, it } from 'vitest';
 
-import { runCliModel } from '../src/llm/cli.js';
+import { runCliModel } from '../src/llm/cli';
 
 describe('llm/cli extra branches', () => {
   it('parses the last JSON object when stdout includes a preface', async () => {

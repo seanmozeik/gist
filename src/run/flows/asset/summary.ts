@@ -1,35 +1,35 @@
 import { countTokens } from 'gpt-tokenizer';
 import { render as renderMarkdownAnsi } from 'markdansi';
 
-import { buildLanguageKey, buildLengthKey } from '../../../cache-keys.js';
-import { buildSummaryCacheKey, type CacheState } from '../../../cache.js';
-import type { CliProvider, GistConfig } from '../../../config.js';
-import type { MediaCache } from '../../../content/index.js';
-import type { LlmCall, RunMetricsReport } from '../../../costs.js';
-import type { OutputLanguage } from '../../../language.js';
-import { formatOutputLanguageForJson } from '../../../language.js';
-import { parseGatewayStyleModelId } from '../../../llm/model-id.js';
-import type { Prompt } from '../../../llm/prompt.js';
-import type { ExecFileFn } from '../../../markitdown.js';
-import type { FixedModelSpec, RequestedModel } from '../../../model-spec.js';
-import { SUMMARY_LENGTH_TARGET_CHARACTERS, SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index.js';
-import type { SummaryLength } from '../../../shared/contracts.js';
-import { type AssetAttachment, isUnsupportedAttachmentError } from '../../attachments.js';
+import { buildSummaryCacheKey, type CacheState } from '../../../cache';
+import { buildLanguageKey, buildLengthKey } from '../../../cache-keys';
+import type { CliProvider, GistConfig } from '../../../config';
+import type { MediaCache } from '../../../content/index';
+import type { LlmCall, RunMetricsReport } from '../../../costs';
+import type { OutputLanguage } from '../../../language';
+import { formatOutputLanguageForJson } from '../../../language';
+import { parseGatewayStyleModelId } from '../../../llm/model-id';
+import type { Prompt } from '../../../llm/prompt';
+import type { ExecFileFn } from '../../../markitdown';
+import type { FixedModelSpec, RequestedModel } from '../../../model-spec';
+import { SUMMARY_LENGTH_TARGET_CHARACTERS, SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index';
+import type { SummaryLength } from '../../../shared/contracts';
+import { type AssetAttachment, isUnsupportedAttachmentError } from '../../attachments';
 import {
   readLastSuccessfulCliProvider,
   writeLastSuccessfulCliProvider,
 } from '../../cli-fallback-state.js';
-import { writeFinishLine } from '../../finish-line.js';
-import { resolveTargetCharacters } from '../../format.js';
-import { writeVerbose } from '../../logging.js';
-import { prepareMarkdownForTerminal } from '../../markdown.js';
-import { runModelAttempts } from '../../model-attempts.js';
-import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter.js';
-import type { createSummaryEngine } from '../../summary-engine.js';
-import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal.js';
-import type { ModelAttempt } from '../../types.js';
-import { prepareAssetPrompt } from './preprocess.js';
-import { buildAssetCliContext, buildAssetModelAttempts } from './summary-attempts.js';
+import { writeFinishLine } from '../../finish-line';
+import { resolveTargetCharacters } from '../../format';
+import { writeVerbose } from '../../logging';
+import { prepareMarkdownForTerminal } from '../../markdown';
+import { runModelAttempts } from '../../model-attempts';
+import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter';
+import type { createSummaryEngine } from '../../summary-engine';
+import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal';
+import type { ModelAttempt } from '../../types';
+import { prepareAssetPrompt } from './preprocess';
+import { buildAssetCliContext, buildAssetModelAttempts } from './summary-attempts';
 
 const buildModelMetaFromAttempt = (attempt: ModelAttempt) => {
   if (attempt.transport === 'cli') {

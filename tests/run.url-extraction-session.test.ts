@@ -15,7 +15,7 @@ vi.mock('../src/cache.js', () => ({ buildExtractCacheKey }));
 
 vi.mock('../src/run/flows/url/extract.js', () => ({ fetchLinkContentWithBirdTip }));
 
-import { createUrlExtractionSession } from '../src/run/flows/url/extraction-session.js';
+import { createUrlExtractionSession } from '../src/run/flows/url/extraction-session';
 
 function createCtx() {
   return {

@@ -1,4 +1,4 @@
-import type { Prompt } from '../../src/llm/prompt.js';
+import type { Prompt } from '../../src/llm/prompt';
 
 export function buildDocumentPrompt({
   text,

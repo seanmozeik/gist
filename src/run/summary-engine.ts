@@ -1,27 +1,27 @@
 import { countTokens } from 'gpt-tokenizer';
 import { createMarkdownStreamer, render as renderMarkdownAnsi } from 'markdansi';
 
-import type { CliProvider } from '../config.js';
-import type { LlmCall } from '../costs.js';
-import { isCliDisabled, runCliModel } from '../llm/cli.js';
-import { streamTextWithModelId } from '../llm/generate-text.js';
-import { parseGatewayStyleModelId } from '../llm/model-id.js';
-import { mergeModelRequestOptions } from '../llm/model-options.js';
-import type { ModelRequestOptions } from '../llm/model-options.js';
-import type { Prompt } from '../llm/prompt.js';
-import { formatCompactCount } from '../tty/format.js';
-import { writeVerbose } from './logging.js';
-import { prepareMarkdownForTerminalStreaming } from './markdown.js';
-import { createStreamOutputGate, type StreamOutputMode } from './stream-output.js';
+import type { CliProvider } from '../config';
+import type { LlmCall } from '../costs';
+import { isCliDisabled, runCliModel } from '../llm/cli';
+import { streamTextWithModelId } from '../llm/generate-text';
+import { parseGatewayStyleModelId } from '../llm/model-id';
+import { mergeModelRequestOptions } from '../llm/model-options';
+import type { ModelRequestOptions } from '../llm/model-options';
+import type { Prompt } from '../llm/prompt';
+import { formatCompactCount } from '../tty/format';
+import { writeVerbose } from './logging';
+import { prepareMarkdownForTerminalStreaming } from './markdown';
+import { createStreamOutputGate, type StreamOutputMode } from './stream-output';
 import {
   canStream,
   isGoogleStreamingUnsupportedError,
   isStreamingTimeoutError,
   mergeStreamingChunk,
 } from './streaming.js';
-import { resolveModelIdForLlmCall, gistWithModelId } from './summary-llm.js';
-import { isRichTty, markdownRenderWidth, supportsColor } from './terminal.js';
-import type { ModelAttempt, ModelMeta } from './types.js';
+import { resolveModelIdForLlmCall, gistWithModelId } from './summary-llm';
+import { isRichTty, markdownRenderWidth, supportsColor } from './terminal';
+import type { ModelAttempt, ModelMeta } from './types';
 
 export interface SummaryEngineDeps {
   env: Record<string, string | undefined>;

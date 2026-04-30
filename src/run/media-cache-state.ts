@@ -1,5 +1,5 @@
-import type { GistConfig } from '../config.js';
-import type { MediaCache } from '../content/index.js';
+import type { GistConfig } from '../config';
+import type { MediaCache } from '../content/index';
 import {
   createMediaCache,
   DEFAULT_MEDIA_CACHE_MAX_MB,

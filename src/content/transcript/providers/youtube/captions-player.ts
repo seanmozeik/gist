@@ -1,6 +1,6 @@
-import { withBunCompressionHeaders } from '../../../bun.js';
-import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout.js';
-import { extractYoutubeiBootstrap } from './api.js';
+import { withBunCompressionHeaders } from '../../../bun';
+import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout';
+import { extractYoutubeiBootstrap } from './api';
 import {
   INNERTUBE_API_KEY_REGEX,
   REQUEST_HEADERS,

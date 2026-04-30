@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createUnsupportedFunctionalityError } from '../src/llm/errors.js';
+import { createUnsupportedFunctionalityError } from '../src/llm/errors';
 
 describe('llm errors', () => {
   it('builds a named error with the expected message', () => {

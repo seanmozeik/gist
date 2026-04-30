@@ -1,16 +1,16 @@
-import type { ExecFileFn } from '../../../markitdown.js';
-import { convertToMarkdownWithMarkitdown } from '../../../markitdown.js';
-import { formatBytes } from '../../../tty/format.js';
+import type { ExecFileFn } from '../../../markitdown';
+import { convertToMarkdownWithMarkitdown } from '../../../markitdown';
+import { formatBytes } from '../../../tty/format';
 import {
   type AssetAttachment,
   getFileBytesFromAttachment,
   getTextContentFromAttachment,
   shouldMarkitdownConvertMediaType,
 } from '../../attachments.js';
-import { MAX_TEXT_BYTES_DEFAULT } from '../../constants.js';
-import { hasUvxCli } from '../../env.js';
-import type { ExtractDiagnosticsForFinishLine } from '../../finish-line.js';
-import { withUvxTip } from '../../tips.js';
+import { MAX_TEXT_BYTES_DEFAULT } from '../../constants';
+import { hasUvxCli } from '../../env';
+import type { ExtractDiagnosticsForFinishLine } from '../../finish-line';
+import { withUvxTip } from '../../tips';
 
 export interface AssetExtractContext {
   env: Record<string, string | undefined>;

@@ -4,12 +4,12 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
-import { readTweetWithPreferredClient } from '../src/run/bird.js';
-import { resolveTwitterCookies } from '../src/run/cookies/twitter.js';
-import { resolveExecutableInPath } from '../src/run/env.js';
-import { extractSlidesForSource, resolveSlideSource } from '../src/slides/index.js';
-import { resolveSlideSettings } from '../src/slides/settings.js';
+import { createLinkPreviewClient } from '../src/content/index';
+import { readTweetWithPreferredClient } from '../src/run/bird';
+import { resolveTwitterCookies } from '../src/run/cookies/twitter';
+import { resolveExecutableInPath } from '../src/run/env';
+import { extractSlidesForSource, resolveSlideSource } from '../src/slides/index';
+import { resolveSlideSettings } from '../src/slides/settings';
 
 const ENV = process.env as Record<string, string | undefined>;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? null;

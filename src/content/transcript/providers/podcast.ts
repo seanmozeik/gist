@@ -1,13 +1,13 @@
-import { isDirectMediaUrl } from '../../url.js';
-import { resolveTranscriptionConfig } from '../transcription-config.js';
-import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types.js';
+import { isDirectMediaUrl } from '../../url';
+import { resolveTranscriptionConfig } from '../transcription-config';
+import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types';
 import {
   fetchAppleTranscriptFromEmbeddedHtml,
   fetchAppleTranscriptFromItunesLookup,
 } from './podcast/apple-flow.js';
-import { FEED_HINT_URL_PATTERN, PODCAST_PLATFORM_HOST_PATTERN } from './podcast/constants.js';
-import type { PodcastFlowContext } from './podcast/flow-context.js';
-import { resolvePodcastFeedUrlFromItunesSearch } from './podcast/itunes.js';
+import { FEED_HINT_URL_PATTERN, PODCAST_PLATFORM_HOST_PATTERN } from './podcast/constants';
+import type { PodcastFlowContext } from './podcast/flow-context';
+import { resolvePodcastFeedUrlFromItunesSearch } from './podcast/itunes';
 import {
   downloadToFile,
   filenameFromUrl,
@@ -31,8 +31,8 @@ import {
   extractItemDurationSeconds,
   looksLikeRssOrAtomFeed,
 } from './podcast/rss.js';
-import { fetchSpotifyTranscript } from './podcast/spotify-flow.js';
-import { looksLikeBlockedHtml } from './podcast/spotify.js';
+import { looksLikeBlockedHtml } from './podcast/spotify';
+import { fetchSpotifyTranscript } from './podcast/spotify-flow';
 import {
   buildMissingTranscriptionProviderResult,
   resolveTranscriptProviderCapabilities,

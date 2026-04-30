@@ -1,4 +1,4 @@
-import { fetchWithTimeout } from './fetch-with-timeout.js';
+import { fetchWithTimeout } from './fetch-with-timeout';
 
 function truncateList(items: string[], max: number): string {
   const normalized = items.map((item) => item.trim()).filter(Boolean);

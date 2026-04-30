@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ExtractedLinkContent } from '../src/content/index.js';
-import { buildUrlPrompt } from '../src/run/flows/url/summary.js';
+import type { ExtractedLinkContent } from '../src/content/index';
+import { buildUrlPrompt } from '../src/run/flows/url/summary';
 
 describe('buildUrlPrompt', () => {
   it('propagates extracted.truncated into the prompt context', () => {

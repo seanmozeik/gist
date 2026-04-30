@@ -2,7 +2,7 @@ import { join, resolve as resolvePath } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { resolveCachePath } from '../src/cache.js';
+import { resolveCachePath } from '../src/cache';
 
 describe('resolveCachePath', () => {
   it('uses HOME for default path', () => {

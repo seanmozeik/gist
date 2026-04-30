@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createWebsiteProgress } from '../src/tty/website-progress.js';
+import { createWebsiteProgress } from '../src/tty/website-progress';
 
 describe('tty website progress', () => {
   it('returns null when disabled', () => {

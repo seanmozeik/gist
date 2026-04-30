@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSlideOutputState } from '../src/run/flows/url/slides-output-state.js';
+import { createSlideOutputState } from '../src/run/flows/url/slides-output-state';
 
 describe('slide output state', () => {
   it('keeps slide order and metadata from extracted slides', () => {

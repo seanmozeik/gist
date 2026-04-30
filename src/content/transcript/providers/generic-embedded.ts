@@ -1,7 +1,7 @@
 import { load } from 'cheerio';
 
-import type { TranscriptSegment } from '../../link-preview/types.js';
-import { isDirectMediaUrl } from '../../url.js';
+import type { TranscriptSegment } from '../../link-preview/types';
+import { isDirectMediaUrl } from '../../url';
 import {
   jsonTranscriptToPlainText,
   jsonTranscriptToSegments,

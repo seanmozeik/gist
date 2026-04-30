@@ -1,7 +1,7 @@
-import type { ProviderResult } from '../../types.js';
-import { fetchTranscriptWithYtDlp } from '../youtube/yt-dlp.js';
-import type { PodcastFlowContext } from './flow-context.js';
-import { buildWhisperResult, joinNotes } from './results.js';
+import type { ProviderResult } from '../../types';
+import { fetchTranscriptWithYtDlp } from '../youtube/yt-dlp';
+import type { PodcastFlowContext } from './flow-context';
+import { buildWhisperResult, joinNotes } from './results';
 import {
   decodeXmlEntities,
   extractEnclosureFromFeed,

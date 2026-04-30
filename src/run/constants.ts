@@ -1,4 +1,4 @@
-import type { ModelConfig } from '../config.js';
+import type { ModelConfig } from '../config';
 
 export const TWITTER_CLI_TIP = 'Tip: Install bird for better X/Twitter support.';
 export const BIRD_TIP = TWITTER_CLI_TIP;

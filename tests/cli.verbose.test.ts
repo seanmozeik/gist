@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 describe('--verbose', () => {
   it('prints progress and extraction diagnostics to stderr', async () => {

@@ -1,4 +1,4 @@
-import type { TranscriptionProviderHint } from '../../link-preview/deps.js';
+import type { TranscriptionProviderHint } from '../../link-preview/deps';
 
 type Env = Record<string, string | undefined>;
 

@@ -2,10 +2,10 @@ import { execFile } from 'node:child_process';
 
 import { CommanderError, type Command } from 'commander';
 
-import type { ExecFileFn } from '../markitdown.js';
-import { handleAuthRequest, handleHelpRequest, handleRefreshFreeRequest } from './cli-preflight.js';
-import { attachRichHelp, buildProgram } from './help.js';
-import { createRunnerPlan } from './runner-plan.js';
+import type { ExecFileFn } from '../markitdown';
+import { handleAuthRequest, handleHelpRequest, handleRefreshFreeRequest } from './cli-preflight';
+import { attachRichHelp, buildProgram } from './help';
+import { createRunnerPlan } from './runner-plan';
 import {
   applyWidthOverride,
   handleCacheUtilityFlags,

@@ -1,11 +1,11 @@
-import type { TranscriptSegment } from '../../../link-preview/types.js';
+import type { TranscriptSegment } from '../../../link-preview/types';
 import {
   jsonTranscriptToPlainText,
   jsonTranscriptToSegments,
   vttToPlainText,
   vttToSegments,
 } from '../../parse.js';
-import { TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
+import { TRANSCRIPTION_TIMEOUT_MS } from './constants';
 import {
   decodeXmlEntities,
   extractFeedItems,

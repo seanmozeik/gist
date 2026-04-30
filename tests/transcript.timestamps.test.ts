@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { jsonTranscriptToSegments, vttToSegments } from '../src/content/transcript/parse.js';
+import { jsonTranscriptToSegments, vttToSegments } from '../src/content/transcript/parse';
 import {
   formatTimestampMs,
   formatTranscriptSegments,

@@ -6,8 +6,8 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { resolveSlideSourceFromUrl } from '../src/slides/index.js';
-import { buildDirectSourceId, buildYoutubeSourceId } from '../src/slides/source-id.js';
+import { resolveSlideSourceFromUrl } from '../src/slides/index';
+import { buildDirectSourceId, buildYoutubeSourceId } from '../src/slides/source-id';
 
 describe('resolveSlideSourceFromUrl', () => {
   it('prefixes YouTube ids for slide folders', () => {

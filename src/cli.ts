@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { runCliMain } from './cli-main.js';
+import { runCliMain } from './cli-main';
 
 void runCliMain({
   argv: process.argv.slice(2),

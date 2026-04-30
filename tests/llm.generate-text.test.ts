@@ -1,10 +1,10 @@
 import type { Api } from '@mariozechner/pi-ai';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { generateTextWithModelId, streamTextWithModelId } from '../src/llm/generate-text.js';
-import { buildDocumentPrompt } from './helpers/document-prompt.js';
-import { buildMinimalPdf } from './helpers/pdf.js';
-import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
+import { generateTextWithModelId, streamTextWithModelId } from '../src/llm/generate-text';
+import { buildDocumentPrompt } from './helpers/document-prompt';
+import { buildMinimalPdf } from './helpers/pdf';
+import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock';
 
 interface MockModel {
   provider: string;

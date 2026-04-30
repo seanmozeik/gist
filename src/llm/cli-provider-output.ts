@@ -1,5 +1,5 @@
-import type { CliProvider } from '../config.js';
-import type { LlmTokenUsage } from './generate-text.js';
+import type { CliProvider } from '../config';
+import type { LlmTokenUsage } from './generate-text';
 
 export type JsonCliProvider = Exclude<CliProvider, 'codex'>;
 

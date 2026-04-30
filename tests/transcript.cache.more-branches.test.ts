@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { TranscriptCache } from '../src/content/cache/types.js';
+import type { TranscriptCache } from '../src/content/cache/types';
 import {
   DEFAULT_TTL_MS,
   mapCachedSource,

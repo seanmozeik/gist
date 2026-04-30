@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildFinishLineText } from '../src/run/finish-line.js';
+import { buildFinishLineText } from '../src/run/finish-line';
 
 const baseReport = {
   llm: [{ calls: 1, completionTokens: 1, promptTokens: 1, totalTokens: 2 }],

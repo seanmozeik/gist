@@ -1,10 +1,10 @@
-import type { ExtractedLinkContent } from '../../../content/index.js';
+import type { ExtractedLinkContent } from '../../../content/index';
 import {
   buildLinkSummaryPrompt,
   SUMMARY_LENGTH_TARGET_CHARACTERS,
 } from '../../../prompts/index.js';
-import { resolveTargetCharacters } from '../../format.js';
-import type { UrlFlowContext } from './types.js';
+import { resolveTargetCharacters } from '../../format';
+import type { UrlFlowContext } from './types';
 
 export function shouldBypassShortContentSummary({
   extracted,

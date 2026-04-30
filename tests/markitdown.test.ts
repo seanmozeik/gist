@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { convertToMarkdownWithMarkitdown, type ExecFileFn } from '../src/markitdown.js';
+import { convertToMarkdownWithMarkitdown, type ExecFileFn } from '../src/markitdown';
 
 function execFileOk(expectCmd: string, stdoutText: string) {
   return vi.fn((file, _args, _opts, cb) => {

@@ -1,8 +1,8 @@
-import type { CliProvider, ModelConfig, GistConfig } from '../config.js';
-import { mergeModelRequestOptions } from '../llm/model-options.js';
-import type { RequestedModel } from '../model-spec.js';
-import { parseRequestedModelId } from '../model-spec.js';
-import { BUILTIN_MODELS } from './constants.js';
+import type { CliProvider, ModelConfig, GistConfig } from '../config';
+import { mergeModelRequestOptions } from '../llm/model-options';
+import type { RequestedModel } from '../model-spec';
+import { parseRequestedModelId } from '../model-spec';
+import { BUILTIN_MODELS } from './constants';
 
 function resolveConfiguredCliModel(
   provider: CliProvider,
@@ -170,7 +170,7 @@ export function resolveModelSelection({
 
     if (requestedModelInputLower !== 'auto' && !requestedModelInput.includes('/')) {
       throw new Error(
-        `Unknown model "${requestedModelInput}". Define it in ${configPath ?? '~/.gist/config.json'} under "models", or use a provider-prefixed id like openai/...`,
+        `Unknown model "${requestedModelInput}". Define it in ${configPath ?? '~/.gist/config.json'} under "models", or use a provider-prefixed id like openrouter/...`,
       );
     }
 

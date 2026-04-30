@@ -2,8 +2,8 @@ import { spawn } from 'node:child_process';
 import { accessSync, constants as fsConstants } from 'node:fs';
 import path from 'node:path';
 
-import type { CliProvider, GistConfig } from '../config.js';
-import { isCliDisabled, resolveCliBinary } from '../llm/cli.js';
+import type { CliProvider, GistConfig } from '../config';
+import { isCliDisabled, resolveCliBinary } from '../llm/cli';
 
 type ConfigForCli = GistConfig | null;
 

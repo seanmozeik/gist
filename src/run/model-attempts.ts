@@ -1,4 +1,4 @@
-import type { ModelAttempt, ModelAttemptRequiredEnv } from './types.js';
+import type { ModelAttempt, ModelAttemptRequiredEnv } from './types';
 
 export async function runModelAttempts<T>({
   attempts,

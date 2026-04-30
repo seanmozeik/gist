@@ -1,4 +1,4 @@
-import type { ApiKeysConfig, EnvConfig, GistConfig } from './types.js';
+import type { ApiKeysConfig, EnvConfig, GistConfig } from './types';
 
 const LEGACY_API_KEY_ENV_MAP = {
   anthropic: 'ANTHROPIC_API_KEY',

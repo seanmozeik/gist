@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildMetricsParts, buildMetricsTokens } from '../apps/chrome-extension/src/lib/metrics.js';
+import { buildMetricsParts, buildMetricsTokens } from '../apps/chrome-extension/src/lib/metrics';
 
 describe('chrome metrics', () => {
   it('omits input summary duplicates', () => {

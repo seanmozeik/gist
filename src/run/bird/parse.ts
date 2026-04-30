@@ -1,5 +1,5 @@
-import { extractMediaFromBirdRaw } from './media.js';
-import type { BirdTweetPayload } from './types.js';
+import { extractMediaFromBirdRaw } from './media';
+import type { BirdTweetPayload } from './types';
 
 export function parseBirdTweetPayload(raw: unknown): BirdTweetPayload {
   const parsed = raw as

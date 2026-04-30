@@ -1,4 +1,4 @@
-import type { TranscriptSource } from '../link-preview/types.js';
+import type { TranscriptSource } from '../link-preview/types';
 
 /** Public shape returned by transcript cache implementations. */
 export interface TranscriptCacheGetResult {

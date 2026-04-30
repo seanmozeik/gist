@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createPanelPortRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/panel-port.js';
+import { createPanelPortRuntime } from '../apps/chrome-extension/src/entrypoints/sidepanel/panel-port';
 
 function createMockPort() {
   const onMessageListeners: ((message: unknown) => void)[] = [];

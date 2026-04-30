@@ -1,6 +1,6 @@
-import { ITUNES_LOOKUP_URL, ITUNES_SEARCH_URL, TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
-import { asRecordArray, getJsonArray, getRecordString } from './json.js';
-import { normalizeLooseTitle } from './rss.js';
+import { ITUNES_LOOKUP_URL, ITUNES_SEARCH_URL, TRANSCRIPTION_TIMEOUT_MS } from './constants';
+import { asRecordArray, getJsonArray, getRecordString } from './json';
+import { normalizeLooseTitle } from './rss';
 
 export async function resolveApplePodcastEpisodeFromItunesLookup({
   fetchImpl,

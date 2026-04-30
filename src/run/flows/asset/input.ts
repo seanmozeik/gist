@@ -7,17 +7,17 @@ import {
   loadLocalAsset,
   loadRemoteAsset,
 } from '../../../content/asset.js';
-import { isDirectMediaExtension, isDirectMediaUrl } from '../../../content/url.js';
-import { formatBytes } from '../../../tty/format.js';
-import { startOscProgress } from '../../../tty/osc-progress.js';
-import { startSpinner } from '../../../tty/spinner.js';
+import { isDirectMediaExtension, isDirectMediaUrl } from '../../../content/url';
+import { formatBytes } from '../../../tty/format';
+import { startOscProgress } from '../../../tty/osc-progress';
+import { startSpinner } from '../../../tty/spinner';
 import {
   createThemeRenderer,
   resolveThemeNameFromSources,
   resolveTrueColor,
 } from '../../../tty/theme.js';
-import { assertAssetMediaTypeSupported } from '../../attachments.js';
-import type { GistAssetArgs } from './summary.js';
+import { assertAssetMediaTypeSupported } from '../../attachments';
+import type { GistAssetArgs } from './summary';
 
 /**
  * Check if a media type should route through transcription.

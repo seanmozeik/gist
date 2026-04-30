@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { FALLBACK_VERSION, resolvePackageVersion } from '../src/version.js';
+import { FALLBACK_VERSION, resolvePackageVersion } from '../src/version';
 
 describe('resolvePackageVersion', () => {
   it('prefers GIST_VERSION when set', () => {

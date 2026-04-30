@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream, promises as fs } from 'node:fs';
 import { isAbsolute, join, resolve as resolvePath } from 'node:path';
 
-import type { MediaCache, MediaCacheEntry } from './content/index.js';
+import type { MediaCache, MediaCacheEntry } from './content/index';
 
 export type MediaCacheVerifyMode = 'none' | 'size' | 'hash';
 

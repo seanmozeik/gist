@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { CacheState } from '../src/cache.js';
-import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
+import type { CacheState } from '../src/cache';
+import { createDaemonUrlFlowContext } from '../src/daemon/flow-context';
 
 function makeTempHome(): string {
   return mkdtempSync(join(tmpdir(), 'gist-daemon-home-'));

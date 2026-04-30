@@ -1,10 +1,10 @@
-import type { MediaCache, TranscriptCache } from '../cache/types.js';
+import type { MediaCache, TranscriptCache } from '../cache/types';
 import {
   resolveTranscriptionConfig,
   type TranscriptionConfig,
 } from '../transcript/transcription-config.js';
-import { fetchLinkContent } from './content/index.js';
-import type { ExtractedLinkContent, FetchLinkContentOptions } from './content/types.js';
+import { fetchLinkContent } from './content/index';
+import type { ExtractedLinkContent, FetchLinkContentOptions } from './content/types';
 import type {
   ConvertHtmlToMarkdown,
   LinkPreviewDeps,

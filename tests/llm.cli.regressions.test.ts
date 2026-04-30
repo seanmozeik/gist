@@ -3,8 +3,8 @@ import { writeFileSync } from 'node:fs';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCliModel } from '../src/llm/cli.js';
-import type { ExecFileFn } from '../src/markitdown.js';
+import { runCliModel } from '../src/llm/cli';
+import type { ExecFileFn } from '../src/markitdown';
 
 describe('runCliModel regressions', () => {
   it('passes OpenClaw prompts with --message for current OpenClaw CLI', async () => {

@@ -1,7 +1,7 @@
-import type { DirectMediaKind } from '../../direct-media.js';
-import { normalizeTranscriptText } from '../normalize.js';
-import type { TranscriptionConfig } from '../transcription-config.js';
-import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types.js';
+import type { DirectMediaKind } from '../../direct-media';
+import { normalizeTranscriptText } from '../normalize';
+import type { TranscriptionConfig } from '../transcription-config';
+import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types';
 import {
   buildMissingTranscriptionProviderResult,
   resolveTranscriptProviderCapabilities,

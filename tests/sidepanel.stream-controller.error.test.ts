@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createStreamController } from '../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller.js';
-import { encodeSseEvent, type SseEvent } from '../src/shared/sse-events.js';
+import { createStreamController } from '../apps/chrome-extension/src/entrypoints/sidepanel/stream-controller';
+import { encodeSseEvent, type SseEvent } from '../src/shared/sse-events';
 
 const encoder = new TextEncoder();
 

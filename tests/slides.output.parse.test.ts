@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseSlideSummariesFromMarkdown } from '../src/run/flows/url/slides-text.js';
+import { parseSlideSummariesFromMarkdown } from '../src/run/flows/url/slides-text';
 
 describe('parseSlideSummariesFromMarkdown', () => {
   it('extracts slide summaries from Slides section', () => {

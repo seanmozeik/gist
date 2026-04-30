@@ -1,5 +1,5 @@
-import type { StreamMode } from '../flags.js';
-import { isRichTty } from './terminal.js';
+import type { StreamMode } from '../flags';
+import { isRichTty } from './terminal';
 
 export interface StreamSettings {
   effectiveStreamMode: 'on' | 'off';

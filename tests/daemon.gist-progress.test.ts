@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { type LinkPreviewProgressEvent, ProgressKind } from '../src/content/index.js';
-import { formatProgress } from '../src/daemon/gist-progress.js';
+import { type LinkPreviewProgressEvent, ProgressKind } from '../src/content/index';
+import { formatProgress } from '../src/daemon/gist-progress';
 
 describe('daemon/gist-progress', () => {
   it('formats link preview progress events', () => {

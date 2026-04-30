@@ -1,4 +1,4 @@
-import type { ModelRequestOptions } from '../model-options.js';
+import type { ModelRequestOptions } from '../model-options';
 
 export interface OpenAiClientConfig {
   apiKey: string;

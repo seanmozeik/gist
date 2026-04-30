@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateTextWithModelId, streamTextWithModelId } from '../../src/llm/generate-text.js';
+import { generateTextWithModelId, streamTextWithModelId } from '../../src/llm/generate-text';
 
 const LIVE = process.env.GIST_LIVE_TEST === '1';
 

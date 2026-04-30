@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { CacheState } from '../src/cache.js';
-import { createDaemonUrlFlowContext } from '../src/daemon/flow-context.js';
-import { resolveSlideSettings } from '../src/slides/settings.js';
-import type { SlideExtractionResult } from '../src/slides/types.js';
+import type { CacheState } from '../src/cache';
+import { createDaemonUrlFlowContext } from '../src/daemon/flow-context';
+import { resolveSlideSettings } from '../src/slides/settings';
+import type { SlideExtractionResult } from '../src/slides/types';
 
 vi.mock('../src/slides/index.js', async () => {
   const actual =
@@ -15,8 +15,8 @@ vi.mock('../src/slides/index.js', async () => {
   return { ...actual, extractSlidesForSource: vi.fn() };
 });
 
-import { runUrlFlow } from '../src/run/flows/url/flow.js';
-import * as slidesModule from '../src/slides/index.js';
+import { runUrlFlow } from '../src/run/flows/url/flow';
+import * as slidesModule from '../src/slides/index';
 
 const extractSlidesForSource = vi.mocked(slidesModule.extractSlidesForSource);
 

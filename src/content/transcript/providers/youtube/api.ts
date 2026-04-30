@@ -1,8 +1,8 @@
-import { withBunCompressionHeaders } from '../../../bun.js';
-import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout.js';
-import type { TranscriptSegment } from '../../../link-preview/types.js';
-import { parseTimestampToMs } from '../../timestamps.js';
-import { extractYoutubeBootstrapConfig, isRecord } from '../../utils.js';
+import { withBunCompressionHeaders } from '../../../bun';
+import { fetchWithTimeout } from '../../../link-preview/fetch-with-timeout';
+import type { TranscriptSegment } from '../../../link-preview/types';
+import { parseTimestampToMs } from '../../timestamps';
+import { extractYoutubeBootstrapConfig, isRecord } from '../../utils';
 
 const REQUEST_HEADERS: Record<string, string> = {
   Accept:

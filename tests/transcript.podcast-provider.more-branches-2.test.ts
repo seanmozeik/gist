@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ScrapeWithFirecrawl } from '../src/content/link-preview/deps.js';
+import type { ScrapeWithFirecrawl } from '../src/content/link-preview/deps';
 
 async function importPodcastProvider() {
   vi.resetModules();

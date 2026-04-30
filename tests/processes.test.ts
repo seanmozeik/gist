@@ -2,7 +2,7 @@ import { once } from 'node:events';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { ProcessRegistration } from '../src/processes.js';
+import type { ProcessRegistration } from '../src/processes';
 import {
   execFileTracked,
   runWithProcessContext,

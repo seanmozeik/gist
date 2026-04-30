@@ -1,4 +1,4 @@
-import type { CliProvider } from '../config.js';
+import type { CliProvider } from '../config';
 
 export const parseOptionalSetting = <T>(
   raw: unknown,

@@ -1,4 +1,4 @@
-import type { CliProvider } from '../config.js';
+import type { CliProvider } from '../config';
 
 export type RequiredModelEnv =
   | 'OPENROUTER_API_KEY'

@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { createTempFileFromStdin } from '../src/run/stdin-temp-file.js';
+import { createTempFileFromStdin } from '../src/run/stdin-temp-file';
 
 const streamFrom = (...chunks: (string | Uint8Array | Buffer)[]) => Readable.from(chunks);
 

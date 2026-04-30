@@ -1,6 +1,6 @@
 import type { ImageContent, TextContent, UserMessage } from '@mariozechner/pi-ai';
 
-import type { Attachment } from './attachments.js';
+import type { Attachment } from './attachments';
 
 export interface Prompt {
   system?: string;

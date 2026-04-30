@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateTextWithModelId } from '../../src/llm/generate-text.js';
-import { buildDocumentPrompt } from '../helpers/document-prompt.js';
-import { buildMinimalPdf } from '../helpers/pdf.js';
+import { generateTextWithModelId } from '../../src/llm/generate-text';
+import { buildDocumentPrompt } from '../helpers/document-prompt';
+import { buildMinimalPdf } from '../helpers/pdf';
 
 const LIVE = process.env.GIST_LIVE_TEST === '1';
 

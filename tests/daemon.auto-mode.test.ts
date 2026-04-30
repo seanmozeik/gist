@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveAutoDaemonMode } from '../src/daemon/auto-mode.js';
+import { resolveAutoDaemonMode } from '../src/daemon/auto-mode';
 
 describe('daemon/auto-mode', () => {
   it('prefers url for media urls', () => {

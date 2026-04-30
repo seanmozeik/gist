@@ -1,9 +1,9 @@
 import { getModels } from '@mariozechner/pi-ai';
 import { describe, expect, it } from 'vitest';
 
-import type { GistConfig } from '../../src/config.js';
-import { generateTextWithModelId } from '../../src/llm/generate-text.js';
-import { buildAutoModelAttempts } from '../../src/model-auto.js';
+import type { GistConfig } from '../../src/config';
+import { generateTextWithModelId } from '../../src/llm/generate-text';
+import { buildAutoModelAttempts } from '../../src/model-auto';
 
 const LIVE = process.env.GIST_LIVE_TEST === '1';
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { handlePanelSlidesContextRequest } from '../apps/chrome-extension/src/entrypoints/background/panel-slides-context.js';
+import { handlePanelSlidesContextRequest } from '../apps/chrome-extension/src/entrypoints/background/panel-slides-context';
 
 describe('chrome panel slides context', () => {
   beforeEach(() => {

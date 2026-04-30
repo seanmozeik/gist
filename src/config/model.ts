@@ -1,7 +1,7 @@
-import { parseOpenAiReasoningEffort, parseOpenAiTextVerbosity } from '../llm/model-options.js';
-import type { ModelRequestOptions } from '../llm/model-options.js';
-import { isRecord } from './parse-helpers.js';
-import type { AutoRule, AutoRuleKind, ModelConfig } from './types.js';
+import { parseOpenAiReasoningEffort, parseOpenAiTextVerbosity } from '../llm/model-options';
+import type { ModelRequestOptions } from '../llm/model-options';
+import { isRecord } from './parse-helpers';
+import type { AutoRule, AutoRuleKind, ModelConfig } from './types';
 
 function parseAutoRuleKind(value: unknown): AutoRuleKind | null {
   return value === 'text' ||

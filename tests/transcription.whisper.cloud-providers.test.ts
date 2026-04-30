@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../src/transcription/whisper/assemblyai.js';
+import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../src/transcription/whisper/assemblyai';
 import {
   buildCloudModelIdChain,
   buildCloudProviderHint,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLinkPreviewClient } from '../src/content/index.js';
+import { createLinkPreviewClient } from '../src/content/index';
 
 const LIVE = process.env.GIST_LIVE_TESTS === '1';
 const NO_TRANSCRIPT_URL =

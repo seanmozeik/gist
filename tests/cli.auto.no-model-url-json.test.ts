@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 describe('--model auto no-model-url-json', () => {
   it('prints JSON output with llm=null when all model calls are skipped', async () => {

@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 vi.mock('../src/content/transcript/providers/youtube/yt-dlp.js', () => ({
   fetchDurationSecondsWithYtDlp: vi.fn(async () => null),

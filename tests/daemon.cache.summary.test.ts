@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { createCacheStore } from '../src/cache.js';
-import { streamSummaryForVisiblePage } from '../src/daemon/gist.js';
-import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
+import { createCacheStore } from '../src/cache';
+import { streamSummaryForVisiblePage } from '../src/daemon/gist';
+import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock';
 
 const mocks = vi.hoisted(() => ({
   getModel: vi.fn(() => {

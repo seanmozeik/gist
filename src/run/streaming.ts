@@ -1,4 +1,4 @@
-import type { LlmProvider } from '../llm/model-id.js';
+import type { LlmProvider } from '../llm/model-id';
 
 export { mergeStreamingChunk } from '../shared/streaming-merge.js';
 

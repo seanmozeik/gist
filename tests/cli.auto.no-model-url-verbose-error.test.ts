@@ -5,7 +5,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 vi.mock('../src/llm/generate-text.js', () => ({
   generateTextWithModelId: vi.fn(async () => {

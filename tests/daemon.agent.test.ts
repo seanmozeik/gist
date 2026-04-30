@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import type { AssistantMessage, Tool } from '@mariozechner/pi-ai';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { completeAgentResponse } from '../src/daemon/agent.js';
-import { runCliModel } from '../src/llm/cli.js';
-import * as modelAuto from '../src/model-auto.js';
+import { completeAgentResponse } from '../src/daemon/agent';
+import { runCliModel } from '../src/llm/cli';
+import * as modelAuto from '../src/model-auto';
 
 const { mockCompleteSimple, mockGetModel } = vi.hoisted(() => ({
   mockCompleteSimple: vi.fn(),

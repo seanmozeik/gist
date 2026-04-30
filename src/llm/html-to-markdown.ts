@@ -1,8 +1,8 @@
-import type { ConvertHtmlToMarkdown } from '../content/index.js';
-import type { LlmTokenUsage } from './generate-text.js';
-import { generateTextWithModelId } from './generate-text.js';
-import type { LlmProvider } from './model-id.js';
-import type { ModelRequestOptions } from './model-options.js';
+import type { ConvertHtmlToMarkdown } from '../content/index';
+import type { LlmTokenUsage } from './generate-text';
+import { generateTextWithModelId } from './generate-text';
+import type { LlmProvider } from './model-id';
+import type { ModelRequestOptions } from './model-options';
 
 const MAX_HTML_INPUT_CHARACTERS = 200_000;
 

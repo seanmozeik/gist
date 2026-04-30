@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { loadGistConfig, mergeConfigEnv } from '../src/config.js';
+import { loadGistConfig, mergeConfigEnv } from '../src/config';
 
 const writeConfig = (raw: string) => {
   const root = mkdtempSync(join(tmpdir(), 'gist-config-env-'));

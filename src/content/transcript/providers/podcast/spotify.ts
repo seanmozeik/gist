@@ -1,5 +1,5 @@
-import { BLOCKED_HTML_HINT_PATTERN, TRANSCRIPTION_TIMEOUT_MS } from './constants.js';
-import { getJsonNumber, getJsonPath, getJsonString } from './json.js';
+import { BLOCKED_HTML_HINT_PATTERN, TRANSCRIPTION_TIMEOUT_MS } from './constants';
+import { getJsonNumber, getJsonPath, getJsonString } from './json';
 
 export function extractSpotifyEpisodeId(url: string): string | null {
   try {

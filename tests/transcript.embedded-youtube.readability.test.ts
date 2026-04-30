@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractEmbeddedYouTubeUrlFromHtml } from '../src/content/transcript/utils.js';
+import { extractEmbeddedYouTubeUrlFromHtml } from '../src/content/transcript/utils';
 
 describe('extractEmbeddedYouTubeUrlFromHtml (readability gating)', () => {
   it('allows embed when readability length is below threshold', async () => {

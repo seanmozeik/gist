@@ -1,14 +1,14 @@
-import { createHtmlToMarkdownConverter } from '../../../llm/html-to-markdown.js';
-import { mergeModelRequestOptions } from '../../../llm/model-options.js';
+import { createHtmlToMarkdownConverter } from '../../../llm/html-to-markdown';
+import { mergeModelRequestOptions } from '../../../llm/model-options';
 import {
   type ConvertTranscriptToMarkdown,
   createTranscriptToMarkdownConverter,
 } from '../../../llm/transcript-to-markdown.js';
-import { convertToMarkdownWithMarkitdown } from '../../../markitdown.js';
-import { hasUvxCli } from '../../env.js';
-import { createRetryLogger } from '../../logging.js';
-import type { ModelAttempt } from '../../types.js';
-import type { UrlFlowContext } from './types.js';
+import { convertToMarkdownWithMarkitdown } from '../../../markitdown';
+import { hasUvxCli } from '../../env';
+import { createRetryLogger } from '../../logging';
+import type { ModelAttempt } from '../../types';
+import type { UrlFlowContext } from './types';
 
 export interface MarkdownModel {
   llmModelId: string;

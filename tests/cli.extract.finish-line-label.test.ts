@@ -2,8 +2,8 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ExecFileFn } from '../src/markitdown.js';
-import { runCli } from '../src/run.js';
+import type { ExecFileFn } from '../src/markitdown';
+import { runCli } from '../src/run';
 
 describe('cli --extract finish line label', () => {
   it('prints extraction label (no via footer) in --extract mode', async () => {

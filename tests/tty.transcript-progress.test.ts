@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createTranscriptProgressRenderer } from '../src/tty/progress/transcript.js';
+import { createTranscriptProgressRenderer } from '../src/tty/progress/transcript';
 
 describe('tty transcript progress renderer', () => {
   it('renders download line with total + rate and throttles rapid updates', () => {

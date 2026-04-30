@@ -1,4 +1,4 @@
-import type { ExtractedLinkContent } from '../../../content/index.js';
+import type { ExtractedLinkContent } from '../../../content/index';
 
 const TIMED_TRANSCRIPT_LINE_RE = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s+/;
 const KEY_MOMENTS_HEADING_RE = /^\s{0,3}(?:#{1,6}\s*)?Key moments\s*:?\s*$/i;

@@ -2,7 +2,7 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { runCli } from '../src/run.js';
+import { runCli } from '../src/run';
 
 const collectStream = () => {
   let text = '';
@@ -28,6 +28,8 @@ describe('--help output', () => {
     });
 
     const out = stdout.getText();
+    expect(out).toContain('Commands');
+    expect(out).toContain('gist refresh-free [flags]');
     expect(out).toContain('Examples');
     expect(out).toContain('gist "https://example.com"');
     expect(out).not.toContain('\u001B[');
@@ -46,6 +48,8 @@ describe('--help output', () => {
     });
 
     const out = stdout.getText();
+    expect(out).toContain('Commands');
+    expect(out).toContain('gist refresh-free [flags]');
     expect(out).toContain('Examples');
     expect(out).toContain('gist "https://example.com"');
     expect(out).toContain('Env Vars');

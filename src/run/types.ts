@@ -1,6 +1,6 @@
-import type { CliProvider } from '../config.js';
-import type { LlmProvider } from '../llm/model-id.js';
-import type { ModelRequestOptions } from '../llm/model-options.js';
+import type { CliProvider } from '../config';
+import type { LlmProvider } from '../llm/model-id';
+import type { ModelRequestOptions } from '../llm/model-options';
 
 export type ModelAttemptRequiredEnv =
   | 'OPENROUTER_API_KEY'

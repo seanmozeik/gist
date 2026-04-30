@@ -1,12 +1,12 @@
 import path from 'node:path';
 
-import type { CliProvider } from '../../../config.js';
-import { buildAutoModelAttempts } from '../../../model-auto.js';
-import { buildPathSummaryPrompt } from '../../../prompts/index.js';
-import { ensureCliAttachmentPath } from '../../attachments.js';
-import { parseCliUserModelId } from '../../env.js';
-import type { ModelAttempt } from '../../types.js';
-import type { AssetSummaryContext, GistAssetArgs } from './summary.js';
+import type { CliProvider } from '../../../config';
+import { buildAutoModelAttempts } from '../../../model-auto';
+import { buildPathSummaryPrompt } from '../../../prompts/index';
+import { ensureCliAttachmentPath } from '../../attachments';
+import { parseCliUserModelId } from '../../env';
+import type { ModelAttempt } from '../../types';
+import type { AssetSummaryContext, GistAssetArgs } from './summary';
 
 export async function buildAssetModelAttempts({
   ctx,

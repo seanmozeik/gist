@@ -5,9 +5,9 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CacheStore } from '../src/cache.js';
-import { gistMediaFile } from '../src/run/flows/asset/media.js';
-import type { AssetSummaryContext } from '../src/run/flows/asset/summary.js';
+import type { CacheStore } from '../src/cache';
+import { gistMediaFile } from '../src/run/flows/asset/media';
+import type { AssetSummaryContext } from '../src/run/flows/asset/summary';
 
 const createLinkPreviewClient = vi.hoisted(() => vi.fn());
 

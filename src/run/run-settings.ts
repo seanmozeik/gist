@@ -1,5 +1,5 @@
-import type { CliProvider } from '../config.js';
-import type { LengthArg, MarkdownMode, PreprocessMode, VideoMode, YoutubeMode } from '../flags.js';
+import type { CliProvider } from '../config';
+import type { LengthArg, MarkdownMode, PreprocessMode, VideoMode, YoutubeMode } from '../flags';
 import {
   parseDurationMs,
   parseLengthArg,
@@ -10,9 +10,9 @@ import {
   parseVideoMode,
   parseYoutubeMode,
 } from '../flags.js';
-import type { OutputLanguage } from '../language.js';
-import { resolveOutputLanguage } from '../language.js';
-import { formatPresetLengthGuidance, type SummaryLengthTarget } from '../prompts/index.js';
+import type { OutputLanguage } from '../language';
+import { resolveOutputLanguage } from '../language';
+import { formatPresetLengthGuidance, type SummaryLengthTarget } from '../prompts/index';
 import {
   parseOptionalBoolean,
   parseOptionalCliProviderOrder,

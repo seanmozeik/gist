@@ -1,7 +1,7 @@
-import type { LinkPreviewProgressEvent } from '../../content/index.js';
-import { formatBytes, formatBytesPerSecond, formatElapsedMs } from '../format.js';
-import type { OscProgressController } from '../osc-progress.js';
-import type { ThemeRenderer } from '../theme.js';
+import type { LinkPreviewProgressEvent } from '../../content/index';
+import { formatBytes, formatBytesPerSecond, formatElapsedMs } from '../format';
+import type { OscProgressController } from '../osc-progress';
+import type { ThemeRenderer } from '../theme';
 
 export function createFetchHtmlProgressRenderer({
   spinner,

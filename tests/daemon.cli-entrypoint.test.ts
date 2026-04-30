@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { resolveCliEntrypointCandidatesFromWindowsShim } from '../src/daemon/cli-entrypoint.js';
+import { resolveCliEntrypointCandidatesFromWindowsShim } from '../src/daemon/cli-entrypoint';
 
 describe('resolveCliEntrypointCandidatesFromWindowsShim', () => {
   it('parses shim paths outside the bin dir', async () => {

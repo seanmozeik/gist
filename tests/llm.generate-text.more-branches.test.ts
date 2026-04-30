@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { generateTextWithModelId, streamTextWithModelId } from '../src/llm/generate-text.js';
-import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock.js';
+import { generateTextWithModelId, streamTextWithModelId } from '../src/llm/generate-text';
+import { makeAssistantMessage, makeTextDeltaStream } from './helpers/pi-ai-mock';
 
 const mocks = vi.hoisted(() => ({
   completeSimple: vi.fn(),

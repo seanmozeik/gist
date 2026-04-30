@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseRequestedModelId } from '../src/model-spec.js';
+import { parseRequestedModelId } from '../src/model-spec';
 
 describe('model spec parsing', () => {
   it('rejects empty model ids', () => {
@@ -83,6 +83,7 @@ describe('model spec parsing', () => {
     const parsed = parseRequestedModelId('openrouter/openai/gpt-5-nano');
     expect(parsed.kind).toBe('fixed');
     expect(parsed.transport).toBe('openrouter');
+    expect(parsed.llmModelId).toBe('openrouter/openai/gpt-5-nano');
     expect(parsed.openrouterModelId).toBe('openai/gpt-5-nano');
     expect(parsed.requiredEnv).toBe('OPENROUTER_API_KEY');
   });

@@ -6,7 +6,7 @@ import {
   isTrustedOrigin,
   resolveDaemonListenHost,
 } from '../src/daemon/server.js';
-import { resolvePackageVersion } from '../src/version.js';
+import { resolvePackageVersion } from '../src/version';
 
 describe('daemon/server health payload', () => {
   it('includes daemon version and pid', () => {

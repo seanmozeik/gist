@@ -76,7 +76,7 @@ vi.mock('../src/daemon/windows-container.js', () => ({
   isWindowsContainerEnvironment: mocks.isWindowsContainerEnvironment,
 }));
 
-import { handleDaemonRequest } from '../src/daemon/cli.js';
+import { handleDaemonRequest } from '../src/daemon/cli';
 
 describe('daemon cli', () => {
   const originalPath = process.env.PATH;

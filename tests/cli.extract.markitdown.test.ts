@@ -2,8 +2,8 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ExecFileFn } from '../src/markitdown.js';
-import { runCli } from '../src/run.js';
+import type { ExecFileFn } from '../src/markitdown';
+import { runCli } from '../src/run';
 
 describe('cli --extract --format md (markitdown fallback)', () => {
   it('converts HTML to Markdown via markitdown when no LLM keys are configured', async () => {

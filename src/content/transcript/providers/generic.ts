@@ -2,13 +2,13 @@ import {
   isTwitterBroadcastUrl,
   isTwitterStatusUrl,
 } from '../../link-preview/content/twitter-utils.js';
-import { inferDirectMediaKind, isDirectMediaUrl } from '../../url.js';
-import { normalizeTranscriptText } from '../normalize.js';
-import { resolveTranscriptionConfig } from '../transcription-config.js';
-import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types.js';
-import { fetchDirectMediaTranscript } from './generic-direct-media.js';
-import { detectEmbeddedMedia, fetchCaptionTrack } from './generic-embedded.js';
-import { fetchTwitterMediaTranscript } from './generic-twitter.js';
+import { inferDirectMediaKind, isDirectMediaUrl } from '../../url';
+import { normalizeTranscriptText } from '../normalize';
+import { resolveTranscriptionConfig } from '../transcription-config';
+import type { ProviderContext, ProviderFetchOptions, ProviderResult } from '../types';
+import { fetchDirectMediaTranscript } from './generic-direct-media';
+import { detectEmbeddedMedia, fetchCaptionTrack } from './generic-embedded';
+import { fetchTwitterMediaTranscript } from './generic-twitter';
 
 export const canHandle = (): boolean => true;
 

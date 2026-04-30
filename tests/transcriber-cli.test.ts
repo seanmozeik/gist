@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({ access: vi.fn(), spawn: vi.fn() }));
 vi.mock('node:fs/promises', () => ({ access: mocks.access }));
 vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
 
-import { handleTranscriberCliRequest } from '../src/run/transcriber-cli.js';
+import { handleTranscriberCliRequest } from '../src/run/transcriber-cli';
 
 const collectStream = () => {
   let text = '';

@@ -36,7 +36,7 @@ function writeDaemonConfig(home: string, port = 8787) {
   );
 }
 
-import { DAEMON_WINDOWS_TASK_NAME } from '../src/daemon/constants.js';
+import { DAEMON_WINDOWS_TASK_NAME } from '../src/daemon/constants';
 import {
   installScheduledTask,
   restartScheduledTask,

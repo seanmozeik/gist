@@ -1,5 +1,5 @@
-import { formatOutputLanguageForJson } from '../../../language.js';
-import type { UrlFlowContext } from './types.js';
+import { formatOutputLanguageForJson } from '../../../language';
+import type { UrlFlowContext } from './types';
 
 export function buildUrlJsonInput(options: {
   flags: UrlFlowContext['flags'];

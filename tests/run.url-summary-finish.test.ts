@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ExtractedLinkContent } from '../src/content/index.js';
+import type { ExtractedLinkContent } from '../src/content/index';
 import {
   buildFinishExtras,
   buildModelMetaFromAttempt,
   pickModelForFinishLine,
 } from '../src/run/flows/url/summary-finish.js';
-import type { ModelAttempt } from '../src/run/types.js';
+import type { ModelAttempt } from '../src/run/types';
 
 const baseExtracted: ExtractedLinkContent = {
   content: 'Hello world',

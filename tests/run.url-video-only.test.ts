@@ -2,10 +2,10 @@ import { Writable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ExtractedLinkContent } from '../src/content/index.js';
-import type { UrlExtractionUi } from '../src/run/flows/url/extract.js';
-import type { UrlFlowContext } from '../src/run/flows/url/types.js';
-import { handleVideoOnlyExtractedContent } from '../src/run/flows/url/video-only.js';
+import type { ExtractedLinkContent } from '../src/content/index';
+import type { UrlExtractionUi } from '../src/run/flows/url/extract';
+import type { UrlFlowContext } from '../src/run/flows/url/types';
+import { handleVideoOnlyExtractedContent } from '../src/run/flows/url/video-only';
 
 const mocks = vi.hoisted(() => ({
   assertAssetMediaTypeSupported: vi.fn(),

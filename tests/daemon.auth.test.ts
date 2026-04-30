@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { runDaemonServer } from '../src/daemon/server.js';
+import { runDaemonServer } from '../src/daemon/server';
 
 const findFreePort = async (): Promise<number> =>
   new Promise((resolve, reject) => {

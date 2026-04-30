@@ -1,3 +1,5 @@
+import type { YoutubeMode } from '../flags';
+
 export type AutoRuleKind = 'text' | 'website' | 'youtube' | 'image' | 'video' | 'file';
 export type VideoMode = 'auto' | 'transcript' | 'understand';
 export type CliProvider = 'claude' | 'codex' | 'gemini' | 'agent';
@@ -151,7 +153,7 @@ export interface GistConfig {
    * Note: `auto` is reserved and cannot be defined here.
    */
   models?: Record<string, ModelConfig>;
-  media?: { videoMode?: VideoMode };
+  media?: { videoMode?: VideoMode; youtubeMode?: YoutubeMode };
   output?: { language?: string; length?: string };
   ui?: { theme?: string };
   cli?: CliConfig;

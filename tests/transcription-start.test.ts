@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../src/transcription/whisper/assemblyai.js';
+import { ASSEMBLYAI_TRANSCRIPTION_MODEL_ID } from '../src/transcription/whisper/assemblyai';
 
 const whisperMock = vi.hoisted(() => ({
   isWhisperCppReady: vi.fn(),
@@ -9,7 +9,7 @@ const whisperMock = vi.hoisted(() => ({
 
 vi.mock('../src/transcription/whisper.js', () => whisperMock);
 
-import { resolveTranscriptionStartInfo } from '../src/content/transcript/providers/transcription-start.js';
+import { resolveTranscriptionStartInfo } from '../src/content/transcript/providers/transcription-start';
 
 describe('transcription start helper', () => {
   it('reports unknown when nothing is available', async () => {

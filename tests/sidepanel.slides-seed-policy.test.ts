@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldSeedPlannedSlidesForRun } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-seed-policy.js';
+import { shouldSeedPlannedSlidesForRun } from '../apps/chrome-extension/src/entrypoints/sidepanel/slides-seed-policy';
 
 describe('sidepanel slides seed policy', () => {
   it('seeds planned slides for explicit video mode', () => {

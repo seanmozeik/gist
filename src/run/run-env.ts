@@ -1,6 +1,6 @@
-import type { CliProvider, GistConfig } from '../config.js';
-import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from '../openai/base-url.js';
-import { resolveCliAvailability, resolveExecutableInPath } from './env.js';
+import type { CliProvider, GistConfig } from '../config';
+import { isOpenRouterBaseUrl, resolveConfiguredBaseUrl } from '../openai/base-url';
+import { resolveCliAvailability, resolveExecutableInPath } from './env';
 
 export interface EnvState {
   apiKey: string | null;

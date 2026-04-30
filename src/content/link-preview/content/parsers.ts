@@ -1,7 +1,7 @@
 import { type CheerioAPI, load } from 'cheerio';
 
-import { decodeHtmlEntities, normalizeCandidate } from './cleaner.js';
-import { pickFirstText, safeHostname } from './utils.js';
+import { decodeHtmlEntities, normalizeCandidate } from './cleaner';
+import { pickFirstText, safeHostname } from './utils';
 
 const ALLOWED_TEXT_TAGS = new Set(['title']);
 

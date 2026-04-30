@@ -4,7 +4,7 @@ import {
   buildDaemonRequestBody,
   buildGistRequestBody,
 } from '../apps/chrome-extension/src/lib/daemon-payload.js';
-import { defaultSettings } from '../apps/chrome-extension/src/lib/settings.js';
+import { defaultSettings } from '../apps/chrome-extension/src/lib/settings';
 
 describe('chrome/daemon-payload', () => {
   it('builds a stable daemon request body', () => {

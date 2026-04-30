@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveExtractedTimestamp } from '../src/slides/index.js';
+import { resolveExtractedTimestamp } from '../src/slides/index';
 
 describe('resolveExtractedTimestamp', () => {
   it('falls back to requested when actual is missing', () => {

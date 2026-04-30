@@ -1,6 +1,6 @@
 import { load } from 'cheerio';
 
-import { normalizeCandidate } from './cleaner.js';
+import { normalizeCandidate } from './cleaner';
 
 export interface JsonLdContent {
   title: string | null;

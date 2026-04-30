@@ -6,7 +6,7 @@ import {
   patchSettings,
   saveSettings,
 } from '../apps/chrome-extension/src/lib/settings.js';
-import { installChromeStorage } from './helpers/chrome-storage.js';
+import { installChromeStorage } from './helpers/chrome-storage';
 
 describe('chrome/settings', () => {
   let storage: Record<string, unknown>;
