@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 
 import { clearCacheFiles, DEFAULT_CACHE_MAX_MB, resolveCachePath } from '../cache';
 import { loadGistConfig, mergeConfigEnv } from '../config';
+import { clearMediaCacheDir, resolveMediaCachePath } from '../media-cache.js';
 import { mergeSecretEnv, readSecretsEnv } from '../secrets';
 import { formatVersionLine } from '../version';
 
@@ -112,6 +113,12 @@ export async function handleCacheUtilityFlags({
       throw new Error('Unable to resolve cache path (missing HOME).');
     }
     clearCacheFiles(cachePath);
+    const mediaConfigPath =
+      typeof config?.cache?.media?.path === 'string' ? config.cache.media.path : null;
+    const mediaCachePath = resolveMediaCachePath({ cachePath: mediaConfigPath, env: envForRun });
+    if (mediaCachePath) {
+      clearMediaCacheDir(mediaCachePath);
+    }
     stdout.write('Cache cleared.\n');
     return true;
   }

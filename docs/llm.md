@@ -65,7 +65,7 @@ installed, auto mode can use local CLI models via `cli.enabled` or implicit auto
 - `--cache-stats`
   - Print cache stats and exit.
 - `--clear-cache`
-  - Delete the cache database and exit. Must be used alone.
+  - Delete the SQLite cache (extract/summary/transcript) and media download cache, then exit. Must be used alone.
 - `--video-mode auto|transcript|understand`
   - Only relevant for video inputs / video-only pages.
 - `--length short|medium|long|xl|xxl|<chars>`

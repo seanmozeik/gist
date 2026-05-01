@@ -19,12 +19,16 @@ function noopStream(): Writable {
 }
 
 describe('--clear-cache', () => {
-  it('clears the cache database and exits', async () => {
+  it('clears the SQLite cache and media cache directory, then exits', async () => {
     const root = mkdtempSync(join(tmpdir(), 'gist-clear-cache-'));
     const gistDir = join(root, '.gist');
     mkdirSync(gistDir, { recursive: true });
     const cachePath = join(gistDir, 'cache.sqlite');
     writeFileSync(cachePath, 'dummy', 'utf8');
+    const mediaDir = join(gistDir, 'cache', 'media');
+    mkdirSync(mediaDir, { recursive: true });
+    const mediaFile = join(mediaDir, 'sample.bin');
+    writeFileSync(mediaFile, 'media', 'utf8');
 
     await runCli(['--clear-cache'], {
       env: { HOME: root },
@@ -34,6 +38,8 @@ describe('--clear-cache', () => {
     });
 
     expect(existsSync(cachePath)).toBe(false);
+    expect(existsSync(mediaFile)).toBe(false);
+    expect(existsSync(mediaDir)).toBe(false);
   });
 
   it('requires --clear-cache to be used alone', async () => {

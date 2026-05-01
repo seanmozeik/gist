@@ -40,7 +40,7 @@ complete -c gist -l prompt-file -d 'Read prompt from file' -rF
 complete -c gist -l no-cache -d 'Bypass summary cache'
 complete -c gist -l no-media-cache -d 'Disable media download cache'
 complete -c gist -l cache-stats -d 'Print cache stats and exit'
-complete -c gist -l clear-cache -d 'Delete cache database and exit'
+complete -c gist -l clear-cache -d 'Delete SQLite + media caches and exit'
 
 # Output options
 complete -c gist -l extract -d 'Print extracted content (no LLM)'

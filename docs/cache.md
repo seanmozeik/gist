@@ -78,7 +78,7 @@ Defaults: `enabled=true`, `maxMb=512`, `ttlDays=30`, `path` unset.
 
 - `--no-cache`: bypass summary cache reads + writes (LLM output). Extract/transcript caches still apply.
 - `--cache-stats`: print cache stats and exit.
-- `--clear-cache`: delete cache DB (and WAL/SHM); must be used alone.
+- `--clear-cache`: delete the SQLite cache DB (and WAL/SHM) plus the media download cache directory; must be used alone.
 
 ## Eviction policy
 

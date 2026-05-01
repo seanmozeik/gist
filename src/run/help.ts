@@ -106,7 +106,11 @@ export function buildProgram() {
     .option('--no-cache', 'Bypass summary cache (LLM). Media/transcript caches stay enabled.')
     .option('--no-media-cache', 'Disable media download cache (yt-dlp).')
     .option('--cache-stats', 'Print cache stats and exit.')
-    .option('--clear-cache', 'Delete the cache database and exit.', false)
+    .option(
+      '--clear-cache',
+      'Delete the SQLite cache (extract/summary/transcript) and media download cache, then exit.',
+      false,
+    )
     .addOption(
       new Option(
         '--cli [provider]',

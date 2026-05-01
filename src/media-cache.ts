@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { createReadStream, promises as fs } from 'node:fs';
+import { createReadStream, promises as fs, rmSync } from 'node:fs';
 import { isAbsolute, join, resolve as resolvePath } from 'node:path';
 
 import type { MediaCache, MediaCacheEntry } from './content/index';
@@ -61,6 +61,10 @@ export function resolveMediaCachePath({
     return null;
   }
   return join(home, '.gist', 'cache', 'media');
+}
+
+export function clearMediaCacheDir(path: string): void {
+  rmSync(path, { force: true, recursive: true });
 }
 
 const hashKey = (value: string): string => {

@@ -2,14 +2,7 @@
 name: gist
 description: Agent-facing contract for extracting, transcribing, and summarizing URLs, YouTube/videos, podcasts, PDFs, local files, and stdin through the local gist CLI.
 homepage: https://github.com/seanmozeik/gist
-metadata:
-  {
-    'openclaw':
-      {
-        'emoji': '🧾',
-        'requires': { 'bins': ['gist'] },
-      },
-  }
+metadata: { 'openclaw': { 'emoji': '🧾', 'requires': { 'bins': ['gist'] } } }
 ---
 
 # gist
