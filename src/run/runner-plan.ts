@@ -46,7 +46,7 @@ export async function createRunnerPlan(options: {
 }): Promise<RunnerPlan> {
   const { normalizedArgv, program, env, envForRun, execFileImpl, stdin, stdout, stderr } = options;
   let { promptOverride } = options;
-  const programOpts = program.opts() as Record<string, unknown>;
+  const programOpts = program.opts();
 
   const cliFlagPresent = normalizedArgv.some((arg) => arg === '--cli' || arg.startsWith('--cli='));
   let cliProviderArgRaw = typeof programOpts.cli === 'string' ? programOpts.cli : null;

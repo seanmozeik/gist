@@ -89,11 +89,7 @@ export async function readTweet(args: {
     throw new Error('bird read requires a tweet status URL or id');
   }
 
-  const stdout = await execBirdCli(
-    ['read', args.url, '--json-full'],
-    args.timeoutMs,
-    args.env ?? {},
-  );
+  const stdout = await execBirdCli(['read', args.url, '--json'], args.timeoutMs, args.env ?? {});
 
   if (!stdout) {
     throw new Error('bird read returned empty output');

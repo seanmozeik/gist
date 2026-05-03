@@ -190,7 +190,7 @@ export function createMarkdownConverters(
             execFileImpl: ctx.io.execFileImpl,
             filenameHint: (() => {
               try {
-                const {pathname} = new URL(args.url);
+                const { pathname } = new URL(args.url);
                 const name = pathname.split('/').filter(Boolean).at(-1);
                 return name?.includes('.') ? name : 'page.html';
               } catch {

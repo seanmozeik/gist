@@ -37,7 +37,7 @@ function selectConfiguredCandidates(options: {
       for (const band of rule.bands) {
         const min = band.token?.min;
         const max = band.token?.max;
-        const {promptTokens} = options;
+        const { promptTokens } = options;
         const matches =
           promptTokens === null
             ? min === undefined && max === undefined
