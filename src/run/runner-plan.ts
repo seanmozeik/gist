@@ -103,9 +103,9 @@ export async function createRunnerPlan(options: {
   }
   const explicitModelArg = cliProviderArg
     ? `cli/${cliProviderArg}`
-    : cliFlagPresent
+    : (cliFlagPresent
       ? 'auto'
-      : modelArg;
+      : modelArg);
 
   const {
     config,

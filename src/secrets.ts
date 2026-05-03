@@ -1,11 +1,11 @@
 const KEYCHAIN_SERVICE = 'GIST';
 const KEYCHAIN_ACCOUNT = 'GIST';
 
-type BunSecrets = {
+interface BunSecrets {
   get(options: { service: string; name: string }): Promise<string | null>;
   set(options: { service: string; name: string; value: string }): Promise<void>;
   delete(options: { service: string; name: string }): Promise<boolean>;
-};
+}
 
 export const SECRET_ENV_KEYS = [
   'ANTHROPIC_API_KEY',

@@ -77,7 +77,7 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {
@@ -123,7 +123,7 @@ describe('podcast provider - transcribeMediaUrl branch coverage', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         throw new Error('no head');

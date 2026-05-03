@@ -7,9 +7,8 @@ const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
 
 describe('link preview extraction (readability markdown)', () => {
-  it('uses markdown conversion when markdownMode=readability', async () => {
+  it('uses Readability markdown from magic-fetch when markdownMode=readability', async () => {
     const html = `<!doctype html><html><head><title>Hello</title></head><body>
-      <nav><ul><li>Nav Item</li></ul></nav>
       <article><h1>Hello</h1><p>Readable content</p></article>
     </body></html>`;
 
@@ -25,7 +24,7 @@ describe('link preview extraction (readability markdown)', () => {
 
     const client = createLinkPreviewClient({
       convertHtmlToMarkdown: convertHtmlToMarkdownMock as unknown as ConvertHtmlToMarkdown,
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
     });
 
     const result = await client.fetchLinkContent('https://example.com', {
@@ -35,9 +34,10 @@ describe('link preview extraction (readability markdown)', () => {
       timeoutMs: 2000,
     });
 
-    expect(result.content).toContain('# Hello');
+    expect(result.content.toLowerCase()).toContain('readable');
     expect(result.diagnostics.markdown.used).toBe(true);
+    expect(result.diagnostics.markdown.provider).toBe('readability');
     expect(result.diagnostics.markdown.notes).toContain('Readability');
-    expect(convertHtmlToMarkdownMock).toHaveBeenCalledTimes(1);
+    expect(convertHtmlToMarkdownMock).not.toHaveBeenCalled();
   });
 });

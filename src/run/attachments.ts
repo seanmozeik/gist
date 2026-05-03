@@ -126,9 +126,9 @@ export async function ensureCliAttachmentPath({
   const ext =
     attachment.filename && path.extname(attachment.filename)
       ? path.extname(attachment.filename)
-      : attachment.mediaType
+      : (attachment.mediaType
         ? `.${mime.getExtension(attachment.mediaType) ?? 'bin'}`
-        : '.bin';
+        : '.bin');
   const filename = attachment.filename?.trim() ?? `asset${ext}`;
   const dir = await fs.mkdtemp(path.join(tmpdir(), 'gist-cli-asset-'));
   const filePath = path.join(dir, filename);

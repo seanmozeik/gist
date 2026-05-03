@@ -164,7 +164,7 @@ function renderDownloadLine(
       ? `, ${formatBytesPerSecond(state.downloadedBytes / (elapsedMs / 1000))}`
       : '';
   const svcLabel =
-    state.service === 'podcast' ? 'podcast' : state.service === 'youtube' ? 'youtube' : '';
+    state.service === 'podcast' ? 'podcast' : (state.service === 'youtube' ? 'youtube' : '');
   return renderLine(
     `Downloading ${state.mediaKind === 'video' ? 'video' : 'audio'}`,
     ` (${svcLabel ? `${svcLabel}, ` : ''}${downloaded}${total}, ${elapsed}${rate})…`,
@@ -182,7 +182,7 @@ function renderWhisperLine(
   const modelId = firstChainPart(state.whisperModelId);
   const providerLabel = modelId ? `${provider}, ${modelId}` : provider;
   const svc =
-    state.service === 'podcast' ? 'podcast' : state.service === 'youtube' ? 'youtube' : 'media';
+    state.service === 'podcast' ? 'podcast' : (state.service === 'youtube' ? 'youtube' : 'media');
   const elapsedMs = typeof state.startedAtMs === 'number' ? nowMs - state.startedAtMs : 0;
   const elapsed = formatElapsedMs(elapsedMs);
   const percent =
@@ -204,9 +204,9 @@ function renderWhisperLine(
       ? `, ${formatDurationSecondsSmart(state.whisperProcessedSeconds)}/${formatDurationSecondsSmart(
           state.whisperTotalSeconds,
         )}`
-      : typeof state.whisperTotalSeconds === 'number' && state.whisperTotalSeconds > 0
+      : (typeof state.whisperTotalSeconds === 'number' && state.whisperTotalSeconds > 0
         ? `, ${formatDurationSecondsSmart(state.whisperTotalSeconds)}`
-        : '';
+        : '');
   const parts =
     typeof state.whisperPartIndex === 'number' &&
     typeof state.whisperParts === 'number' &&

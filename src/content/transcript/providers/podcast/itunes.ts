@@ -72,9 +72,9 @@ export async function resolveApplePodcastEpisodeFromItunesLookup({
   const episodeUrlRaw =
     typeof chosen.episodeUrl === 'string'
       ? chosen.episodeUrl.trim()
-      : typeof chosen.previewUrl === 'string'
+      : (typeof chosen.previewUrl === 'string'
         ? chosen.previewUrl.trim()
-        : '';
+        : '');
   if (!episodeUrlRaw || !/^https?:\/\//i.test(episodeUrlRaw)) {
     return null;
   }

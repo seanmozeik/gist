@@ -91,7 +91,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-no-fal-'));
     const audioPath = join(root, 'test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -125,7 +125,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-relative-'));
     const audioPath = join(root, 'relative.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -151,7 +151,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-symlink-'));
     const audioPath = join(root, 'audio.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     // This test verifies basic file path handling
     const stdout = collectStream();
@@ -204,7 +204,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-old-file-'));
     const audioPath = join(root, 'old.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     // Set mtime to January 1, 2000 to test edge case of very old files
     const oldDate = new Date('2000-01-01T00:00:00Z');
@@ -234,7 +234,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-unsupported-'));
     const audioPath = join(root, 'unsupported.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();
@@ -259,7 +259,7 @@ describe('Media file error handling', () => {
 
     const root = mkdtempSync(join(tmpdir(), 'gist-audio-concurrent-'));
     const audioPath = join(root, 'test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stdout = collectStream();
     const stderr = collectStream();

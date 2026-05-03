@@ -143,9 +143,9 @@ export function resolveModelSelection({
   const selectedModelConfig =
     isNamedModelSelection && namedModelConfig
       ? namedModelConfig
-      : requestedModelSource === 'config'
+      : (requestedModelSource === 'config'
         ? (config?.model ?? null)
-        : null;
+        : null);
 
   const configForModelSelection =
     isNamedModelSelection && namedModelConfig
@@ -178,9 +178,9 @@ export function resolveModelSelection({
 
   const requestedModelLabel = isNamedModelSelection
     ? requestedModelInput
-    : requestedModelResolved.kind === 'auto'
+    : (requestedModelResolved.kind === 'auto'
       ? 'auto'
-      : requestedModelResolved.userModelId;
+      : requestedModelResolved.userModelId);
 
   const isFallbackModel = requestedModelResolved.kind === 'auto';
   const isImplicitAutoSelection =

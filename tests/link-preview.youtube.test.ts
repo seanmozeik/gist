@@ -61,7 +61,9 @@ describe('link preview extraction (YouTube)', () => {
       return Promise.reject(new Error(`Unexpected fetch call: ${String(url)}`));
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
     const result = await client.fetchLinkContent('https://www.youtube.com/watch?v=abcdefghijk');
 
     expect(result.content).toBe('Transcript:\nHello & welcome\nTranscript line 2');
@@ -88,7 +90,9 @@ describe('link preview extraction (YouTube)', () => {
       return Promise.reject(new Error(`Unexpected fetch call: ${String(url)}`));
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
     const result = await client.fetchLinkContent('https://youtu.be/klmnopqrst0');
 
     expect(result.content).toBe('Only HTML content');
@@ -129,7 +133,9 @@ describe('link preview extraction (YouTube)', () => {
       return Promise.reject(new Error(`Unexpected fetch call: ${String(url)}`));
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
     const result = await client.fetchLinkContent('https://www.youtube.com/watch?v=abcdefghijk', {
       youtubeTranscript: 'web',
     });
@@ -162,7 +168,7 @@ describe('link preview extraction (YouTube)', () => {
 
     const client = createLinkPreviewClient({
       apifyApiToken: 'TEST_TOKEN',
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
     });
     const result = await client.fetchLinkContent('https://www.youtube.com/watch?v=abcdefghijk');
 
@@ -180,7 +186,9 @@ describe('link preview extraction (YouTube)', () => {
       return Promise.reject(new Error(`Unexpected fetch call: ${String(url)}`));
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
 
     await expect(
       client.fetchLinkContent('https://www.youtube.com/watch?v=invalid_video_id'),

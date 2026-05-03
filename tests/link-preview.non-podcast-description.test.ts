@@ -24,7 +24,9 @@ describe('link preview extraction (non-podcast host description)', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
 
     const result = await client.fetchLinkContent('https://example.com/article', {
       firecrawl: 'off',

@@ -1,3 +1,4 @@
+import { extractReadableContent } from '@seanmozeik/magic-fetch';
 import { load } from 'cheerio';
 
 import { extractYouTubeVideoId } from '../url';
@@ -10,45 +11,11 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 const MAX_EMBED_YOUTUBE_TEXT_CHARS = 2000;
 const MAX_EMBED_YOUTUBE_READABILITY_CHARS = 2000;
 
-interface ReadabilityDeps {
-  Readability: typeof import('@mozilla/readability').Readability;
-  JSDOM: typeof import('jsdom').JSDOM;
-  VirtualConsole: typeof import('jsdom').VirtualConsole;
-}
-
-let readabilityDepsPromise: Promise<ReadabilityDeps> | null = null;
-
-async function loadReadabilityDeps(): Promise<ReadabilityDeps> {
-  readabilityDepsPromise ??= (async () => {
-    const [{ Readability }, { JSDOM, VirtualConsole }] = await Promise.all([
-      import('@mozilla/readability'),
-      import('jsdom'),
-    ]);
-    return { JSDOM, Readability, VirtualConsole };
-  })();
-  return readabilityDepsPromise;
-}
-
-async function extractReadabilityText(html: string): Promise<string> {
+function extractReadabilityPlainText(html: string): string {
   try {
     const cleanedHtml = stripCssFromHtml(html);
-    const { Readability, JSDOM, VirtualConsole } = await loadReadabilityDeps();
-    const virtualConsole = new VirtualConsole();
-    virtualConsole.on('jsdomError', (err) => {
-      const message =
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message?: unknown }).message ?? '')
-          : '';
-      if (message.includes('Could not parse CSS stylesheet')) {
-        return;
-      }
-    });
-
-    const dom = new JSDOM(cleanedHtml, { virtualConsole });
-    const reader = new Readability(dom.window.document);
-    const article = reader.parse();
-    const text = (article?.textContent ?? '').replaceAll(/\s+/g, ' ').trim();
-    return text;
+    const extracted = extractReadableContent(cleanedHtml, '');
+    return extracted ? extracted.markdown.replaceAll(/\s+/g, ' ').trim() : '';
   } catch {
     return '';
   }
@@ -69,7 +36,7 @@ export async function extractEmbeddedYouTubeUrlFromHtml(
     const normalizedText = rawText.replaceAll(/\s+/g, ' ').trim();
 
     if (normalizedText.length > maxTextChars) {
-      const readabilityText = await extractReadabilityText(html);
+      const readabilityText = extractReadabilityPlainText(html);
       if (readabilityText.length > 0) {
         if (readabilityText.length > maxReadabilityChars) {
           return null;

@@ -76,9 +76,9 @@ function parseModelRequestOptions(
   const reasoningRaw =
     typeof raw.reasoningEffort === 'string'
       ? raw.reasoningEffort
-      : typeof raw.thinking === 'string'
+      : (typeof raw.thinking === 'string'
         ? raw.thinking
-        : undefined;
+        : undefined);
   if (
     raw.reasoningEffort !== undefined &&
     raw.thinking !== undefined &&

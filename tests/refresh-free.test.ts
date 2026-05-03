@@ -79,7 +79,7 @@ describe('refresh-free', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url === 'https://openrouter.ai/api/v1/models') {
         return Response.json(buildModelsPayload(['a/model:free', 'b/model:free']), {
           headers: { 'content-type': 'application/json' },

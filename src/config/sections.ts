@@ -90,23 +90,23 @@ function parseCliAutoFallbackConfig(
   const enabled =
     typeof raw.enabled === 'boolean'
       ? raw.enabled
-      : raw.enabled === undefined
+      : (raw.enabled === undefined
         ? undefined
         : (() => {
             throw new Error(
               `Invalid config file ${path}: "cli.${label}.enabled" must be a boolean.`,
             );
-          })();
+          })());
   const onlyWhenNoApiKeys =
     typeof raw.onlyWhenNoApiKeys === 'boolean'
       ? raw.onlyWhenNoApiKeys
-      : raw.onlyWhenNoApiKeys === undefined
+      : (raw.onlyWhenNoApiKeys === undefined
         ? undefined
         : (() => {
             throw new Error(
               `Invalid config file ${path}: "cli.${label}.onlyWhenNoApiKeys" must be a boolean.`,
             );
-          })();
+          })());
   const order =
     raw.order === undefined
       ? undefined
@@ -130,39 +130,39 @@ function parseMediaCacheConfig(raw: unknown, path: string): MediaCacheConfig | u
   const mediaMaxMb =
     typeof mediaMaxRaw === 'number' && Number.isFinite(mediaMaxRaw) && mediaMaxRaw > 0
       ? mediaMaxRaw
-      : mediaMaxRaw === undefined
+      : (mediaMaxRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.maxMb" must be a number.`);
-          })();
+          })());
   const mediaTtlRaw = raw.ttlDays;
   const mediaTtlDays =
     typeof mediaTtlRaw === 'number' && Number.isFinite(mediaTtlRaw) && mediaTtlRaw > 0
       ? mediaTtlRaw
-      : mediaTtlRaw === undefined
+      : (mediaTtlRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.ttlDays" must be a number.`);
-          })();
+          })());
   const mediaPath =
     typeof raw.path === 'string' && raw.path.trim().length > 0
       ? raw.path.trim()
-      : raw.path === undefined
+      : (raw.path === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.media.path" must be a string.`);
-          })();
+          })());
   const verifyRaw = typeof raw.verify === 'string' ? raw.verify.trim().toLowerCase() : '';
   const verify =
     verifyRaw === 'none' || verifyRaw === 'size' || verifyRaw === 'hash'
       ? (verifyRaw as MediaCacheVerifyMode)
-      : verifyRaw.length > 0
+      : (verifyRaw.length > 0
         ? (() => {
             throw new Error(
               `Invalid config file ${path}: "cache.media.verify" must be one of "none", "size", "hash".`,
             );
           })()
-        : undefined;
+        : undefined);
 
   return mediaEnabled || mediaMaxMb || mediaTtlDays || mediaPath || typeof verify === 'string'
     ? {
@@ -188,28 +188,28 @@ export function parseCacheConfig(root: Record<string, unknown>, path: string) {
   const maxMb =
     typeof maxMbRaw === 'number' && Number.isFinite(maxMbRaw) && maxMbRaw > 0
       ? maxMbRaw
-      : maxMbRaw === undefined
+      : (maxMbRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.maxMb" must be a number.`);
-          })();
+          })());
   const ttlDaysRaw = value.ttlDays;
   const ttlDays =
     typeof ttlDaysRaw === 'number' && Number.isFinite(ttlDaysRaw) && ttlDaysRaw > 0
       ? ttlDaysRaw
-      : ttlDaysRaw === undefined
+      : (ttlDaysRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.ttlDays" must be a number.`);
-          })();
+          })());
   const pathValue =
     typeof value.path === 'string' && value.path.trim().length > 0
       ? value.path.trim()
-      : value.path === undefined
+      : (value.path === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "cache.path" must be a string.`);
-          })();
+          })());
   const media = parseMediaCacheConfig(value.media, path);
 
   return enabled || maxMb || ttlDays || pathValue || media
@@ -403,29 +403,29 @@ export function parseLoggingConfig(
   const file =
     typeof value.file === 'string' && value.file.trim().length > 0
       ? value.file.trim()
-      : value.file === undefined
+      : (value.file === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.file" must be a string.`);
-          })();
+          })());
   const maxMbRaw = value.maxMb;
   const maxMb =
     typeof maxMbRaw === 'number' && Number.isFinite(maxMbRaw) && maxMbRaw > 0
       ? maxMbRaw
-      : maxMbRaw === undefined
+      : (maxMbRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.maxMb" must be a number.`);
-          })();
+          })());
   const maxFilesRaw = value.maxFiles;
   const maxFiles =
     typeof maxFilesRaw === 'number' && Number.isFinite(maxFilesRaw) && maxFilesRaw > 0
       ? Math.trunc(maxFilesRaw)
-      : maxFilesRaw === undefined
+      : (maxFilesRaw === undefined
         ? undefined
         : (() => {
             throw new Error(`Invalid config file ${path}: "logging.maxFiles" must be a number.`);
-          })();
+          })());
   return enabled ||
     level ||
     format ||
@@ -464,9 +464,9 @@ export function parseOpenAiConfig(
   const reasoningRaw =
     typeof value.reasoningEffort === 'string'
       ? value.reasoningEffort
-      : typeof value.thinking === 'string'
+      : (typeof value.thinking === 'string'
         ? value.thinking
-        : undefined;
+        : undefined);
   if (
     value.reasoningEffort !== undefined &&
     value.thinking !== undefined &&

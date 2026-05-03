@@ -287,9 +287,9 @@ const downloadCaptionTrack = async (
   const baseUrl =
     typeof trackRecord.baseUrl === 'string'
       ? trackRecord.baseUrl
-      : typeof trackRecord.url === 'string'
+      : (typeof trackRecord.url === 'string'
         ? trackRecord.url
-        : null;
+        : null);
   if (!baseUrl) {
     return null;
   }

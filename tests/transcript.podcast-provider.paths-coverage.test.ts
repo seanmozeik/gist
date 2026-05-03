@@ -46,7 +46,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url === 'https://example.com/feed.xml') {
         return new Response(feedXml, {
           headers: { 'content-type': 'application/xml' },
@@ -79,7 +79,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === 'https://example.com/episode.mp3' && method === 'HEAD') {
         return new Response(null, {
@@ -139,7 +139,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url.startsWith('https://itunes.apple.com/lookup')) {
         return Response.json(lookupPayload, {
@@ -206,7 +206,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('<html><body>captcha</body></html>', {
@@ -264,7 +264,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === 'https://example.com/preview.mp3' && method === 'HEAD') {
         return new Response(null, {

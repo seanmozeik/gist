@@ -28,13 +28,12 @@ const createDeps = (text: string, media?: { kind?: 'video' | 'audio'; url?: stri
   apifyApiToken: null,
   convertHtmlToMarkdown: null,
   falApiKey: null,
-  fetch: noopFetch as unknown as typeof fetch,
+  fetchImplementation: noopFetch as unknown as typeof fetch,
   groqApiKey: null,
   onProgress: null,
   openaiApiKey: null,
   readTweetWithBird: async () => ({
     author: { username: 'birdy' },
-    client: 'xurl',
     media: media?.url
       ? { kind: media.kind ?? 'video', preferredUrl: media.url, source: 'card', urls: [media.url] }
       : null,
@@ -58,7 +57,7 @@ describe('twitter long-form transcript skip', () => {
 
     expect(mocks.resolveTranscriptForLink).not.toHaveBeenCalled();
     expect(result.transcriptSource).toBeNull();
-    expect(result.diagnostics.strategy).toBe('xurl');
+    expect(result.diagnostics.strategy).toBe('bird');
     expect(result.diagnostics.transcript.attemptedProviders).toHaveLength(0);
     expect(result.diagnostics.transcript.notes ?? '').toContain('Skipped yt-dlp transcript');
   });
@@ -74,7 +73,7 @@ describe('twitter long-form transcript skip', () => {
 
     expect(mocks.resolveTranscriptForLink).not.toHaveBeenCalled();
     expect(result.transcriptSource).toBeNull();
-    expect(result.diagnostics.strategy).toBe('xurl');
+    expect(result.diagnostics.strategy).toBe('bird');
     expect(result.diagnostics.transcript.notes ?? '').toContain('media transcript mode is auto');
   });
 
@@ -88,7 +87,7 @@ describe('twitter long-form transcript skip', () => {
     );
 
     expect(mocks.resolveTranscriptForLink).toHaveBeenCalledTimes(1);
-    expect(result.diagnostics.strategy).toBe('xurl');
+    expect(result.diagnostics.strategy).toBe('bird');
     expect(result.video?.url).toBe('https://video.twimg.com/test.mp4');
     expect(result.transcriptSource).toBe('yt-dlp');
   });
@@ -103,7 +102,7 @@ describe('twitter long-form transcript skip', () => {
     );
 
     expect(mocks.resolveTranscriptForLink).toHaveBeenCalledTimes(1);
-    expect(result.diagnostics.strategy).toBe('xurl');
+    expect(result.diagnostics.strategy).toBe('bird');
     expect(result.transcriptSource).toBe('yt-dlp');
   });
 });

@@ -155,6 +155,26 @@ export async function buildResultFromHtmlDocument({
       };
     }
 
+    if (markdownMode === 'readability' && readability?.magicMarkdown) {
+      const normalizedMarkdown = normalizeForPrompt(readability.magicMarkdown);
+      if (normalizedMarkdown.length === 0) {
+        return {
+          notes: 'Readability markdown extraction returned empty content',
+          provider: null,
+          requested: true,
+          used: false,
+        };
+      }
+
+      baseContent = normalizedMarkdown;
+      return {
+        notes: 'Readability → markdown (magic-fetch)',
+        provider: 'readability',
+        requested: true,
+        used: true,
+      };
+    }
+
     if (!deps.convertHtmlToMarkdown) {
       return {
         notes: 'No HTML→Markdown converter configured',

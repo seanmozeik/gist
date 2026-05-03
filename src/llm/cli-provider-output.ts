@@ -120,9 +120,9 @@ const parseGeminiUsage = (payload: Record<string, unknown>): LlmTokenUsage | nul
   const totalTokens =
     hasTotal && totalSum > 0
       ? totalSum
-      : typeof promptTokens === 'number' && typeof completionTokens === 'number'
+      : (typeof promptTokens === 'number' && typeof completionTokens === 'number'
         ? promptTokens + completionTokens
-        : null;
+        : null);
   return { completionTokens, promptTokens, totalTokens };
 };
 
@@ -226,9 +226,9 @@ function extractCodexTextEvent(parsed: Record<string, unknown>): {
     const text =
       typeof parsed.text === 'string'
         ? parsed.text
-        : typeof parsed.delta === 'string'
+        : (typeof parsed.delta === 'string'
           ? parsed.delta
-          : null;
+          : null);
     return { deltaText: null, fullText: text };
   }
   if (typeof parsed.output_text === 'string' && parsed.output_text.trim().length > 0) {

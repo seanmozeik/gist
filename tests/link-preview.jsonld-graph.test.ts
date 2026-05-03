@@ -33,7 +33,9 @@ describe('link preview extraction (json-ld graph)', () => {
       throw new Error(`Unexpected fetch call: ${url}`);
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
 
     const result = await client.fetchLinkContent('https://example.com/graph', {
       firecrawl: 'off',

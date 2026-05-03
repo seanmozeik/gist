@@ -39,7 +39,7 @@ describe('link preview extraction (YouTube mode)', () => {
 
     const client = createLinkPreviewClient({
       apifyApiToken: 'TEST_TOKEN',
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
     });
 
     const result = await client.fetchLinkContent('https://www.youtube.com/watch?v=abcdefghijk', {
@@ -68,7 +68,9 @@ describe('link preview extraction (YouTube mode)', () => {
       return Promise.reject(new Error(`Unexpected fetch call: ${String(url)}`));
     });
 
-    const client = createLinkPreviewClient({ fetch: fetchMock as unknown as typeof fetch });
+    const client = createLinkPreviewClient({
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
     const result = await client.fetchLinkContent('https://www.youtube.com/watch?v=abcdefghijk', {
       youtubeTranscript: 'web',
     });
@@ -89,7 +91,7 @@ describe('link preview extraction (YouTube mode)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       ytDlpPath: '/usr/bin/yt-dlp',
     });
 

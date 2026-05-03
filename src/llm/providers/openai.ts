@@ -245,12 +245,12 @@ function contextToChatCompletionMessages(context: Context): { role: string; cont
     const content =
       typeof message.content === 'string'
         ? message.content.trim()
-        : Array.isArray(message.content)
+        : (Array.isArray(message.content)
           ? message.content
               .map((part) => (part.type === 'text' ? part.text : ''))
               .join('')
               .trim()
-          : '';
+          : '');
     if (!content) {
       continue;
     }

@@ -1,10 +1,15 @@
+import { extractReadableContent } from '@seanmozeik/magic-fetch';
+
 import { stripHiddenHtml } from './visibility';
 
 export interface ReadabilityResult {
   text: string;
+  /** Inner HTML from Readability when available (magic-fetch path leaves this null). */
   html: string | null;
   title: string | null;
   excerpt: string | null;
+  /** Markdown from Readability article HTML via magic-fetch (when extraction succeeds). */
+  magicMarkdown?: string;
 }
 
 export async function extractReadabilityFromHtml(
@@ -13,32 +18,18 @@ export async function extractReadabilityFromHtml(
 ): Promise<ReadabilityResult | null> {
   try {
     const cleanedHtml = stripCssFromHtml(stripHiddenHtml(html));
-    const { Readability } = await import('@mozilla/readability');
-    const { JSDOM, VirtualConsole } = await import('jsdom');
-    const virtualConsole = new VirtualConsole();
-    virtualConsole.on('jsdomError', (err) => {
-      const message =
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message?: unknown }).message ?? '')
-          : '';
-      if (message.includes('Could not parse CSS stylesheet')) {
-        return;
-      }
-    });
-
-    const dom = new JSDOM(cleanedHtml, { ...(url ? { url } : undefined), virtualConsole });
-    const reader = new Readability(dom.window.document);
-    const article = reader.parse();
-    if (!article) {
+    const extracted = extractReadableContent(cleanedHtml, url ?? 'about:blank');
+    if (!extracted) {
       return null;
     }
 
-    const text = (article.textContent ?? '').replaceAll(/\s+/g, ' ').trim();
+    const text = extracted.markdown.replaceAll(/\s+/g, ' ').trim();
     return {
-      excerpt: article.excerpt ?? null,
-      html: article.content ?? null,
+      excerpt: null,
+      html: null,
+      magicMarkdown: extracted.markdown,
       text,
-      title: article.title ?? null,
+      title: extracted.title ?? null,
     };
   } catch {
     return null;
@@ -68,6 +59,5 @@ function escapeHtml(input: string): string {
 }
 
 function stripCssFromHtml(html: string): string {
-  // Readability doesn't need CSS; jsdom's CSS parsing can be extremely slow on some pages.
   return html.replaceAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 }

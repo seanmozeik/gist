@@ -85,9 +85,9 @@ describe('podcast provider progress events', () => {
       const url =
         typeof _input === 'string'
           ? _input
-          : _input instanceof URL
+          : (_input instanceof URL
             ? _input.toString()
-            : _input.url;
+            : _input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {
@@ -132,9 +132,9 @@ describe('podcast provider progress events', () => {
       const url =
         typeof _input === 'string'
           ? _input
-          : _input instanceof URL
+          : (_input instanceof URL
             ? _input.toString()
-            : _input.url;
+            : _input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {

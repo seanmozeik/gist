@@ -26,7 +26,7 @@ const buildDeps = (fetchImpl: typeof fetch) => ({
   apifyApiToken: null,
   convertHtmlToMarkdown: null,
   falApiKey: null,
-  fetch: fetchImpl,
+  fetchImplementation: fetchImpl,
   groqApiKey: null,
   onProgress: null,
   openaiApiKey: null,

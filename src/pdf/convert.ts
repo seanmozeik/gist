@@ -22,7 +22,7 @@ export async function convertPdfToMarkdown({
   const blob = new Blob([buffer], { type: 'application/pdf' });
   formData.append('file', blob, pdfName);
 
-  const pdfEndpoint = endpoint?.trim() || '/convert-pdf';
+  const pdfEndpoint = endpoint?.trim() ?? '/convert-pdf';
   const response = await fetch(`${baseUrl}${pdfEndpoint}`, { body: formData, method: 'POST' });
 
   if (!response.ok) {

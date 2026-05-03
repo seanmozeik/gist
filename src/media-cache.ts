@@ -55,7 +55,7 @@ export function resolveMediaCachePath({
     if (raw.startsWith('~/') && home) {
       return resolvePath(join(home, raw.slice(2)));
     }
-    return isAbsolute(raw) ? raw : home ? resolvePath(join(home, raw)) : resolvePath(raw);
+    return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : resolvePath(raw));
   }
   if (!home) {
     return null;

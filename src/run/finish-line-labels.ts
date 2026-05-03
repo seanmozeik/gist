@@ -2,7 +2,7 @@ import { formatCompactCount } from '../tty/format';
 
 export interface ExtractDiagnosticsForFinishLine {
   strategy: 'bird' | 'html';
-  markdown: { used: boolean; provider: 'llm' | null; notes?: string | null };
+  markdown: { used: boolean; provider: 'llm' | 'readability' | null; notes?: string | null };
   transcript: { textProvided: boolean; provider: string | null };
 }
 
@@ -22,12 +22,17 @@ export function buildExtractFinishLabel(args: {
 
   if (args.format === 'markdown') {
     const strategy = args.extracted.diagnostics.strategy ?? '';
-    if (strategy === 'html' && args.markdownMode === 'readability') {
+    const md = args.extracted.diagnostics.markdown;
+    const mdUsed = Boolean(md?.used);
+    const mdNotes = md?.notes ?? null;
+
+    if (strategy === 'html' && mdUsed && md?.provider === 'readability') {
       return `${base} via readability`;
     }
 
-    const mdUsed = args.extracted.diagnostics.markdown?.used;
-    const mdNotes = args.extracted.diagnostics.markdown.notes ?? null;
+    if (strategy === 'html' && args.markdownMode === 'readability') {
+      return `${base} via readability`;
+    }
 
     if (mdUsed && mdNotes?.toLowerCase?.()?.includes('readability html used')) {
       return `${base} via readability`;

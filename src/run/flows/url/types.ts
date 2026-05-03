@@ -22,6 +22,11 @@ export interface UrlFlowIo {
   stderr: NodeJS.WritableStream;
   execFileImpl: ExecFileFn;
   fetch: typeof fetch;
+  /**
+   * Explicit magic-fetch transport for link-preview HTML retrieval (overrides Vitest default).
+   * Normally omit so Vitest reuses {@link fetch}.
+   */
+  linkPreviewFetchImplementation?: typeof fetch;
 }
 
 export interface UrlFlowFlags {

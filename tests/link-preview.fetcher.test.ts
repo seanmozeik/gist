@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  fetchHtmlDocument,
-  fetchWithFirecrawl,
-} from '../src/content/link-preview/content/fetcher.js';
+import { fetchHtmlDocument } from '../src/content/link-preview/content/fetcher.js';
 
 const htmlResponse = (html: string, status = 200) =>
   new Response(html, { headers: { 'Content-Type': 'text/html' }, status });
@@ -16,10 +13,9 @@ describe('link preview fetcher', () => {
       return htmlResponse('<html>ok</html>');
     });
 
-    const result = await fetchHtmlDocument(
-      fetchMock as unknown as typeof fetch,
-      'https://example.com',
-    );
+    const result = await fetchHtmlDocument('https://example.com', {
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
 
     expect(result.html).toContain('ok');
   });
@@ -27,7 +23,9 @@ describe('link preview fetcher', () => {
   it('throws when HTML response is non-2xx', async () => {
     const fetchMock = vi.fn(async () => htmlResponse('<html></html>', 403));
     await expect(
-      fetchHtmlDocument(fetchMock as unknown as typeof fetch, 'https://example.com'),
+      fetchHtmlDocument('https://example.com', {
+        fetchImplementation: fetchMock as unknown as typeof fetch,
+      }),
     ).rejects.toThrow('Failed to fetch HTML document (status 403)');
   });
 
@@ -36,110 +34,11 @@ describe('link preview fetcher', () => {
     Object.defineProperty(response, 'url', { configurable: true, value: 'https://gist.sh/' });
     const fetchMock = vi.fn(async () => response);
 
-    const result = await fetchHtmlDocument(
-      fetchMock as unknown as typeof fetch,
-      'https://t.co/abc',
-    );
+    const result = await fetchHtmlDocument('https://t.co/abc', {
+      fetchImplementation: fetchMock as unknown as typeof fetch,
+    });
 
     expect(result.finalUrl).toBe('https://gist.sh/');
     expect(result.html).toContain('ok');
-  });
-
-  it('throws a timeout error when HTML fetch is aborted', async () => {
-    vi.useFakeTimers();
-    try {
-      const fetchMock = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
-        const signal = init?.signal;
-        return new Promise((_resolve, reject) => {
-          if (!signal) {
-            reject(new Error('Missing abort signal'));
-            return;
-          }
-          signal.addEventListener('abort', () => {
-            reject(new DOMException('Aborted', 'AbortError'));
-          });
-        });
-      });
-
-      const promise = fetchHtmlDocument(
-        fetchMock as unknown as typeof fetch,
-        'https://example.com',
-        { timeoutMs: 10 },
-      );
-      const assertion = expect(promise).rejects.toThrow('Fetching HTML document timed out');
-      await vi.advanceTimersByTimeAsync(20);
-      await assertion;
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('retries with identity encoding for Bun decompression errors', async () => {
-    const originalBun = Object.getOwnPropertyDescriptor(globalThis, 'Bun');
-    Object.defineProperty(globalThis, 'Bun', { configurable: true, value: {} });
-
-    try {
-      const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-        const headers = init?.headers as Record<string, string>;
-        if (fetchMock.mock.calls.length === 1) {
-          expect(headers['Accept-Encoding']).toBe('gzip, deflate');
-          throw new Error('ZlibError: ShortRead');
-        }
-        expect(headers['Accept-Encoding']).toBe('identity');
-        return htmlResponse('<html>retry ok</html>');
-      });
-
-      const result = await fetchHtmlDocument(
-        fetchMock as unknown as typeof fetch,
-        'https://example.com',
-      );
-
-      expect(result.html).toContain('retry ok');
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-    } finally {
-      if (originalBun) {
-        Object.defineProperty(globalThis, 'Bun', originalBun);
-      } else {
-        Reflect.deleteProperty(globalThis, 'Bun');
-      }
-    }
-  });
-
-  it('skips Firecrawl for YouTube URLs', async () => {
-    const scrape = vi.fn(async () => ({ html: null, markdown: '# nope', metadata: null }));
-
-    const result = await fetchWithFirecrawl(
-      'https://www.youtube.com/watch?v=abcdefghijk',
-      scrape as unknown as typeof scrape,
-    );
-
-    expect(result.payload).toBeNull();
-    expect(result.diagnostics.attempted).toBe(false);
-    expect(result.diagnostics.notes).toContain('Skipped Firecrawl for YouTube URL');
-  });
-
-  it('returns diagnostics when Firecrawl is not configured', async () => {
-    const result = await fetchWithFirecrawl('https://example.com', null);
-    expect(result.payload).toBeNull();
-    expect(result.diagnostics.attempted).toBe(false);
-    expect(result.diagnostics.notes).toContain('Firecrawl is not configured');
-  });
-
-  it('records diagnostics when Firecrawl returns null', async () => {
-    const scrape = vi.fn(async () => null);
-    const result = await fetchWithFirecrawl('https://example.com', scrape, { timeoutMs: 1 });
-    expect(result.payload).toBeNull();
-    expect(result.diagnostics.attempted).toBe(true);
-    expect(result.diagnostics.notes).toContain('Firecrawl returned no content payload');
-  });
-
-  it('records diagnostics when Firecrawl throws', async () => {
-    const scrape = vi.fn(async () => {
-      throw new Error('boom');
-    });
-    const result = await fetchWithFirecrawl('https://example.com', scrape, { timeoutMs: 1 });
-    expect(result.payload).toBeNull();
-    expect(result.diagnostics.attempted).toBe(true);
-    expect(result.diagnostics.notes).toContain('Firecrawl error: boom');
   });
 });

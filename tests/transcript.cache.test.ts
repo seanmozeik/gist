@@ -179,7 +179,7 @@ describe('transcript cache integration', () => {
         apifyApiToken: null,
         convertHtmlToMarkdown: null,
         falApiKey: null,
-        fetch: fetchMock as unknown as typeof fetch,
+        fetchImplementation: fetchMock as unknown as typeof fetch,
         groqApiKey: null,
         openaiApiKey: null,
         readTweetWithBird: null,

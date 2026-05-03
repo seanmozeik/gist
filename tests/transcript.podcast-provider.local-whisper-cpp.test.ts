@@ -32,7 +32,7 @@ describe('podcast transcript provider: local whisper.cpp', () => {
 
       const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url =
-          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+          typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
         const method = (init?.method ?? 'GET').toUpperCase();
         if (url !== enclosureUrl) {
           throw new Error(`Unexpected fetch: ${method} ${url}`);

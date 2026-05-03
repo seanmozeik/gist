@@ -111,7 +111,7 @@ export const resolveTranscriptForLink = async (
 
   const providerResult = await executeProvider(provider, baseContext, {
     env: deps.env,
-    fetch: deps.fetch,
+    fetch: deps.fetchImplementation ?? globalThis.fetch,
     mediaCache: deps.mediaCache ?? null,
     mediaKindHint: mediaKindHint ?? null,
     mediaTranscriptMode: mediaTranscriptMode ?? 'auto',

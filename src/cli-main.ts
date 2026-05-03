@@ -165,7 +165,7 @@ export async function runCliMain({
     }
 
     const message =
-      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+      error instanceof Error ? error.message : (error ? String(error) : 'Unknown error');
     stderr.write(`${stripAnsi(message)}\n`);
     setExitCode(1);
   }

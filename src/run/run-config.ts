@@ -39,9 +39,9 @@ export function resolveConfigState({
   const cliLanguageRaw =
     typeof programOpts.language === 'string'
       ? programOpts.language
-      : typeof programOpts.lang === 'string'
+      : (typeof programOpts.lang === 'string'
         ? programOpts.lang
-        : null;
+        : null);
   const defaultLanguageRaw = config?.output?.language ?? config?.language ?? 'auto';
   const outputLanguage: OutputLanguage = parseOutputLanguage(
     languageExplicitlySet && typeof cliLanguageRaw === 'string' && cliLanguageRaw.trim().length > 0

@@ -159,7 +159,6 @@ export async function gistMediaFile(ctx: AssetSummaryContext, args: GistAssetArg
         warnings: res.warnings,
       };
     },
-    fetch: ctx.trackedFetch,
     transcriptCache,
     mediaCache: ctx.mediaCache ?? null,
     onProgress: (_event) => {

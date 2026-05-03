@@ -204,9 +204,9 @@ export async function runCliModel({
   const providerConfig = getCliProviderConfig(provider, config);
   const requestedModel = isNonEmptyString(model)
     ? model.trim()
-    : isNonEmptyString(providerConfig?.model)
+    : (isNonEmptyString(providerConfig?.model)
       ? providerConfig.model.trim()
-      : null;
+      : null);
   const providerExtraArgs: string[] = [];
   if (providerConfig?.extraArgs?.length) {
     providerExtraArgs.push(...providerConfig.extraArgs);

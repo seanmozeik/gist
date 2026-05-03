@@ -12,7 +12,7 @@ void runCliMain({
   stderr: process.stderr,
   stdout: process.stdout,
 }).catch((error) => {
-  const message = error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+  const message = error instanceof Error ? error.message : (error ? String(error) : 'Unknown error');
   process.stderr.write(`${message}\n`);
   process.exitCode = 1;
 });

@@ -28,7 +28,7 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved.startsWith('https://open.spotify.com/episode/')) {
@@ -69,18 +69,17 @@ describe('Spotify episode short-circuit', () => {
       throw new Error(`unexpected fetch: ${method} ${resolved}`);
     });
 
-    const openaiFetch = vi.fn(async (input: RequestInfo | URL) => {
+    const transcribeGlobalFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-      expect(resolved).toContain('https://api.openai.com/v1/audio/transcriptions');
-      return Response.json(
-        { text: 'hello world from spotify' },
-        { headers: { 'content-type': 'application/json' }, status: 200 },
-      );
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+      if (resolved.includes('https://openrouter.ai/api/v1/chat/completions')) {
+        return Response.json({ choices: [{ message: { content: 'hello world from spotify' } }] });
+      }
+      throw new Error(`unexpected transcribe fetch: ${resolved}`);
     });
 
     try {
-      vi.stubGlobal('fetch', openaiFetch as unknown as typeof fetch);
+      vi.stubGlobal('fetch', transcribeGlobalFetch as unknown as typeof fetch);
 
       for (const url of urls) {
         const result = await fetchLinkContent(
@@ -94,9 +93,10 @@ describe('Spotify episode short-circuit', () => {
               GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
               GOOGLE_API_KEY: '',
               GOOGLE_GENERATIVE_AI_API_KEY: '',
+              OPENROUTER_API_KEY: 'test-openrouter',
             },
             falApiKey: null,
-            fetch: fetchImpl as unknown as typeof fetch,
+            fetchImplementation: fetchImpl as unknown as typeof fetch,
             groqApiKey: null,
             openaiApiKey: 'OPENAI',
             scrapeWithFirecrawl: null,
@@ -131,7 +131,7 @@ describe('Spotify episode short-circuit', () => {
               GOOGLE_GENERATIVE_AI_API_KEY: '',
             },
             falApiKey: null,
-            fetch: vi.fn() as unknown as typeof fetch,
+            fetchImplementation: vi.fn() as unknown as typeof fetch,
             groqApiKey: null,
             openaiApiKey: null,
             scrapeWithFirecrawl: null,
@@ -139,7 +139,7 @@ describe('Spotify episode short-circuit', () => {
             ytDlpPath: null,
           },
         ),
-      ).rejects.toThrow(/transcription provider/i);
+      ).rejects.toThrow(/Spotify episode transcription requires|transcription provider/i);
     } finally {
       vi.unstubAllEnvs();
     }
@@ -164,7 +164,7 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved === `https://open.spotify.com/embed/episode/${episodeId}`) {
@@ -197,19 +197,20 @@ describe('Spotify episode short-circuit', () => {
       throw new Error(`unexpected fetch: ${method} ${resolved}`);
     });
 
-    const geminiFetch = vi.fn(async (input: RequestInfo | URL) => {
+    const transcribeGlobalFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-      expect(resolved).toContain('generativelanguage.googleapis.com');
-      return Response.json(
-        { candidates: [{ content: { parts: [{ text: 'hello world from gemini spotify' }] } }] },
-        { headers: { 'content-type': 'application/json' }, status: 200 },
-      );
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+      if (resolved.includes('https://openrouter.ai/api/v1/chat/completions')) {
+        return Response.json({
+          choices: [{ message: { content: 'hello world from gemini spotify' } }],
+        });
+      }
+      throw new Error(`unexpected transcribe fetch: ${resolved}`);
     });
 
     try {
       vi.stubEnv('GIST_DISABLE_LOCAL_WHISPER_CPP', '1');
-      vi.stubGlobal('fetch', geminiFetch as unknown as typeof fetch);
+      vi.stubGlobal('fetch', transcribeGlobalFetch as unknown as typeof fetch);
       const result = await fetchLinkContent(
         `https://open.spotify.com/episode/${episodeId}`,
         { cacheMode: 'bypass', timeoutMs: 60_000 },
@@ -221,9 +222,10 @@ describe('Spotify episode short-circuit', () => {
             GIST_DISABLE_LOCAL_WHISPER_CPP: '1',
             GOOGLE_API_KEY: '',
             GOOGLE_GENERATIVE_AI_API_KEY: '',
+            OPENROUTER_API_KEY: 'test-openrouter',
           },
           falApiKey: null,
-          fetch: fetchImpl as unknown as typeof fetch,
+          fetchImplementation: fetchImpl as unknown as typeof fetch,
           geminiApiKey: 'GEMINI',
           groqApiKey: null,
           openaiApiKey: null,

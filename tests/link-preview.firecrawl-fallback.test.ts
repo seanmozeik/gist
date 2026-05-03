@@ -30,7 +30,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -59,7 +59,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -90,7 +90,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -118,7 +118,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -147,7 +147,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -179,7 +179,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -211,7 +211,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -237,7 +237,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 
@@ -262,7 +262,7 @@ describe('link preview extraction (Firecrawl fallback)', () => {
     });
 
     const client = createLinkPreviewClient({
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
       scrapeWithFirecrawl,
     });
 

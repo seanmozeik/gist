@@ -46,7 +46,7 @@ describe('model presets: OpenRouter provider routing errors', () => {
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url.startsWith('https://openrouter.ai/api/v1/models/')) {
         return Response.json(
           { data: { endpoints: [{ provider_name: 'Google AI Studio' }] } },

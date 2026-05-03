@@ -19,7 +19,11 @@ export interface LinkPreviewClient {
 
 /** Public options for wiring dependencies into the link preview client. */
 export interface LinkPreviewClientOptions {
-  fetch?: typeof fetch;
+  /**
+   * Optional fetch used as magic-fetch transport for primary HTML/markdown retrieval.
+   * Omit to use built-in impit (production default).
+   */
+  fetchImplementation?: typeof fetch;
   env?: Record<string, string | undefined>;
   ytDlpPath?: string | null;
   transcription?: Partial<TranscriptionConfig> | null;
@@ -33,8 +37,8 @@ export interface LinkPreviewClientOptions {
 
 /** Public factory for a link preview client with injectable dependencies. */
 export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}): LinkPreviewClient {
-  const fetchImpl: typeof fetch =
-    options.fetch ?? ((...args: Parameters<typeof fetch>) => globalThis.fetch(...args));
+  const fetchImplementation =
+    typeof options.fetchImplementation === 'function' ? options.fetchImplementation : undefined;
   const env = typeof options.env === 'object' && options.env ? options.env : undefined;
   const ytDlpPath = typeof options.ytDlpPath === 'string' ? options.ytDlpPath : null;
   const transcription = resolveTranscriptionConfig({
@@ -55,7 +59,7 @@ export function createLinkPreviewClient(options: LinkPreviewClientOptions = {}):
       fetchLinkContent(url, contentOptions, {
         convertHtmlToMarkdown,
         env,
-        fetch: fetchImpl,
+        fetchImplementation,
         mediaCache,
         onProgress,
         readTweetWithBird,

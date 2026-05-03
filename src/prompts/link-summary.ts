@@ -109,9 +109,9 @@ export function buildLinkSummaryPrompt({
   const effectiveSummaryLength: SummaryLengthTarget =
     typeof summaryLength === 'string'
       ? summaryLength
-      : contentCharacters > 0 && summaryLength.maxCharacters > contentCharacters
+      : (contentCharacters > 0 && summaryLength.maxCharacters > contentCharacters
         ? { maxCharacters: contentCharacters }
-        : summaryLength;
+        : summaryLength);
   const preset =
     typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength

@@ -131,7 +131,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       expect(url).toBe('https://example.com/episode.mp3?p=1&t=podcast&size=123');
       return new Response(new Uint8Array([0, 1, 2, 3]), {
         headers: { 'content-type': 'audio/mpeg' },
@@ -166,7 +166,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {
@@ -237,7 +237,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === 'https://open.spotify.com/embed/episode/abc') {
@@ -296,9 +296,9 @@ Hello from VTT
           const calledUrl =
             typeof callInput === 'string'
               ? callInput
-              : callInput instanceof URL
+              : (callInput instanceof URL
                 ? callInput.toString()
-                : callInput.url;
+                : callInput.url);
           return calledUrl === 'https://example.com/clip.mp3' || calledUrl === drmAudioUrl;
         }),
       ).toBe(false);
@@ -330,7 +330,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === 'https://open.spotify.com/embed/episode/abc') {
@@ -410,7 +410,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (url === feedUrl) {
@@ -458,7 +458,7 @@ Hello from VTT
     const html = '<html><head></head><body></body></html>';
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url === 'https://open.spotify.com/embed/episode/abc') {
         return new Response('<html><body>ok but no data</body></html>', {
           headers: { 'content-type': 'text/html' },
@@ -486,7 +486,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (url === ogAudioUrl) {
         if (method === 'HEAD') {
@@ -543,7 +543,7 @@ Hello from VTT
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {

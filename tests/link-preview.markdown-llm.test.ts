@@ -29,7 +29,7 @@ describe('link preview extraction (LLM HTML→Markdown)', () => {
 
     const client = createLinkPreviewClient({
       convertHtmlToMarkdown: convertHtmlToMarkdownMock as unknown as ConvertHtmlToMarkdown,
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
     });
 
     const result = await client.fetchLinkContent('https://example.com', {
@@ -63,7 +63,7 @@ describe('link preview extraction (LLM HTML→Markdown)', () => {
 
     const client = createLinkPreviewClient({
       convertHtmlToMarkdown: convertHtmlToMarkdownMock as unknown as ConvertHtmlToMarkdown,
-      fetch: fetchMock as unknown as typeof fetch,
+      fetchImplementation: fetchMock as unknown as typeof fetch,
     });
 
     const result = await client.fetchLinkContent('https://example.com', {

@@ -12,7 +12,8 @@ describe('fetchHtmlDocument', () => {
       });
     }) as unknown as typeof fetch;
 
-    const out = await fetchHtmlDocument(fetchImpl, 'https://example.com/feed.xml', {
+    const out = await fetchHtmlDocument('https://example.com/feed.xml', {
+      fetchImplementation: fetchImpl,
       onProgress: null,
       timeoutMs: 1000,
     });

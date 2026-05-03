@@ -49,10 +49,14 @@ export function createUrlExtractionSession({
         readTweetWithPreferredClient({ env: io.env, timeoutMs, url })
     : null;
 
+  const fetchImplementation =
+    ctx.io.linkPreviewFetchImplementation ??
+    (process.env.VITEST === 'true' ? ctx.io.fetch : undefined);
+
   const client = createLinkPreviewClient({
     convertHtmlToMarkdown: markdown.convertHtmlToMarkdown,
     env: io.envForRun,
-    fetch: io.fetch,
+    fetchImplementation,
     mediaCache: ctx.mediaCache ?? null,
     onProgress,
     readTweetWithBird: readTweetWithBirdClient,

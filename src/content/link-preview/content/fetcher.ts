@@ -1,18 +1,13 @@
-import {
-  isBunCompressedResponseError,
-  withBunCompressionHeaders,
-  withBunIdentityEncoding,
-} from '../../bun.js';
+import { magicFetch, type MagicFetchTransport } from '@seanmozeik/magic-fetch';
+
+import { withBunCompressionHeaders } from '../../bun.js';
 import type { LinkPreviewProgressEvent } from '../deps';
 
-const REQUEST_HEADERS: Record<string, string> = {
-  Accept:
-    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+/** Extra headers merged into magic-fetch defaults (negotiated `Accept` comes from the profile). */
+const REQUEST_HEADERS_SUPPLEMENTAL: Record<string, string> = {
   'Accept-Language': 'en-US,en;q=0.9',
   'Cache-Control': 'no-cache',
   Pragma: 'no-cache',
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
 };
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
@@ -23,14 +18,16 @@ export interface HtmlDocumentFetchResult {
 }
 
 async function fetchHtmlOnce(
-  fetchImpl: typeof fetch,
   url: string,
-  headers: Record<string, string>,
-  {
-    timeoutMs,
-    onProgress,
-  }: { timeoutMs?: number; onProgress?: ((event: LinkPreviewProgressEvent) => void) | null } = {},
+  options: {
+    acceptProfile: 'markdown-first' | 'html-first';
+    fetchImplementation?: typeof fetch;
+    headers: Record<string, string>;
+    onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
+    timeoutMs?: number;
+  },
 ): Promise<HtmlDocumentFetchResult> {
+  const { acceptProfile, fetchImplementation, headers, onProgress, timeoutMs } = options;
   onProgress?.({ kind: 'fetch-html-start', url });
 
   const controller = new AbortController();
@@ -43,7 +40,12 @@ async function fetchHtmlOnce(
   }, effectiveTimeoutMs);
 
   try {
-    const response = await fetchImpl(url, {
+    const response = await magicFetch(url, {
+      acceptProfile,
+      ...(fetchImplementation !== undefined
+        ? { fetchImplementation: fetchImplementation as unknown as MagicFetchTransport }
+        : {}),
+      headerMerge: 'defaults-win-accept',
       headers,
       redirect: 'follow',
       signal: controller.signal,
@@ -120,24 +122,22 @@ async function fetchHtmlOnce(
 }
 
 export async function fetchHtmlDocument(
-  fetchImpl: typeof fetch,
   url: string,
   options: {
+    fetchImplementation?: typeof fetch;
+    markdownExtractFetch?: boolean;
     timeoutMs?: number;
     onProgress?: ((event: LinkPreviewProgressEvent) => void) | null;
   } = {},
 ): Promise<HtmlDocumentFetchResult> {
-  try {
-    return await fetchHtmlOnce(fetchImpl, url, withBunCompressionHeaders(REQUEST_HEADERS), options);
-  } catch (error) {
-    // Bun's fetch has known bugs where its streaming zlib decompression throws
-    // ZlibError / ShortRead on certain chunked+compressed responses. Retry the
-    // Request asking the server to skip compression entirely.
-    // https://github.com/oven-sh/bun/issues/23149
-    if (isBunCompressedResponseError(error)) {
-      const uncompressedHeaders = withBunIdentityEncoding(REQUEST_HEADERS);
-      return fetchHtmlOnce(fetchImpl, url, uncompressedHeaders, options);
-    }
-    throw error;
-  }
+  const markdownExtractFetch = options.markdownExtractFetch === true;
+  const headers = withBunCompressionHeaders(REQUEST_HEADERS_SUPPLEMENTAL);
+
+  return fetchHtmlOnce(url, {
+    acceptProfile: markdownExtractFetch ? 'markdown-first' : 'html-first',
+    fetchImplementation: options.fetchImplementation,
+    headers,
+    onProgress: options.onProgress ?? null,
+    timeoutMs: options.timeoutMs,
+  });
 }

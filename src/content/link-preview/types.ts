@@ -32,7 +32,7 @@ export interface TranscriptDiagnostics {
 export interface MarkdownDiagnostics {
   requested: boolean;
   used: boolean;
-  provider: 'llm' | null;
+  provider: 'llm' | 'readability' | null;
   notes?: string | null;
 }
 

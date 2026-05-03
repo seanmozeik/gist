@@ -133,7 +133,11 @@ export type ResolveTwitterCookies = (args: { url: string }) => Promise<TwitterCo
 
 /** Internal dependency bag; prefer createLinkPreviewClient unless you need custom wiring. */
 export interface LinkPreviewDeps {
-  fetch: typeof fetch;
+  /**
+   * HTML/markdown document transport for link preview. When omitted, `@seanmozeik/magic-fetch` uses
+   * built-in impit (Chrome TLS, HTTP/3). Pass **`fetchImplementation`** to inject a mock or alternate transport.
+   */
+  fetchImplementation?: typeof fetch;
   env?: Record<string, string | undefined>;
   ytDlpPath: string | null;
   transcription?: TranscriptionConfig | null;

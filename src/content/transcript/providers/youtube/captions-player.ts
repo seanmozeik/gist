@@ -86,7 +86,7 @@ export function extractInitialPlayerResponse(html: string): Record<string, unkno
 
 function coerceDurationSeconds(value: unknown): number | null {
   const asNumber =
-    typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN;
+    typeof value === 'number' ? value : (typeof value === 'string' ? Number(value) : Number.NaN);
   if (!Number.isFinite(asNumber) || asNumber <= 0) {
     return null;
   }

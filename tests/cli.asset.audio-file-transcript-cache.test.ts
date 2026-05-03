@@ -17,7 +17,7 @@ describe('transcript cache integration with audio files', () => {
   it('caches transcripts using file modification time as cache key component', async () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-fileMtime-'));
     const audioPath = join(root, 'test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const stats = statSync(audioPath);
     const fileMtime = stats.mtimeMs;
@@ -50,7 +50,7 @@ describe('transcript cache integration with audio files', () => {
   it('invalidates cache when file modification time changes', async () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-invalidation-'));
     const audioPath = join(root, 'test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const originalStats = statSync(audioPath);
     const originalMtime = originalStats.mtimeMs;
@@ -135,8 +135,8 @@ describe('transcript cache integration with audio files', () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-multiple-files-'));
     const audioPath1 = join(root, 'audio1.mp3');
     const audioPath2 = join(root, 'audio2.mp3');
-    writeFileSync(audioPath1, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
-    writeFileSync(audioPath2, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath1, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath2, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime1 = statSync(audioPath1).mtimeMs;
     const mtime2 = statSync(audioPath2).mtimeMs;
@@ -197,7 +197,7 @@ describe('transcript cache integration with audio files', () => {
   it('handles cache misses gracefully when file is new', async () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-new-file-'));
     const audioPath = join(root, 'new-audio.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
@@ -223,7 +223,7 @@ describe('transcript cache integration with audio files', () => {
   it('threads fileMtime through read and write cache operations', async () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-thread-mtime-'));
     const audioPath = join(root, 'thread-test.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
@@ -255,7 +255,7 @@ describe('transcript cache integration with audio files', () => {
   it('uses file:// URL format for file paths in cache keys', async () => {
     const root = mkdtempSync(join(tmpdir(), 'transcript-cache-file-url-'));
     const audioPath = join(root, 'audio.mp3');
-    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
 
     const mtime = statSync(audioPath).mtimeMs;
 
