@@ -50,7 +50,7 @@ phase_verify_pack() {
   install_dir="${tmp_dir}/install"
   run mkdir -p "${install_dir}"
   run npm install --prefix "${install_dir}" "${tarball}"
-  run node "${install_dir}/node_modules/@seanmozeik/gist/dist/cli.js" --help >/dev/null
+  run "${install_dir}/node_modules/@seanmozeik/gist/dist/gist" --help >/dev/null
   echo "ok"
 }
 

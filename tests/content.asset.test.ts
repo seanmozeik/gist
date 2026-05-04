@@ -73,7 +73,7 @@ describe('asset loaders', () => {
     const root = mkdtempSync(join(tmpdir(), 'gist-asset-img-'));
     const jpgPath = join(root, 'test.jpg');
     // Minimal JPEG header.
-    writeFileSync(jpgPath, Buffer.from([0xFF, 0xD8, 0xFF, 0xDB, 0x00, 0x43, 0x00]));
+    writeFileSync(jpgPath, Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43, 0x00]));
 
     const loaded = await loadLocalAsset({ filePath: jpgPath, maxBytes: 1024 });
     expect(loaded.attachment.mediaType).toBe('image/jpeg');

@@ -1,5 +1,4 @@
 import { countTokens } from 'gpt-tokenizer';
-import { render as renderMarkdownAnsi } from 'markdansi';
 
 import { buildSummaryCacheKey, type CacheState } from '../../../cache';
 import { buildLanguageKey, buildLengthKey } from '../../../cache-keys';
@@ -14,6 +13,7 @@ import type { ExecFileFn } from '../../../markitdown';
 import type { FixedModelSpec, RequestedModel } from '../../../model-spec';
 import { SUMMARY_LENGTH_TARGET_CHARACTERS, SUMMARY_SYSTEM_PROMPT } from '../../../prompts/index';
 import type { SummaryLength } from '../../../shared/contracts';
+import { renderMarkdown as renderFrappeMarkdown } from '../../../tty/frappe';
 import { type AssetAttachment, isUnsupportedAttachmentError } from '../../attachments';
 import {
   readLastSuccessfulCliProvider,
@@ -26,7 +26,7 @@ import { prepareMarkdownForTerminal } from '../../markdown';
 import { runModelAttempts } from '../../model-attempts';
 import { buildOpenRouterNoAllowedProvidersMessage } from '../../openrouter';
 import type { createSummaryEngine } from '../../summary-engine';
-import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal';
+import { isRichTty, markdownRenderWidth } from '../../terminal';
 import type { ModelAttempt } from '../../types';
 import { prepareAssetPrompt } from './preprocess';
 import { buildAssetCliContext, buildAssetModelAttempts } from './summary-attempts';
@@ -155,12 +155,10 @@ async function outputBypassedAssetSummary({
   ctx.clearProgressForStdout();
   const rendered =
     !ctx.plain && isRichTty(ctx.stdout)
-      ? renderMarkdownAnsi(prepareMarkdownForTerminal(summary), {
-          color: supportsColor(ctx.stdout, ctx.envForRun),
-          hyperlinks: true,
-          width: markdownRenderWidth(ctx.stdout, ctx.env),
-          wrap: true,
-        })
+      ? renderFrappeMarkdown(
+          prepareMarkdownForTerminal(summary),
+          markdownRenderWidth(ctx.stdout, ctx.env),
+        )
       : summary;
 
   if (!ctx.plain && isRichTty(ctx.stdout)) {
@@ -749,12 +747,10 @@ export async function gistAsset(ctx: AssetSummaryContext, args: GistAssetArgs) {
     ctx.clearProgressForStdout();
     const rendered =
       !ctx.plain && isRichTty(ctx.stdout)
-        ? renderMarkdownAnsi(prepareMarkdownForTerminal(summary), {
-            color: supportsColor(ctx.stdout, ctx.envForRun),
-            hyperlinks: true,
-            width: markdownRenderWidth(ctx.stdout, ctx.env),
-            wrap: true,
-          })
+        ? renderFrappeMarkdown(
+            prepareMarkdownForTerminal(summary),
+            markdownRenderWidth(ctx.stdout, ctx.env),
+          )
         : summary;
 
     if (!ctx.plain && isRichTty(ctx.stdout)) {

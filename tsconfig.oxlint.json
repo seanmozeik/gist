@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
-  "compilerOptions": { "types": ["bun-types"] },
+  "compilerOptions": {},
   "include": ["src/**/*", "tests/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist", "packages", "worker-configuration.d.ts"]
 }

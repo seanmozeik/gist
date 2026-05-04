@@ -51,7 +51,7 @@ describe('gistMediaFile options', () => {
     createLinkPreviewClient.mockReset();
     const root = mkdtempSync(join(tmpdir(), 'gist-media-options-bypass-'));
     const audioPath = join(root, 'audio.mp3');
-    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     let capturedClientOptions: { transcriptCache?: unknown | null } | null = null;
     let capturedFetchOptions: { cacheMode?: string; timeoutMs?: number } | null = null;
@@ -99,7 +99,7 @@ describe('gistMediaFile options', () => {
     createLinkPreviewClient.mockReset();
     const root = mkdtempSync(join(tmpdir(), 'gist-media-options-default-'));
     const audioPath = join(root, 'audio.mp3');
-    writeFileSync(audioPath, Buffer.from([0xFF, 0xFB, 0x10, 0x00]));
+    writeFileSync(audioPath, Buffer.from([0xff, 0xfb, 0x10, 0x00]));
 
     let capturedClientOptions: { transcriptCache?: unknown | null } | null = null;
     let capturedFetchOptions: { cacheMode?: string; timeoutMs?: number } | null = null;

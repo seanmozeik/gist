@@ -80,18 +80,18 @@ describe('daemon/schtasks install', () => {
 
     const { scriptPath } = await installScheduledTask({
       env: { HOME: home, USERDOMAIN: 'TESTHOST', USERNAME: 'testuser' },
-      programArguments: ['node', 'dist/cli.js', 'daemon', 'run'],
+      programArguments: ['dist/gist', 'daemon', 'run'],
       stdout: out.stream,
     });
 
     const script = readFileSync(scriptPath, 'utf8');
-    expect(script).toContain('node dist/cli.js daemon run');
+    expect(script).toContain('dist/gist daemon run');
     expect(out.getText()).toContain('Installed Scheduled Task');
 
     const launcherPath = path.join(home, '.gist', 'daemon-launch.vbs');
     const launcher = readFileSync(launcherPath, 'utf8');
     expect(launcher).toContain('Set sh = CreateObject("WScript.Shell")');
-    expect(launcher).toContain('sh.Run "node dist/cli.js daemon run", 0, False');
+    expect(launcher).toContain('sh.Run "dist/gist daemon run", 0, False');
 
     const xmlPath = path.join(home, '.gist', 'daemon-task.xml');
     const xml = readFileSync(xmlPath, 'utf8');
@@ -124,7 +124,7 @@ describe('daemon/schtasks install', () => {
 
     await installScheduledTask({
       env: { COMPUTERNAME: 'FALLBACK', HOME: home, USERNAME: 'testuser' },
-      programArguments: ['node', 'dist/cli.js', 'daemon', 'run'],
+      programArguments: ['dist/gist', 'daemon', 'run'],
       stdout: out.stream,
     });
 
@@ -145,7 +145,7 @@ describe('daemon/schtasks install', () => {
 
     await installScheduledTask({
       env: { HOME: home, USERDOMAIN: 'TESTHOST', USERNAME: 'testuser' },
-      programArguments: ['node', 'dist/cli.js', 'daemon', 'run'],
+      programArguments: ['dist/gist', 'daemon', 'run'],
       stdout: out.stream,
     });
 
@@ -180,7 +180,7 @@ describe('daemon/schtasks install', () => {
     await expect(
       installScheduledTask({
         env: { HOME: home, USERDOMAIN: 'TESTHOST', USERNAME: 'testuser' },
-        programArguments: ['node', 'dist/cli.js', 'daemon', 'run'],
+        programArguments: ['dist/gist', 'daemon', 'run'],
         stdout: out.stream,
       }),
     ).rejects.toThrow(/elevated/);
@@ -213,7 +213,7 @@ describe('daemon/schtasks install', () => {
     await expect(
       installScheduledTask({
         env: { HOME: home, USERDOMAIN: 'TESTHOST', USERNAME: 'testuser' },
-        programArguments: ['node', 'dist/cli.js', 'daemon', 'run'],
+        programArguments: ['dist/gist', 'daemon', 'run'],
         stdout: out.stream,
       }),
     ).rejects.toThrow(/task could not be started/);

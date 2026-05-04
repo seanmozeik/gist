@@ -32,15 +32,15 @@ function readExecErrorDetail(error: unknown): string {
   const stdout =
     typeof execError.stdout === 'string'
       ? execError.stdout
-      : (Buffer.isBuffer(execError.stdout)
+      : Buffer.isBuffer(execError.stdout)
         ? execError.stdout.toString('utf8')
-        : '');
+        : '';
   const stderr =
     typeof execError.stderr === 'string'
       ? execError.stderr
-      : (Buffer.isBuffer(execError.stderr)
+      : Buffer.isBuffer(execError.stderr)
         ? execError.stderr.toString('utf8')
-        : '');
+        : '';
   return [stdout.trim(), stderr.trim(), error.message].filter(Boolean).join('\n');
 }
 

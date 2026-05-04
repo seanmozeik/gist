@@ -31,11 +31,15 @@ const addUrl = (set: Set<string>, value: string | null) => {
 };
 
 export function tweetMediaToBirdMedia(media: unknown): BirdTweetMedia | null {
-  if (!Array.isArray(media) || media.length === 0) {return null;}
+  if (!Array.isArray(media) || media.length === 0) {
+    return null;
+  }
   const urls = new Set<string>();
   let preferredUrl: string | null = null;
   for (const item of media as StructuredTweetMedia[]) {
-    if (item.type !== 'video' && item.type !== 'animated_gif') {continue;}
+    if (item.type !== 'video' && item.type !== 'animated_gif') {
+      continue;
+    }
     if (item.videoUrl) {
       addUrl(urls, item.videoUrl);
       preferredUrl ??= item.videoUrl;
@@ -43,7 +47,9 @@ export function tweetMediaToBirdMedia(media: unknown): BirdTweetMedia | null {
     addUrl(urls, item.url);
     preferredUrl ??= item.url;
   }
-  if (urls.size === 0) {return null;}
+  if (urls.size === 0) {
+    return null;
+  }
   return { kind: 'video', preferredUrl, source: 'extended_entities', urls: [...urls] };
 }
 

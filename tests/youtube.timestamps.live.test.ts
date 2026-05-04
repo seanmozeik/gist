@@ -46,9 +46,9 @@ function parseKeyMomentSeconds(summary: string): number[] {
     const value =
       parts.length === 2
         ? parts[0] * 60 + parts[1]
-        : (parts.length === 3
+        : parts.length === 3
           ? parts[0] * 3600 + parts[1] * 60 + parts[2]
-          : null);
+          : null;
     if (value != null) {
       seconds.push(value);
     }

@@ -43,7 +43,7 @@ describe('createTempFileFromStdin', () => {
   });
 
   it('falls back to .bin when binary type is unknown', async () => {
-    const unknownBinary = Buffer.from([0x00, 0xFF, 0x10, 0x80, 0x42, 0x00]);
+    const unknownBinary = Buffer.from([0x00, 0xff, 0x10, 0x80, 0x42, 0x00]);
     const temp = await createTempFileFromStdin({ stream: streamFrom(unknownBinary) });
     try {
       expect(temp.kind).toBe('binary');

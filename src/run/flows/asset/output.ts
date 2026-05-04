@@ -1,10 +1,9 @@
-import { render as renderMarkdownAnsi } from 'markdansi';
-
 import type { RunMetricsReport } from '../../../costs';
+import { renderMarkdown as renderFrappeMarkdown } from '../../../tty/frappe';
 import type { AssetAttachment } from '../../attachments';
 import { buildExtractFinishLabel, writeFinishLine } from '../../finish-line';
 import { prepareMarkdownForTerminal } from '../../markdown';
-import { isRichTty, markdownRenderWidth, supportsColor } from '../../terminal';
+import { isRichTty, markdownRenderWidth } from '../../terminal';
 import type { AssetExtractResult } from './extract';
 
 export async function outputExtractedAsset({
@@ -105,12 +104,10 @@ export async function outputExtractedAsset({
 
   const rendered =
     flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)
-      ? renderMarkdownAnsi(prepareMarkdownForTerminal(extracted.content), {
-          color: supportsColor(io.stdout, io.envForRun),
-          hyperlinks: true,
-          width: markdownRenderWidth(io.stdout, io.env),
-          wrap: true,
-        })
+      ? renderFrappeMarkdown(
+          prepareMarkdownForTerminal(extracted.content),
+          markdownRenderWidth(io.stdout, io.env),
+        )
       : extracted.content;
 
   if (flags.format === 'markdown' && !flags.plain && isRichTty(io.stdout)) {

@@ -51,7 +51,7 @@ describe('podcast transcript provider: RSS <podcast:transcript>', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url !== transcriptUrl) {
         throw new Error(`Unexpected fetch: ${url}`);
       }
@@ -110,7 +110,7 @@ describe('podcast transcript provider: RSS <podcast:transcript>', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('https://itunes.apple.com/lookup')) {
         return new Response(lookupResponse, {
           headers: { 'content-type': 'application/json' },

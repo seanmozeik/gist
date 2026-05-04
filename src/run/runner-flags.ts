@@ -70,16 +70,16 @@ export function resolveRunnerFlags({
   const maxExtractCharacters = parseMaxExtractCharactersArg(
     typeof programOpts.maxExtractCharacters === 'string'
       ? programOpts.maxExtractCharacters
-      : (programOpts.maxExtractCharacters != null
+      : programOpts.maxExtractCharacters != null
         ? String(programOpts.maxExtractCharacters)
-        : undefined),
+        : undefined,
   );
 
   const isYoutubeUrl = typeof url === 'string' ? /youtube\.com|youtu\.be/i.test(url) : false;
   const formatExplicitlySet = hasFlag(normalizedArgv, '--format');
   const rawFormatOpt = typeof programOpts.format === 'string' ? programOpts.format : null;
   const format = parseExtractFormat(
-    formatExplicitlySet ? (rawFormatOpt ?? 'text') : (extractMode && !isYoutubeUrl ? 'md' : 'text'),
+    formatExplicitlySet ? (rawFormatOpt ?? 'text') : extractMode && !isYoutubeUrl ? 'md' : 'text',
   );
 
   const runSettings = resolveCliRunSettings({
@@ -91,9 +91,9 @@ export function resolveRunnerFlags({
     maxOutputTokens:
       typeof programOpts.maxOutputTokens === 'string'
         ? programOpts.maxOutputTokens
-        : (programOpts.maxOutputTokens != null
+        : programOpts.maxOutputTokens != null
           ? String(programOpts.maxOutputTokens)
-          : undefined),
+          : undefined,
     preprocess: String(programOpts.preprocess),
     retries: String(programOpts.retries),
     timeout: String(programOpts.timeout),

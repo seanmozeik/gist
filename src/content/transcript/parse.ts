@@ -86,9 +86,9 @@ function parseSegmentsFromJsonArray(items: unknown[]): TranscriptSegment[] {
     const text =
       typeof record.text === 'string'
         ? record.text
-        : (typeof record.utf8 === 'string'
+        : typeof record.utf8 === 'string'
           ? record.utf8
-          : null);
+          : null;
     if (!text) {
       continue;
     }

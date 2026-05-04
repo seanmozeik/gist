@@ -28,7 +28,7 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved.startsWith('https://open.spotify.com/episode/')) {
@@ -71,7 +71,7 @@ describe('Spotify episode short-circuit', () => {
 
     const transcribeGlobalFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (resolved.includes('https://openrouter.ai/api/v1/chat/completions')) {
         return Response.json({ choices: [{ message: { content: 'hello world from spotify' } }] });
       }
@@ -164,7 +164,7 @@ describe('Spotify episode short-circuit', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
 
       if (resolved === `https://open.spotify.com/embed/episode/${episodeId}`) {
@@ -199,7 +199,7 @@ describe('Spotify episode short-circuit', () => {
 
     const transcribeGlobalFetch = vi.fn(async (input: RequestInfo | URL) => {
       const resolved =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (resolved.includes('https://openrouter.ai/api/v1/chat/completions')) {
         return Response.json({
           choices: [{ message: { content: 'hello world from gemini spotify' } }],

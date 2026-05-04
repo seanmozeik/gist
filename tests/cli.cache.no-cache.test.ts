@@ -25,7 +25,7 @@ function collectStream() {
 }
 
 function requestUrl(input: RequestInfo | URL): string {
-  return typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url);
+  return typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 }
 
 const mocks = vi.hoisted(() => ({

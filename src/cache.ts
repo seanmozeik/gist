@@ -100,13 +100,13 @@ const installSqliteWarningFilter = () => {
     const message =
       typeof warning === 'string'
         ? warning
-        : (warning && typeof (warning as { message?: unknown }).message === 'string'
+        : warning && typeof (warning as { message?: unknown }).message === 'string'
           ? String((warning as { message?: unknown }).message)
-          : '');
+          : '';
     const type =
       typeof args[0] === 'string' ? args[0] : (args[0] as { type?: unknown } | undefined)?.type;
     const name = (warning as { name?: unknown } | undefined)?.name;
-    const normalizedType = typeof type === 'string' ? type : (typeof name === 'string' ? name : '');
+    const normalizedType = typeof type === 'string' ? type : typeof name === 'string' ? name : '';
     if (normalizedType === 'ExperimentalWarning' && message.toLowerCase().includes('sqlite')) {
       return;
     }
@@ -152,7 +152,7 @@ export function resolveCachePath({
       const expanded = raw === '~' ? home : join(home, raw.slice(2));
       return resolvePath(expanded);
     }
-    return isAbsolute(raw) ? raw : (home ? resolvePath(join(home, raw)) : null);
+    return isAbsolute(raw) ? raw : home ? resolvePath(join(home, raw)) : null;
   }
   if (!home) {
     return null;

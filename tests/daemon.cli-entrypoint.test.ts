@@ -20,10 +20,10 @@ describe('resolveCliEntrypointCandidatesFromWindowsShim', () => {
       '@steipete',
       'gist',
       'dist',
-      'cli.js',
+      'gist',
     );
 
-    const contents = '& "$basedir/../lib/node_modules/@seanmozeik/gist/dist/cli.js" @args\n';
+    const contents = '& "$basedir/../lib/node_modules/@seanmozeik/gist/dist/gist" @args\n';
     await fs.writeFile(shimPath, contents, 'utf8');
 
     const candidates = await resolveCliEntrypointCandidatesFromWindowsShim(shimPath);

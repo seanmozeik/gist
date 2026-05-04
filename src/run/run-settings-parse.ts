@@ -71,12 +71,12 @@ export const parseOptionalCliProviderOrder = (
   }
   const items: string[] = Array.isArray(raw)
     ? raw.filter((entry): entry is string => typeof entry === 'string')
-    : (typeof raw === 'string'
+    : typeof raw === 'string'
       ? raw
           .split(/[,\s]+/)
           .map((entry) => entry.trim())
           .filter(Boolean)
-      : []);
+      : [];
   if (items.length === 0) {
     if (strict) {
       throw new Error(`Unsupported --auto-cli-order: ${String(raw)}`);

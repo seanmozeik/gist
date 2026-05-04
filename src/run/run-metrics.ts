@@ -69,8 +69,10 @@ export function createRunMetrics({
     };
   };
 
-  const trackedFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) =>
-    fetch(input as RequestInfo, init);
+  const trackedFetch = Object.assign(
+    async (input: RequestInfo | URL, init?: RequestInit) => fetch(input as RequestInfo, init),
+    { preconnect: fetch.preconnect.bind(fetch) },
+  );
 
   return {
     buildReport,

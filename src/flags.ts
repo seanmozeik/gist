@@ -135,7 +135,7 @@ export function parseLengthArg(raw: string): LengthArg {
   }
 
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxCharacters = Math.floor(numeric * multiplier);
   if (maxCharacters < MIN_LENGTH_CHARS) {
     throw new Error(`Unsupported --length: ${raw} (minimum ${MIN_LENGTH_CHARS} chars)`);
@@ -163,7 +163,7 @@ export function parseMaxExtractCharactersArg(raw: string | undefined): number | 
     return null;
   }
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxCharacters = Math.floor(numeric * multiplier);
   if (maxCharacters < MIN_LENGTH_CHARS) {
     throw new Error(
@@ -193,7 +193,7 @@ export function parseMaxOutputTokensArg(raw: string | undefined): number | null 
   }
 
   const unit = match.groups.unit?.toLowerCase() ?? null;
-  const multiplier = unit === 'k' ? 1000 : (unit === 'm' ? 1_000_000 : 1);
+  const multiplier = unit === 'k' ? 1000 : unit === 'm' ? 1_000_000 : 1;
   const maxOutputTokens = Math.floor(numeric * multiplier);
   if (maxOutputTokens < MIN_MAX_OUTPUT_TOKENS) {
     throw new Error(`Unsupported --max-output-tokens: ${raw} (minimum ${MIN_MAX_OUTPUT_TOKENS})`);

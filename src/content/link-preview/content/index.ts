@@ -396,9 +396,9 @@ export async function fetchLinkContent(
   if (twitterStatus && isBlockedTwitterContent(htmlExtracted.content)) {
     const birdNote = !deps.readTweetWithBird
       ? 'X CLI not available'
-      : (birdError
+      : birdError
         ? `X CLI failed: ${birdError instanceof Error ? birdError.message : String(birdError)}`
-        : 'X CLI returned no text');
+        : 'X CLI returned no text';
     throw new Error(`Unable to fetch tweet content from X. ${birdNote}.`);
   }
   return htmlExtracted;

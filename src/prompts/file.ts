@@ -30,11 +30,11 @@ export function buildFileSummaryPrompt({
   const effectiveSummaryLength =
     typeof summaryLength === 'string'
       ? summaryLength
-      : (contentCharacters &&
+      : contentCharacters &&
           contentCharacters > 0 &&
           summaryLength.maxCharacters > contentCharacters
         ? { maxCharacters: contentCharacters }
-        : summaryLength);
+        : summaryLength;
   const preset =
     typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength
@@ -119,9 +119,9 @@ export function buildFileTextSummaryPrompt({
   const effectiveSummaryLength =
     typeof summaryLength === 'string'
       ? summaryLength
-      : (summaryLength.maxCharacters > contentLength
+      : summaryLength.maxCharacters > contentLength
         ? { maxCharacters: contentLength }
-        : summaryLength);
+        : summaryLength;
   const preset =
     typeof effectiveSummaryLength === 'string'
       ? effectiveSummaryLength

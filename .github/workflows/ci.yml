@@ -57,7 +57,7 @@ jobs:
             echo "No root pack artifact found in _pack/root" >&2
             exit 1
           fi
-          tar -tf "$ROOT_TARBALL" | grep -E '^package/dist/cli\.js$'
+          tar -tf "$ROOT_TARBALL" | grep -E '^package/dist/gist$'
 
           echo "==> core"
           ls -la _pack/core

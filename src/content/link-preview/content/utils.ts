@@ -140,7 +140,7 @@ export function ensureTranscriptDiagnostics(
     return resolution.diagnostics;
   }
   const hasText = typeof resolution.text === 'string' && resolution.text.length > 0;
-  const cacheStatus = cacheMode === 'bypass' ? 'bypassed' : (hasText ? 'miss' : 'unknown');
+  const cacheStatus = cacheMode === 'bypass' ? 'bypassed' : hasText ? 'miss' : 'unknown';
   return {
     attemptedProviders: resolution.source ? [resolution.source] : [],
     cacheMode,

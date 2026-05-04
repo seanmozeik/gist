@@ -71,7 +71,7 @@ describe('podcast transcript provider - more branches 3', () => {
 
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url === 'https://example.com/feed.xml') {
         return new Response(xml, { headers: { 'content-type': 'application/xml' }, status: 200 });
       }
@@ -151,9 +151,9 @@ describe('podcast transcript provider - more branches 3', () => {
       const url =
         typeof _input === 'string'
           ? _input
-          : (_input instanceof URL
+          : _input instanceof URL
             ? _input.toString()
-            : _input.url);
+            : _input.url;
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'HEAD') {
         return new Response(null, {

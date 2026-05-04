@@ -289,9 +289,9 @@ export async function resolveTwitterCookies({
 
   const sourcesToTry: BrowserName[] = Array.isArray(effectiveCookieSource)
     ? effectiveCookieSource
-    : (effectiveCookieSource
+    : effectiveCookieSource
       ? [effectiveCookieSource]
-      : DEFAULT_SOURCES);
+      : DEFAULT_SOURCES;
 
   const runtimePlatform = platform ?? process.platform;
   const runtimeHome = homeDir ?? homedir();
@@ -302,9 +302,9 @@ export async function resolveTwitterCookies({
     const profile =
       source === 'chrome'
         ? effectiveChromeProfile
-        : (source === 'firefox'
+        : source === 'firefox'
           ? effectiveFirefoxProfile
-          : undefined);
+          : undefined;
     const spec = buildCookiesFromBrowserSpec(source, profile);
     const label = formatBrowserSourceLabel(source, profile);
     firstCandidate ??= { label, spec };

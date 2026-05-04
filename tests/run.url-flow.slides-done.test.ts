@@ -70,7 +70,7 @@ describe('runUrlFlow slides done hook', () => {
 
     const fetchImpl: typeof fetch = async (input) => {
       const requestUrl =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (requestUrl !== url) {
         throw new Error(`unexpected fetch: ${requestUrl}`);
       }
@@ -135,7 +135,7 @@ describe('runUrlFlow slides done hook', () => {
 
     const fetchImpl: typeof fetch = async (input) => {
       const requestUrl =
-        typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (requestUrl !== url) {
         throw new Error(`unexpected fetch: ${requestUrl}`);
       }

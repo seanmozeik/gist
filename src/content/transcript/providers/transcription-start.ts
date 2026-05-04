@@ -35,14 +35,14 @@ export async function resolveTranscriptionStartInfo({
 
   const providerHint: TranscriptionProviderHint = availability.hasSidecar
     ? 'sidecar'
-    : (availability.hasOpenRouter
+    : availability.hasOpenRouter
       ? 'openrouter'
-      : 'unknown');
+      : 'unknown';
   const modelId = availability.hasSidecar
     ? 'sidecar'
-    : (availability.hasOpenRouter
+    : availability.hasOpenRouter
       ? (availability.effectiveEnv.GIST_TRANSCRIPTION_MODEL ?? 'openai/whisper-1')
-      : null);
+      : null;
 
   return { availability, modelId, providerHint };
 }
